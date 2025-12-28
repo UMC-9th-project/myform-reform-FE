@@ -1,0 +1,150 @@
+@layer base {
+  /* Pretendard 폰트 변수 */
+  :root {
+    --font-family-pretendard:
+      'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto,
+      'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR',
+      'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+      sans-serif;
+  }
+
+  body {
+    font-family: var(--font-family-pretendard);
+  }
+}
+
+/*Heading*/
+.heading-h1-bd {
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 150%;
+}
+.heading-h2-bd {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 150%;
+}
+.heading-h3-md {
+  font-size: 36px;
+  font-weight: 500;
+  line-height: 150%;
+}
+.heading-h4-bd {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 150%;
+}
+.heading-h4-sb {
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 150%;
+}
+.heading-h5-sb {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 150%;
+}
+.heading-h5-md {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 150%;
+}
+.heading-h5-rg {
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+/*Body*/
+.body-b0-bd {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 150%;
+}
+.body-b0-sb {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 150%;
+}
+.body-b0-md {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 150%;
+}
+.body-b0-rg {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+.body-b1-sb {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 150%;
+}
+.body-b1-md {
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 150%;
+}
+.body-b1-rg {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+.body-b2-md {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 150%;
+}
+.body-b2-rg {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+.body-b3-sb {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 150%;
+}
+.body-b3-rg {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+.body-b4-sb {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 150%;
+}
+
+.body-b5-sb {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 150%;
+}
+.body-b5-rg {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 150%;
+}
+
+/*Etc*/
+.etc-c1-rg {
+  font-size: 10px;
+  font-weight: 400;
+  line-height: 150%;
+}
+.etc-c2-bd {
+  font-size: 7px;
+  font-weight: 700;
+  line-height: 150%;
+}
+.etc-c2-md {
+  font-size: 7px;
+  font-weight: 500;
+  line-height: 150%;
+}
