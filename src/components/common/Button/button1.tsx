@@ -29,10 +29,10 @@ const PADDING_CLASSES = {
 
 const VARIANT_STYLES = {
   primary: 'text-white bg-[#05D4CD] hover:bg-[#00CAC3]',
-  disabled: 'text-[#5C6F7F] bg-[#EBEBEB] cursor-not-allowed', // 비활성화 버튼 (hover 효과 없음)
+  disabled: 'text-[#646F7C] bg-[#EBEBEB] cursor-not-allowed',
   'outlined-mint':
-    'text-[#05D4CD] bg-white border border-[#05D4CD] hover:bg-[#F7F8F9]',
-  white: 'text-black bg-white border border-[#EBEBEB] hover:border-[#5C6F7F]',
+    'text-[#07BEB8] bg-white border border-[#07BEB8] hover:bg-[#F7F8F9]',
+  white: 'text-black bg-white border border-[#C5C8CE] hover:border-[#374553]',
 } as const;
 
 export default function Button({
