@@ -152,21 +152,21 @@ const ProfileCard = () => {
     <div className="w-full min-h-screen bg-white">
       
       {/* ───────── 상단 탭 ───────── */}
-      <nav className="flex border-b border-gray-200 bg-white px-20 md:px-40">
+      <nav className="flex border-b border-gray-200 body-b0-bd bg-white px-20 md:px-40">
         {tabs.map((tab) => (
           <button
             key={tab.name}
             onClick={() => setActiveTab(tab.name)}
-            className={`flex-1 py-4 text-[14px] font-semibold text-center relative
-              ${activeTab === tab.name ? 'text-[#4db6ac]' : 'text-gray-500'}`}
+            className={`flex-1 py-4 body-b0-bd text-center relative
+              ${activeTab === tab.name ? 'text-[var(--color-mint-1)]' : 'text-black'}`}
           >
             {tab.name}
             {tab.count !== null && (
-              <span className="ml-1 text-[12px]">({tab.count})</span>
+              <span className="ml-1 body-b0-bd">({tab.count})</span>
             )}
 
             {activeTab === tab.name && (
-              <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#4db6ac]" />
+              <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[var(--color-mint-1)]" />
             )}
           </button>
         ))}
@@ -178,11 +178,11 @@ const ProfileCard = () => {
         <div className="w-full bg-[#f5f5f5] py-10">
           <div className="max-w-[1100px] mx-auto px-10">
             {FEED_ITEMS.length === 0 ? (
-              <div className="flex items-center justify-center h-[300px] pb-24 text-black text-sm">
+              <div className="flex items-center justify-center h-[300px] pb-24 body-b1-rg">
                 아직 등록된 게시글이 없습니다.
               </div>
             ) : (
-              <div className="grid grid-cols-4 gap-[2px] bg-gray-200">
+              <div className="grid grid-cols-4 gap-[2px] bg-[#f5f5f5]">
                 {FEED_ITEMS.map((item) => (
                   <div
                     key={item.id}
@@ -213,7 +213,7 @@ const ProfileCard = () => {
                 {SALE_ITEMS.map((item) => (
                 <div key={item.id} className="flex flex-col group cursor-pointer">
                     {/* 상품 이미지 프레임 */}
-                    <div className="relative aspect-square mb-3 overflow-hidden rounded-[20px] bg-white border border-gray-100">
+                    <div className="relative aspect-square mb-3 overflow-hidden rounded-[20px] bg-white">
                     <img
                         src={item.img}
                         alt={item.title}
@@ -229,19 +229,20 @@ const ProfileCard = () => {
 
                     {/* 상품 정보 영역 */}
                     <div className="space-y-1">
-                    <h3 className="text-[18px] leading-snug text-black line-clamp-2 min-h-[40px] font-semibold">
+                    <h3 className="body-b0-sb text-black line-clamp-2 min-h-[40px]">
                         {item.title}
                     </h3>
-                    <div className="text-[28px] font-bold text-black">
+                    <div className="heading-h4-bd text-black">
                         {item.price}
                     </div>
-                    <div className="flex items-center text-[16px] text-gray-500">
+                    <div className="flex items-center">
                         <span className="text-yellow-400 text-[18px] mr-1 relative -translate-y-[2px]">★</span>
-                        <span className="font-regular text-gray-700">{item.rating}</span>
-                        <span className="ml-1">({item.reviews})</span>
+                        <span className="body-b3-rg text-black">{item.rating}</span>
+                        <span className="ml-1 text-[var(--color-gray-50)]">({item.reviews})</span>
                     </div>
                     <div className="pt-1">
-                        <span className="inline-block bg-[#E9EBEE] text-[#646F7C] font-semibold text-[12px] px-2 py-0.5 rounded">
+                        <span className="inline-block bg-[var(--color-gray-30)] text-body-b5-sb text-[var(--color-gray-50)]
+                          px-2 py-0.5 rounded">
                         {item.nickname}
                         </span>
                     </div>
