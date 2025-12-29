@@ -263,7 +263,7 @@ const ProfileCard = () => {
                         {REVIEW_ITEMS.map((item) => (
                         <div 
                           key={item.id} 
-                          className="break-inside-avoid bg-white rounded-[0.625rem] p-5 shadow-sm border border-[#C5C8CE] transition-all hover:shadow-md"
+                          className="break-inside-avoid bg-white rounded-[0.625rem] p-5 shadow-sm transition-all hover:shadow-md"
                         >
                         {/* 유저 정보 섹션 */}
                         <div className="flex items-center gap-3 mb-4">
@@ -288,7 +288,7 @@ const ProfileCard = () => {
                         {item.img && item.img.length > 0 && (
                           <div className={`mb-4 grid gap-2 ${item.img.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                             {item.img.map((src, index) => (
-                              <div key={index} className="overflow-hidden border border-gray-50 aspect-square">
+                              <div key={index} className="overflow-hidden aspect-square">
                                 <img
                                   src={src}
                                   alt={`리뷰 이미지 ${index + 1}`}
