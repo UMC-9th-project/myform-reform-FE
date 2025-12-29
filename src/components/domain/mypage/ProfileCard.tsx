@@ -152,7 +152,7 @@ const ProfileCard = () => {
     <div className="w-full min-h-screen bg-white">
       
       {/* ───────── 상단 탭 ───────── */}
-      <nav className="flex border-b border-gray-200 body-b0-bd bg-white px-20 md:px-40">
+      <nav className="flex border-b border-[var(--color-line-gray-40)] body-b0-bd bg-white px-20 md:px-40">
         {tabs.map((tab) => (
           <button
             key={tab.name}
@@ -166,7 +166,7 @@ const ProfileCard = () => {
             )}
 
             {activeTab === tab.name && (
-              <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[var(--color-mint-1)]" />
+              <div className="absolute bottom-0 left-0 w-full h-[0.125rem] bg-[var(--color-mint-1)]" />
             )}
           </button>
         ))}
@@ -176,13 +176,13 @@ const ProfileCard = () => {
         {/* ===== 피드 ===== */}
       {activeTab === '피드' && (
         <div className="w-full bg-[#f5f5f5] py-10">
-          <div className="max-w-[1100px] mx-auto px-10">
+          <div className="max-w-[68.75rem] mx-auto px-10">
             {FEED_ITEMS.length === 0 ? (
-              <div className="flex items-center justify-center h-[300px] pb-24 body-b1-rg">
+              <div className="flex items-center justify-center h-[18.75rem] pb-24 body-b1-rg">
                 아직 등록된 게시글이 없습니다.
               </div>
             ) : (
-              <div className="grid grid-cols-4 gap-[2px] bg-[#f5f5f5]">
+              <div className="grid grid-cols-4 gap-[0.125rem] bg-[#f5f5f5]">
                 {FEED_ITEMS.map((item) => (
                   <div
                     key={item.id}
@@ -213,7 +213,7 @@ const ProfileCard = () => {
                 {SALE_ITEMS.map((item) => (
                 <div key={item.id} className="flex flex-col group cursor-pointer">
                     {/* 상품 이미지 프레임 */}
-                    <div className="relative aspect-square mb-3 overflow-hidden rounded-[20px] bg-white">
+                    <div className="relative aspect-square mb-3 overflow-hidden rounded-[1.25rem] bg-white">
                     <img
                         src={item.img}
                         alt={item.title}
@@ -229,14 +229,14 @@ const ProfileCard = () => {
 
                     {/* 상품 정보 영역 */}
                     <div className="space-y-1">
-                    <h3 className="body-b0-sb text-black line-clamp-2 min-h-[40px]">
+                    <h3 className="body-b0-sb text-black line-clamp-2 min-h-[2.5rem]">
                         {item.title}
                     </h3>
                     <div className="heading-h4-bd text-black">
                         {item.price}
                     </div>
                     <div className="flex items-center">
-                        <span className="text-yellow-400 text-[18px] mr-1 relative -translate-y-[2px]">★</span>
+                        <span className="text-[#FFCF41] text-[1.125rem] mr-1 relative -translate-y-[0.125rem]">★</span>
                         <span className="body-b3-rg text-black">{item.rating}</span>
                         <span className="ml-1 text-[var(--color-gray-50)]">({item.reviews})</span>
                     </div>
@@ -263,15 +263,15 @@ const ProfileCard = () => {
                         {REVIEW_ITEMS.map((item) => (
                         <div 
                           key={item.id} 
-                          className="break-inside-avoid bg-white rounded-[10px] p-5 shadow-sm border border-[#C5C8CE] transition-all hover:shadow-md"
+                          className="break-inside-avoid bg-white rounded-[0.625rem] p-5 shadow-sm border border-[#C5C8CE] transition-all hover:shadow-md"
                         >
                         {/* 유저 정보 섹션 */}
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <div className="text-sm font-bold text-gray-900 truncate">{item.author}</div>
-                              <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
-                                <span className="text-yellow-400 font-bold">
+                              <div className="body-b1-sb text-black truncate">{item.author}</div>
+                              <div className="flex items-center gap-1.5 text-[0.68rem] text-[var(--color-gray-40)]">
+                                <span className="text-[#FFCF41]">
                                   {"★".repeat(item.rating)}{"☆".repeat(5 - item.rating)}
                                 </span>
                                 <span>{item.date}</span>
@@ -280,7 +280,7 @@ const ProfileCard = () => {
                         </div>
 
                         {/* 리뷰 텍스트 */}
-                        <p className="text-sm text-gray-600 leading-relaxed mb-4">
+                        <p className="body-b1-rg text-[var(--color-black)] leading-relaxed mb-4">
                             {item.content}
                         </p>
 
@@ -301,15 +301,15 @@ const ProfileCard = () => {
 
 
                         {/* 하단 상품 정보 */}
-                        <div className={'bg-gray-100 p-3 flex items-center gap-3 border border-gray-100 '}>
+                        <div className={'bg-[var(--color-gray-20)] p-3 flex items-center gap-3'}>
                           <div className="w-12 h-12 bg-white overflow-hidden flex-shrink-0">
                             <img src={item.productImg} alt="상품 이미지" className="w-full h-full object-cover" />
                           </div>
                           <div className="min-w-0">
-                            <div className="text-[11px] text-black-700 line-clamp-2">
+                            <div className="text-[0.69rem] body-b3-rg line-clamp-2">
                                 {item.productName}
                             </div>
-                            <div className="text-sm font-semibold text-gray-900">{item.productPrice}원</div>
+                            <div className="body-b1-sb text-black">{item.productPrice}원</div>
                           </div>
                         </div>
                         </div>
