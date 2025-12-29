@@ -1,0 +1,151 @@
+@layer base {
+  /* Pretendard 폰트 변수 */
+  :root {
+    --font-family-pretendard:
+      'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto,
+      'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR',
+      'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+      sans-serif;
+    --line-height-common: 150%;
+  }
+
+  body {
+    font-family: var(--font-family-pretendard);
+  }
+}
+
+/*Heading*/
+.heading-h1-bd {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: var(--line-height-common);
+}
+.heading-h2-bd {
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: var(--line-height-common);
+}
+.heading-h3-md {
+  font-size: 2.25rem;
+  font-weight: 500;
+  line-height: var(--line-height-common);
+}
+.heading-h4-bd {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: var(--line-height-common);
+}
+.heading-h4-sb {
+  font-size: 1.875rem;
+  font-weight: 600;
+  line-height: var(--line-height-common);
+}
+.heading-h5-sb {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: var(--line-height-common);
+}
+.heading-h5-md {
+  font-size: 1.5rem;
+  font-weight: 500;
+  line-height: var(--line-height-common);
+}
+.heading-h5-rg {
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: var(--line-height-common);
+}
+
+/*Body*/
+.body-b0-bd {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: var(--line-height-common);
+}
+.body-b0-sb {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: var(--line-height-common);
+}
+.body-b0-md {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: var(--line-height-common);
+}
+.body-b0-rg {
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: var(--line-height-common);
+}
+
+.body-b1-sb {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: var(--line-height-common);
+}
+.body-b1-md {
+  font-size: 1.125rem;
+  font-weight: 500;
+  line-height: var(--line-height-common);
+}
+.body-b1-rg {
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: var(--line-height-common);
+}
+
+.body-b2-md {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: var(--line-height-common);
+}
+.body-b2-rg {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: var(--line-height-common);
+}
+
+.body-b3-sb {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: var(--line-height-common);
+}
+.body-b3-rg {
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: var(--line-height-common);
+}
+
+.body-b4-sb {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: var(--line-height-common);
+}
+
+.body-b5-sb {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: var(--line-height-common);
+}
+.body-b5-rg {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: var(--line-height-common);
+}
+
+/*Etc*/
+.etc-c1-rg {
+  font-size: 0.625rem;
+  font-weight: 400;
+  line-height: var(--line-height-common);
+}
+.etc-c2-bd {
+  font-size: 0.4375rem;
+  font-weight: 700;
+  line-height: var(--line-height-common);
+}
+.etc-c2-md {
+  font-size: 0.4375rem;
+  font-weight: 500;
+  line-height: var(--line-height-common);
+}

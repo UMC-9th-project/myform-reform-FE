@@ -1,0 +1,36 @@
+@layer base {
+  :root {
+    /* Main Color - Mint */
+    --color-mint-0: #05d4cd;
+    --color-mint-1: #07beb8;
+    --color-mint-2: #3dccc7;
+    --color-mint-3: #68d8d6;
+    --color-mint-4: #a4e2e6;
+    --color-mint-5: #c5efea;
+    --color-mint-6: #f2fdfc;
+
+    /* Sub Color - Red */
+    --color-red-1: #f66f6f;
+    --color-red-2: #ff8d8d;
+    --color-red-3: #ffacac;
+    --color-red-4: #ffc4c4;
+
+    /* Gray */
+    --color-black: #000000;
+    --color-gray-90: #171b1c;
+    --color-gray-80: #1e2427;
+    --color-gray-70: #28323c;
+    --color-gray-60: #374553;
+    --color-gray-50: #646f7c;
+    --color-gray-40: #adb0b5;
+    --color-gray-30: #e9ebee;
+    --color-gray-20: #f7f8f9;
+    --color-gray-10: #fdfdfd;
+    --color-white: #ffffff;
+
+    /* BG & Line */
+    --color-bg-white: #ffffff;
+    --color-line-gray-40: #c5c8ce;
+    --color-line-gray-30: #e9ebee;
+  }
+}
