@@ -1,3 +1,5 @@
+import MinusIcon from '../../../../../assets/icons/minus.svg?react';
+import PlusIcon from '../../../../../assets/icons/plus.svg?react';
 import type { OptionQuantityProps } from './OptionQuantity.types';
 import { getOptionQuantityProps } from './OptionQuantity.utils';
 
@@ -19,28 +21,17 @@ const OptionQuantity = (props: OptionQuantityProps) => {
           cursor-pointer
           hover:bg-[var(--color-gray-20)]
           disabled:cursor-not-allowed
+          disabled:hover:bg-[var(--color-bg-white)]
           transition-colors duration-200
         "
       >
-        <svg
-          width="50"
-          height="50"
-          viewBox="0 0 40 40"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-[3.125rem] h-[3.125rem]"
-        >
-          <path
-            d="M14 20H26"
-            stroke={
-              disabled || quantity <= 1
-                ? 'var(--color-gray-40)'
-                : 'var(--color-black)'
-            }
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-        </svg>
+        <MinusIcon
+          className={`w-[3.125rem] h-[3.125rem] ${
+            disabled || quantity === 1
+              ? 'text-[var(--color-gray-40)]'
+              : 'text-[var(--color-black)]'
+          }`}
+        />
       </button>
 
       <div
@@ -71,29 +62,13 @@ const OptionQuantity = (props: OptionQuantityProps) => {
           transition-colors duration-200
         "
       >
-        <svg
-          width="50"
-          height="50"
-          viewBox="0 0 40 40"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-[3.125rem] h-[3.125rem]"
-        >
-          <path
-            d="M25.9998 20H19.9998V14"
-            stroke={disabled ? 'var(--color-gray-40)' : 'var(--color-black)'}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M19.9998 26V20H13.9998"
-            stroke={disabled ? 'var(--color-gray-40)' : 'var(--color-black)'}
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <PlusIcon
+          className={`w-[3.125rem] h-[3.125rem] ${
+            disabled
+              ? 'text-[var(--color-gray-40)]'
+              : 'text-[var(--color-black)]'
+          }`}
+        />
       </button>
     </div>
   );

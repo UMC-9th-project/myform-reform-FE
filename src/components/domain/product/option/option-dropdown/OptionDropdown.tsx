@@ -1,4 +1,5 @@
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import DownIcon from '../../../../../assets/icons/down.svg?react';
+import UpIcon from '../../../../../assets/icons/up.svg?react';
 import { useState } from 'react';
 import type { OptionItem } from './OptionItem';
 import OptionItemComponent from './OptionItem';
@@ -41,9 +42,9 @@ const OptionDropdown = ({ options }: OptionDropdownProps) => {
       >
         <span>{selectedOption || '옵션을 선택해주세요.'}</span>
         {isOpen ? (
-          <ChevronUp className="w-5 h-5" />
+          <UpIcon className="w-8 h-8" />
         ) : (
-          <ChevronDown className="w-5 h-5" />
+          <DownIcon className="w-8 h-8" />
         )}
       </div>
       {isOpen && (
