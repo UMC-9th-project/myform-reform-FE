@@ -1,8 +1,7 @@
-import React from 'react';
 import type { OptionQuantityProps } from './OptionQuantity.types';
 import { getOptionQuantityProps } from './OptionQuantity.utils';
 
-const OptionQuantity: React.FC<OptionQuantityProps> = (props) => {
+const OptionQuantity = (props: OptionQuantityProps) => {
   const { quantity, onIncrease, onDecrease, disabled } =
     getOptionQuantityProps(props);
 
