@@ -59,9 +59,7 @@ const OptionDropdown = ({ options }: OptionDropdownProps) => {
                   )
                 }
               />
-              {index < options.length - 1 && (
-                <div className="h-[1px] bg-[var(--color-line-gray-30)] ml-6" />
-              )}
+              {index < options.length - 1}
             </div>
           ))}
         </div>
