@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 // 1. 데이터 타입 정의
 interface OrderItem {
   id: string;
+  type: 'product' | 'reform'
   orderNo: string;
   title: string;
   price: number;
@@ -19,6 +20,7 @@ const OrderHistory = () => {
   const productMockData: OrderItem[] = [
     {
       id: 'p1',
+      type: 'product',
       orderNo: '0000000000',
       title: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
       price: 75000,
@@ -28,6 +30,7 @@ const OrderHistory = () => {
     },
     {
       id: 'p2',
+      type: 'product',
       orderNo: '0000000001',
       title: '메시 월드컵 우승 기념 유니폼 커스텀 서비스',
       price: 120000,
@@ -40,6 +43,7 @@ const OrderHistory = () => {
   const reformMockData: OrderItem[] = [
     {
       id: 'r1',
+      type: 'reform',
       orderNo: 'R-123456',
       title: '오래된 야구 점퍼를 힙한 조끼로 리폼하기',
       price: 55000,
@@ -89,7 +93,7 @@ const OrderHistory = () => {
               <div className="flex justify-between items-center mb-4 text-[var(--color-gray-50)] body-b1-rg">
                 <span>주문번호 {item.orderNo}</span>
                 <button className="flex items-center gap-2 hover:text-black">
-                  상세보기 <span className="text-[12px]">❯</span>
+                   {item.type === 'product' ? '상세보기' : '채팅걸기'} <span className="text-[12px]">❯</span>
                 </button>
               </div>
 
