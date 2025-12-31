@@ -55,13 +55,13 @@ useEffect(() => {
 }, []);
 
   return (
-    <div className="max-w-[480px] bg-white rounded-[1.25rem] p-6 shadow-sm border border-gray-100 font-sans">
+    <div className="max-w-[30rem] bg-white rounded-[0.6rem] p-6 shadow-sm border border-[var(--color-line-gray-40)]">
       
       {/* --- 상단: 프로필 & 별점 & 액션 버튼 --- */}
       <div className="flex justify-between items-start mb-5">
         <div className="flex items-center gap-3">
           {/* 프로필 이미지 (이미지의 핑크색 구름 느낌 재현) */}
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-tr from-[#FFD1FF] to-[#FACAD1] flex-shrink-0">
+          <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
             <img 
               src="https://api.dicebear.com/7.x/miniavs/svg?seed=1" 
               alt="profile" 
