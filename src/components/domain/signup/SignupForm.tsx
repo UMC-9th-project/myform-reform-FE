@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Input from '../../common/Input/Input';
-import Button from '../../common/Button/button1';
+
 import {
   emailSchema,
   passwordSchema,
@@ -295,7 +295,6 @@ export default function SignupForm() {
         showButton
         buttonText="중복확인"
         onButtonClick={handleNicknameDuplicateCheck}
-        disabled={!nickname || !!nicknameError || isNicknameVerified}
         onChange={handleNicknameChange}
       />
 
@@ -311,7 +310,6 @@ export default function SignupForm() {
         showButton
         buttonText="인증요청"
         onButtonClick={handlePhoneVerificationRequest}
-        disabled={!phone || !!phoneError}
         onChange={handlePhoneChange}
       />
 
@@ -325,11 +323,6 @@ export default function SignupForm() {
         showButton
         buttonText="확인"
         onButtonClick={handleVerificationCodeCheck}
-        disabled={
-          !verificationCode ||
-          !!verificationCodeError ||
-          isVerificationCodeVerified
-        }
         onChange={handleVerificationCodeChange}
       />
     </form>

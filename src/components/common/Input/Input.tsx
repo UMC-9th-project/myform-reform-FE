@@ -190,15 +190,9 @@ export default function Input({
           )}
         </div>
         {showButton && (
-          <Button
-            variant="white"
-            size="default"
-            onClick={onButtonClick}
-            disabled={disabled || !currentValue || !!error}
-            className="whitespace-nowrap"
-          >
+          <button className="body-b1-rg bg-[var(--color-gray-30)] text-[var(--color-gray-50)] border border-[var(--color-line-gray-40)] rounded-[0.625rem] px-6 py-5  transition-colors duration-200 cursor-pointer">
             {buttonText}
-          </Button>
+          </button>
         )}
       </div>
       {error && (
