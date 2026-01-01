@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { z } from 'zod';
-import { Eye, EyeOff } from 'lucide-react';
+import eyeIcon from './icons/Eye.svg';
+import eyeOffIcon from './icons/EyeOff.svg';
 import Button from '../Button/button1';
 
 type InputType = 'email' | 'password' | 'text' | 'tel';
@@ -29,6 +30,8 @@ interface InputProps {
 }
 
 export default function Input({
+  label,
+  required,
   placeholder,
   type = 'text',
   value: controlledValue,
@@ -125,26 +128,34 @@ export default function Input({
     rightElement;
 
   return (
-    <div className="relative flex gap-[0.5rem]">
-      <div className="relative flex-1">
-        <input
-          type={inputType}
-          value={currentValue}
-          onChange={handleChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          placeholder={placeholder}
-          disabled={disabled}
-          className={`
-              w-[543px]
+    <div className="flex flex-col gap-[0.5rem]">
+      {label && (
+        <label className="body-b1-sb text-[var(--color-black)]">
+          {label}
+          {required && (
+            <span className="text-[var(--color-red-1)] ml-1">*</span>
+          )}
+        </label>
+      )}
+      <div className="relative flex gap-[0.5rem]">
+        <div className="relative flex-1">
+          <input
+            type={inputType}
+            value={currentValue}
+            onChange={handleChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            placeholder={placeholder}
+            disabled={disabled}
+            className={`
+              w-full
               px-[1.375rem]
               py-[1.4375rem]
               body-b1-rg
-             border
-            text-[var(--color-gray-50)]
+              border
+              text-[var(--color-gray-50)]
               border-[var(--color-line-gray-40)]
               focus:border-[var(--color-black)]
-                
               rounded-[0.9375rem]
               ${getBorderColor()}
               focus:outline-none
@@ -153,37 +164,45 @@ export default function Input({
               ${hasRightContent ? (type === 'tel' || (type === 'text' && timerSeconds !== null) ? 'pr-[5rem]' : 'pr-[3rem]') : ''}
               ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
             `}
-        />
-        {hasRightContent && (
-          <div className="absolute right-[1rem] top-1/2 -translate-y-1/2 flex items-center gap-[0.5rem]">
-            {timerSeconds !== null && timerSeconds > 0 && (
-              <span className="body-b3-rg text-[var(--color-gray-50)]">
-                {formatTime(timerSeconds)}
-              </span>
-            )}
-            {showPasswordToggle && (
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="text-[var(--color-gray-50)] hover:text-[var(--color-black)] transition-colors"
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            )}
-            {rightElement}
-          </div>
+          />
+          {hasRightContent && (
+            <div className="absolute right-[1rem] top-1/2 -translate-y-1/2 flex items-center gap-[0.5rem]">
+              {timerSeconds !== null && timerSeconds > 0 && (
+                <span className="body-b3-rg text-[var(--color-gray-50)]">
+                  {formatTime(timerSeconds)}
+                </span>
+              )}
+              {showPasswordToggle && (
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="text-[var(--color-gray-50)] hover:text-[var(--color-black)] transition-colors"
+                >
+                  {showPassword ? (
+                    <img src={eyeIcon} alt="eye" />
+                  ) : (
+                    <img src={eyeOffIcon} alt="eyeoff" />
+                  )}
+                </button>
+              )}
+              {rightElement}
+            </div>
+          )}
+        </div>
+        {showButton && (
+          <Button
+            variant="white"
+            size="default"
+            onClick={onButtonClick}
+            disabled={disabled || !currentValue || !!error}
+            className="whitespace-nowrap"
+          >
+            {buttonText}
+          </Button>
         )}
       </div>
-      {showButton && (
-        <Button
-          variant="white"
-          size="default"
-          onClick={onButtonClick}
-          disabled={disabled || !currentValue || !!error}
-          className="whitespace-nowrap"
-        >
-          {buttonText}
-        </Button>
+      {error && (
+        <p className="body-b2-rg text-[var(--color-red-1)] mt-1">{error}</p>
       )}
     </div>
   );

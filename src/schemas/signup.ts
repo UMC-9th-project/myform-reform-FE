@@ -28,3 +28,18 @@ export const verificationCodeSchema = z
   .string()
   .min(1, '인증코드를 입력해주세요.')
   .regex(/^\d{6}$/, '정확한 인증코드를 입력해주세요.');
+
+// 전체 회원가입 폼 스키마
+export const signupFormSchema = z
+  .object({
+    email: emailSchema,
+    password: passwordSchema,
+    passwordConfirm: z.string(),
+    nickname: nicknameSchema,
+    phone: phoneSchema,
+    verificationCode: verificationCodeSchema,
+  })
+  .refine((data) => data.password === data.passwordConfirm, {
+    message: '비밀번호를 동일하게 입력해주세요.',
+    path: ['passwordConfirm'],
+  });

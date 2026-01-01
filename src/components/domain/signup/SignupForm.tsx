@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Input from '../../common/Input/Input';
+import Button from '../../common/Button/button1';
 import {
   emailSchema,
   passwordSchema,
@@ -32,6 +33,9 @@ export default function SignupForm() {
   const [phoneTimeLeft, setPhoneTimeLeft] = useState(180);
   const [verificationTimerActive, setVerificationTimerActive] = useState(false);
   const [verificationTimeLeft, setVerificationTimeLeft] = useState(180);
+  const [isNicknameVerified, setIsNicknameVerified] = useState(false);
+  const [isVerificationCodeVerified, setIsVerificationCodeVerified] =
+    useState(false);
 
   const phoneIntervalRef = useRef<number | null>(null);
   const verificationIntervalRef = useRef<number | null>(null);
@@ -79,9 +83,14 @@ export default function SignupForm() {
   const validateField = (
     value: string,
     schema: typeof emailSchema,
-    setError: (error: string | null) => void
-  ) => {
+    setError: (error: string | null) => void,
+    required = false
+  ): boolean => {
     if (value.trim() === '') {
+      if (required) {
+        setError('필수 입력 항목입니다.');
+        return false;
+      }
       setError(null);
       return true;
     }
@@ -96,14 +105,69 @@ export default function SignupForm() {
     }
   };
 
+  // 전체 폼 유효성 검사
+  const validateForm = () => {
+    let isValid = true;
+
+    // 각 필드 검증 (필수 필드는 required: true)
+    if (!validateField(email, emailSchema, setEmailError, true)) {
+      isValid = false;
+    }
+
+    if (!validateField(password, passwordSchema, setPasswordError, true)) {
+      isValid = false;
+    }
+
+    if (!passwordConfirm.trim()) {
+      setPasswordConfirmError('비밀번호를 한번 더 입력해주세요.');
+      isValid = false;
+    } else if (password !== passwordConfirm) {
+      setPasswordConfirmError('비밀번호를 동일하게 입력해주세요.');
+      isValid = false;
+    }
+
+    if (!validateField(nickname, nicknameSchema, setNicknameError, true)) {
+      isValid = false;
+    }
+
+    if (!validateField(phone, phoneSchema, setPhoneError, true)) {
+      isValid = false;
+    }
+
+    if (
+      !validateField(
+        verificationCode,
+        verificationCodeSchema,
+        setVerificationCodeError,
+        true
+      )
+    ) {
+      isValid = false;
+    }
+
+    // 추가 검증: 닉네임 중복 확인
+    if (!isNicknameVerified && nickname.trim()) {
+      setNicknameDuplicateError(true);
+      isValid = false;
+    }
+
+    // 추가 검증: 인증코드 확인
+    if (!isVerificationCodeVerified && verificationCode.trim()) {
+      setVerificationCodeError('인증코드를 확인해주세요.');
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
   const handleEmailChange = (value: string) => {
     setEmail(value);
-    validateField(value, emailSchema, setEmailError);
+    validateField(value, emailSchema, setEmailError, false);
   };
 
   const handlePasswordChange = (value: string) => {
     setPassword(value);
-    validateField(value, passwordSchema, setPasswordError);
+    validateField(value, passwordSchema, setPasswordError, false);
 
     if (passwordConfirm) {
       if (value !== passwordConfirm) {
@@ -125,18 +189,25 @@ export default function SignupForm() {
 
   const handleNicknameChange = (value: string) => {
     setNickname(value);
-    validateField(value, nicknameSchema, setNicknameError);
+    validateField(value, nicknameSchema, setNicknameError, false);
     setNicknameDuplicateError(false);
+    setIsNicknameVerified(false);
   };
 
   const handlePhoneChange = (value: string) => {
     setPhone(value);
-    validateField(value, phoneSchema, setPhoneError);
+    validateField(value, phoneSchema, setPhoneError, false);
   };
 
   const handleVerificationCodeChange = (value: string) => {
     setVerificationCode(value);
-    validateField(value, verificationCodeSchema, setVerificationCodeError);
+    validateField(
+      value,
+      verificationCodeSchema,
+      setVerificationCodeError,
+      false
+    );
+    setIsVerificationCodeVerified(false);
   };
 
   const handlePhoneVerificationRequest = () => {
@@ -149,8 +220,34 @@ export default function SignupForm() {
     }
   };
 
+  const handleNicknameDuplicateCheck = () => {
+    if (!nicknameError && nickname.trim()) {
+      setIsNicknameVerified(true);
+      setNicknameDuplicateError(false);
+    }
+  };
+
+  const handleVerificationCodeCheck = () => {
+    if (!verificationCodeError && verificationCode.trim()) {
+      setIsVerificationCodeVerified(true);
+      setVerificationCodeError(null);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 전체 폼 유효성 검사
+    if (!validateForm()) {
+      return;
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-[1.5rem] p-6 max-w-[600px]">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-6 p-6 max-w-[600px]"
+    >
       <Input
         type="email"
         label="이메일"
@@ -197,7 +294,8 @@ export default function SignupForm() {
         }
         showButton
         buttonText="중복확인"
-        disabled={!nickname || !!nicknameError}
+        onButtonClick={handleNicknameDuplicateCheck}
+        disabled={!nickname || !!nicknameError || isNicknameVerified}
         onChange={handleNicknameChange}
       />
 
@@ -226,9 +324,14 @@ export default function SignupForm() {
         timerSeconds={verificationTimerActive ? verificationTimeLeft : null}
         showButton
         buttonText="확인"
-        disabled={!verificationCode || !!verificationCodeError}
+        onButtonClick={handleVerificationCodeCheck}
+        disabled={
+          !verificationCode ||
+          !!verificationCodeError ||
+          isVerificationCodeVerified
+        }
         onChange={handleVerificationCodeChange}
       />
-    </div>
+    </form>
   );
 }
