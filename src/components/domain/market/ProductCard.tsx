@@ -1,5 +1,6 @@
 import product from '../market/images/produect.jpg';
 import star from '../market/icons/star.svg';
+import heart from '../../../assets/icons/heart.svg';
 
 export default function ProductCard() {
   const productData = {
@@ -13,8 +14,11 @@ export default function ProductCard() {
 
   return (
     <div className="w-[361px] h-[624px] flex flex-col py-[3.125rem]">
-      <div className="h-[307px] rounded-[1.25rem] overflow-hidden mb-[0.875rem]">
+      <div className="relative h-[307px] rounded-[1.25rem] overflow-hidden mb-[0.875rem]">
         <img src={productData.img} alt={productData.name} />
+        <button className="absolute bottom-[0.875rem] right-[0.875rem] flex items-center justify-center cursor-pointer">
+          <img src={heart} alt="좋아요" />
+        </button>
       </div>
 
       <div className="body-b0-sb  line-clamp-2 mb-[0.5625rem]">
