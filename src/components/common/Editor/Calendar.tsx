@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import CalendarLib from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import LeftIcon from '../../../assets/icons/left.svg?react';
+import RightIcon from '../../../assets/icons/right.svg?react';
+import XIcon from '../../../assets/icons/x.svg?react';
 
 interface CalendarProps {
   selected?: Date;
@@ -28,19 +30,21 @@ const Calendar = ({
 
   return (
     <div
-      className={`relative bg-[var(--color-white)] rounded-[0.625rem] p-6 shadow-lg w-[29.125rem] ${className}`}
+      className={`relative bg-[var(--color-white)] rounded-[1.875rem] p-6 w-[29.125rem] ${className}`}
+      style={{ boxShadow: '0 4px 18.8px 0 rgba(0, 0, 0, 0.16)' }}
     >
       <style>{`
         .react-calendar {
           width: 100%;
           border: none;
           font-family: var(--font-family-pretendard);
+      
         }
 
         .react-calendar__navigation {
           display: flex;
           align-items: center;
-          justify-content: flex-start;
+          justify-content: center;
           gap: 0;
           margin-bottom: 1rem;
           position: relative;
@@ -51,8 +55,8 @@ const Calendar = ({
 
         /* ===== 네비게이션 화살표 (이전/다음 월) ===== */
         .react-calendar__navigation__arrow {
-          width: 2rem;
-          height: 2rem;
+          width: 2rem; /* 32px */
+          height: 2rem; /* 32px */
           border-radius: 0.5rem;
           border: none;
           background: transparent !important;
@@ -61,18 +65,46 @@ const Calendar = ({
           flex-shrink: 0;
           outline: none !important;
           box-shadow: none !important;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          padding-bottom: 3.225rem; /* 위로 조금 올리기 */
+        }
+
+        /* 화살표 내부 SVG 아이콘 크기 */
+        .react-calendar__navigation__arrow svg {
+          width: 3rem; /* 32px */
+          height: 3rem; /* 32px */
+
         }
 
         /* 왼쪽 화살표 (<) - 이전 월 */
         .react-calendar__navigation__arrow:first-of-type {
           order: 1;
+          margin-right: 0.5rem; /* 년월과의 간격 */
         }
 
         /* 오른쪽 화살표 (>) - 다음 월 */
         .react-calendar__navigation__arrow:last-of-type {
+          order: 3;
           margin-left: 0.5rem; /* 년월과의 간격 */
           margin-right: 4.5rem; /* X 버튼과의 간격 확보 */
-          order: 3;
+        }
+
+        /* ===== X 닫기 버튼 ===== */
+        .calendar-close-button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .calendar-close-button:hover {
+          background: transparent !important;
+        }
+
+        .calendar-close-button svg {
+          width: 2rem; 
+          height: 2rem; 
         }
 
         .react-calendar__navigation__arrow:focus,
@@ -88,7 +120,11 @@ const Calendar = ({
           text-align: center;
           font-size: 1.25rem; /* body-b0-sb (20px) */
           font-weight: 600; /* body-b0-sb */
-          line-height: 150%; /* body-b0-sb */
+          line-height: 2rem; 
+          height: 2rem; /* 네비게이션 높이와 동일하게 */
+          display: flex;
+          align-items: center;
+          justify-content: center;
           color: var(--color-black);
           background: transparent;
           border: none;
@@ -197,7 +233,7 @@ const Calendar = ({
         <button
           type="button"
           onClick={onClose}
-          className="absolute w-6 h-6 flex items-center justify-center hover:bg-[var(--color-gray-20)] rounded z-10"
+          className="calendar-close-button absolute w-8 h-8 flex items-center justify-center rounded z-10"
           style={{
             top: '1.5rem',
             height: '2rem',
@@ -205,7 +241,7 @@ const Calendar = ({
             marginRight: '1rem',
           }}
         >
-          <X className="w-4 h-4 text-[var(--color-black)]" />
+          <XIcon />
         </button>
       )}
 
@@ -220,8 +256,8 @@ const Calendar = ({
           `${date.getFullYear()}년 ${date.getMonth() + 1}월`
         }
         formatDay={(_, date) => date.getDate().toString()}
-        prevLabel={<ChevronLeft className="w-4 h-4" />}
-        nextLabel={<ChevronRight className="w-4 h-4" />}
+        prevLabel={<LeftIcon />}
+        nextLabel={<RightIcon />}
         prev2Label={null}
         next2Label={null}
         tileDisabled={disabled ? () => true : undefined}
