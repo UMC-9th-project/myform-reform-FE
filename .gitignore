@@ -24,5 +24,8 @@ dist-ssr
 *.sw?
 
 .env
+
+# Test images
+src/components/domain/product/exImage/*.jpg
 *storybook.log
 storybook-static
