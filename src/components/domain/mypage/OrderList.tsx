@@ -73,7 +73,7 @@ const OrderHistory = () => {
               <div className="flex gap-4">
                 <div className="w-35 h-33 bg-gray-100 {/*사진 크기 잡는 용도*/} flex-shrink-0">{item.image}</div>
                 <div className="flex flex-col gap-1 overflow-hidden">
-                  <h4 className="body-b0-md text-[#1A1A1A] truncate">{item.title}</h4>
+                  <h4 className="body-b0-md text-black truncate">{item.title}</h4>
                   <div className="grid grid-cols-[70px_1fr] text-[14px] mt-1 gap-y-0.5 gap-x-4">
                     <span className="body-b0-rg text-[var(--color-gray-50)]">결제금액</span>
                     <span className="body-b0-rg text-black">{item.price.toLocaleString()}원</span>
