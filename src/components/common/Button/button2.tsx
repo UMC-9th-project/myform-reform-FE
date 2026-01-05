@@ -13,9 +13,9 @@ interface Button2Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const VARIANT_STYLES = {
   default:
-    'bg-[#F2FDFC] border border-[#68D8D6] text-[#07BEB8] hover:bg-[#E5F6F4] cursor-pointer',
+    'bg-[var(--color-mint-6)] border border-[var(--color-mint-3)] text-[var(--color-mint-1)] hover:bg-[var(--color-mint-5)] cursor-pointer',
   disabled:
-    'bg-[#E9EBEE] border border-[#ADB0B5] text-[#646F7C] cursor-not-allowed',
+    'bg-[var(--color-gray-30)] border border-[var(--color-gray-40)] text-[var(--color-gray-50)] cursor-not-allowed',
 } as const;
 
 export default function Button2({

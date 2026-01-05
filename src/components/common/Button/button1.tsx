@@ -28,11 +28,14 @@ const PADDING_CLASSES = {
 } as const;
 
 const VARIANT_STYLES = {
-  primary: 'text-white bg-[#05D4CD] hover:bg-[#00CAC3]',
-  disabled: 'text-[#646F7C] bg-[#EBEBEB] cursor-not-allowed',
+  primary:
+    'text-white bg-[var(--color-mint-0)] hover:bg-[var(--color-mint-1)] cursor-pointer',
+  disabled:
+    'text-[var(--color-gray-50)] bg-[var(--color-gray-30)] cursor-not-allowed',
   'outlined-mint':
-    'text-[#07BEB8] bg-white border border-[#07BEB8] hover:bg-[#F7F8F9]',
-  white: 'text-black bg-white border border-[#C5C8CE] hover:border-[#374553]',
+    'text-[var(--color-mint-1)] bg-white border border-[var(--color-mint-1)] hover:bg-[var(--color-gray-20)] cursor-pointer',
+  white:
+    'text-black bg-white border border-[var(--color-line-gray-40)] hover:border-[var(--color-gray-60)] cursor-pointer',
 } as const;
 
 export default function Button({
