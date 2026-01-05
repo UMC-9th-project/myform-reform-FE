@@ -13,12 +13,16 @@ const PageLayout = ({
   showHeader = true,
   showNavbar = true,
 }: LayoutProps) => {
+  footerVariant?: 'dark' | 'light';
+}
+
+const PageLayout = ({ children, footerVariant = 'dark' }: LayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col">
       {showHeader && <Header />}
       {showNavbar && <HeaderNav />}
       <main className="flex-1">{children}</main>
-      <Footer />
+      <Footer variant={footerVariant} />
     </div>
   );
 };
