@@ -24,7 +24,7 @@ const Signup = () => {
         </div>
 
         <Button1
-          variant="white"
+          variant="kakao"
           size="default"
           onClick={KakaoLogin}
           className="body-b0-md w-full mb-[1.25rem] "
