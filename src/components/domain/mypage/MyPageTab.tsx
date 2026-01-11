@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 
 // 탭 메뉴 종류 정의
-type TabType = '프로필 관리' | '내가 작성한 글' | '구매 이력' | '나의 후기';
+type TabType = '프로필 관리' | '판매 관리' | '수익 관리';
 
 const MyPageTabs = () => {
   // 현재 어떤 탭이 선택되었는지 관리 (기본값: 프로필 관리)
   const [activeTab, setActiveTab] = useState<TabType>('프로필 관리');
 
-  const tabs: TabType[] = ['프로필 관리', '내가 작성한 글', '구매 이력', '나의 후기'];
+  const tabs: TabType[] = ['프로필 관리', '판매 관리', '수익 관리'];
 
   return (
     <div className="w-[15rem] flex flex-col items-start">
@@ -17,7 +17,7 @@ const MyPageTabs = () => {
         {/* 프로필 이미지 (회색 처리) */}
         <div className="w-12 h-12 rounded-full border border-[var(--color-gray-30)] flex-shrink-0" />
         {/* 유저 닉네임 */}
-        <span className="body-b1-sb text-black">심심한 리본</span>
+        <span className="body-b1-sb text-black">침착한 대머리독수리</span>
       </div>
 
       {/* 2. 탭 리스트 섹션 */}
