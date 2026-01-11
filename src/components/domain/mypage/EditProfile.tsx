@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // 데이터 구조 정의
 interface ProfileData {
@@ -20,6 +21,7 @@ const mockProfile: ProfileData = {
 };
 
 const EditProfile = () => {
+    const navigate = useNavigate();
   return (
     <div className="w-full bg-white p-10 rounded-xl font-sans">
       <div className="flex gap-10">
@@ -44,7 +46,8 @@ const EditProfile = () => {
             </div>
 
             {/* 아이콘 대신 들어가는 프로필 수정 버튼 */}
-            <button className="px-7 py-5 bg-[var(--color-mint-0)] text-white font-bold rounded-lg hover:bg-[#71c2c2] transition-all shadow-sm">
+            <button className="px-7 py-5 bg-[var(--color-mint-0)] text-white font-bold rounded-lg hover:bg-[#71c2c2] transition-all shadow-sm"
+                onClick={() => navigate('경로 작성')}>
               프로필 수정
             </button>
           </div>
