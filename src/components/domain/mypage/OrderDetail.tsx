@@ -9,10 +9,10 @@ const OrderDetail = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // 드롭다운 옵션 목록
-  const statusOptions = ['상태 없음', '리폼중', '발송완료'];
+  const statusOptions = ['결제 완료', '상품준비 중', '발송완료'];
 
   return (
-    <div className="w-100% mx-auto p-7 bg-transparent">
+    <div className="w-100% mx-auto p-0 bg-transparent">
       <div className="bg-white body-b1-rg border border-[var(--color-line-gray-40)] rounded-[1.25rem] p-5 shadow-sm space-y-12">
         <div className="text-[var(--color-gray-50)] body-b1-rg mb-6">
           주문번호 0000000000
@@ -84,7 +84,7 @@ const OrderDetail = () => {
                   {/* 클릭 버튼 */}
                   <button 
                     onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center gap-2 text-[#76D2CC] font-bold bg-transparent outline-none"
+                    className="flex items-center gap-2 body-b0-rg text-[var(--color-mint-1)] bg-transparent outline-none"
                   >
                     {status}
                     <span className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}>
@@ -96,7 +96,7 @@ const OrderDetail = () => {
 
                   {/* 드롭다운 메뉴 (라디오 버튼 스타일) */}
                   {isDropdownOpen && (
-                    <div className="absolute top-full right-0 mt-2 w-[8.8rem] bg-white rounded-[1.25rem] p-4 z-50 shadow-[1px_3px_11.7px_0px_#00000026]">
+                    <div className="absolute top-full mt-2 w-[8.8rem] bg-white rounded-[1.25rem] p-4 z-50 shadow-[1px_3px_11.7px_0px_#00000026]">
                       <ul className="flex flex-col gap-4">
                         {statusOptions.map((option) => (
                           <li 
@@ -137,7 +137,7 @@ const OrderDetail = () => {
                   type="text"
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value)}
-                  className="w-[24rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[14px]"
+                  className="w-[20rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[14px]"
                   title="운송장 번호 입력"
                 />
               </div>
