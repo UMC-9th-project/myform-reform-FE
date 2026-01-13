@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 // 탭 메뉴 종류 정의
-type TabType = '프로필 관리' | '판매 관리' | '수익 관리';
+export type TabType = '프로필 관리' | '판매 관리' | '수익 관리';
 
-const MyPageTabs = () => {
-  // 현재 어떤 탭이 선택되었는지 관리 (기본값: 프로필 관리)
-  const [activeTab, setActiveTab] = useState<TabType>('프로필 관리');
+interface MyPageTabsProps {
+  activeTab: TabType;
+  setActiveTab: (tab: TabType) => void;
+}
 
+const MyPageTabs: React.FC<MyPageTabsProps> = ({ activeTab, setActiveTab }) => {
   const tabs: TabType[] = ['프로필 관리', '판매 관리', '수익 관리'];
-
   return (
     <div className="w-[15rem] flex flex-col items-start">
       
