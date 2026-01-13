@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useTabStore } from '../../../stores/tabStore';
 
 // --- 데이터 타입 ---
 interface ProductOrder {
@@ -25,10 +25,16 @@ interface ReformProposal {
 }
 
 const OrderList = () => {
-  const navigate = useNavigate();
+
+  const { selectedOrderId, setSelectedOrderId } = useTabStore();
+
+  const handleDetailClick = (id:string) => {
+    console.log('클릭된 ID:', id);
+    setSelectedOrderId(id);
+  }
 
   // --- 상태 ---
-  const [activeTab, setActiveTab] = useState<'product' | 'reform'>('product');
+  const [activeOrderTab, setActiveOrderTab] = useState<'product' | 'reform'>('product');
   const [filterStatus, setFilterStatus] = useState<string>('전체');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const statusOptions = ['전체', '결제 완료', '상품준비 중', '발송 완료'];
@@ -55,9 +61,9 @@ const OrderList = () => {
         {/* 탭 */}
         <div className="flex gap-2">
           <button 
-            onClick={() => setActiveTab('product')}
+            onClick={() => setActiveOrderTab('product')}
             className={`px-5 py-2 rounded-full border body-b1-rg transition-all text-black cursor-pointer ${
-              activeTab === 'product' 
+              activeOrderTab === 'product' 
                 ? 'border-[var(--color-mint-0)] bg-[var(--color-mint-6)] shadow-sm' 
                 : 'border-[var(--color-mint-0)] bg-transparent'
             }`}
@@ -65,9 +71,9 @@ const OrderList = () => {
             마켓 판매
           </button>
           <button 
-            onClick={() => setActiveTab('reform')}
+            onClick={() => setActiveOrderTab('reform')}
             className={`px-5 py-2 rounded-full border body-b1-rg transition-all text-black cursor-pointer ${
-              activeTab === 'reform' 
+              activeOrderTab === 'reform' 
                 ? 'border-[var(--color-mint-0)] bg-[var(--color-mint-6)] shadow-sm' 
                 : 'border-[var(--color-mint-0)] bg-transparent'
             }`}
@@ -123,12 +129,12 @@ const OrderList = () => {
 
       {/* --- 리스트 영역 --- */}
       <div className="space-y-4">
-        {activeTab === 'product' ? (
+        {activeOrderTab === 'product' ? (
           filteredProductData.map((item) => (
             <div key={item.id} className="bg-white border border-[var(--color-line-gray-40)] rounded-[1.25rem] p-5">
               <div className="flex justify-between items-center mb-4 text-[var(--color-gray-50)] body-b1-rg">
                 <span>주문번호 {item.orderNo}</span>
-                <button className="flex items-center gap-3 hover:text-black" onClick={() => navigate(`/order/${item.id}`)}>상세보기<span>❯</span></button>
+                <button className="flex items-center gap-3 hover:text-black" onClick={() => handleDetailClick(item.id)}>상세보기<span>❯</span></button>
               </div>
               <div className="flex gap-4">
                 <div className="w-40 h-40 bg-gray-100 flex-shrink-0">{item.image}</div>
@@ -174,8 +180,8 @@ const OrderList = () => {
         )}
 
         {/* 데이터가 없을 때 */}
-        {((activeTab === 'product' && filteredProductData.length === 0) || 
-          (activeTab === 'reform' && filteredReformData.length === 0)) && (
+        {((activeOrderTab === 'product' && filteredProductData.length === 0) || 
+          (activeOrderTab === 'reform' && filteredReformData.length === 0)) && (
           <div className="text-center py-20 text-gray-400">내역이 없습니다.</div>
         )}
       </div>

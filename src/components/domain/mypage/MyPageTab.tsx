@@ -1,15 +1,10 @@
 import React from 'react';
+import { useTabStore, type TabType } from '../../../stores/tabStore';
 
-// 탭 메뉴 종류 정의
-export type TabType = '프로필 관리' | '판매 관리' | '수익 관리';
-
-interface MyPageTabsProps {
-  activeTab: TabType;
-  setActiveTab: (tab: TabType) => void;
-}
-
-const MyPageTabs: React.FC<MyPageTabsProps> = ({ activeTab, setActiveTab }) => {
+const MyPageTabs: React.FC = () => {
+  const { activeTab, setActiveTab } = useTabStore();
   const tabs: TabType[] = ['프로필 관리', '판매 관리', '수익 관리'];
+  
   return (
     <div className="w-[15rem] flex flex-col items-start">
       

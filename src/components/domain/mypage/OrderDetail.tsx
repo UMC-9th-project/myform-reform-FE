@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 interface OrderDetailType {
   orderNo: string;
+  id: number;
   productTitle: string;
   productImage: string;
   price: number;
@@ -20,6 +21,7 @@ const OrderDetail = () => {
 
   // 가상 데이터
   const initialData: OrderDetailType = {
+    id: 1,
     orderNo: '0000000000',
     productTitle: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
     productImage: 'https://via.placeholder.com/160x150',
@@ -31,7 +33,6 @@ const OrderDetail = () => {
     address: '서울 용산구 청파로47길 100 명신관 302호 (04310)',
     status: '결제 완료',
     trackingNumber: '',
-
   };
   const [order, setOrder] = useState<OrderDetailType>(initialData);
   
