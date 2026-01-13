@@ -175,7 +175,7 @@ const ProfileCard = () => {
       {/* ───────── 컨텐츠 영역 ───────── */}
         {/* ===== 피드 ===== */}
       {activeTab === '피드' && (
-        <div className="w-full bg-[#f5f5f5] py-10">
+        <div className="w-full bg-transparent py-10">
           <div className="max-w-[68.75rem] mx-auto px-10">
             {FEED_ITEMS.length === 0 ? (
               <div className="flex items-center justify-center h-[18.75rem] pb-24 body-b1-rg">
@@ -255,15 +255,15 @@ const ProfileCard = () => {
 
           {/* ===== 후기 ===== */}
           {activeTab === '후기' && (
-            <div className="bg-gray-100 py-10">
-              <div className="bg-gray-100 p-6">
+            <div className="bg-transparent py-10">
+              <div className="bg-transparent p-6">
                 <div className="max-w-4xl mx-auto">
                     {/* 무조건 2열로 배치되는 그리드 */}
                     <div className="columns-2 gap-4 space-y-4">
                         {REVIEW_ITEMS.map((item) => (
                         <div 
                           key={item.id} 
-                          className="break-inside-avoid bg-white rounded-[0.625rem] p-5 shadow-sm transition-all hover:shadow-md"
+                          className="break-inside-avoid bg-white rounded-[0.625rem] p-5 shadow-sm transition-all hover:shadow-md border border-[var(--color-line-gray-40)]"
                         >
                         {/* 유저 정보 섹션 */}
                         <div className="flex items-center gap-3 mb-4">
