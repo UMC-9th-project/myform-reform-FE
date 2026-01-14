@@ -1,17 +1,22 @@
 import React, { useState } from 'react';
+import NicknameModal from '../../components/domain/mypage/NicknameModal';
+
 
 const EditProfilePage = () => {
     const MAX_NICKNAME_LENGTH = 10;
     const [nickname, setNickname] = useState('침착한 대머리 독수리');
     const MAX_DESCRIPTION_LENGTH = 200;
     const [description, setDescription] = useState(`- 2019년부터 리폼 공방 운영 시작 ✨\n- 6년차 스포츠 의류 리폼 전문 공방\n\n고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어 있던 옷에 새로운 가치와 트렌디한 디자인을 더하는 리폼을 선보이고 있어요. 1:1 맞춤 리폼 제작부터 완성 제품까지 모두 주문 가능합니다.`);
-    
     const [keywords, setKeywords] = useState<string[]>([]);
     const [inputKeyword, setInputKeyword] = useState('');
+
+
+    const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
 
     const handleDeleteKeyword = (tag: string) => {
         setKeywords(keywords.filter(k => k !== tag));
     };
+
 
     return (
         <div className="w-full min-h-screen bg-white py-16">
@@ -51,7 +56,7 @@ const EditProfilePage = () => {
                                 className="w-full body-b0-rg outline-none bg-transparent"
                                 title="닉네임 입력"
                             />
-                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" onClick={() => setIsNicknameModalOpen(true)} className='cursor-pointer'>
                                 <path d="M1 27H6.57124L27 6.57124L21.4281 1L1 21.4288V27Z" stroke="#646F7C" strokeWidth="2" strokeLinejoin="round"/>
                                 <path d="M15.8555 6.57031L21.4267 12.1416" stroke="#646F7C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                             </svg>
@@ -123,10 +128,22 @@ const EditProfilePage = () => {
             </div>
             {/* 하단 버튼 */}
             <div className="pt-10 flex justify-center">
-                <button className="w-64 py-7 bg-[var(--color-mint-0)] text-white rounded-2xl body-b0-bd shadow-lg hover:bg-[#6fc2c2] transition-all">
+                <button className="w-64 py-7 bg-[var(--color-mint-0)] text-white rounded-2xl body-b0-bd cursor-pointer">
                     수정하기
                 </button>
             </div>
+            {isNicknameModalOpen && (
+              <NicknameModal
+                isOpen={isNicknameModalOpen}
+                currentNickname={nickname} 
+                onClose={() => setIsNicknameModalOpen(false)} 
+                onSave={(newNickname: string) => {
+                    setNickname(newNickname);
+                    setIsNicknameModalOpen(false);
+                }}
+            />
+)}
+
         </div>
     );
 };
