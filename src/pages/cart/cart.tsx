@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import Layout from '../../components/layout/PageLayout';
 import Checkbox from '../../components/common/Checkbox/Checkbox';
 import Button from '../../components/common/Button/button1';
@@ -49,6 +50,7 @@ const INITIAL_PRODUCTS: CartProduct[] = [
 ];
 
 const Cart = () => {
+  const navigate = useNavigate();
   const sellers = INITIAL_SELLERS;
   const initialProducts = INITIAL_PRODUCTS;
 
@@ -72,6 +74,52 @@ const Cart = () => {
     initialProducts,
     sellers,
   });
+
+  // 장바구니가 비어있을 때 빈 상태 표시
+  if (products.length === 0) {
+    return (
+      <Layout
+        showHeader={true}
+        showNavbar={true}
+        showFooter={true}
+        footerVariant="light"
+      >
+        <div className="bg-[var(--color-gray-20)] pb-[119px]">
+          <div className="px-[50px] pt-[30px]">
+            <h1 className="pt-[10px] pb-[22px] heading-h4-bd">장바구니</h1>
+          </div>
+          <div className="min-h-[600px] flex items-center justify-center">
+            <div className="flex flex-col items-center gap-[30px]">
+              <div className="flex flex-col items-center gap-[12px]">
+                <p className="body-b0-sb text-[var(--color-gray-60)]">
+                  장바구니에 담긴 상품이 없습니다.
+                </p>
+                <p className="body-b1-rg text-[var(--color-gray-50)]">
+                  원하는 상품을 담아보세요!
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                className="!px-[40px] !py-[18px] body-b0-bd flex items-center gap-[8px]"
+                onClick={() => navigate('/*추후 라우팅 추가*/')}
+              >
+                마켓 둘러보기
+                <img
+                  src={rightIcon}
+                  alt=""
+                  className="w-10 h-10 pb-1"
+                  style={{
+                    filter: 'brightness(0) saturate(100%) invert(100%)',
+                  }}
+                />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout
       showHeader={true}
@@ -111,14 +159,14 @@ const Cart = () => {
 
             {/* 박스 영역 */}
             <div className=" flex flex-col gap-[21px]">
-              {cartSellers.map((seller) => {
+              {cartSellers.map((seller: CartSeller) => {
                 const sellerProducts = products.filter(
-                  (p) => p.sellerId === seller.id
+                  (p: CartProduct) => p.sellerId === seller.id
                 );
                 if (sellerProducts.length === 0) return null;
 
                 const sellerIndex = cartSellers.findIndex(
-                  (s) => s.id === seller.id
+                  (s: CartSeller) => s.id === seller.id
                 );
 
                 return (
@@ -150,83 +198,87 @@ const Cart = () => {
                       </div>
                     </div>
                     {/* 상품 아이템들 */}
-                    {sellerProducts.map((product, productIndex) => {
-                      const productIndexInAll = products.findIndex(
-                        (p) => p.id === product.id
-                      );
-                      return (
-                        <div
-                          key={product.id}
-                          className={`px-[31px] pt-[23px] pb-[30px] flex gap-[20px] items-start ${
-                            productIndex > 0
-                              ? 'border-t border-[var(--color-line-gray-40)]'
-                              : ''
-                          }`}
-                        >
-                          <div className="pt-[2px]">
-                            <Checkbox
-                              checked={itemChecked[productIndexInAll] || false}
-                              onChange={(checked) =>
-                                handleItemCheck(productIndexInAll, checked)
-                              }
-                            />
-                          </div>
-                          <img
-                            src={product.imageUrl || productImage}
-                            alt="상품 이미지"
-                            className="w-[150px] h-[150px]  object-cover flex-shrink-0"
-                          />
-                          <div className="flex-1 flex flex-col gap-[12px]">
-                            <div className="flex items-start justify-between gap-[12px]">
-                              <div className="body-b1-rg flex-1">
-                                {product.name}
-                              </div>
-                              <button
-                                className="cursor-pointer flex-shrink-0"
-                                onClick={() => deleteProduct(product.id)}
-                              >
-                                <img
-                                  src={xIcon}
-                                  alt="삭제"
-                                  className="w-10 h-10"
-                                  style={{
-                                    filter:
-                                      'brightness(0) saturate(100%) invert(40%) sepia(8%) saturate(1000%) hue-rotate(180deg) brightness(95%) contrast(85%)',
-                                  }}
-                                />
-                              </button>
-                            </div>
-                            <div className="body-b1-rg text-[var(--color-gray-50)]">
-                              {product.option}
-                            </div>
-                            <div className="flex items-center justify-between mt-auto">
-                              <OptionQuantity
-                                quantity={quantities[productIndexInAll] || 1}
-                                onIncrease={() =>
-                                  handleQuantityChange(
-                                    productIndexInAll,
-                                    quantities[productIndexInAll] + 1
-                                  )
+                    {sellerProducts.map(
+                      (product: CartProduct, productIndex: number) => {
+                        const productIndexInAll = products.findIndex(
+                          (p: CartProduct) => p.id === product.id
+                        );
+                        return (
+                          <div
+                            key={product.id}
+                            className={`px-[31px] pt-[23px] pb-[30px] flex gap-[20px] items-start ${
+                              productIndex > 0
+                                ? 'border-t border-[var(--color-line-gray-40)]'
+                                : ''
+                            }`}
+                          >
+                            <div className="pt-[2px]">
+                              <Checkbox
+                                checked={
+                                  itemChecked[productIndexInAll] || false
                                 }
-                                onDecrease={() =>
-                                  handleQuantityChange(
-                                    productIndexInAll,
-                                    quantities[productIndexInAll] - 1
-                                  )
+                                onChange={(checked) =>
+                                  handleItemCheck(productIndexInAll, checked)
                                 }
                               />
-                              <div className="body-b0-bd">
-                                {(
-                                  product.price *
-                                  (quantities[productIndexInAll] || 1)
-                                ).toLocaleString()}
-                                원
+                            </div>
+                            <img
+                              src={product.imageUrl || productImage}
+                              alt="상품 이미지"
+                              className="w-[150px] h-[150px]  object-cover flex-shrink-0"
+                            />
+                            <div className="flex-1 flex flex-col gap-[12px]">
+                              <div className="flex items-start justify-between gap-[12px]">
+                                <div className="body-b1-rg flex-1">
+                                  {product.name}
+                                </div>
+                                <button
+                                  className="cursor-pointer flex-shrink-0"
+                                  onClick={() => deleteProduct(product.id)}
+                                >
+                                  <img
+                                    src={xIcon}
+                                    alt="삭제"
+                                    className="w-10 h-10"
+                                    style={{
+                                      filter:
+                                        'brightness(0) saturate(100%) invert(40%) sepia(8%) saturate(1000%) hue-rotate(180deg) brightness(95%) contrast(85%)',
+                                    }}
+                                  />
+                                </button>
+                              </div>
+                              <div className="body-b1-rg text-[var(--color-gray-50)]">
+                                {product.option}
+                              </div>
+                              <div className="flex items-center justify-between mt-auto">
+                                <OptionQuantity
+                                  quantity={quantities[productIndexInAll] || 1}
+                                  onIncrease={() =>
+                                    handleQuantityChange(
+                                      productIndexInAll,
+                                      quantities[productIndexInAll] + 1
+                                    )
+                                  }
+                                  onDecrease={() =>
+                                    handleQuantityChange(
+                                      productIndexInAll,
+                                      quantities[productIndexInAll] - 1
+                                    )
+                                  }
+                                />
+                                <div className="body-b0-bd">
+                                  {(
+                                    product.price *
+                                    (quantities[productIndexInAll] || 1)
+                                  ).toLocaleString()}
+                                  원
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      }
+                    )}
                   </div>
                 );
               })}

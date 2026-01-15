@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import chat from '../../../assets/icons/chat.svg';
 import heart from '../../../assets/icons/heart.svg';
 import shoppingCart from '../../../assets/icons/shoppingCart.svg';
@@ -186,9 +187,9 @@ export default function Header() {
           <button className="cursor-pointer">
             <img src={heart} alt="heart" />
           </button>
-          <button className="cursor-pointer">
+          <Link to="/cart" className="cursor-pointer">
             <img src={shoppingCart} alt="shopping cart" />
-          </button>
+          </Link>
           <div className="relative" ref={profileRef}>
             <button
               className="cursor-pointer"
