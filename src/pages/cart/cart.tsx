@@ -84,13 +84,15 @@ const Cart = () => {
         showFooter={true}
         footerVariant="light"
       >
-        <div className="bg-[var(--color-gray-20)] pb-[119px]">
-          <div className="px-[50px] pt-[30px]">
-            <h1 className="pt-[10px] pb-[22px] heading-h4-bd">장바구니</h1>
+        <div className="bg-[var(--color-gray-20)] pb-[7.4375rem]">
+          <div className="px-[3.125rem] pt-[1.875rem]">
+            <h1 className="pt-[0.625rem] pb-[1.375rem] heading-h4-bd">
+              장바구니
+            </h1>
           </div>
-          <div className="min-h-[600px] flex items-center justify-center">
-            <div className="flex flex-col items-center gap-[30px]">
-              <div className="flex flex-col items-center gap-[12px]">
+          <div className="min-h-[37.5rem] flex items-center justify-center">
+            <div className="flex flex-col items-center gap-[1.875rem]">
+              <div className="flex flex-col items-center gap-[0.75rem]">
                 <p className="body-b0-sb text-[var(--color-gray-60)]">
                   장바구니에 담긴 상품이 없습니다.
                 </p>
@@ -100,7 +102,7 @@ const Cart = () => {
               </div>
               <Button
                 variant="primary"
-                className="!px-[40px] !py-[18px] body-b0-bd flex items-center gap-[8px]"
+                className="!px-[2.5rem] !py-[1.125rem] body-b0-bd flex items-center gap-[0.5rem]"
                 onClick={() => navigate('/*추후 라우팅 추가*/')}
               >
                 마켓 둘러보기
@@ -127,21 +129,23 @@ const Cart = () => {
       showFooter={true}
       footerVariant="light"
     >
-      <div className="bg-[var(--color-gray-20)] pb-[119px]">
-        <div className="px-[50px] pt-[30px]">
-          <h1 className="pt-[10px] pb-[22px] heading-h4-bd">장바구니</h1>
+      <div className="bg-[var(--color-gray-20)] pb-[7.4375rem]">
+        <div className="px-[3.125rem] pt-[1.875rem]">
+          <h1 className="pt-[0.625rem] pb-[1.375rem] heading-h4-bd">
+            장바구니
+          </h1>
         </div>
 
-        <div className="px-[50px] flex gap-[20px] flex-row">
-          <div className="flex-1 h-[910px] pt-[18px] flex flex-col gap-[12px]">
+        <div className="px-[3.125rem] flex gap-[1.25rem] flex-row">
+          <div className="flex-1 h-[56.875rem] pt-[1.125rem] flex flex-col gap-[0.75rem]">
             {/* 선택 바 영역 */}
-            <div className=" h-[40px] flex items-center justify-between">
+            <div className=" h-[2.5rem] flex items-center justify-between">
               {/* 체크박스쪽 */}
-              <div className=" pt-[18px] pb-[12px] h-[40px] flex items-center gap-[11px]">
-                <div className="py-[2px]">
+              <div className=" pt-[1.125rem] pb-[0.75rem] h-[2.5rem] flex items-center gap-[0.6875rem]">
+                <div className="py-[0.125rem]">
                   <Checkbox checked={isAllChecked} onChange={handleAllCheck} />
                 </div>
-                <h1 className="my-[5px] body-b0-rg">
+                <h1 className="my-[0.3125rem] body-b0-rg">
                   전체 선택 ({checkedCount}/{totalItems})
                 </h1>
               </div>
@@ -149,7 +153,7 @@ const Cart = () => {
               <div>
                 <Button
                   variant="white"
-                  className="!w-[113px] !h-[40px] px-0  py-0 body-b0-rg !text-[var(--color-gray-50)] whitespace-nowrap"
+                  className="!w-[7.0625rem] !h-[2.5rem] px-0  py-0 body-b0-rg !text-[var(--color-gray-50)] whitespace-nowrap"
                   onClick={deleteSelected}
                 >
                   선택 삭제
@@ -158,7 +162,7 @@ const Cart = () => {
             </div>
 
             {/* 박스 영역 */}
-            <div className=" flex flex-col gap-[21px]">
+            <div className=" flex flex-col gap-[1.3125rem]">
               {cartSellers.map((seller: CartSeller) => {
                 const sellerProducts = products.filter(
                   (p: CartProduct) => p.sellerId === seller.id
@@ -175,8 +179,8 @@ const Cart = () => {
                     className="bg-[var(--color-white)] rounded-[10px] border border-[var(--color-line-gray-40)] flex flex-col"
                   >
                     {/* 판매자 헤더 */}
-                    <div className="px-[31px] pt-[23px] pb-[18px] flex items-center justify-between border-b border-[var(--color-line-gray-40)]">
-                      <div className="flex items-center gap-[11px]">
+                    <div className="px-[1.9375rem] pt-[1.4375rem] pb-[1.125rem] flex items-center justify-between border-b border-[var(--color-line-gray-40)]">
+                      <div className="flex items-center gap-[0.6875rem]">
                         <Checkbox
                           checked={sellerChecked[sellerIndex] || false}
                           onChange={(checked) =>
@@ -190,7 +194,7 @@ const Cart = () => {
                           className="pb-1 w-10 h-10"
                         />
                       </div>
-                      <div className="flex items-center gap-[6px]">
+                      <div className="flex items-center gap-[0.375rem]">
                         <img src={truckIcon} alt="배송" className="w-10 h-10" />
                         <span className="body-b0-md text-[var(--color-gray-50)]">
                           {seller.shippingText}
@@ -206,13 +210,13 @@ const Cart = () => {
                         return (
                           <div
                             key={product.id}
-                            className={`px-[31px] pt-[23px] pb-[30px] flex gap-[20px] items-start ${
+                            className={`px-[1.9375rem] pt-[1.4375rem] pb-[1.875rem] flex gap-[1.25rem] items-start ${
                               productIndex > 0
                                 ? 'border-t border-[var(--color-line-gray-40)]'
                                 : ''
                             }`}
                           >
-                            <div className="pt-[2px]">
+                            <div className="pt-[0.125rem]">
                               <Checkbox
                                 checked={
                                   itemChecked[productIndexInAll] || false
@@ -225,10 +229,10 @@ const Cart = () => {
                             <img
                               src={product.imageUrl || productImage}
                               alt="상품 이미지"
-                              className="w-[150px] h-[150px]  object-cover flex-shrink-0"
+                              className="w-[9.375rem] h-[9.375rem]  object-cover flex-shrink-0"
                             />
-                            <div className="flex-1 flex flex-col gap-[12px]">
-                              <div className="flex items-start justify-between gap-[12px]">
+                            <div className="flex-1 flex flex-col gap-[0.75rem]">
+                              <div className="flex items-start justify-between gap-[0.75rem]">
                                 <div className="body-b1-rg flex-1">
                                   {product.name}
                                 </div>
@@ -285,10 +289,10 @@ const Cart = () => {
             </div>
           </div>
           {/* 옆에 결제 영역 */}
-          <div className="gap-[23px] flex-shrink-0 w-[423px] h-[478px]  mt-[70px] flex flex-col">
-            <div className="flex flex-col gap-[27px] px-[38px] py-[37px] bg-[var(--color-white)]  rounded-[10px] border border-[var(--color-line-gray-40)]">
+          <div className="gap-[1.4375rem] flex-shrink-0 w-[26.4375rem] h-[29.875rem]  mt-[4.375rem] flex flex-col">
+            <div className="flex flex-col gap-[1.6875rem] px-[2.375rem] py-[2.3125rem] bg-[var(--color-white)]  rounded-[10px] border border-[var(--color-line-gray-40)]">
               <div className="heading-h5-sb">결제금액</div>
-              <div className="flex flex-col gap-[9px] pb-[33px] border-b border-[var(--color-line-gray-40)]">
+              <div className="flex flex-col gap-[0.5625rem] pb-[2.0625rem] border-b border-[var(--color-line-gray-40)]">
                 <div className="flex justify-between body-b0-sb text-[var(--color-gray-50)]">
                   <div>상품 금액</div>
                   <div>{payment.productTotal.toLocaleString()}원</div>
@@ -306,7 +310,10 @@ const Cart = () => {
               </div>
             </div>
 
-            <Button variant="primary" className="!w-full !h-[60px] body-b0-bd">
+            <Button
+              variant="primary"
+              className="!w-full !h-[3.75rem] body-b0-bd"
+            >
               결제하기
             </Button>
           </div>
