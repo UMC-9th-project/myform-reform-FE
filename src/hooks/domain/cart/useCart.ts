@@ -1,5 +1,9 @@
 import { useState, useMemo, useCallback } from 'react';
-import type { CartProduct, CartSeller, PaymentSummary } from '../types/cart';
+import type {
+  CartProduct,
+  CartSeller,
+  PaymentSummary,
+} from '../../../types/domain/cart/cart';
 
 interface UseCartProps {
   initialProducts: CartProduct[];
