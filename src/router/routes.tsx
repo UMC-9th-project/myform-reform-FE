@@ -4,7 +4,7 @@ import Test from '../pages/Test';
 // 회원가입
 import Signup from '../pages/Signup/Signup';
 import SignupIndex from '../pages/Signup/SignupIndex';
-import UserTypeSelection from '../pages/Signup/UserTypeSelection';
+import SignupTypeSelection from '../pages/Signup/SignupTypeSelection';
 import SignupFormCustomer from '../pages/Signup/SignupFormCustomer';
 
 export const routes = [
@@ -22,7 +22,7 @@ export const routes = [
       },
       {
         path: 'type',
-        element: <UserTypeSelection />,
+        element: <SignupTypeSelection />,
       },
       {
         path: 'form-customer',
