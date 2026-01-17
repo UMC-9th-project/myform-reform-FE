@@ -4,16 +4,20 @@ import WishlistSidebar from '../../components/domain/wishlist/WishlistSidebar';
 import WishlistItemCard from '../../components/domain/wishlist/WishlistItemCard';
 import EmptyWishlist from '../../components/domain/wishlist/EmptyWishlist';
 import type { WishlistItem } from '../../components/domain/wishlist/types';
-import wsh1 from '../../components/domain/wishlist/wsh1.jpg';
-import wsh2 from '../../components/domain/wishlist/wsh2.jpg';
-import wsh3 from '../../components/domain/wishlist/wsh3.jpg';
-import wsh4 from '../../components/domain/wishlist/wsh4.jpg';
-import wsh5 from '../../components/domain/wishlist/wsh5.jpg';
+
+// 이미지 URL - public 폴더의 이미지 사용
+const IMAGE_URLS = {
+  wsh1: '/wsh1.jpg',
+  wsh2: '/wsh2.jpg',
+  wsh3: '/wsh3.jpg',
+  wsh4: '/wsh4.jpg',
+  wsh5: '/wsh5.jpg',
+};
 
 const MOCK_WISHLIST_ITEMS: WishlistItem[] = [
   {
     id: 1,
-    image: wsh1,
+    image: IMAGE_URLS.wsh1,
     title:
       '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니...',
     price: 75000,
@@ -23,7 +27,7 @@ const MOCK_WISHLIST_ITEMS: WishlistItem[] = [
   },
   {
     id: 2,
-    image: wsh2,
+    image: IMAGE_URLS.wsh2,
     title:
       '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니...',
     price: 75000,
@@ -33,7 +37,7 @@ const MOCK_WISHLIST_ITEMS: WishlistItem[] = [
   },
   {
     id: 3,
-    image: wsh3,
+    image: IMAGE_URLS.wsh3,
     title:
       '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니...',
     price: 75000,
@@ -43,7 +47,7 @@ const MOCK_WISHLIST_ITEMS: WishlistItem[] = [
   },
   {
     id: 4,
-    image: wsh4,
+    image: IMAGE_URLS.wsh4,
     title:
       '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니...',
     price: 75000,
@@ -56,7 +60,7 @@ const MOCK_WISHLIST_ITEMS: WishlistItem[] = [
 const MOCK_CUSTOM_ITEMS: WishlistItem[] = [
   {
     id: 1,
-    image: wsh5,
+    image: IMAGE_URLS.wsh5,
     title:
       '제 소중한 기아 쿠로미 유니폼 짐색으로 만 들어주실 리폼 장인을 찾아요',
     price: 30000,
@@ -66,7 +70,7 @@ const MOCK_CUSTOM_ITEMS: WishlistItem[] = [
   },
   {
     id: 2,
-    image: wsh5,
+    image: IMAGE_URLS.wsh5,
     title:
       '제 소중한 기아 쿠로미 유니폼 짐색으로 만 들어주실 리폼 장인을 찾아요',
     price: 30000,
@@ -76,7 +80,7 @@ const MOCK_CUSTOM_ITEMS: WishlistItem[] = [
   },
   {
     id: 3,
-    image: wsh5,
+    image: IMAGE_URLS.wsh5,
     title:
       '제 소중한 기아 쿠로미 유니폼 짐색으로 만 들어주실 리폼 장인을 찾아요',
     price: 30000,
@@ -86,7 +90,7 @@ const MOCK_CUSTOM_ITEMS: WishlistItem[] = [
   },
   {
     id: 4,
-    image: wsh5,
+    image: IMAGE_URLS.wsh5,
     title:
       '제 소중한 기아 쿠로미 유니폼 짐색으로 만 들어주실 리폼 장인을 찾아요',
     price: 30000,
