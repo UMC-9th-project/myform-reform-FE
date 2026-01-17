@@ -1,4 +1,4 @@
-import type { CartProduct, CartSeller } from '../types/domain/cart/cart';
+import type { CartProduct, CartSeller } from '../../types/domain/cart/cart';
 
 /**
  판매자별로 상품을 그룹화
