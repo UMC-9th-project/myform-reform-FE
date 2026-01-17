@@ -8,9 +8,15 @@ import Highlight from '@tiptap/extension-highlight';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
+import Button from '../../common/Button/button1';
 
 
-const ReformDescription = () => {
+type DescriptionEditorProps = {
+  type: 'order' | 'sale'
+  onSubmit: (html: string) => void; // 등록 버튼 클릭 시
+};
+
+const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ type, onSubmit }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -55,11 +61,19 @@ const ReformDescription = () => {
     reader.readAsDataURL(file);
   };
 
+  const handleSubmit = () => {
+  if (!editor) return; // editor 준비 안 되었으면 무시
+  const html = editor.getHTML();
+  onSubmit(html); // 부모에 전달
+};
+
   return (
     <div className="max-w-7xl mx-auto p-6 bg-white rounded-lg">
       {/* 헤더 */}
       <div className="flex justify-between items-center mb-4">
-        <h2 className="heading-h2-bd text-black">리폼 설명 등록하기</h2>
+        <h2 className="heading-h2-bd text-black">
+            { type === 'sale' ? '상품 설명 등록하기' :
+                '리폼 설명 등록하기' }</h2>
       </div>
 
       <hr className="border-black mb-4" />
@@ -93,12 +107,7 @@ const ReformDescription = () => {
             </span>
           </button>
 
-          <button
-            onClick={() => console.log(editor.getHTML())}
-            className="bg-[var(--color-mint-0)] text-white px-10 py-5 rounded-[0.625rem] body-b0-bd"
-          >
-            등록하기
-          </button>
+          <Button onClick={handleSubmit}>등록하기</Button>
         </div>
 
         <hr className="border-[var(--color-line-gray-40)]" />
@@ -171,4 +180,4 @@ const ReformDescription = () => {
   );
 };
 
-export default ReformDescription;
+export default DescriptionEditor;

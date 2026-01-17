@@ -1,74 +1,81 @@
 import React, { useState, useRef } from 'react';
 import { X, Plus } from 'lucide-react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import Option5, {type OptionGroup} from '../../components/domain/mypage/Option5';
-
+import Option5 from '../../components/domain/mypage/Option5';
+import { type OptionGroup } from '../../components/domain/mypage/Option5';
+import DescriptionEditor from '../../components/domain/mypage/DescriptionEditor';
+import Button from '../../components/common/Button/button1';
 
 type ImageType = {
   file: File;
   preview: string;
 };
 
-const RegisterSalesPost = () => {
+type CreatePageProps = {
+  type: 'order' | 'sale';
+};
+
+const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
   
   // --- 상태 관리 (Step 1 이미지용) ---
   const [images, setImages] = useState<ImageType[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [description, setDescription] = useState<string>(
-    () => location.state?.description ?? ''
-  );
+
+
+  // Step 2,4,5, 6 상태 추가
+  const [title, setTitle] = useState<string>('');
+  const [price, setPrice] = useState<string>(''); // string으로 받음
+  const [shippingFee, setShippingFee] = useState<string>(''); 
+  const [duration, setDuration] = useState<string>('');
+  const [category, setCategory] = useState<string>(''); // 선택 안 됐으면 빈 문자열
+  const [subCategory, setSubCategory] = useState<string>(''); // 소분류
+
+  const subCategoryMap: Record<string, string[]> = {
+  '의류': ['상의', '하의', '아우터', '기타'],
+  '잡화': ['가방·짐색', '지갑·파우치', '모자·캡·비니'],
+  '악세서리': ['헤어 악세서리', '폰케이스', '키링'],
+  '홈·리빙': ['패브릭 소품', '쿠션·방석'],
+  '기타': []
+};
+
   const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
   const optionGroupsIdRef = useRef(1);
   const subOptionIdRef = useRef(1);
-  const [subCategory, setSubCategory] = useState<string>(''); // 소분류
-  
-    const subCategoryMap: Record<string, string[]> = {
-    '의류': ['상의', '하의', '아우터', '기타'],
-    '잡화': ['가방', '신발', '모자', '기타'],
-    '악세서리': ['귀걸이', '목걸이', '반지', '기타'],
-    '홈·리빙': ['가구', '인테리어', '주방', '기타'],
-    '기타': ['기타']
-  }; 
+
+  const [showEditor, setShowEditor] = useState(false);
+  const [description, setDescription] = useState('');
 
 
-    // Step 2,4,5, 6 상태 추가
-    const [title, setTitle] = useState<string>('');
-    const [price, setPrice] = useState<string>(''); // string으로 받음
-    const [shippingFee, setShippingFee] = useState<string>(''); 
-    
-    const areOptionsValid = optionGroups.length > 0 &&
-        optionGroups.every(group => group.name.trim() !== '');
-    const [category, setCategory] = useState<string>(''); // 선택 안 됐으면 빈 문자열
-  
-  
-    // 버튼 활성화 조건
-    const isButtonEnabled = 
-      images.length > 0 &&
-      title.trim() !== '' &&
-      description.trim() !== '' &&
-      description.trim() !== '<p></p>' &&
-      price.trim() !== '' &&
-      shippingFee.trim() !== '' &&
-      areOptionsValid &&
-      category.trim() !== '';
-  
-      // 숫자에 콤마 추가
-      const formatNumberWithComma = (value: string) => {
-        const number = value.replace(/\D/g, ''); // 숫자만 추출
-        return number.replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 천 단위 콤마
-      };
+  const isStep5Filled = type === 'sale'
+  ? optionGroups.length > 0 // sale: 옵션 1개 이상
+  : duration.trim() !== '';  // order: 작업 기간 입력
+
+  const isButtonEnabled = 
+    images.length > 0 &&
+    title.trim() !== '' &&
+    description.trim() !== '' &&
+    description.trim() !== '<p></p>' &&
+    price.trim() !== '' &&
+    shippingFee.trim() !== '' &&
+    isStep5Filled &&   // 여기 바뀐 조건 반영
+    category.trim() !== '';
 
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-    const files = Array.from(e.target.files);
+    // 숫자에 콤마 추가
+    const formatNumberWithComma = (value: string) => {
+      const number = value.replace(/\D/g, ''); // 숫자만 추출
+      return number.replace(/\B(?=(\d{3})+(?!\d))/g, ','); // 천 단위 콤마
+    };
 
-    if (images.length + files.length > 5) {
-      alert("이미지는 최대 5장까지 등록 가능합니다.");
-      return;
-    }
+
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!e.target.files) return;
+      const files = Array.from(e.target.files);
+
+      if (images.length + files.length > 5) {
+        alert("이미지는 최대 5장까지 등록 가능합니다.");
+        return;
+      }
 
     const newImages = files.map(file => ({
       file,
@@ -79,14 +86,13 @@ const RegisterSalesPost = () => {
     e.target.value = ''; // 같은 파일 재업로드 가능하도록 초기화
   };
 
-  const removeImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
-  };
-
+    const removeImage = (index: number) => {
+      setImages(prev => prev.filter((_, i) => i !== index));
+    };
 
   return (
     <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
-      <h1 className="heading-h2-bd pb-6 border-b mb-8 border-[black]">판매글 등록하기</h1>
+      <h1 className="heading-h2-bd pb-6 border-b mb-8 border-[black]"> {type === 'order' ? '주문제작 글 등록하기' : '판매글 등록'}</h1>
 
       {/* Step 1: Image Upload */}
       <section className="mb-10">
@@ -157,14 +163,14 @@ const RegisterSalesPost = () => {
         <div className="flex">
           <div className="w-1/4">
             <h2 className="body-b0-md">Step 2.</h2>
-            <p className="body-b0-rg mt-1">판매글 제목 <span className="text-[var(--color-red-1)]">*</span></p>
+            <p className="body-b0-rg mt-1">글 제목 <span className="text-[var(--color-red-1)]">*</span></p>
           </div>
           <div className="w-3/4 relative">
             <input 
               type="text" 
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder="요청글 제목을 입력해주세요." 
+              placeholder="요청글 제목을 입력해주세요."
+              value = {title}
+              onChange={e => setTitle(e.target.value)} 
               className="placeholder:text-[var(--color-gray-50)] w-full border border-[var(--color-gray-60)] body-b1-rg p-5 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             <span className="absolute right-3 top-3 text-sm text-gray-400">0/40자</span>
@@ -174,74 +180,80 @@ const RegisterSalesPost = () => {
 
       <hr className="my-8 border-[var(--color-line-gray-40)]" />
 
-     {/* Step 3: Description */}
-    <section className="mb-10">
-      <div className="flex">
-        <div className="w-1/4">
-        <h2 className="body-b0-md">Step 3.</h2>
-        <p className="body-b0-rg mt-1">상세 내용 작성<span className="text-[var(--color-red-1)]">*</span></p>
-        </div>
-        <div className="w-3/4">
-        {/* 1. 부모 박스: relative를 추가하여 버튼의 기준점이 됩니다. */}
-        <div
-            className={`
-            border border-[var(--color-gray-60)]
-            h-[350px]
-            bg-white mt-6 p-6
-            relative 
-            ${!description || description.trim() === '<p></p>' || description.trim() === ''
-            ? 'flex items-center justify-center'
-            : 'block'
-            }
-            `}
-        >
-            {description && description.trim() !== '' && description.trim() !== '<p></p>' ? (
-            <>
-                <div
-                className="prose max-w-none body-b1-rg overflow-y-auto h-full"
-                dangerouslySetInnerHTML={{ __html: description }}
-                />
-
-                {/* 2. 버튼: absolute를 사용하여 우측 하단에 고정합니다. */}
-                <button
-                onClick={() => navigate('/description', { state: { description } })}
-                className="
-                    absolute bottom-4 right-4 z-10
-                    flex items-center gap-2
-                    bg-white border border-[var(--color-line-gray-40)]
-                    px-4 py-2
-                    rounded-[0.63rem]
-                    body-b2-rg
-                    hover:bg-gray-50
-                    shadow-md
-                    transition
-                "
-                >
-                <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 23.0755H5.7303L23.0755 5.7303L18.3446 1L1 18.3452V23.0755Z" stroke="#646F7C" strokeWidth="2" strokeLinejoin="round"/>
-                    <path d="M13.6133 5.73047L18.3436 10.4608" stroke="#646F7C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M10.3398 23.5H23.5002" stroke="#646F7C" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-                수정하기
-                </button>
-            </>
-            ) : (
-            /* 내용 없을 때 */
-            <div className="flex flex-col items-center justify-center">
-                <p className="body-b0-rg text-[var(--color-gray-50)] mb-4">등록된 내용이 없습니다.</p>
-                <button onClick={() => navigate('/description')} className="cursor-pointer border border-[var(--color-line-gray-40)] px-7 py-2 rounded-[0.625rem] flex flex-row gap-3"><svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 23.0755H5.7303L23.0755 5.7303L18.3446 1L1 18.3452V23.0755Z" stroke="#646F7C" stroke-width="2" stroke-linejoin="round"/>
-                    <path d="M13.6133 5.73047L18.3436 10.4608" stroke="#646F7C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M10.3398 23.5H23.5002" stroke="#646F7C" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
-                <span className='body-b1-rg text-[var(--color-gray-50)]'>글쓰기</span></button>
+      {/* Step3: Description */}
+        <section className="mb-10">
+        <div className="flex">
+            <div className="w-1/4">
+            <h2 className="body-b0-md">Step 3.</h2>
+            <p className="body-b0-rg mt-1">
+                상세 내용 작성<span className="text-[var(--color-red-1)]">*</span>
+            </p>
             </div>
+            <div className="w-3/4">
+            {/* 내용 영역 */}
+            <div
+                className={`border border-[var(--color-gray-60)] h-[350px] bg-white mt-6 p-6 relative ${
+                !description || description.trim() === '<p></p>' || description.trim() === ''
+                    ? 'flex items-center justify-center'
+                    : 'block'
+                }`}
+            >
+                {description && description.trim() !== '' && description.trim() !== '<p></p>' ? (
+                <>
+                    <div
+                    className="prose max-w-none body-b1-rg overflow-y-auto h-full"
+                    dangerouslySetInnerHTML={{ __html: description }}
+                    />
+                    <button
+                    onClick={() => setShowEditor(true)}
+                    className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white border border-[var(--color-line-gray-40)] px-4 py-2 rounded-[0.63rem] body-b2-rg hover:bg-gray-50 shadow-md transition"
+                    >
+                    <svg width="25" height="25" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 31.0755H13.7303L31.0755 13.7303L26.3446 9L9 26.3452V31.0755Z" stroke="#646F7C" stroke-width="2" stroke-linejoin="round"/>
+                        <path d="M21.6133 13.7305L26.3436 18.4608" stroke="#646F7C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M18.3398 31.5H31.5002" stroke="#646F7C" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+
+                    수정하기
+                    </button>
+                </>
+                ) : (
+                <div className="flex flex-col items-center justify-center">
+                    <p className="body-b1-rg text-[var(--color-gray-50)] mb-4">등록된 내용이 없습니다.</p>
+                    <button
+                    onClick={() => setShowEditor(true)}
+                    className="cursor-pointer border border-[var(--color-line-gray-40)] px-7 py-2 rounded-[0.625rem] flex flex-row gap-3"
+                    >
+                        <svg width="25" height="25" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 31.0755H13.7303L31.0755 13.7303L26.3446 9L9 26.3452V31.0755Z" stroke="#646F7C" stroke-width="2" stroke-linejoin="round"/>
+                            <path d="M21.6133 13.7305L26.3436 18.4608" stroke="#646F7C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M18.3398 31.5H31.5002" stroke="#646F7C" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+
+                    글쓰기
+                    </button>
+                </div>
+                )}
+            </div>
+
+            {/* 모달처럼 뜨는 에디터 */}
+            {showEditor && (
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-6">
+                <div className="bg-white w-full max-w-5xl h-[80vh] p-6 rounded-lg overflow-auto">
+                    <DescriptionEditor
+                        type={type}
+                        onSubmit={(html) => {
+                        setDescription(html); // Step3 상태 업데이트
+                        setShowEditor(false); // 에디터 닫기
+                    }}
+                    />
+                </div>
+                </div>
             )}
+            </div>
         </div>
-        ...
-        </div>
-    </div>
-    </section>
+        </section>
+
 
       <hr className="my-8 border-[var(--color-line-gray-40)]" />
 
@@ -282,35 +294,52 @@ const RegisterSalesPost = () => {
 
       <hr className="my-8 border-[var(--color-line-gray-40)]" />
 
-      <section className="mb-10">
+    {/* step 5: duration */}
+    <section className="mb-10">
         <div className="flex">
           <div className="w-1/4">
             <h2 className="body-b0-md">Step 5.</h2>
-            <p className="body-b0-rg mt-1">
-              옵션 입력 <span className="text-[var(--color-red-1)]">*</span>
-            </p>
-            <p className="body-b3-rg text-[var(--color-gray-50)] mt-1">
-              각 옵션별 수량이 0개가 되면<br />
-              품절 처리됩니다.
-            </p>
-          </div>
-          <div className="w-3/4 space-y-6">
-            {/* 여기에 Option5 컴포넌트 삽입 */}
+            {type === 'sale' ? (
+                <>
+                <p className="body-b0-rg mt-1">
+                    옵션 입력 <span className="text-[var(--color-red-1)]">*</span>
+                </p>
+                <p className="body-b3-rg text-[var(--color-gray-50)] mt-1">
+                    각 옵션별 수량이 0개가 되면<br />
+                    품절 처리됩니다.
+                </p>
+                </>
+            ) : <p className="body-b0-rg mt-1">예상 작업 기간 <span className="text-[var(--color-red-1)]">*</span></p>}           
+        </div>
+        <div className="w-3/4 space-y-4">
+        { type === 'sale' ? (
             <Option5
-              optionGroups={optionGroups}
-              setOptionGroups={setOptionGroups}
-              optionGroupIdRef={optionGroupsIdRef}
-              subOptionIdRef={subOptionIdRef}
+                optionGroups={optionGroups}
+                setOptionGroups={setOptionGroups}
+                optionGroupIdRef={optionGroupsIdRef}
+                subOptionIdRef={subOptionIdRef}
             />
+        ) : (
+          <div>
+            <div className="flex items-center border border-[var(--color-gray-50)] p-5">
+              <input 
+                type="text"
+                value ={duration}
+                onChange={e => setDuration(e.target.value)} 
+                placeholder="예상되는 작업 소요 기간을 기재해주세요" 
+                className="placeholder:text-[var(--color-gray-50)] flex-1 body-b1-rg text-[var(--color-gray-50)] outline-none bg-transparent" 
+              />
+              <span className="body-b1-rg text-[v요r(--color-gray-50)] ml-2">일 이내</span>
+            </div>
+          </div>
+        )}
           </div>
         </div>
       </section>
 
-
     <hr className="my-8 border-[var(--color-line-gray-40)]" />
-
-
-  {/* Step 6: Category */}
+    
+    {/* Step 6: Category */}
       <section className="mb-16">
         <div className="flex">
           <div className="w-1/4">
@@ -361,20 +390,19 @@ const RegisterSalesPost = () => {
         </div>
       </section>
 
+
+
       <div className="flex justify-end">
-        <button 
-          className={`body-b0-bd rounded-[0.625rem] px-12 py-5 ${
-            isButtonEnabled 
-              ? 'bg-[var(--color-mint-0)] text-white cursor-pointer'
-              : 'bg-[var(--color-gray-30)] text-[var(--color-gray-50)] cursor-not-allowed'
-          }`}
-            disabled={!isButtonEnabled}
-          >
+        <Button
+            variant={isButtonEnabled ? 'primary' : 'disabled'}
+            >
             등록하기
-          </button>
+        </Button>
+
+
       </div>
     </div>
   );
 };
 
-export default RegisterSalesPost;
+export default CreatePage;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTabStore } from '../../../stores/tabStore';
+import { useSellerTabStore } from '../../../stores/tabStore';
 
 // --- 데이터 타입 ---
 interface ProductOrder {
@@ -26,7 +26,7 @@ interface ReformProposal {
 
 const OrderList = () => {
 
-  const { selectedOrderId, setSelectedOrderId } = useTabStore();
+  const { selectedOrderId, setSelectedOrderId } = useSellerTabStore();
 
   const handleDetailClick = (id:string) => {
     console.log('클릭된 ID:', id);

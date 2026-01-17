@@ -1,13 +1,19 @@
 import React from 'react';
 import MyPageTab from '../../components/domain/mypage/MyPageTab';
 import EditProfile from '../../components/domain/mypage/EditProfile';
-import EditProfileCard from '../../components/domain/mypage/EditProfileCard';
-import { useTabStore } from '../../stores/tabStore';
+import BaseProfileTabs from '../../components/domain/mypage/BaseProfileTabs';
 import OrderDetail from '../../components/domain/mypage/OrderDetail';
 import OrderList from '../../components/domain/mypage/OrderList';
+import { useSellerTabStore, type SellerTabType} from '../../stores/tabStore';
+
+const SELLER_TABS: readonly SellerTabType[] = [
+  '프로필 관리',
+  '판매 관리',
+  '수익 관리',
+];
 
 const ReformerMyPage = () => {
-  const { activeTab, selectedOrderId } = useTabStore();
+  const { activeTab, setActiveTab, selectedOrderId } = useSellerTabStore();
   
   // EditProfileCard가 표시되는 탭인지 확인
   const showEditProfileCard = activeTab === '프로필 관리';
@@ -18,7 +24,11 @@ const ReformerMyPage = () => {
         
         {/* 왼쪽: 사이드바 */}
         <aside className= "w-64 flex-shrink-0 px-5">
-          <MyPageTab />
+          <MyPageTab
+            tabs={SELLER_TABS}
+            activeTab={activeTab}
+            onChangeTab={setActiveTab}
+            displayName='침착한 대머리독수리' />
         </aside>
 
         {/* 메인 컨텐츠 영역 */}
@@ -31,7 +41,7 @@ const ReformerMyPage = () => {
           )}
 
           {/* 탭별 컨텐츠 */}
-          {activeTab === '프로필 관리' && <EditProfile />}
+          {activeTab === '프로필 관리' && <EditProfile mode={'edit'} />}
           {activeTab === '판매 관리' && (
             selectedOrderId? <OrderDetail /> : <OrderList />
           )}
@@ -40,7 +50,7 @@ const ReformerMyPage = () => {
       </div>
 
       {/* EditProfileCard는 showEditProfileCard일 때만 */}
-      {showEditProfileCard && <EditProfileCard />}
+      {showEditProfileCard && <BaseProfileTabs mode="edit" />}
     </div>
   );
 };
