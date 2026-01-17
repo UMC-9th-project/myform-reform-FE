@@ -48,7 +48,7 @@ const EditProfile = ({ mode }: { mode: 'edit' | 'view' }) => {
             {/* 아이콘 대신 들어가는 프로필 수정 버튼 */}
             {mode == 'edit' ? (
               <button className="px-7 py-5 bg-[var(--color-mint-0)] text-white font-bold rounded-lg hover:bg-[#71c2c2] transition-all shadow-sm"
-                onClick={() => navigate('경로 작성')}>
+                onClick={() => navigate('/reformer-profile-edit')}>
               프로필 수정
             </button>
             ) : (

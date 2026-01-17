@@ -4,9 +4,10 @@ import FolderPlusSource from '../../../assets/mypage/Folder plus.svg';
 
 interface UploadModalProps {
   onClose: () => void;
+  onFileSelected: (files: File[]) => void;
 }
 
-const UploadModal: React.FC<UploadModalProps> = ({ onClose }) => {
+const UploadModal: React.FC<UploadModalProps> = ({ onClose, onFileSelected }) => {
   // 2. 파일 입력창을 가리킬 '리모컨' 같은 변수를 만듭니다.
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -19,9 +20,11 @@ const UploadModal: React.FC<UploadModalProps> = ({ onClose }) => {
 
   // 4. 파일을 선택했을 때 실행될 함수 (나중에 서버에 올리는 로직이 들어갈 곳)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
+    const selectedFiles = Array.from(files);
+    onFileSelected(selectedFiles);
     onClose();
     
   };
@@ -59,6 +62,7 @@ const UploadModal: React.FC<UploadModalProps> = ({ onClose }) => {
             className="hidden" // 화면에는 보이지 않게 숨김
             accept="image/*,video/*" 
             title = "파일 입력창"
+            multiple
           />
 
           {/* 6. 실제 보이는 버튼 */}
