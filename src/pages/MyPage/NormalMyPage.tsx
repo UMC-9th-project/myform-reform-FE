@@ -1,6 +1,7 @@
 import React from 'react';
 import MyPageTab from '../../components/domain/mypage/MyPageTab';
 import { useUserTabStore, type UserTabType } from '../../stores/tabStore';
+import MyInfoPage from '../../components/domain/mypage/NormalMyPage/MyInfoPage';
 
 const USER_TABS: readonly UserTabType[] = [
   '내 정보',
@@ -28,12 +29,12 @@ const NormalMyPage = () => {
         {/* 오른쪽: 메인 영역 */}
         <main className="flex-1 px-5">
           {activeTab && (
-            <div className="heading-h4-bd pb-3.5 border-b border-black mt-1 mb-8">
+            <div className="heading-h4-bd pb-3.5 border-b border-black mt-1 mb-0">
               {activeTab}
             </div>
           )}
 
-          {activeTab === '내 정보' && <div>내 정보</div>}
+          {activeTab === '내 정보' && <MyInfoPage />}
           {activeTab === '내가 작성한 글' && <div>내가 작성한 글</div>}
           {activeTab === '구매 이력' && <div>구매 이력</div>}
           {activeTab === '나의 후기' && <div>나의 후기</div>}
