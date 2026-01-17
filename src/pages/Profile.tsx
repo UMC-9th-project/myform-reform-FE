@@ -27,16 +27,15 @@ const Profile = () => {
 
   useEffect(() => {
     setMode('view');
-  }, [setMode])
-  
+  }, [setMode]);
+
   return (
     <>
-    <div className="max-w-6xl mx-auto bg-white p-5 rounded-xl font-sans">
-      <EditProfile mode={"view"} />
-      {/* 전체를 2컬럼 레이아웃으로 변경: [프로필 사진] | [나머지 모든 콘텐츠] */}
-      
-    </div>
-    <BaseProfileTabs />
+      <div className="max-w-6xl mx-auto bg-white p-5 rounded-xl font-sans">
+        <EditProfile mode={'view'} />
+        {/* 전체를 2컬럼 레이아웃으로 변경: [프로필 사진] | [나머지 모든 콘텐츠] */}
+      </div>
+      <BaseProfileTabs />
     </>
   );
 };

@@ -1,4 +1,3 @@
-import Layout from '../../components/layout/PageLayout';
 import CartContent from '../../components/domain/cart/CartContent';
 import EmptyCart from '../../components/domain/cart/EmptyCart';
 import { useCart } from '../../hooks/domain/cart/useCart';
@@ -74,43 +73,34 @@ const Cart = () => {
   };
 
   return (
-    <Layout
-      showHeader={true}
-      showNavbar={true}
-      showFooter={true}
-      footerVariant="light"
-    >
-      <div className="bg-[var(--color-gray-20)] pb-[7.4375rem]">
-        <div className="px-[3.125rem] pt-[1.875rem]">
-          <h1 className="pt-[0.625rem] pb-[1.375rem] heading-h4-bd">
-            장바구니
-          </h1>
-        </div>
-
-        {products.length === 0 ? (
-          <EmptyCart />
-        ) : (
-          <CartContent
-            sellers={cartSellers}
-            products={products}
-            quantities={quantities}
-            sellerChecked={sellerChecked}
-            itemChecked={itemChecked}
-            totalItems={totalItems}
-            checkedCount={checkedCount}
-            isAllChecked={isAllChecked}
-            payment={payment}
-            onAllCheck={handleAllCheck}
-            onSellerCheck={handleSellerCheck}
-            onItemCheck={handleItemCheck}
-            onQuantityChange={handleQuantityChange}
-            onDeleteProduct={deleteProduct}
-            onDeleteSelected={deleteSelected}
-            onCheckout={handleCheckout}
-          />
-        )}
+    <div className="bg-[var(--color-gray-20)] pb-[7.4375rem]">
+      <div className="px-[3.125rem] pt-[1.875rem]">
+        <h1 className="pt-[0.625rem] pb-[1.375rem] heading-h4-bd">장바구니</h1>
       </div>
-    </Layout>
+
+      {products.length === 0 ? (
+        <EmptyCart />
+      ) : (
+        <CartContent
+          sellers={cartSellers}
+          products={products}
+          quantities={quantities}
+          sellerChecked={sellerChecked}
+          itemChecked={itemChecked}
+          totalItems={totalItems}
+          checkedCount={checkedCount}
+          isAllChecked={isAllChecked}
+          payment={payment}
+          onAllCheck={handleAllCheck}
+          onSellerCheck={handleSellerCheck}
+          onItemCheck={handleItemCheck}
+          onQuantityChange={handleQuantityChange}
+          onDeleteProduct={deleteProduct}
+          onDeleteSelected={deleteSelected}
+          onCheckout={handleCheckout}
+        />
+      )}
+    </div>
   );
 };
 

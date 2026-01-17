@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import chat from '../../../assets/icons/chat.svg';
 import heart from '../../../assets/icons/heart.svg';
 import shoppingCart from '../../../assets/icons/shoppingCart.svg';
@@ -15,6 +15,7 @@ import logo from '../../../assets/logos/logo.svg';
 type UserType = 'customer' | 'seller';
 
 export default function Header() {
+  const navigate = useNavigate();
   const [userType, setUserType] = useState<UserType>('seller');
   const [searchValue, setSearchValue] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -84,6 +85,7 @@ export default function Header() {
   const handleModeSwitch = () => {
     setUserType(userType === 'seller' ? 'customer' : 'seller');
     setIsProfileOpen(false);
+    navigate('/');
   };
 
   return (
@@ -210,7 +212,13 @@ export default function Header() {
                   <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]"></div>
 
                   <div className="px-[1.25rem]">
-                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer">
+                    <button
+                      onClick={() => {
+                        navigate('/reformer-mypage');
+                        setIsProfileOpen(false);
+                      }}
+                      className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer"
+                    >
                       프로필 관리
                     </button>
 

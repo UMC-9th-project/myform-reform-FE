@@ -2,7 +2,8 @@ import Checkbox from '../../../components/common/Checkbox/Checkbox';
 import OptionQuantity from '../product/option/option-quantity-button/OptionQuantity';
 import type { CartProduct } from '../../../types/domain/cart/cart';
 import xIcon from '../../../assets/icons/x.svg';
-import productImage from '../product/exImage/e3.jpg';
+
+const productImage = '/images/e3.jpg';
 
 interface CartItemProps {
   product: CartProduct;

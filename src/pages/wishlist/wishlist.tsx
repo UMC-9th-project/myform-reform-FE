@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Layout from '../../components/layout/PageLayout';
 import WishlistSidebar from '../../components/domain/wishlist/WishlistSidebar';
 import WishlistItemCard from '../../components/domain/wishlist/WishlistItemCard';
 import EmptyWishlist from '../../components/domain/wishlist/EmptyWishlist';
@@ -127,43 +126,36 @@ const Wishlist = () => {
   const currentItems = wishlistItems;
 
   return (
-    <Layout
-      showHeader={true}
-      showNavbar={true}
-      showFooter={true}
-      footerVariant="light"
-    >
-      <div className="bg-white pb-[7.4375rem]">
-        <div className="px-[3.125rem] pt-[1.875rem]"></div>
+    <div className="bg-white pb-[7.4375rem]">
+      <div className="px-[3.125rem] pt-[1.875rem]"></div>
 
-        {/* 위시리스트 컨텐츠 영역 */}
-        <div className="px-[3.125rem]">
-          <div className="flex gap-[1.875rem]">
-            <WishlistSidebar
-              activeMenu={activeMenu}
-              onMenuChange={handleMenuChange}
-            />
+      {/* 위시리스트 컨텐츠 영역 */}
+      <div className="px-[3.125rem]">
+        <div className="flex gap-[1.875rem]">
+          <WishlistSidebar
+            activeMenu={activeMenu}
+            onMenuChange={handleMenuChange}
+          />
 
-            {/* 메인 콘텐츠 영역 */}
-            <div className="flex-1">
-              {currentItems.length === 0 ? (
-                <EmptyWishlist />
-              ) : (
-                <div className="grid grid-cols-3 gap-[1.875rem] mt-[3.125rem]">
-                  {currentItems.map((item) => (
-                    <WishlistItemCard
-                      key={item.id}
-                      item={item}
-                      onRemove={handleRemoveFromWishlist}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+          {/* 메인 콘텐츠 영역 */}
+          <div className="flex-1">
+            {currentItems.length === 0 ? (
+              <EmptyWishlist />
+            ) : (
+              <div className="grid grid-cols-3 gap-[1.875rem] mt-[3.125rem]">
+                {currentItems.map((item) => (
+                  <WishlistItemCard
+                    key={item.id}
+                    item={item}
+                    onRemove={handleRemoveFromWishlist}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 

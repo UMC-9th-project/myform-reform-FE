@@ -15,7 +15,6 @@ const NormalMyPage = () => {
   return (
     <div className="w-full min-h-screen bg-white">
       <div className="max-w-8xl mx-auto px-0 py-0 flex gap-3 items-stretch">
-        
         {/* 왼쪽: 사이드바 */}
         <aside className="w-64 flex-shrink-0 px-5">
           <MyPageTab
@@ -37,7 +36,7 @@ const NormalMyPage = () => {
           {activeTab === '내 정보' && <div>내 정보</div>}
           {activeTab === '내가 작성한 글' && <div>내가 작성한 글</div>}
           {activeTab === '구매 이력' && <div>구매 이력</div>}
-          {activeTab === '나의 후기' && <div>나의 후기</div>} 
+          {activeTab === '나의 후기' && <div>나의 후기</div>}
         </main>
       </div>
     </div>

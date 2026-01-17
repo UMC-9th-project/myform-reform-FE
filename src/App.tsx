@@ -1,27 +1,44 @@
 import { Routes, Route } from 'react-router-dom';
+import Layout from './components/layout/PageLayout';
 import Home from './pages/Home';
-import Test from './pages/Test';
 import Cart from './pages/cart/cart';
 import Wishlist from './pages/wishlist/wishlist';
+import ReformerMyPage from './pages/MyPage-Reform/ReformerMyPage';
+import CreatePage from './pages/MyPage-Reform/CreatePage';
+import EditProfilePage from './pages/MyPage-Reform/EditProfilePage';
+import Profile from './pages/Profile';
+import NormalMyPage from './pages/MyPage/NormalMyPage';
 
 function App() {
   return (
-    <Routes>
-      {/* 기본 홈 */}
-      <Route path="/" element={<Home />} />
+    <Layout
+      showHeader={true}
+      showNavbar={true}
+      showFooter={true}
+      footerVariant="light"
+    >
+      <Routes>
+        {/* 기본 홈 */}
+        <Route path="/" element={<Home />} />
 
-      {/* 임시 테스트용 */}
-      <Route path="/test" element={<Test />} />
+        {/* 카트 페이지 */}
+        <Route path="/cart" element={<Cart />} />
 
-      {/* 카트 페이지 */}
-      <Route path="/cart" element={<Cart />} />
+        <Route path="/profile" element={<Profile />} />
 
-      {/* 위시리스트 페이지 */}
-      <Route path="/wishlist" element={<Wishlist />} />
+        {/* 위시리스트 페이지 */}
+        <Route path="/wishlist" element={<Wishlist />} />
 
-      {/* 404 처리 */}
-      <Route path="*" element={<div>Not Found</div>} />
-    </Routes>
+        {/* 404 처리 */}
+        <Route path="*" element={<div>Not Found</div>} />
+        <Route path="reformer-mypage" element={<ReformerMyPage />} />
+        <Route path="/sales/create" element={<CreatePage type="sale" />} />
+        <Route path="/custom/create" element={<CreatePage type="order" />} />
+        <Route path="/reformer-profile-edit" element={<EditProfilePage />} />
+        <Route path="/normal-mypage" element={<NormalMyPage />} />
+        <Route path="/normal-profile-edit" element={<EditProfilePage />} />
+      </Routes>
+    </Layout>
   );
 }
 
