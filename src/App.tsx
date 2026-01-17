@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Test from './pages/Test';
 import Cart from './pages/cart/cart';
+import Wishlist from './pages/wishlist/wishlist';
 
 function App() {
   return (
@@ -14,6 +15,9 @@ function App() {
 
       {/* 카트 페이지 */}
       <Route path="/cart" element={<Cart />} />
+
+      {/* 위시리스트 페이지 */}
+      <Route path="/wishlist" element={<Wishlist />} />
 
       {/* 404 처리 */}
       <Route path="*" element={<div>Not Found</div>} />

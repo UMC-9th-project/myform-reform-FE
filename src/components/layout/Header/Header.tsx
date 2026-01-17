@@ -184,9 +184,9 @@ export default function Header() {
           <button className="cursor-pointer">
             <img src={chat} alt="chat" />
           </button>
-          <button className="cursor-pointer">
+          <Link to="/wishlist" className="cursor-pointer">
             <img src={heart} alt="heart" />
-          </button>
+          </Link>
           <Link to="/cart" className="cursor-pointer">
             <img src={shoppingCart} alt="shopping cart" />
           </Link>
