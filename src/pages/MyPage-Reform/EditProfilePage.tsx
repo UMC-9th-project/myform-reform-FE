@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import NicknameModal from '../../components/domain/mypage/NicknameModal';
+import Button from '../../components/common/Button/button1';
 
 
 const EditProfilePage = () => {
@@ -128,9 +129,17 @@ const EditProfilePage = () => {
             </div>
             {/* 하단 버튼 */}
             <div className="pt-10 flex justify-center">
-                <button className="w-64 py-7 bg-[var(--color-mint-0)] text-white rounded-2xl body-b0-bd cursor-pointer">
+                <Button
+                    size="big"
+                    variant="primary"
+                    className="w-64"
+                    onClick={() => {
+                        // 저장 로직
+                    }}
+                >
                     수정하기
-                </button>
+                </Button>
+
             </div>
             {isNicknameModalOpen && (
               <NicknameModal

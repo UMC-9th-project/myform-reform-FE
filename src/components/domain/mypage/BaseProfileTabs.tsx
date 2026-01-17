@@ -1,6 +1,15 @@
 import React, { useState } from 'react';
 import pin from '../../../assets/mypage/pin.svg';
 import lotpictures from '../../../assets/mypage/lotpictures.svg';
+import { useNavigate } from 'react-router-dom';
+import MyPageUpload from './MyPageUpload';
+
+export type ProfileTabType = '피드' | '판매 상품' | '후기';
+export type ProfileMode = 'view' | 'edit';
+
+interface BaseProfileTabsProps {
+  mode?: ProfileMode;
+}
 
 const FEED_ITEMS = [
   { id: 1, type: 'pin', img: 'https://picsum.photos/seed/1/300/400' },
@@ -139,14 +148,19 @@ const REVIEW_ITEMS = [
 
 
 
-const ProfileCard = () => {
-  const [activeTab, setActiveTab] = useState('피드');
+const BaseProfileTabs = ({ mode = 'view' } : BaseProfileTabsProps) => {
+  const [activeTab, setActiveTab] = useState<'피드' | '판매 상품' | '후기'>('피드');
+  const [showModal, setShowModal] = useState(false);
 
-  const tabs = [
+
+
+  const tabs: { name: ProfileTabType; count: number | null }[] = [
     { name: '피드', count: null },
     { name: '판매 상품', count: 4 },
     { name: '후기', count: 271 },
   ];
+
+  const navigate = useNavigate();
 
   return (
     <div className="w-full min-h-screen bg-white">
@@ -175,7 +189,8 @@ const ProfileCard = () => {
       {/* ───────── 컨텐츠 영역 ───────── */}
         {/* ===== 피드 ===== */}
       {activeTab === '피드' && (
-        <div className="w-full bg-transparent py-10">
+        <>
+        <div className="w-full bg-transparent py-10 relative">
           <div className="max-w-[68.75rem] mx-auto px-10">
             {FEED_ITEMS.length === 0 ? (
               <div className="flex items-center justify-center h-[18.75rem] pb-24 body-b1-rg">
@@ -202,13 +217,44 @@ const ProfileCard = () => {
                 ))}
               </div>
             )}
+            { mode === 'edit' && (
+              <button 
+                className="absolute top-10 right-2 md:right-4 w-14 h-14 bg-white border border-[var(--color-mint-1)] rounded-full flex items-center justify-center shadow-lg hover:bg-teal-50 transition-all z-10"
+                title="피드 글쓰기"
+                onClick={() => setShowModal(true)}
+                >
+                <svg width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 27H6.57124L27 6.57124L21.4281 1L1 21.4288V27Z" stroke="#07BEB8" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M15.8555 6.57031L21.4267 12.1416" stroke="#07BEB8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 27.5H27.5" stroke="#07BEB8" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            )}
             </div>
         </div>
+        {showModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div className="bg-white rounded-xl w-full max-w-xl p-6 relative">
+              {/* 닫기 버튼 */}
+              <button
+                onClick={() => setShowModal(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-black"
+              >
+                ✕
+              </button>
+
+              {/* 업로드 컴포넌트 */}
+              <MyPageUpload onClose={() => setShowModal(false)} />
+           </div>
+  </div>
+)}
+
+        </>
       )}
 
         {/* 판매 상품 */}
         {activeTab === '판매 상품' && (
-          <div className='bg-white py-10 px-28'>
+          <div className='bg-white py-10 px-28 relative'>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10">
                 {SALE_ITEMS.map((item) => (
                 <div key={item.id} className="flex flex-col group cursor-pointer">
@@ -250,8 +296,22 @@ const ProfileCard = () => {
                 </div>
                 ))}
                 </div>
-            </div>
-        )}
+                { mode == 'edit' && (
+                  <button 
+                    className="absolute top-10 right-2 md:right-4 w-14 h-14 bg-white border border-[var(--color-mint-1)] rounded-full flex items-center justify-center shadow-lg hover:bg-teal-50 transition-all z-10"
+                    title="판매 글쓰기"
+                    onClick={() => navigate('/sales/create')}
+                  >
+                  <svg width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 27H6.57124L27 6.57124L21.4281 1L1 21.4288V27Z" stroke="#07BEB8" stroke-width="2" stroke-linejoin="round"/>
+                    <path d="M15.8555 6.57031L21.4267 12.1416" stroke="#07BEB8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 27.5H27.5" stroke="#07BEB8" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+  
+                  </button>
+                  )}
+                </div>
+                )}
 
           {/* ===== 후기 ===== */}
           {activeTab === '후기' && (
@@ -323,4 +383,4 @@ const ProfileCard = () => {
   );
 };
 
-export default ProfileCard;
+export default BaseProfileTabs;

@@ -1,9 +1,19 @@
 import React from 'react';
-import { useTabStore, type TabType } from '../../../stores/tabStore';
 
-const MyPageTabs: React.FC = () => {
-  const { activeTab, setActiveTab } = useTabStore();
-  const tabs: TabType[] = ['프로필 관리', '판매 관리', '수익 관리'];
+
+interface MyPageTabsProps<T extends string> {
+  tabs: readonly T[];
+  activeTab: T;
+  onChangeTab: (tab: T) => void;
+  displayName: string;
+}
+
+const MyPageTabs = <T extends string>({
+  tabs,
+  activeTab,
+  onChangeTab,
+  displayName,
+}: MyPageTabsProps<T>) => {
   
   return (
     <div className="w-[15rem] flex flex-col items-start">
@@ -13,7 +23,7 @@ const MyPageTabs: React.FC = () => {
         {/* 프로필 이미지 (회색 처리) */}
         <div className="w-12 h-12 rounded-full border border-[var(--color-gray-30)] flex-shrink-0" />
         {/* 유저 닉네임 */}
-        <span className="body-b1-sb text-black">침착한 대머리독수리</span>
+        <span className="body-b1-sb text-black">{displayName}</span>
       </div>
 
       {/* 2. 탭 리스트 섹션 */}
@@ -21,8 +31,7 @@ const MyPageTabs: React.FC = () => {
         {tabs.map((tab) => (
           <button
             key={tab}
-            onClick={() => {setActiveTab(tab)
-            }}
+            onClick={() => onChangeTab(tab)}
             className={`text-left body-b0-mb transition-all duration-200 ${
               activeTab === tab 
                 ? 'body-b0-mb text-black' // 활성화 상태: 굵게, 검정색
