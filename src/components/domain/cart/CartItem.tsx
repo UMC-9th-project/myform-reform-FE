@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import Checkbox from '../../../components/common/Checkbox/Checkbox';
 import OptionQuantity from '../product/option/option-quantity-button/OptionQuantity';
 import type { CartProduct } from '../../../types/domain/cart/cart';
@@ -23,8 +22,6 @@ const CartItem = ({
   onQuantityChange,
   onDelete,
 }: CartItemProps) => {
-  const [imageError, setImageError] = useState(false);
-
   return (
     <div
       className={`px-[1.9375rem] pt-[1.4375rem] pb-[1.875rem] flex gap-[1.25rem] items-start ${
@@ -34,16 +31,11 @@ const CartItem = ({
       <div className="pt-[0.125rem]">
         <Checkbox checked={isChecked} onChange={onCheck} />
       </div>
-      {imageError || !product.imageUrl ? (
-        <div className="w-[9.375rem] h-[9.375rem] bg-[var(--color-gray-20)] flex-shrink-0" />
-      ) : (
-        <img
-          src={product.imageUrl}
-          alt="상품 이미지"
-          className="w-[9.375rem] h-[9.375rem] object-cover flex-shrink-0"
-          onError={() => setImageError(true)}
-        />
-      )}
+      <img
+        src={product.imageUrl}
+        alt="상품 이미지"
+        className="w-[9.375rem] h-[9.375rem] object-cover flex-shrink-0"
+      />
       <div className="flex-1 flex flex-col gap-[0.75rem]">
         <div className="flex items-start justify-between gap-[0.75rem]">
           <div className="body-b1-rg flex-1">{product.name}</div>
