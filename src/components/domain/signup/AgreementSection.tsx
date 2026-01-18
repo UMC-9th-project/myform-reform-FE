@@ -35,7 +35,12 @@ export default function AgreementSection({
         {/* 모두 동의 */}
         <div className="bg-white flex gap-5 items-start pb-[0.9375rem] pt-5 px-5">
           <div className="flex items-center pt-[0.375rem]">
-            <Checkbox checked={agreeAll} onChange={onAgreeAll} />
+            <Checkbox
+              checked={agreeAll}
+              onChange={onAgreeAll}
+              variant="circle"
+              size="large"
+            />
           </div>
           <div className="flex flex-col gap-0 leading-[1.5] w-[28.3125rem]">
             <p className="heading-h5-sb text-[var(--color-black)]">
@@ -51,7 +56,12 @@ export default function AgreementSection({
         {/* 개별 동의 항목 */}
         <div className="bg-white flex gap-5 items-start pb-[0.625rem] pl-5 pr-[0.875rem] pt-[0.9375rem]">
           <div className="flex items-center pt-[0.375rem]">
-            <Checkbox checked={agreeAge} onChange={onAgreeAge} />
+            <Checkbox
+              checked={agreeAge}
+              onChange={onAgreeAge}
+              variant="circle"
+              size="large"
+            />
           </div>
           <p className="body-b1-rg text-[var(--color-black)] w-[21.875rem]">
             [필수] 만 14세 이상입니다.
@@ -63,6 +73,8 @@ export default function AgreementSection({
             <Checkbox
               checked={agreeServiceTerms}
               onChange={onAgreeServiceTerms}
+              variant="circle"
+              size="large"
             />
           </div>
           <div className="flex gap-[2.0625rem] items-center w-[28.3125rem]">
@@ -81,7 +93,12 @@ export default function AgreementSection({
 
         <div className="bg-white flex gap-5 items-start pb-[0.625rem] pt-[0.9375rem] px-5">
           <div className="flex items-center pt-[0.375rem]">
-            <Checkbox checked={agreePrivacy} onChange={onAgreePrivacy} />
+            <Checkbox
+              checked={agreePrivacy}
+              onChange={onAgreePrivacy}
+              variant="circle"
+              size="large"
+            />
           </div>
           <div className="flex gap-[2.0625rem] items-center w-[28.3125rem]">
             <p className="body-b1-rg text-[var(--color-black)] w-[21.875rem]">
