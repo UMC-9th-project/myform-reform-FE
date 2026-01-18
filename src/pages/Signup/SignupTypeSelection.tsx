@@ -24,7 +24,7 @@ const SignupTypeSelection = () => {
           title="일반 모드로 활용하기"
           description="필요한 상품을 구매하고 리폼 요청 및 맞춤 견적을 받아요."
           alt="customer"
-          onClick={() => navigate('/signup/form-customer')}
+          onClick={() => navigate('/signup/form')}
         />
 
         <UserTypeSelector
@@ -32,6 +32,7 @@ const SignupTypeSelection = () => {
           title="리폼러로 활동하기"
           description="나만의 작품을 판매하고 리폼 견적 제안을 통해 수익을 창출해요."
           alt="customer"
+          onClick={() => navigate('/signup/form')}
         />
       </div>
 

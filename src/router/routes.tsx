@@ -5,7 +5,8 @@ import Test from '../pages/Test';
 import Signup from '../pages/Signup/Signup';
 import SignupIndex from '../pages/Signup/SignupIndex';
 import SignupTypeSelection from '../pages/Signup/SignupTypeSelection';
-import SignupFormCustomer from '../pages/Signup/SignupFormCustomer';
+import SignupFormPage from '../pages/Signup/SignupFormPage';
+import SignupComplete from '../pages/Signup/SignupComplete';
 
 export const routes = [
   {
@@ -25,8 +26,12 @@ export const routes = [
         element: <SignupTypeSelection />,
       },
       {
-        path: 'form-customer',
-        element: <SignupFormCustomer />,
+        path: 'form',
+        element: <SignupFormPage />,
+      },
+      {
+        path: 'complete',
+        element: <SignupComplete />,
       },
     ],
   },
