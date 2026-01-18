@@ -1,53 +1,83 @@
 import { useState } from 'react';
-import checkedIcon from './icons/circle/checked.svg';
-import uncheckedIcon from './icons/circle/unchecked.svg';
+import squareCheckedIcon from './icons/square/checked.svg';
+import squareUncheckedIcon from './icons/square/disabled.svg';
+import circleCheckedIcon from './icons/circle/checked.svg';
+import circleUncheckedIcon from './icons/circle/unchecked.svg';
+
+type CheckboxVariant = 'circle' | 'square';
 
 interface CheckboxProps {
   checked?: boolean;
   onChange?: (checked: boolean) => void;
   disabled?: boolean;
   className?: string;
-  size?: 'default' | 'small';
+  label?: string;
+  variant?: CheckboxVariant;
 }
 
-export default function Checkbox({
+const Checkbox = ({
   checked: controlledChecked,
   onChange,
   disabled = false,
   className = '',
-  size = 'default',
-}: CheckboxProps) {
-  const [internalChecked, setInternalChecked] = useState(false);
+  label,
+  variant = 'square',
+}: CheckboxProps) => {
+  const [uncontrolledChecked, setUncontrolledChecked] = useState(false);
 
+  // controlled 또는 uncontrolled 모드 지원
   const isChecked =
-    controlledChecked !== undefined ? controlledChecked : internalChecked;
+    controlledChecked !== undefined ? controlledChecked : uncontrolledChecked;
+
+  // variant에 따라 아이콘 선택
+  const getIcon = () => {
+    if (variant === 'circle') {
+      return isChecked ? circleCheckedIcon : circleUncheckedIcon;
+    } else {
+      return isChecked ? squareCheckedIcon : squareUncheckedIcon;
+    }
+  };
 
   const handleClick = () => {
     if (disabled) return;
 
     const newChecked = !isChecked;
+
     if (controlledChecked === undefined) {
-      setInternalChecked(newChecked);
+      // uncontrolled 모드
+      setUncontrolledChecked(newChecked);
     }
-    if (onChange) {
-      onChange(newChecked);
-    }
+
+    // onChange 콜백 호출
+    onChange?.(newChecked);
   };
 
-  const sizeClass = size === 'small' ? 'w-5 h-5' : 'w-[30px] h-[30px]';
-
   return (
-    <button
-      type="button"
-      onClick={handleClick}
-      disabled={disabled}
-      className={`flex items-center justify-center cursor-pointer disabled:cursor-not-allowed ${sizeClass} ${className}`}
-    >
-      <img
-        src={isChecked ? checkedIcon : uncheckedIcon}
-        alt={isChecked ? 'checked' : 'unchecked'}
-        className="w-full h-full"
-      />
-    </button>
+    <div className={`flex items-center gap-[8px] ${className}`}>
+      <button
+        onClick={handleClick}
+        disabled={disabled}
+        className="cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+        type="button"
+      >
+        <img
+          src={getIcon()}
+          alt={isChecked ? 'checked' : 'unchecked'}
+          className="w-5 h-5"
+        />
+      </button>
+      {label && (
+        <span
+          onClick={handleClick}
+          className={
+            disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+          }
+        >
+          {label}
+        </span>
+      )}
+    </div>
   );
-}
+};
+
+export default Checkbox;

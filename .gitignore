@@ -29,3 +29,4 @@ dist-ssr
 src/components/domain/product/exImage/*.jpg
 *storybook.log
 storybook-static
+src/components/domain/wishlist/*.jpg
