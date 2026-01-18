@@ -3,6 +3,7 @@ import Layout from './components/layout/PageLayout';
 import Home from './pages/Home';
 import Cart from './pages/cart/cart';
 import Wishlist from './pages/wishlist/wishlist';
+import ReformerWishlist from './pages/wishlist-Reformer/wishlist';
 import ReformerMyPage from './pages/MyPage-Reform/ReformerMyPage';
 import CreatePage from './pages/MyPage-Reform/CreatePage';
 import EditProfilePage from './pages/MyPage-Reform/EditProfilePage';
@@ -28,9 +29,11 @@ function App() {
 
         {/* 위시리스트 페이지 */}
         <Route path="/wishlist" element={<Wishlist />} />
+        <Route path="/reformer/wishlist" element={<ReformerWishlist />} />
 
         {/* 404 처리 */}
         <Route path="*" element={<div>Not Found</div>} />
+
         <Route path="reformer-mypage" element={<ReformerMyPage />} />
         <Route path="/sales/create" element={<CreatePage type="sale" />} />
         <Route path="/custom/create" element={<CreatePage type="order" />} />
