@@ -312,7 +312,7 @@ export default function SignupForm() {
         type="submit"
         variant={isFormValid ? 'primary' : 'disabled'}
         disabled={!isFormValid}
-        className="w-full h-[4.625rem] !p-0 flex items-center justify-center gap-[0.625rem]"
+        className="w-full h-[4.625rem] flex items-center justify-center"
       >
         가입 완료
       </Button>
