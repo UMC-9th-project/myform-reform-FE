@@ -3,12 +3,13 @@ import Layout from './components/layout/PageLayout';
 import Home from './pages/Home';
 import Cart from './pages/cart/Cart';
 import Wishlist from './pages/wishlist/Wishlist';
-import ReformerWishlist from './pages/wishlist-Reformer/wishlist';
-import ReformerMyPage from './pages/MyPage-Reform/ReformerMyPage';
-import CreatePage from './pages/MyPage-Reform/CreatePage';
-import EditProfilePage from './pages/MyPage-Reform/EditProfilePage';
+import ReformerWishlist from './pages/wishlist-reformer/wishlist';
+import ReformerMyPage from './pages/my-page-Reform/ReformerMyPage';
+import CreatePage from './pages/my-page-Reform/CreatePage';
+import EditProfilePage from './pages/my-page-Reform/EditProfilePage';
 import Profile from './pages/Profile';
-import NormalMyPage from './pages/MyPage/NormalMyPage';
+import NormalMyPage from './pages/my-page/NormalMyPage';
+import ReformerSearch from './pages/reformer-search/ReformerSearch';
 
 function App() {
   return (
@@ -30,6 +31,9 @@ function App() {
         {/* 위시리스트 페이지 */}
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/reformer/wishlist" element={<ReformerWishlist />} />
+
+        {/* 리폼러 찾기 페이지 */}
+        <Route path="/reformer-search" element={<ReformerSearch />} />
 
         {/* 404 처리 */}
         <Route path="*" element={<div>Not Found</div>} />
