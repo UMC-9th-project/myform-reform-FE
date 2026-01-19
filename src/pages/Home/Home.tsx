@@ -1,18 +1,28 @@
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 
-import ProductCard from '../../components/domain/market/ProductCard';
+import WishlistItemCard from '../../components/domain/wishlist/WishlistItemCard';
+
 import 'swiper/css';
 import 'swiper/css/navigation';
 
-const product = {
-  img: '/Home/images/p1.jpg',
-  name: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
-  price: '75,000원',
-  review: 4.9,
-  count: 271,
-  nickname: '침착한 대머리독수리',
-};
+
+const productData = [
+  {
+    id: '1',
+    image: '/Home/images/p1.jpg',
+    title: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
+    price: 75000,
+    rating: 4.9,
+    reviewCount: 271,
+    seller: '침착한 대머리독수리',
+  },
+ 
+  
+
+];
+
+
 
 const Home = () => {
   return (
@@ -58,10 +68,10 @@ const Home = () => {
 
       <div className='mt-[3.4375rem]'>
         <div className='heading-h4-bd'>요즘 뜨는 리폼 스타일</div>
-        <div className='flex mt-[1.875rem]  items-center '>
-          <ProductCard img={product.img} name={product.name} price={product.price} review={product.review} count={product.count} nickname={product.nickname} />
-          <ProductCard img={product.img} name={product.name} price={product.price} review={product.review} count={product.count} nickname={product.nickname} />
-          <ProductCard img={product.img} name={product.name} price={product.price} review={product.review} count={product.count} nickname={product.nickname} />
+        <div className='flex mt-[1.875rem] gap-[1.875rem] items-center justify-between '>
+          {productData.map((item) => (
+            <WishlistItemCard key={item.id} item={item} onRemove={() => {}} />
+          ))}
         </div>
         </div>
       </div>
