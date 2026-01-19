@@ -5,6 +5,7 @@ import circleCheckedIcon from './icons/circle/checked.svg';
 import circleUncheckedIcon from './icons/circle/unchecked.svg';
 
 type CheckboxVariant = 'circle' | 'square';
+type CheckboxSize = 'small' | 'medium' | 'large';
 
 interface CheckboxProps {
   checked?: boolean;
@@ -13,6 +14,7 @@ interface CheckboxProps {
   className?: string;
   label?: string;
   variant?: CheckboxVariant;
+  size?: CheckboxSize;
 }
 
 const Checkbox = ({
@@ -22,6 +24,7 @@ const Checkbox = ({
   className = '',
   label,
   variant = 'square',
+  size = 'small',
 }: CheckboxProps) => {
   const [uncontrolledChecked, setUncontrolledChecked] = useState(false);
 
@@ -36,6 +39,13 @@ const Checkbox = ({
     } else {
       return isChecked ? squareCheckedIcon : squareUncheckedIcon;
     }
+  };
+
+  // size에 따른 클래스
+  const sizeClasses = {
+    small: 'w-5 h-5',
+    medium: 'w-6 h-6',
+    large: 'w-7.5 h-7.5',
   };
 
   const handleClick = () => {
@@ -63,7 +73,7 @@ const Checkbox = ({
         <img
           src={getIcon()}
           alt={isChecked ? 'checked' : 'unchecked'}
-          className="w-5 h-5"
+          className={sizeClasses[size]}
         />
       </button>
       {label && (

@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { z } from 'zod';
 import eyeIcon from './icons/Eye.svg';
 import eyeOffIcon from './icons/EyeOff.svg';
-import Button from '../Button/button1';
 
 type InputType = 'email' | 'password' | 'text' | 'tel';
 
@@ -41,7 +40,6 @@ export default function Input({
   timerSeconds = null,
   showButton = false,
   buttonText,
-  onButtonClick,
   onChange,
   onBlur,
   onFocus,
