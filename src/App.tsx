@@ -47,7 +47,7 @@ function App() {
         <Route path="/reformer-profile-edit" element={<EditProfilePage />} />
         <Route path="/normal-mypage" element={<NormalMyPage />} />
         <Route path="/normal-profile-edit" element={<EditProfilePage />} />
-        <Route path="/write-review" element= {<ReviewWritePage />} />
+        <Route path="/mypage/review/write" element= {<ReviewWritePage />} />
       </Route>
 
       <Route

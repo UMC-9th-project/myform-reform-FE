@@ -46,7 +46,7 @@ const MyInfoPage = () => {
                 alt="Profile"
                 className="w-full h-full rounded-full object-cover"
               />
-              
+
               <button className="absolute bottom-0 right-0 bg-slate-500 p-2 rounded-full text-white" title="사진 추가">
                 <Camera size={18} />
               </button>
@@ -60,7 +60,6 @@ const MyInfoPage = () => {
             <div className="flex items-center py-6 border-b border-[var(--color-line-gray-40)]">
               <span className="w-32 body-b0-sb text-[var(--color-gray-60)]">성명</span>
               <span className="body-b0-sb">{maskName('홍길동')}</span>
-              <span className="body-b0-sb">홍*동</span>
             </div>
 
             {/* 닉네임 */}

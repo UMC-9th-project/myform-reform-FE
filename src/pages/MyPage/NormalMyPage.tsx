@@ -34,7 +34,7 @@ const NormalMyPage = () => {
         {/* 오른쪽: 메인 영역 */}
         <main className="flex-1 px-5">
           {activeTab && (
-            <div className="heading-h4-bd pb-3.5 border-b border-black mt-1 mb-0">
+            <div className="heading-h4-bd pb-3.5 mb-6 border-b border-black mt-1 mb-0">
               {activeTab}
             </div>
           )}
