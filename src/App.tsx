@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/PageLayout';
-import Home from './pages/Home';
+import Home from './pages/Home/Home';
 import Cart from './pages/cart/cart';
 import Wishlist from './pages/wishlist/wishlist';
 import ReformerWishlist from './pages/wishlist-Reformer/wishlist';
