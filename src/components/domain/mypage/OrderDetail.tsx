@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSellerTabStore } from '../../../stores/tabStore';
 
 interface OrderDetailType {
   orderNo: string;
@@ -18,6 +19,7 @@ interface OrderDetailType {
 
 
 const OrderDetail = () => {
+  const {selectedOrderId, setSelectedOrderId} = useSellerTabStore();
 
   // 가상 데이터
   const initialData: OrderDetailType = {
@@ -44,6 +46,14 @@ const OrderDetail = () => {
 
   return (
     <div className="w-100% mx-auto p-0 bg-transparent">
+       <div className="mb-4">
+        <button
+          onClick={() => setSelectedOrderId(null)} // null로 설정하면 OrderList로 돌아감
+          className="px-4 py-2 bg-[var(--color-mint-6)] text-[var(--color-mint-1)] rounded-md body-b1-rg hover:brightness-95 transition-all"
+        >
+          ← 목록으로 돌아가기
+        </button>
+      </div>
       <div className="bg-white body-b1-rg border border-[var(--color-line-gray-40)] rounded-[1.25rem] p-5 shadow-sm space-y-12">
         <div className="text-[var(--color-gray-50)] body-b1-rg mb-6">
           주문번호 {order.orderNo}

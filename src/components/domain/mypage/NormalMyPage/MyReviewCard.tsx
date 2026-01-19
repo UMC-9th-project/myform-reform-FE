@@ -10,7 +10,6 @@ export interface ProductOrder {
   date: string;
   image: string;
   status?: '결제 완료' | '상품준비 중' | '발송 완료';
-  isCustomOrder?: boolean; // 주문 제작 여부
 }
 
 // 2. props 타입 정의
@@ -18,14 +17,12 @@ interface SalesCardProps {
   data: ProductOrder[];
   onDetailClick?: (id: string) => void; // 일반 상품 상세보기
   onWriteReviewClick?: (id: string) => void; // 후기 작성
-  onChatClick?: (id: string) => void; // 주문 제작 채팅 이동
 }
 
-const SalesCard: React.FC<SalesCardProps> = ({
+const MyReviewCard: React.FC<SalesCardProps> = ({
   data,
   onDetailClick,
   onWriteReviewClick,
-  onChatClick,
 }) => {
   return (
     <div className="w-full mx-auto bg-[transparent]">
@@ -37,21 +34,12 @@ const SalesCard: React.FC<SalesCardProps> = ({
             <div className="flex justify-between items-center mb-4 text-[var(--color-gray-50)] body-b1-rg">
               <span>주문번호 {item.orderNo}</span>
               
-              {item.isCustomOrder ? (
-                <button
+              <button
                   className="flex items-center gap-3 hover:text-black transition-colors"
                   onClick={() => onDetailClick?.(item.id)}
                 >
                   상세 보기<span>❯</span>
                 </button>
-              ) : (
-                <button
-                  className="flex items-center gap-3 hover:text-black transition-colors"
-                  onClick={() => onChatClick?.(item.id)}
-                >
-                  채팅 바로가기<span>❯</span>
-                </button>
-              )}
             </div>
 
             {/* 내용 */}
@@ -98,4 +86,4 @@ const SalesCard: React.FC<SalesCardProps> = ({
   );
 };
 
-export default SalesCard;
+export default MyReviewCard;

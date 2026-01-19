@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import MyReviewGrid from '../MyReviewGrid';
 import { useUserTabStore } from '../../../../stores/tabStore';
-import SalesCard, { type ProductOrder } from './SalesCard';
 import { useNavigate } from 'react-router-dom';
+import MyReviewCard, {type ProductOrder} from './MyReviewCard';
 type ReviewTab = 'writable' | 'written';
 
 const ReviewList = () => {
@@ -70,7 +70,7 @@ const ReviewList = () => {
               내역이 없습니다.
             </div>
           ) : (
-            <SalesCard 
+            <MyReviewCard
               data={writableReviews} 
               onDetailClick={handleDetailClick}
               onWriteReviewClick={handleWriteReviewClick} />
