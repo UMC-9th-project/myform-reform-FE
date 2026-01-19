@@ -3,7 +3,7 @@ import MyPageTab from '../../components/domain/mypage/MyPageTab';
 import { useUserTabStore, type UserTabType } from '../../stores/tabStore';
 import MyInfoPage from '../../components/domain/mypage/NormalMyPage/MyInfoPage';
 import MyReformRequest from '../../components/domain/mypage/NormalMyPage/MyReformRequest';
-import OrderDetail from '../../components/domain/mypage/OrderDetail';
+import UserOrderDetail from '../../components/domain/mypage/NormalMyPage/UserOrderDetail';
 import ReviewList from '../../components/domain/mypage/NormalMyPage/ReviewList';
 import BuyList from '../../components/domain/mypage/NormalMyPage/BuyList';
 
@@ -42,9 +42,9 @@ const NormalMyPage = () => {
           {activeTab === '내 정보' && <MyInfoPage />}
           {activeTab === '내가 작성한 글' && <MyReformRequest />}
           {activeTab === '구매 이력' &&
-            (selectedOrderId ? <OrderDetail /> : <BuyList />)}
+            (selectedOrderId ? <UserOrderDetail /> : <BuyList />)}
           {activeTab === '나의 후기' &&
-            (selectedOrderId ? <OrderDetail /> : <ReviewList />)}
+            (selectedOrderId ? <UserOrderDetail /> : <ReviewList />)}
         </main>
       </div>
     </div>

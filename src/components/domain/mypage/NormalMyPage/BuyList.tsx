@@ -36,7 +36,7 @@ const BuyList = () => {
 
   const handleChatClick = (orderId: string) => {
     // 예: 채팅 페이지 URL에 주문 ID 포함
-    console.log('채팅 페이지로 이동');
+    console.log('채팅 페이지로 이동, 아이디:',orderId);
   };
 
   // 탭별 데이터
