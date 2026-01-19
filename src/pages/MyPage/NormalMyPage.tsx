@@ -2,7 +2,10 @@ import React from 'react';
 import MyPageTab from '../../components/domain/mypage/MyPageTab';
 import { useUserTabStore, type UserTabType } from '../../stores/tabStore';
 import MyInfoPage from '../../components/domain/mypage/NormalMyPage/MyInfoPage';
-
+import MyReformRequest from '../../components/domain/mypage/NormalMyPage/MyReformRequest';
+import OrderDetail from '../../components/domain/mypage/OrderDetail';
+import ReviewList from '../../components/domain/mypage/NormalMyPage/ReviewList';
+import BuyList from '../../components/domain/mypage/NormalMyPage/BuyList';
 const USER_TABS: readonly UserTabType[] = [
   '내 정보',
   '내가 작성한 글',
@@ -11,10 +14,10 @@ const USER_TABS: readonly UserTabType[] = [
 ];
 
 const NormalMyPage = () => {
-  const { activeTab, setActiveTab } = useUserTabStore();
+  const { activeTab, setActiveTab, selectedOrderId, setSelectedOrderId } = useUserTabStore();
 
   return (
-    <div className="w-full min-h-screen bg-white">
+    <div className="w-full min-h-screen bg-white p-6">
       <div className="max-w-8xl mx-auto px-0 py-0 flex gap-3 items-stretch">
         {/* 왼쪽: 사이드바 */}
         <aside className="w-64 flex-shrink-0 px-5">
@@ -29,15 +32,17 @@ const NormalMyPage = () => {
         {/* 오른쪽: 메인 영역 */}
         <main className="flex-1 px-5">
           {activeTab && (
-            <div className="heading-h4-bd pb-3.5 border-b border-black mt-1 mb-0">
+            <div className="heading-h4-bd pb-3.5 border-b border-black mt-1 mb-8">
               {activeTab}
             </div>
           )}
 
           {activeTab === '내 정보' && <MyInfoPage />}
-          {activeTab === '내가 작성한 글' && <div>내가 작성한 글</div>}
-          {activeTab === '구매 이력' && <div>구매 이력</div>}
-          {activeTab === '나의 후기' && <div>나의 후기</div>}
+          {activeTab === '내가 작성한 글' && <MyReformRequest />}
+          {activeTab === '구매 이력' &&
+            (selectedOrderId ? <OrderDetail /> : <BuyList />)}
+          {activeTab === '나의 후기' &&
+            (selectedOrderId ? <OrderDetail /> : <ReviewList />)}
         </main>
       </div>
     </div>
