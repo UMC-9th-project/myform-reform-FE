@@ -9,6 +9,7 @@ import CreatePage from './pages/MyPage-Reform/CreatePage';
 import EditProfilePage from './pages/MyPage-Reform/EditProfilePage';
 import Profile from './pages/Profile';
 import NormalMyPage from './pages/MyPage/NormalMyPage';
+import ReviewWritePage from './pages/MyPage/ReviewWritePage';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
         <Route path="/reformer-profile-edit" element={<EditProfilePage />} />
         <Route path="/normal-mypage" element={<NormalMyPage />} />
         <Route path="/normal-profile-edit" element={<EditProfilePage />} />
+        <Route path="/mypage/review/write" element={<ReviewWritePage />} />
       </Routes>
     </Layout>
   );
