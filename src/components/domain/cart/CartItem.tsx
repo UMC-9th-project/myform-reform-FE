@@ -3,8 +3,6 @@ import OptionQuantity from '../product/option/option-quantity-button/OptionQuant
 import type { CartProduct } from '../../../types/domain/cart/cart';
 import xIcon from '../../../assets/icons/x.svg';
 
-const productImage = '/images/e3.jpg';
-
 interface CartItemProps {
   product: CartProduct;
   quantity: number;
@@ -34,7 +32,7 @@ const CartItem = ({
         <Checkbox checked={isChecked} onChange={onCheck} />
       </div>
       <img
-        src={product.imageUrl || productImage}
+        src={product.imageUrl}
         alt="상품 이미지"
         className="w-[9.375rem] h-[9.375rem] object-cover flex-shrink-0"
       />

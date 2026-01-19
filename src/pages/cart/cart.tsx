@@ -25,6 +25,7 @@ const INITIAL_PRODUCTS: CartProduct[] = [
     price: 85000,
     name: '[야구 유니폼 리폼] 내가 제일 좋아하는 선수의 유니폼이 짐색으로 재탄생된다 면? 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
     option: '옵션 샘플 테스트 1번 (+10,000원)',
+    imageUrl: '/crt1.jpg',
   },
   {
     id: 1,
@@ -32,6 +33,7 @@ const INITIAL_PRODUCTS: CartProduct[] = [
     price: 35000,
     name: '[야구 유니폼 리폼] 내가 제일 좋아하는 선수의 유니폼이 짐색으로 재탄생된다 면? 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
     option: '옵션 샘플 테스트 1번 (+10,000원)',
+    imageUrl: '/crt2.jpg',
   },
   {
     id: 2,
@@ -39,6 +41,7 @@ const INITIAL_PRODUCTS: CartProduct[] = [
     price: 100000,
     name: '[야구 유니폼 리폼] 내가 제일 좋아하는 선수의 유니폼이 짐색으로 재탄생된다 면? 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
     option: '옵션 샘플 테스트 1번 (+10,000원)',
+    imageUrl: '/crt1.jpg',
   },
 ];
 
