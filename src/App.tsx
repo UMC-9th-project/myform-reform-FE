@@ -1,8 +1,8 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/PageLayout';
 import Home from './pages/Home';
-import Cart from './pages/cart/cart';
-import Wishlist from './pages/wishlist/wishlist';
+import Cart from './pages/cart/Cart';
+import Wishlist from './pages/wishlist/Wishlist';
 import ReformerWishlist from './pages/wishlist-Reformer/wishlist';
 import ReformerMyPage from './pages/MyPage-Reform/ReformerMyPage';
 import CreatePage from './pages/MyPage-Reform/CreatePage';
