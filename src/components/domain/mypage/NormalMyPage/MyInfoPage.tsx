@@ -9,7 +9,20 @@ const MyInfoPage = () => {
   const [showNicknameModal, setShowNicknameModal] = useState(false);
 
   const [nickname, setNickname] = useState('심심한 리본');
-  const [phone, setPhone] = useState('010-****-0000');
+  /* 마스킹 함수 추가 */
+  const maskName = (name: string) => {
+    if (name.length <= 1) return '*';
+    if (name.length === 2) return name[0] + '*';
+    const middle = '*'.repeat(name.length - 2);
+    return name[0] + middle + name[name.length - 1];
+  };
+
+  const maskPhone = (phone: string) => {
+    // 전화번호 010-1234-5678 -> 010-****-5678
+    return phone.replace(/(\d{3})-(\d{4})-(\d{4})/, '$1-****-$3');
+  };
+
+  const [phone, setPhone] = useState('010-1111-0000');
   const [email, setEmail] = useState('example@gmail.com');
 
   const [address, setAddress] = useState({
@@ -33,7 +46,7 @@ const MyInfoPage = () => {
                 alt="Profile"
                 className="w-full h-full rounded-full object-cover"
               />
-              <button className="absolute bottom-0 right-0 bg-slate-500 p-2 rounded-full text-white">
+              <button className="absolute bottom-0 right-0 bg-slate-500 p-2 rounded-full text-white" title="사진 추가">
                 <Camera size={18} />
               </button>
             </div>
@@ -45,7 +58,7 @@ const MyInfoPage = () => {
             {/* 성명 */}
             <div className="flex items-center py-6 border-b border-[var(--color-line-gray-40)]">
               <span className="w-32 body-b0-sb text-[var(--color-gray-60)]">성명</span>
-              <span className="body-b0-sb">홍*동</span>
+              <span className="body-b0-sb">{maskName('홍길동')}</span>
             </div>
 
             {/* 닉네임 */}
@@ -64,12 +77,13 @@ const MyInfoPage = () => {
               <div className="flex-grow">
                 {editField === 'phone' ? (
                   <input
+                    title="전화번호"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     className="w-full max-w-xs border rounded-md px-3 py-2"
                   />
                 ) : (
-                  <span className="body-b0-sb">{phone}</span>
+                  <span className="body-b0-sb">{maskPhone(phone)}</span>
                 )}
               </div>
 
@@ -90,6 +104,7 @@ const MyInfoPage = () => {
               <div className="flex-grow">
                 {editField === 'email' ? (
                   <input
+                    title="이메일 입력창"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full max-w-xs border rounded-md px-3 py-2"
@@ -119,6 +134,7 @@ const MyInfoPage = () => {
                 {editField === 'address' ? (
                   <>
                     <input
+                      title="우편 번호"
                       value={address.zip}
                       onChange={(e) =>
                         setAddress({ ...address, zip: e.target.value })
@@ -126,6 +142,7 @@ const MyInfoPage = () => {
                       className="w-full max-w-md border rounded-md px-3 py-3"
                     />
                     <input
+                      title="도로명 주소"
                       value={address.addr1}
                       onChange={(e) =>
                         setAddress({ ...address, addr1: e.target.value })
@@ -133,6 +150,7 @@ const MyInfoPage = () => {
                       className="w-full max-w-md border rounded-md px-3 py-3"
                     />
                     <input
+                      title="상세 주소"
                       value={address.addr2}
                       onChange={(e) =>
                         setAddress({ ...address, addr2: e.target.value })
