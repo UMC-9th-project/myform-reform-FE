@@ -2,17 +2,23 @@ import React, { useState } from 'react';
 import MyReviewGrid from '../MyReviewGrid';
 import { useUserTabStore } from '../../../../stores/tabStore';
 import SalesCard, { type ProductOrder } from './SalesCard';
-
+import { useNavigate } from 'react-router-dom';
 type ReviewTab = 'writable' | 'written';
 
 const ReviewList = () => {
   const [activeTab, setActiveTab] = useState<ReviewTab>('writable');
   const { setSelectedOrderId, setActiveTab: setUserTab } = useUserTabStore();
-
+  const navigate = useNavigate();
   const handleDetailClick = (id: string) => {
     setSelectedOrderId(id);
     setUserTab('구매 이력');
   };
+
+  const handleWriteReviewClick = (orderId: string) => {
+    setSelectedOrderId(orderId); // 어떤 주문에 대한 리뷰인지 저장
+    navigate('/mypage/review/write'); // 별도의 페이지로 이동
+};
+
 
   const writableReviews: ProductOrder[] = [
     {
@@ -64,7 +70,10 @@ const ReviewList = () => {
               내역이 없습니다.
             </div>
           ) : (
-            <SalesCard data={writableReviews} onDetailClick={handleDetailClick} />
+            <SalesCard 
+              data={writableReviews} 
+              onDetailClick={handleDetailClick}
+              onWriteReviewClick={handleWriteReviewClick} />
           )}
         </div>
       )}

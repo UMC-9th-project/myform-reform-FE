@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import SalesCard, { type ProductOrder } from './SalesCard';
 import { useUserTabStore } from '../../../../stores/tabStore';
-
+import { useNavigate } from 'react-router-dom';
 
 type BuyType = 'market' | 'reform';
 
 const BuyList = () => {
   const [activeTab, setActiveTab] = useState<BuyType>('market');
   const { setSelectedOrderId, setActiveTab: setUserTab } = useUserTabStore();
+  const navigate = useNavigate();
+
+  
 
   // 1️⃣ 더미 데이터 (SalesCard에서 렌더링할 배열)
   const marketOrders: ProductOrder[] = [
@@ -27,6 +30,12 @@ const BuyList = () => {
 
   // 3️⃣ 탭에 따라 보여줄 데이터 선택
   const displayData = activeTab === 'market' ? marketOrders : reformOrders;
+
+    // 후기 작성 모달 열기
+  const handleWriteReviewClick = (orderId: string) => {
+    setSelectedOrderId(orderId);   // 모달에서 어떤 주문에 대한 후기인지 알 수 있도록
+    navigate('/mypage/review/write');
+  };
 
   return (
     <div className="w-full min-h-screen pt-0 p-4">
@@ -53,7 +62,10 @@ const BuyList = () => {
       {displayData.length === 0 ? (
         <div className="text-center py-20 text-gray-400 body-b1-rg">내역이 없습니다.</div>
       ) : (
-        <SalesCard data={displayData} onDetailClick={handleDetailClick} />
+        <SalesCard 
+            data={displayData} 
+            onDetailClick={handleDetailClick}
+            onWriteReviewClick={handleWriteReviewClick} />
       )}
     </div>
   );

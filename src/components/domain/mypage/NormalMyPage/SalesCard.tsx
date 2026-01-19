@@ -16,9 +16,10 @@ export interface ProductOrder {
 interface SalesCardProps {
   data: ProductOrder[]; // 외부에서 배열로 받기
   onDetailClick?: (id: string) => void; // 상세보기 클릭 이벤트
+  onWriteReviewClick?: (id: string) => void;
 }
 
-const SalesCard: React.FC<SalesCardProps> = ({ data, onDetailClick }) => {
+const SalesCard: React.FC<SalesCardProps> = ({ data, onDetailClick, onWriteReviewClick }) => {
   return (
     <div className="w-full mx-auto bg-[transparent]">
       <div className="space-y-4">
@@ -66,7 +67,9 @@ const SalesCard: React.FC<SalesCardProps> = ({ data, onDetailClick }) => {
               </div>
 
               {/* 후기 작성 버튼 */}
-              <button className="px-5 py-3 bg-[var(--color-mint-6)] border border-[var(--color-mint-3)] text-[var(--color-mint-1)] rounded-xl body-b1-rg hover:bg-[#76D2CC]/5 transition-colors active:scale-95 whitespace-nowrap mb-0.5">
+              <button 
+                className="px-5 py-3 bg-[var(--color-mint-6)] border border-[var(--color-mint-3)] text-[var(--color-mint-1)] rounded-xl body-b1-rg hover:bg-[#76D2CC]/5 transition-colors active:scale-95 whitespace-nowrap mb-0.5"
+                onClick={() => onWriteReviewClick?.(item.id)}>
                 후기 작성하기
               </button>
             </div>
