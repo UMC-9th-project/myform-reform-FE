@@ -6,6 +6,8 @@ import MyReformRequest from '../../components/domain/mypage/NormalMyPage/MyRefor
 import OrderDetail from '../../components/domain/mypage/OrderDetail';
 import ReviewList from '../../components/domain/mypage/NormalMyPage/ReviewList';
 import BuyList from '../../components/domain/mypage/NormalMyPage/BuyList';
+
+
 const USER_TABS: readonly UserTabType[] = [
   '내 정보',
   '내가 작성한 글',
@@ -14,7 +16,7 @@ const USER_TABS: readonly UserTabType[] = [
 ];
 
 const NormalMyPage = () => {
-  const { activeTab, setActiveTab, selectedOrderId, setSelectedOrderId } = useUserTabStore();
+  const { activeTab, setActiveTab, selectedOrderId } = useUserTabStore();
 
   return (
     <div className="w-full min-h-screen bg-white p-6">
@@ -32,7 +34,7 @@ const NormalMyPage = () => {
         {/* 오른쪽: 메인 영역 */}
         <main className="flex-1 px-5">
           {activeTab && (
-            <div className="heading-h4-bd pb-3.5 border-b border-black mt-1 mb-8">
+            <div className="heading-h4-bd pb-3.5 border-b border-black mt-1 mb-0">
               {activeTab}
             </div>
           )}
