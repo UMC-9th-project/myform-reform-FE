@@ -7,8 +7,14 @@ type ButtonSize = 'default' | 'big';
   - disabled: 비활성화 버튼 (회색 배경, 자동으로 disabled 처리)
   - outlined-mint: 테두리만 있는 버튼 (teal 테두리)
   - white: 테두리만 있는 버튼 (회색 테두리)
+  - kakao: 카카오 버튼 (카카오 색상)
  */
-type ButtonVariant = 'primary' | 'disabled' | 'outlined-mint' | 'white';
+type ButtonVariant =
+  | 'primary'
+  | 'disabled'
+  | 'outlined-mint'
+  | 'white'
+  | 'kakao';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   /** 버튼 크기 (default: 작은 글씨, big: 큰 글씨) */
@@ -36,6 +42,7 @@ const VARIANT_STYLES = {
     'text-[var(--color-mint-1)] bg-white border border-[var(--color-mint-1)] hover:bg-[var(--color-gray-20)] cursor-pointer',
   white:
     'text-black bg-white border border-[var(--color-line-gray-40)] hover:border-[var(--color-gray-60)] cursor-pointer',
+  kakao: 'text-black bg-[#FDE402] cursor-pointer',
 } as const;
 
 export default function Button({
