@@ -1,17 +1,20 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/PageLayout';
 import Home from './pages/Home';
-import Cart from './pages/cart/cart';
+import Cart from './pages/cart/Cart';
 import Wishlist from './pages/wishlist/wishlist';
-import ReformerWishlist from './pages/wishlist-Reformer/wishlist';
-import ReformerMyPage from './pages/MyPage-Reform/ReformerMyPage';
-import CreatePage from './pages/MyPage-Reform/CreatePage';
-import EditProfilePage from './pages/MyPage-Reform/EditProfilePage';
+import ReformerWishlist from './pages/wishlist-reformer/wishlist';
+import ReformerMyPage from './pages/my-page-Reform/ReformerMyPage';
+import CreatePage from './pages/my-page-Reform/CreatePage';
+import EditProfilePage from './pages/my-page-Reform/EditProfilePage';
 import Profile from './pages/Profile';
-import NormalMyPage from './pages/MyPage/NormalMyPage';
-import ReviewWritePage from './pages/MyPage/ReviewWritePage';
+import NormalMyPage from './pages/my-page/NormalMyPage';
+import ReformerSearch from './pages/reformer-search/ReformerSearch';
+import ReformerSearchResults from './pages/reformer-search/ReformerSearchResults';
+import ReformerListView from './pages/reformer-search/ReformerListView';
+import FeedListView from './pages/reformer-search/FeedListView';
+import ReviewWritePage from './pages/my-page/ReviewWritePage';
 
- {/* 회원가입 페이지 */}
 import SignupPage from './pages/Signup/SignupPage';
 import SignupTypeSelection from './pages/Signup/SignupTypeSelection';
 import SignupFormPage from './pages/Signup/SignupFormPage';
@@ -41,13 +44,23 @@ function App() {
          {/* 위시리스트 페이지 */}
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/reformer/wishlist" element={<ReformerWishlist />} />
-        <Route path="/reformer-mypage" element={<ReformerMyPage />} />
+
+        {/* 리폼러 찾기 페이지 */}
+        <Route path="/reformer-search" element={<ReformerSearch />} />
+        <Route path="/reformer-search/results" element={<ReformerSearchResults />} />
+        <Route path="/reformer-search/all" element={<ReformerListView />} />
+        <Route path="/reformer-search/feed" element={<FeedListView />} />
+
+        <Route path="reformer-mypage" element={<ReformerMyPage />} />
         <Route path="/sales/create" element={<CreatePage type="sale" />} />
         <Route path="/custom/create" element={<CreatePage type="order" />} />
         <Route path="/reformer-profile-edit" element={<EditProfilePage />} />
         <Route path="/normal-mypage" element={<NormalMyPage />} />
         <Route path="/normal-profile-edit" element={<EditProfilePage />} />
-        <Route path="/mypage/review/write" element= {<ReviewWritePage />} />
+        <Route path="/mypage/review/write" element={<ReviewWritePage />} />
+
+        {/* 404 처리 */}
+        <Route path="*" element={<div>Not Found</div>} />
       </Route>
 
       <Route

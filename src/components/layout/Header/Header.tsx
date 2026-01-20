@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import chat from '../../../assets/icons/chat.svg';
+import bell from '../../../assets/icons/bell.svg';
 import heart from '../../../assets/icons/heart.svg';
 import shoppingCart from '../../../assets/icons/shoppingCart.svg';
 import profile from '../../../assets/icons/profile.svg';
@@ -192,7 +192,7 @@ export default function Header() {
         </div>
         <div className="flex items-center gap-[1.625rem] ml-auto">
           <button className="cursor-pointer">
-            <img src={chat} alt="chat" />
+            <img src={bell} alt="bell" />
           </button>
           <Link to="/wishlist" className="cursor-pointer">
             <img src={heart} alt="heart" />
