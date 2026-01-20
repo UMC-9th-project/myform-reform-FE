@@ -21,6 +21,7 @@ const ReformerSearchEngine = ({
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && onSearch) {
+      e.preventDefault();
       onSearch(searchQuery);
     }
   };
@@ -31,39 +32,46 @@ const ReformerSearchEngine = ({
     }
   };
 
-  return (
-    <div className={`flex justify-center ${className}`}>
-      <div className="relative isolate w-[620px] h-[328px] flex items-center justify-center overflow-hidden">
-        {/* 블러 배경 */}
-        <div
-          className="absolute inset-0 bg-[var(--color-mint-6)] rounded-full"
-          style={{
-            filter: 'blur(300px)',
-            borderRadius: '50%',
-            width: '100%',
-            height: '100%',
-          }}
-        />
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (onSearch) {
+      onSearch(searchQuery);
+    }
+  };
 
-        {/* 검색바 */}
-        <div className="relative z-10 w-[619px]">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={handleChange}
-            onKeyPress={handleKeyPress}
-            placeholder={placeholder}
-            className="body-b1-rg w-full py-[0.875rem] pl-[1.5rem] pr-[3rem] rounded-[6.25rem] border border-[var(--color-mint-1)] text-[var(--color-black)] placeholder:text-[var(--color-gray-40)] focus:outline-none focus:border-[var(--color-mint-1)] transition-colors bg-white"
+  return (
+    <div className={`flex justify-center pb-[4.375rem] ${className}`}>
+        <div className="relative w-[720px] h-[328px] flex items-center justify-center">
+          {/* 타원형 블러 배경 */}
+          <div 
+            className="absolute inset-0 rounded-full blur-3xl"
+            style={{
+              background: 'var(--color-mint-6)',
+              filter: 'blur(100px)',
+              zIndex: 0,
+            }}
           />
-          <button
-            type="button"
-            onClick={handleSearchClick}
-            className="absolute right-[1.5rem] top-1/2 -translate-y-1/2 cursor-pointer z-20"
-          >
-            <img src={searchIcon} alt="search" className="w-6.5 h-6.5" />
-          </button>
+          
+          {/* 검색 입력 필드 */}
+          <form onSubmit={handleSearchSubmit} className="relative z-10 w-full px-[1.5rem]">
+            <div className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={handleChange}
+                onKeyPress={handleKeyPress}
+                placeholder={placeholder}
+                className="body-b1-rg w-full py-[0.875rem] pl-[1.5rem] pr-[3rem] rounded-[6.25rem] border-1 border-[var(--color-mint-1)] text-[var(--color-black)] placeholder:text-[var(--color-gray-50)] focus:outline-none focus:border-[var(--color-mint-1)] transition-colors bg-white"
+              />
+              <div 
+                className="absolute right-[1.5rem] top-1/2 -translate-y-1/2 cursor-pointer"
+                onClick={handleSearchClick}
+              >
+                <img src={searchIcon} alt="search" className="w-[1.625rem] h-[1.625rem]" />
+              </div>
+            </div>
+          </form>
         </div>
-      </div>
     </div>
   );
 };
