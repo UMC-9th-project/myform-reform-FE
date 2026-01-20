@@ -22,12 +22,12 @@ const ReformerSearchResultCard = ({
 }: ReformerSearchResultCardProps) => {
   return (
     <div
-      className="bg-white pt-4 pb-3 flex gap-[1.5rem] cursor-pointer w-[719px] border-b border-[var(--color-gray-40)]"
+      className="bg-white py-4 flex gap-[1.5rem] cursor-pointer w-[719px] border-b border-[var(--color-gray-40)]"
      
       onClick={onClick}
     >
       {/* 왼쪽: 텍스트 정보 */}
-      <div className="flex-1 flex flex-col gap-[0.575rem]">
+      <div className="flex-1 flex flex-col gap-[0.475rem]">
         {/* 이름 */}
         <h3 className="body-b0-sb text-[var(--color-black)]">{name}</h3>
 

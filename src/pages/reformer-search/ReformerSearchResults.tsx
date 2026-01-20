@@ -9,7 +9,7 @@ import Pagination from '../../components/common/Pagination/Pagination';
 const MOCK_SEARCH_RESULTS = [
   {
     id: 1,
-    name: '집착한 대머리독수리',
+    name: '침착한 대머리독수리',
     rating: 4.9,
     reviewCount: 271,
     transactionCount: 415,
@@ -19,7 +19,7 @@ const MOCK_SEARCH_RESULTS = [
   },
   {
     id: 2,
-    name: '집착한 대머리독수리',
+    name: '침착한 대머리독수리',
     rating: 4.9,
     reviewCount: 271,
     transactionCount: 415,
@@ -29,7 +29,7 @@ const MOCK_SEARCH_RESULTS = [
   },
   {
     id: 3,
-    name: '집착한 대머리독수리',
+    name: '침착한 대머리독수리',
     rating: 4.9,
     reviewCount: 271,
     transactionCount: 415,
@@ -39,7 +39,7 @@ const MOCK_SEARCH_RESULTS = [
   },
   {
     id: 4,
-    name: '집착한 대머리독수리',
+    name: '침착한 대머리독수리',
     rating: 4.9,
     reviewCount: 271,
     transactionCount: 415,
@@ -49,7 +49,7 @@ const MOCK_SEARCH_RESULTS = [
   },
   {
     id: 5,
-    name: '집착한 대머리독수리',
+    name: '침착한 대머리독수리',
     rating: 4.9,
     reviewCount: 271,
     transactionCount: 415,
@@ -59,7 +59,7 @@ const MOCK_SEARCH_RESULTS = [
   },
   {
     id: 6,
-    name: '집착한 대머리독수리',
+    name: '침착한 대머리독수리',
     rating: 4.9,
     reviewCount: 271,
     transactionCount: 415,
@@ -69,7 +69,7 @@ const MOCK_SEARCH_RESULTS = [
   },
   {
     id: 7,
-    name: '집착한 대머리독수리',
+    name: '침착한 대머리독수리',
     rating: 4.9,
     reviewCount: 271,
     transactionCount: 415,
@@ -79,7 +79,7 @@ const MOCK_SEARCH_RESULTS = [
   },
   {
     id: 8,
-    name: '집착한 대머리독수리',
+    name: '침착한 대머리독수리',
     rating: 4.9,
     reviewCount: 271,
     transactionCount: 415,
