@@ -4,19 +4,28 @@ import searchIcon from '../../layout/Header/icons/search.svg';
 interface ReformerSearchEngineProps {
   placeholder?: string;
   onSearch?: (query: string) => void;
+  onInputChange?: (query: string) => void;
   className?: string;
+  defaultValue?: string;
+  showBlur?: boolean;
 }
 
 const ReformerSearchEngine = ({
   placeholder = '원하는 리폼러를 검색해보세요.',
   onSearch,
+  onInputChange,
   className = '',
+  defaultValue = '',
+  showBlur = true,
 }: ReformerSearchEngineProps) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(defaultValue);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchQuery(value);
+    if (onInputChange) {
+      onInputChange(value);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -40,20 +49,22 @@ const ReformerSearchEngine = ({
   };
 
   return (
-    <div className={`flex justify-center pb-[4.375rem] ${className}`}>
-        <div className="relative w-[720px] h-[328px] flex items-center justify-center">
+    <div className={`flex justify-center ${className}`}>
+        <div className={`relative w-[720px] flex ${showBlur ? 'h-[328px] items-center justify-center' : 'pt-[68px] items-center justify-center'}`}>
           {/* 타원형 블러 배경 */}
-          <div 
-            className="absolute inset-0 rounded-full blur-3xl"
-            style={{
-              background: 'var(--color-mint-6)',
-              filter: 'blur(100px)',
-              zIndex: 0,
-            }}
-          />
+          {showBlur && (
+            <div 
+              className="absolute inset-0 rounded-full blur-3xl"
+              style={{
+                background: 'var(--color-mint-6)',
+                filter: 'blur(100px)',
+                zIndex: 0,
+              }}
+            />
+          )}
           
           {/* 검색 입력 필드 */}
-          <form onSubmit={handleSearchSubmit} className="relative z-10 w-full px-[1.5rem]">
+          <form onSubmit={handleSearchSubmit} className={`relative z-10 w-full ${showBlur ? '' : 'px-[0.25rem]'}`}>
             <div className="relative">
               <input
                 type="text"

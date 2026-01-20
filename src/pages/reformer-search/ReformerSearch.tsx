@@ -1,6 +1,9 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ReformerSearchEngine from '../../components/domain/reformer-search/ReformerSearchEngine';
 import ReformerList from '../../components/domain/reformer-search/ReformerList';
 import ReformFeed from '../../components/domain/reformer-search/ReformFeed';
+import ReformerSearchResultSkeleton from '../../components/domain/reformer-search/ReformerSearchResultSkeleton';
 
 // 더미 데이터
 const MOCK_REFORMERS = [
@@ -57,6 +60,18 @@ const MOCK_PREFERENCE_IMAGES = [
 ];
 
 const ReformerSearch = () => {
+  const navigate = useNavigate();
+  const [searchInput, setSearchInput] = useState('');
+
+  const handleSearch = (query: string) => {
+    if (query.trim()) {
+      navigate(`/reformer-search/results?q=${encodeURIComponent(query.trim())}`);
+    }
+  };
+
+  const handleInputChange = (value: string) => {
+    setSearchInput(value);
+  };
  
   return (
     <div className="bg-white pb-[7.4375rem]">
@@ -67,13 +82,28 @@ const ReformerSearch = () => {
         </h1>
 
         {/* 검색 바 */}
-        <ReformerSearchEngine/>
+        <ReformerSearchEngine 
+          onSearch={handleSearch} 
+          onInputChange={handleInputChange}
+          showBlur={!searchInput.trim()}
+        />
+
+        {/* 검색어 입력 중 스켈레톤 표시 */}
+        {searchInput.trim() && (
+          <div className="mb-[2.5rem]">
+            <ReformerSearchResultSkeleton count={8} />
+          </div>
+        )}
 
         {/* 전체 리폼러 한눈에 보기 */}
-        <ReformerList items={MOCK_REFORMERS}/>
+        {!searchInput.trim() && (
+          <>
+            <ReformerList items={MOCK_REFORMERS}/>
 
-        {/* 내 리폼 취향 탐색해보기 */}
-        <ReformFeed images={MOCK_PREFERENCE_IMAGES} />
+            {/* 내 리폼 취향 탐색해보기 */}
+            <ReformFeed images={MOCK_PREFERENCE_IMAGES} />
+          </>
+        )}
       </div>
     </div>
   );

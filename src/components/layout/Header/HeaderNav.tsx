@@ -20,7 +20,9 @@ export default function HeaderNav() {
     <nav className="w-full h-[77px] border-b border-[var(--color-gray-30)]">
       <div className=" flex pl-[3.125rem] pt-[1.0625rem] gap-[2.1875rem] ">
         {navItems.map((item, index) => {
-          const isActive = location.pathname === item.path;
+          const isActive = item.path === '/reformer-search'
+            ? location.pathname.startsWith('/reformer-search')
+            : location.pathname === item.path;
           return (
             <button
               key={index}

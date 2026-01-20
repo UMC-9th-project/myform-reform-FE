@@ -26,7 +26,7 @@ const ReformerList = ({
   className = '',
 }: ReformerListProps) => {
   return (
-    <section className={`pb-[6.25rem] px-[110px] ${className}`}>
+    <section className={`pt-[4.375rem] pb-[6.25rem] px-[110px] ${className}`}>
       <div className="flex items-center justify-between pb-[1.875rem] ">
         <div className="flex items-center gap-[0.5rem]">
          {/* 전체 리폼러 한눈에보기 */}

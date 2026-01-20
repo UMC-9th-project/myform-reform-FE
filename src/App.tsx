@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/PageLayout';
 import Home from './pages/Home';
 import Cart from './pages/cart/Cart';
-import Wishlist from './pages/wishlist/Wishlist';
+import Wishlist from './pages/wishlist/wishlist';
 import ReformerWishlist from './pages/wishlist-reformer/wishlist';
 import ReformerMyPage from './pages/my-page-Reform/ReformerMyPage';
 import CreatePage from './pages/my-page-Reform/CreatePage';
@@ -10,6 +10,7 @@ import EditProfilePage from './pages/my-page-Reform/EditProfilePage';
 import Profile from './pages/Profile';
 import NormalMyPage from './pages/my-page/NormalMyPage';
 import ReformerSearch from './pages/reformer-search/ReformerSearch';
+import ReformerSearchResults from './pages/reformer-search/ReformerSearchResults';
 
 function App() {
   return (
@@ -34,7 +35,7 @@ function App() {
 
         {/* 리폼러 찾기 페이지 */}
         <Route path="/reformer-search" element={<ReformerSearch />} />
-
+        <Route path="/reformer-search/results" element={<ReformerSearchResults />} />
         {/* 404 처리 */}
         <Route path="*" element={<div>Not Found</div>} />
 
