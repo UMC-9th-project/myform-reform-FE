@@ -11,11 +11,19 @@ import grayrepeat from '../Header/icons/grayrepeat.svg';
 import repeat from '../../../assets/icons/repeat.svg';
 import xIcon from '../../../assets/icons/x.svg';
 import logo from '../../../assets/logos/logo.svg';
+import { useUserTabStore, type UserTabType } from '../../../stores/tabStore';
 
 type UserType = 'customer' | 'seller';
 
 export default function Header() {
   const navigate = useNavigate();
+  // 탭으로 페이지 전환하기
+  const { setActiveTab } = useUserTabStore();
+    const handleTabClick = (tab: UserTabType) => {
+    setActiveTab(tab);       // store에 activeTab 업데이트
+    navigate('/normal-mypage'); // 페이지 이동
+  }; 
+
   const [userType, setUserType] = useState<UserType>('seller');
   const [searchValue, setSearchValue] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -262,19 +270,23 @@ export default function Header() {
                   <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]"></div>
 
                   <div className="px-[1.25rem]">
-                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer">
+                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer"
+                      onClick={() => handleTabClick('내 정보')}>
                       내 정보
                     </button>
 
-                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer">
+                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer"
+                      onClick={() => handleTabClick('내가 작성한 글')}>
                       내가 작성한 글
                     </button>
 
-                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer">
+                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer"
+                      onClick={() => handleTabClick('구매 이력')}>
                       구매 이력
                     </button>
 
-                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer">
+                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer"
+                      onClick={() => handleTabClick('나의 후기')}>
                       나의 후기
                     </button>
                   </div>

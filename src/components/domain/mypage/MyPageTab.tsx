@@ -27,15 +27,15 @@ const MyPageTabs = <T extends string>({
       </div>
 
       {/* 2. 탭 리스트 섹션 */}
-      <nav className="flex flex-col gap-6 w-full">
+      <nav className="flex flex-col gap-10 w-full">
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => onChangeTab(tab)}
-            className={`text-left body-b0-mb transition-all duration-200 ${
+            className={`text-left body-b0-md transition-all duration-200 ${
               activeTab === tab 
-                ? 'body-b0-mb text-black' // 활성화 상태: 굵게, 검정색
-                : 'body-b0-mb text-[var(--color-gray-50)]' // 비활성 상태: 중간 굵기, 회색
+                ? 'body-b0-md text-black' // 활성화 상태: 굵게, 검정색
+                : 'body-b0-md text-[var(--color-gray-50)]' // 비활성 상태: 중간 굵기, 회색
             }`}
           >
             {tab}

@@ -9,7 +9,7 @@ import CreatePage from './pages/MyPage-Reform/CreatePage';
 import EditProfilePage from './pages/MyPage-Reform/EditProfilePage';
 import Profile from './pages/Profile';
 import NormalMyPage from './pages/MyPage/NormalMyPage';
-
+import ReviewWritePage from './pages/MyPage/ReviewWritePage';
 
  {/* 회원가입 페이지 */}
 import SignupPage from './pages/Signup/SignupPage';
@@ -47,6 +47,7 @@ function App() {
         <Route path="/reformer-profile-edit" element={<EditProfilePage />} />
         <Route path="/normal-mypage" element={<NormalMyPage />} />
         <Route path="/normal-profile-edit" element={<EditProfilePage />} />
+        <Route path="/mypage/review/write" element= {<ReviewWritePage />} />
       </Route>
 
       <Route

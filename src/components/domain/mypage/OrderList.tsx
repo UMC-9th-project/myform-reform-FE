@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { useSellerTabStore } from '../../../stores/tabStore';
+
+interface OrderListProps {
+  mode?: 'reformer' | 'normal';
+  onClickDetail?: (id: string) => void;
+}
 
 // --- 데이터 타입 ---
 interface ProductOrder {
@@ -7,7 +11,7 @@ interface ProductOrder {
   orderNo: string;
   title: string;
   price: number;
-  buyer: string;
+  buyer?: string;
   date: string;
   image: string;
   status: '결제 완료' | '상품준비 중' | '발송 완료';
@@ -24,13 +28,12 @@ interface ReformProposal {
   status: '결제 완료' | '상품준비 중' | '발송 완료';
 }
 
-const OrderList = () => {
+const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail }) => {
 
-  const { selectedOrderId, setSelectedOrderId } = useSellerTabStore();
 
-  const handleDetailClick = (id:string) => {
-    console.log('클릭된 ID:', id);
-    setSelectedOrderId(id);
+  // 상세보기 클릭 시 ID 저장 (이후 상위 컴포넌트나 탭 스토어에서 상세 뷰를 보여줌)
+  const handleDetailClick = (id: string) => {
+    if (onClickDetail) onClickDetail(id);
   }
 
   // --- 상태 ---
@@ -41,7 +44,7 @@ const OrderList = () => {
 
   // --- 샘플 데이터 ---
   const productData: ProductOrder[] = [
-    { id: '1', orderNo: '0000000001', title: '야구단 유니폼 리폼 상품', price: 75000, buyer: '돈 많은 만수르', date: '2025. 10. 14. 23:45:23', image: '', status: '결제 완료' },
+    { id: '1', orderNo: '0000000000', title: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.', price: 75000, buyer: '돈 많은 만수르', date: '2025. 10. 14. 23:45:23', image: '', status: '결제 완료' },
     { id: '2', orderNo: '0000000002', title: '커스텀 자수 서비스', price: 30000, buyer: '김철수', date: '2025. 10. 15. 12:00:00', image: '', status: '상품준비 중' },
   ];
 
@@ -54,17 +57,16 @@ const OrderList = () => {
   const filteredReformData = filterStatus === '전체' ? reformData : reformData.filter(item => item.status === filterStatus);
 
   return (
-    <div className="w-100% mx-auto bg-transparent min-h-screen p-4">
+    <div className="w-full mx-auto bg-transparent min-h-screen p-4">
       
       {/* --- 상단 탭 + 필터 --- */}
       <div className="flex justify-between items-center mb-6">
-        {/* 탭 */}
         <div className="flex gap-2">
           <button 
             onClick={() => setActiveOrderTab('product')}
             className={`px-5 py-2 rounded-full border body-b1-rg transition-all text-black cursor-pointer ${
               activeOrderTab === 'product' 
-                ? 'border-[var(--color-mint-0)] bg-[var(--color-mint-6)] shadow-sm' 
+                ? 'border-[var(--color-mint-0)] bg-[var(--color-mint-6)]' 
                 : 'border-[var(--color-mint-0)] bg-transparent'
             }`}
           >
@@ -74,7 +76,7 @@ const OrderList = () => {
             onClick={() => setActiveOrderTab('reform')}
             className={`px-5 py-2 rounded-full border body-b1-rg transition-all text-black cursor-pointer ${
               activeOrderTab === 'reform' 
-                ? 'border-[var(--color-mint-0)] bg-[var(--color-mint-6)] shadow-sm' 
+                ? 'border-[var(--color-mint-0)] bg-[var(--color-mint-6)]' 
                 : 'border-[var(--color-mint-0)] bg-transparent'
             }`}
           >
@@ -82,11 +84,10 @@ const OrderList = () => {
           </button>
         </div>
 
-        {/* 진행 상태 필터 */}
         <div className="relative">
           <button 
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="flex items-center gap-2 body-b1-rg text-[var(--color-gray-60)] bg-transparent outline-none"
+            className="flex items-center gap-2 body-b1-rg text-[var(--color-gray-60)] bg-transparent outline-none cursor-pointer"
           >
             {filterStatus}
             <span className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}>
@@ -121,8 +122,6 @@ const OrderList = () => {
               </ul>
             </div>
           )}
-
-          {/* 드롭다운 외부 클릭용 레이어 */}
           {isDropdownOpen && <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />}
         </div>
       </div>
@@ -132,37 +131,60 @@ const OrderList = () => {
         {activeOrderTab === 'product' ? (
           filteredProductData.map((item) => (
             <div key={item.id} className="bg-white border border-[var(--color-line-gray-40)] rounded-[1.25rem] p-5">
+              {/* 상단: 주문번호 + 상세보기 버튼 (다시 추가됨) */}
               <div className="flex justify-between items-center mb-4 text-[var(--color-gray-50)] body-b1-rg">
                 <span>주문번호 {item.orderNo}</span>
-                <button className="flex items-center gap-3 hover:text-black" onClick={() => handleDetailClick(item.id)}>상세보기<span>❯</span></button>
+                <button 
+                  className="flex items-center gap-3 hover:text-black cursor-pointer" 
+                  onClick={() => handleDetailClick(item.id)}
+                >
+                  상세보기<span>❯</span>
+                </button>
               </div>
-              <div className="flex gap-4">
-                <div className="w-40 h-40 bg-gray-100 flex-shrink-0">{item.image}</div>
-                <div className="flex flex-col gap-1 overflow-hidden">
-                  <h4 className="body-b0-md text-black truncate">{item.title}</h4>
-                  <div className="grid grid-cols-[5rem_1fr] text-[14px] mt-1 gap-y-0.5 gap-x-4">
-                    <span className="body-b0-rg text-[var(--color-gray-50)]">결제금액</span>
-                    <span className="body-b0-rg text-black">{item.price.toLocaleString()}원</span>
-                    <span className="body-b0-rg text-[var(--color-gray-50)]">구매자</span>
-                    <span className="body-b0-rg text-black">{item.buyer}</span>
-                    <span className="body-b0-rg text-[var(--color-gray-50)]">결제 일시</span>
-                    <span className="body-b0-rg text-[#4B5563]">{item.date}</span>
-                    <span className='body-b0-rg text-[var(--color-gray-50)]'>진행 상태</span>
-                    <span className='body-b0-rg text-[var(--color-mint-1)]'>{item.status}</span>
+              
+              {/* 이미지 + 정보 + 버튼 컨테이너 */}
+              <div className="flex justify-between items-end gap-4">
+                <div className="flex gap-4">
+                  <div className="w-40 h-40 bg-gray-100 flex-shrink-0 overflow-hidden">
+                    {item.image ? <img src={item.image} alt="" className="w-full h-full object-cover"/> : null}
+                  </div>
+                  
+                  <div className="flex flex-col gap-1 overflow-hidden">
+                    <h4 className="body-b0-md text-black truncate">{item.title}</h4>
+                    <div className="grid grid-cols-[5rem_1fr] text-[14px] mt-1 gap-y-0.5 gap-x-4">
+                      <span className="body-b0-rg text-[var(--color-gray-50)]">결제금액</span>
+                      <span className="body-b0-rg text-black">{item.price.toLocaleString()}원</span>
+                      <span className="body-b0-rg text-[var(--color-gray-50)]">구매자</span>
+                      <span className="body-b0-rg text-black">{item.buyer}</span>
+                      <span className="body-b0-rg text-[var(--color-gray-50)]">결제 일시</span>
+                      <span className="body-b0-rg text-[#4B5563]">{item.date}</span>
+                      <span className='body-b0-rg text-[var(--color-gray-50)]'>진행 상태</span>
+                      <span className='body-b0-rg text-[var(--color-mint-1)]'>{item.status}</span>
+                    </div>
                   </div>
                 </div>
+
+                {/* 후기 작성하기 버튼 (우측 하단 배치) */}
+                {mode === 'normal' && (
+                  <button className="px-6 py-3 border border-[var(--color-mint-0)] bg-[var(--color-mint-6)] text-[var(--color-mint-1)] rounded-[0.75rem] body-b1-rg hover:brightness-95 transition-all whitespace-nowrap">
+                    후기 작성하기
+                  </button>
+                )}
               </div>
             </div>
           ))
         ) : (
+          /* 주문 제작 탭 리스트 */
           filteredReformData.map((item) => (
             <div key={item.id} className="bg-white border border-[var(--color-line-gray-40)] rounded-[1.25rem] p-5">
               <div className="flex justify-between items-center mb-4 text-[var(--color-gray-50)] body-b1-rg">
                 <span>주문번호 {item.proposalNo}</span>
-                <button className="flex items-center gap-3 hover:text-black">채팅 바로가기<span>❯</span></button>
+                <button className="flex items-center gap-3 hover:text-black cursor-pointer">
+                  채팅 바로가기<span>❯</span>
+                </button>
               </div>
               <div className="flex gap-4">
-                <div className="w-35 h-33 bg-[#F1F3F5] flex-shrink-0" />
+                <div className="w-35 h-33 bg-[#F1F3F5] flex-shrink-0 rounded-lg" />
                 <div className="flex flex-col gap-1 overflow-hidden">
                   <h4 className="body-b0-md text-[#1A1A1A] truncate">{item.description}</h4>
                   <div className="grid grid-cols-[70px_1fr] text-[14px] mt-1 gap-y-0.5 gap-x-4">
@@ -182,7 +204,7 @@ const OrderList = () => {
         {/* 데이터가 없을 때 */}
         {((activeOrderTab === 'product' && filteredProductData.length === 0) || 
           (activeOrderTab === 'reform' && filteredReformData.length === 0)) && (
-          <div className="text-center py-20 text-gray-400">내역이 없습니다.</div>
+          <div className="text-center py-20 text-gray-400 body-b1-rg">내역이 없습니다.</div>
         )}
       </div>
     </div>

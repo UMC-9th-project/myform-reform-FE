@@ -23,8 +23,18 @@ export type UserTabType = '내 정보' | '내가 작성한 글' | '구매 이력
 interface UserTabStore {
   activeTab: UserTabType;
   setActiveTab: (tab: UserTabType) => void;
+  
+  // 구매 내역 상세보기용
   selectedOrderId: string | null;
   setSelectedOrderId: (id: string | null) => void;
+  
+  // 내가 작성한 후기 상세보기/수정용
+  selectedReviewId: string | null;
+  setSelectedReviewId: (id: string | null) => void;
+
+  // 후기 작성 모달/페이지 제어용 (필요시 추가)
+  isReviewModalOpen: boolean;
+  setReviewModalOpen: (val: boolean) => void;
 }
 
 export const useUserTabStore = create<UserTabStore>((set) => ({
@@ -32,4 +42,9 @@ export const useUserTabStore = create<UserTabStore>((set) => ({
   setActiveTab: (tab) => set({ activeTab: tab }),
   selectedOrderId: null,
   setSelectedOrderId: (id) => set({ selectedOrderId: id }),
+  selectedReviewId: null,
+  setSelectedReviewId: (id) => set({selectedReviewId: id}),
+  isReviewModalOpen: false, // 초기값
+  setReviewModalOpen: (val: boolean) => set({ isReviewModalOpen: val }), // setter
+  
 }));
