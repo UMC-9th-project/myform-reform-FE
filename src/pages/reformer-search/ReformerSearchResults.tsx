@@ -18,86 +18,86 @@ type MockReformerSearchResult = {
 
 // 검색 결과 더미 데이터
 const MOCK_SEARCH_RESULTS: MockReformerSearchResult[] = [
-  // {
-  //   id: 1,
-  //   name: '침착한 대머리독수리',
-  //   rating: 4.9,
-  //   reviewCount: 271,
-  //   transactionCount: 415,
-  //   description:
-  //     '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
-  //   tags: ['#빠른', '#친절한'],
-  // },
-  // {
-  //   id: 2,
-  //   name: '침착한 대머리독수리',
-  //   rating: 4.9,
-  //   reviewCount: 271,
-  //   transactionCount: 415,
-  //   description:
-  //     '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
-  //   tags: ['#빠른', '#친절한'],
-  // },
-  // {
-  //   id: 3,
-  //   name: '침착한 대머리독수리',
-  //   rating: 4.9,
-  //   reviewCount: 271,
-  //   transactionCount: 415,
-  //   description:
-  //     '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
-  //   tags: ['#빠른', '#친절한'],
-  // },
-  // {
-  //   id: 4,
-  //   name: '침착한 대머리독수리',
-  //   rating: 4.9,
-  //   reviewCount: 271,
-  //   transactionCount: 415,
-  //   description:
-  //     '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
-  //   tags: ['#빠른', '#친절한'],
-  // },
-  // {
-  //   id: 5,
-  //   name: '침착한 대머리독수리',
-  //   rating: 4.9,
-  //   reviewCount: 271,
-  //   transactionCount: 415,
-  //   description:
-  //     '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
-  //   tags: ['#빠른', '#친절한'],
-  // },
-  // {
-  //   id: 6,
-  //   name: '침착한 대머리독수리',
-  //   rating: 4.9,
-  //   reviewCount: 271,
-  //   transactionCount: 415,
-  //   description:
-  //     '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
-  //   tags: ['#빠른', '#친절한'],
-  // },
-  // {
-  //   id: 7,
-  //   name: '침착한 대머리독수리',
-  //   rating: 4.9,
-  //   reviewCount: 271,
-  //   transactionCount: 415,
-  //   description:
-  //     '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
-  //   tags: ['#빠른', '#친절한'],
-  // },
-  // {
-  //   id: 8,
-  //   name: '침착한 대머리독수리',
-  //   rating: 4.9,
-  //   reviewCount: 271,
-  //   transactionCount: 415,
-  //   description:
-  //     '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
-  //   tags: ['#빠른', '#친절한'],
-  // },
+  {
+    id: 1,
+    name: '침착한 대머리독수리',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
+    tags: ['#빠른', '#친절한'],
+  },
+  {
+    id: 2,
+    name: '침착한 대머리독수리',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
+    tags: ['#빠른', '#친절한'],
+  },
+  {
+    id: 3,
+    name: '침착한 대머리독수리',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
+    tags: ['#빠른', '#친절한'],
+  },
+  {
+    id: 4,
+    name: '침착한 대머리독수리',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
+    tags: ['#빠른', '#친절한'],
+  },
+  {
+    id: 5,
+    name: '침착한 대머리독수리',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
+    tags: ['#빠른', '#친절한'],
+  },
+  {
+    id: 6,
+    name: '침착한 대머리독수리',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
+    tags: ['#빠른', '#친절한'],
+  },
+  {
+    id: 7,
+    name: '침착한 대머리독수리',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
+    tags: ['#빠른', '#친절한'],
+  },
+  {
+    id: 8,
+    name: '침착한 대머리독수리',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
+    tags: ['#빠른', '#친절한'],
+  },
 ];
 
 const ReformerSearchResults = () => {
@@ -128,9 +128,9 @@ const ReformerSearchResults = () => {
 
   return (
     <div className="bg-white pb-[7.4375rem]">
-      <div className="px-[3.125rem] pt-[3.125rem]">
+      <div className="px-4 md:px-[3.125rem] pt-8 md:pt-[3.125rem]">
         {/* 제목 */}
-        <div className="mb-[2rem] pl-[110px]">
+        <div className="mb-[2rem] pl-0 md:pl-[110px]">
           <h1 className="heading-h2-bd mb-[0.5rem]">
             <span className="text-[var(--color-mint-1)]">‘</span>
             <span className="text-[var(--color-mint-1)]">{query}</span>

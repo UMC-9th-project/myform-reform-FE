@@ -10,7 +10,7 @@ const ReformerSearchResultSkeleton = ({
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className={`w-[719px] flex flex-col gap-4 py-5 ${
+          className={`w-full max-w-[719px] flex flex-col gap-4 py-5 ${
             index === count - 1 ? '' : 'border-b border-[var(--color-gray-40)]'
           }`}
         >
@@ -21,7 +21,7 @@ const ReformerSearchResultSkeleton = ({
               <div className="h-6 bg-[var(--color-gray-30)]  w-1/3 animate-pulse" />
             </div>
 
-            <div className="w-[100px] h-[100px] rounded-[10px] bg-[var(--color-gray-30)] flex-shrink-0 animate-pulse" />
+            <div className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded-[10px] bg-[var(--color-gray-30)] flex-shrink-0 animate-pulse" />
           </div>
 
         <div className="gap-[0.5rem] flex flex-col">

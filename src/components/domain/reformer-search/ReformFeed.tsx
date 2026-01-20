@@ -22,8 +22,8 @@ const ReformFeed = ({
   onCardClick,
 }: ReformFeedProps) => {
   return (
-    <section className={`mb-[4.375rem] px-[110px] ${className}`}>
-      <div className="flex items-center justify-between mb-[1.875rem]">
+    <section className={`mb-8 md:mb-[4.375rem] px-4 md:px-[110px] ${className}`}>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-[1.875rem] gap-4">
         <div className="flex items-center gap-[0.5rem]">
           <h2 className="heading-h4-bd text-[var(--color-black)]">{title}</h2>
       
@@ -37,7 +37,7 @@ const ReformFeed = ({
           <img src={rightIcon} alt="right" className="w-[2rem] h-[2rem] mb-[0.25rem]" />
         </button>
       </div>
-      <div className="grid grid-cols-4 gap-[0.875rem]">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-[0.875rem]">
         {images.map((item) => (
           <ReformFeedCard
             key={item.id}

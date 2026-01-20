@@ -50,7 +50,7 @@ const ReformerSearchEngine = ({
 
   return (
     <div className={`flex justify-center ${className}`}>
-        <div className={`relative w-[720px] flex ${showBlur ? 'h-[328px] items-center justify-center' : 'pt-[68px] items-center justify-center'}`}>
+        <div className={`relative w-full max-w-[720px] flex ${showBlur ? 'h-[328px] items-center justify-center' : 'pt-[68px] items-center justify-center'}`}>
           {/* 타원형 블러 배경 */}
           {showBlur && (
             <div 
@@ -64,7 +64,7 @@ const ReformerSearchEngine = ({
           )}
           
           {/* 검색 입력 필드 */}
-          <form onSubmit={handleSearchSubmit} className={`relative z-10 w-full ${showBlur ? '' : 'px-[0.25rem]'}`}>
+          <form onSubmit={handleSearchSubmit} className={`relative z-10 w-full ${showBlur ? '' : 'px-4 md:px-0'}`}>
             <div className="relative">
               <input
                 type="text"

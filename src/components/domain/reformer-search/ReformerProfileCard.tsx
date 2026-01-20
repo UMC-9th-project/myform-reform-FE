@@ -22,19 +22,19 @@ const ReformerSearchCard = ({
 }: ReformerSearchCardProps) => {
   return (
     <div
-      className=" bg-white rounded-[1.25rem] p-[1.5rem] flex flex-col gap-[0.875rem] cursor-pointer w-full"
+      className="bg-white rounded-[1.25rem] p-4 md:p-[1.5rem] flex flex-col gap-2 md:gap-[0.875rem] cursor-pointer w-full"
       style={{
         boxShadow: '0px 3px 11px 0px rgba(0, 0, 0, 0.22)',
-        height: '250px',
+        minHeight: '250px',
       }}
       onClick={onClick}
     >
       {/* 프로필 이미지와 이름 */}
-      <div className="flex items-center gap-[0.75rem]">
+      <div className="flex items-center gap-2 md:gap-[0.75rem]">
         <img
           src={profile}
           alt={name}
-          className="w-[5.75rem] h-[5.75rem] rounded-full object-cover border border-[rgba(0,0,0,0.15)]"
+          className="w-12 h-12 md:w-[5.75rem] md:h-[5.75rem] rounded-full object-cover border border-[rgba(0,0,0,0.15)] flex-shrink-0"
         />
         <div className="flex flex-col gap-[0.25rem]">
           <h3 className="body-b0-sb text-[var(--color-black)]">{name}</h3>

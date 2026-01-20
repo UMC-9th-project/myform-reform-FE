@@ -75,9 +75,9 @@ const ReformerSearch = () => {
  
   return (
     <div className="bg-white pb-[7.4375rem]">
-      <div className="px-[3.125rem] pt-[3.125rem]">
+      <div className="px-4 md:px-[3.125rem] pt-8 md:pt-[3.125rem]">
         {/* 제목 */}
-        <h1 className="heading-h2-bd text-[var(--color-black)] mb-[2.5rem] pl-[110px]">
+        <h1 className="heading-h2-bd text-[var(--color-black)] mb-[2.5rem] pl-0 md:pl-[110px]">
           리폼러 찾기
         </h1>
 

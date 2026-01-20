@@ -24,7 +24,7 @@ const ReformerSearchResultCard = ({
 }: ReformerSearchResultCardProps) => {
   return (
     <div
-      className={`bg-white py-4 flex gap-[1.5rem] cursor-pointer w-[719px] ${isLast ? '' : 'border-b border-[var(--color-gray-40)]'}`}
+      className={`bg-white py-4 flex gap-4 md:gap-[1.5rem] cursor-pointer w-full max-w-[719px] ${isLast ? '' : 'border-b border-[var(--color-gray-40)]'}`}
       onClick={onClick}
     >
       {/* 왼쪽: 텍스트 정보 */}
@@ -75,7 +75,7 @@ const ReformerSearchResultCard = ({
         <img
           src={profile}
           alt={name}
-          className="w-[100px] h-[100px] rounded-[10px] object-cover border border-[rgba(0,0,0,0.15)]"
+          className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded-[10px] object-cover border border-[rgba(0,0,0,0.15)]"
         />
       </div>
     </div>

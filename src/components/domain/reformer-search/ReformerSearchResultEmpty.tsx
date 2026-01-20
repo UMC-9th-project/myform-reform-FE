@@ -2,7 +2,7 @@ import searchIcon from '../../../assets/icons/search2.svg';
 
 const ReformerSearchResultEmpty = () => {
   return (
-    <div className="flex flex-col items-center justify-center pt-16">
+    <div className="flex flex-col items-center justify-center pt-16 px-4 text-center">
       {/* 큰 돋보기 아이콘 */}
       <div className="mb-[2rem]">
         <img
