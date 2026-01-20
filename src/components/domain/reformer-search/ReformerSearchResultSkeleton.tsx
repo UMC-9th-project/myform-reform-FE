@@ -6,7 +6,7 @@ const ReformerSearchResultSkeleton = ({
   count = 8,
 }: ReformerSearchResultSkeletonProps) => {
   return (
-    <div className="pt-12 space-y-2 flex flex-col items-center justify-center">
+    <div className="pt-16 space-y-2 flex flex-col items-center justify-center">
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
