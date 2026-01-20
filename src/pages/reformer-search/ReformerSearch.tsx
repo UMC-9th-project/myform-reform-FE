@@ -98,10 +98,16 @@ const ReformerSearch = () => {
         {/* 전체 리폼러 한눈에 보기 */}
         {!searchInput.trim() && (
           <>
-            <ReformerList items={MOCK_REFORMERS}/>
+            <ReformerList 
+              items={MOCK_REFORMERS}
+              onMoreClick={() => navigate('/reformer-search/all')}
+            />
 
             {/* 내 리폼 취향 탐색해보기 */}
-            <ReformFeed images={MOCK_PREFERENCE_IMAGES} />
+            <ReformFeed 
+              images={MOCK_PREFERENCE_IMAGES}
+              onMoreClick={() => navigate('/reformer-search/feed')}
+            />
           </>
         )}
       </div>

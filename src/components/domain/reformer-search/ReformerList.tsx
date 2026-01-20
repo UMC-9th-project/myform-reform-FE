@@ -37,7 +37,7 @@ const ReformerList = ({
         <button
           type="button"
           onClick={onMoreClick}
-          className="body-b1-rg text-[var(--color-gray-60)] hover:text-[var(--color-black)] transition-colors flex items-center gap-[0.5rem]"
+          className="body-b1-rg text-[var(--color-gray-60)] hover:text-[var(--color-black)] transition-colors flex items-center gap-[0.5rem] cursor-pointer"
         >
           <span>더보기</span>
           <img src={rightIcon} alt="right" className="w-[2rem] h-[2rem] mb-[0.25rem]" />

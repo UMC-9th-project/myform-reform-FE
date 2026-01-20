@@ -11,6 +11,8 @@ import Profile from './pages/Profile';
 import NormalMyPage from './pages/my-page/NormalMyPage';
 import ReformerSearch from './pages/reformer-search/ReformerSearch';
 import ReformerSearchResults from './pages/reformer-search/ReformerSearchResults';
+import ReformerListView from './pages/reformer-search/ReformerListView';
+import FeedListView from './pages/reformer-search/FeedListView';
 
 function App() {
   return (
@@ -36,6 +38,8 @@ function App() {
         {/* 리폼러 찾기 페이지 */}
         <Route path="/reformer-search" element={<ReformerSearch />} />
         <Route path="/reformer-search/results" element={<ReformerSearchResults />} />
+        <Route path="/reformer-search/all" element={<ReformerListView />} />
+        <Route path="/reformer-search/feed" element={<FeedListView />} />
         {/* 404 처리 */}
         <Route path="*" element={<div>Not Found</div>} />
 
