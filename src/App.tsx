@@ -51,8 +51,7 @@ function App() {
         <Route path="/reformer-search/all" element={<ReformerListView />} />
         <Route path="/reformer-search/feed" element={<FeedListView />} />
 
-        {/* 마이페이지 */}
-        <Route path="/reformer-mypage" element={<ReformerMyPage />} />
+        <Route path="reformer-mypage" element={<ReformerMyPage />} />
         <Route path="/sales/create" element={<CreatePage type="sale" />} />
         <Route path="/custom/create" element={<CreatePage type="order" />} />
         <Route path="/reformer-profile-edit" element={<EditProfilePage />} />
