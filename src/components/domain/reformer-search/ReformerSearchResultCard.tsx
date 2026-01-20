@@ -9,6 +9,7 @@ interface ReformerSearchResultCardProps {
   description: string;
   tags: string[];
   onClick?: () => void;
+  isLast?: boolean;
 }
 
 const ReformerSearchResultCard = ({
@@ -19,11 +20,11 @@ const ReformerSearchResultCard = ({
   description,
   tags,
   onClick,
+  isLast = false,
 }: ReformerSearchResultCardProps) => {
   return (
     <div
-      className="bg-white py-4 flex gap-[1.5rem] cursor-pointer w-[719px] border-b border-[var(--color-gray-40)]"
-     
+      className={`bg-white py-4 flex gap-[1.5rem] cursor-pointer w-[719px] ${isLast ? '' : 'border-b border-[var(--color-gray-40)]'}`}
       onClick={onClick}
     >
       {/* 왼쪽: 텍스트 정보 */}
