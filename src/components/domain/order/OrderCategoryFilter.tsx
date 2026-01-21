@@ -21,7 +21,7 @@ const categoriesData: CategoryData[] = [
       { id: 3, label: '하의' },
       { id: 4, label: '아우터' },
     ],
-    defaultOpen: true,
+    defaultOpen: false,
   },
   {
     title: '잡화',
@@ -62,15 +62,15 @@ const categoriesData: CategoryData[] = [
 ];
 
 interface OrderCategoryFilterProps {
-  onCategoryChange?: (categoryIndex: number, itemId: number) => void;
+  onCategoryChange?: (categoryIndex: number, itemId: number, categoryTitle: string, itemLabel: string) => void;
 }
 
 const OrderCategoryFilter = ({ onCategoryChange }: OrderCategoryFilterProps) => {
   const [openStates, setOpenStates] = useState<boolean[]>(
-    categoriesData.map((category) => category.defaultOpen || false)
+    categoriesData.map(() => false)
   );
-  // 전체 카테고리 중 하나만 선택 (형식: "categoryIndex-itemId")
-  const [selectedItem, setSelectedItem] = useState<string>('0-1'); // 기본값: 의류 > 전체
+ 
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
   const toggleMenu = (index: number) => {
     setOpenStates((prev) => {
@@ -83,7 +83,9 @@ const OrderCategoryFilter = ({ onCategoryChange }: OrderCategoryFilterProps) => 
   const handleItemClick = (categoryIndex: number, itemId: number) => {
     const itemKey = `${categoryIndex}-${itemId}`;
     setSelectedItem(itemKey);
-    onCategoryChange?.(categoryIndex, itemId);
+    const category = categoriesData[categoryIndex];
+    const item = category.items.find((i) => i.id === itemId);
+    onCategoryChange?.(categoryIndex, itemId, category.title, item?.label || '');
   };
 
   return (

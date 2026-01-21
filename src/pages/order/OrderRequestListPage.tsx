@@ -24,15 +24,24 @@ const TOTAL_PAGES = Math.ceil(MOCK_REQUESTS.length / ITEMS_PER_PAGE);
 
 const OrderRequestListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState<{
+    categoryTitle: string;
+    itemLabel: string;
+  } | null>(null);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleCategoryChange = (categoryIndex: number, itemId: number) => {
-    // 카테고리 변경 시 필터링 로직 추가 가능
-    console.log('카테고리 변경:', categoryIndex, itemId);
+  const handleCategoryChange = (
+    categoryIndex: number,
+    itemId: number,
+    categoryTitle: string,
+    itemLabel: string
+  ) => {
+    setSelectedCategory({ categoryTitle, itemLabel });
+    console.log('카테고리 변경:', categoryIndex, itemId, categoryTitle, itemLabel);
   };
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -58,16 +67,18 @@ const OrderRequestListPage = () => {
           {/* 오른쪽 메인 콘텐츠 */}
           <div className="flex flex-col flex-1 max-w-full">
              {/* 브레드크럼 */}
-            <div className="body-b1-rg text-[var(--color-gray-60)] mb-6  ">
+            <div className="body-b1-rg text-[var(--color-gray-60)] mb-4  ">
               <Breadcrumb items={breadcrumbItems} />
             </div>
             {/* 페이지 제목 */}
             <h1 className="heading-h4-bd text-[var(--color-black)] mb-6 ">
-              전체
+              {selectedCategory
+                ? `${selectedCategory.categoryTitle} > ${selectedCategory.itemLabel}`
+                : '전체'}
             </h1>
 
             {/* 헤더 */}
-            <div className="mb-5">
+            <div className="mb-5 mt-3">
               <div className="flex flex-row items-start sm:items-center justify-between ">
                 <p className="body-b1-rg text-[var(--color-gray-60)]">
                   총 {MOCK_REQUESTS.length}개의 제품
