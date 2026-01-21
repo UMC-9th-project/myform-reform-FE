@@ -27,7 +27,7 @@ const EmptyChatRoom = () => {
               disabled
               className="px-3 py-1.5 border rounded-full body-b5-rg"
             >
-              결제창 보내기
+              요청서 보내기
             </button>
           </div>
 

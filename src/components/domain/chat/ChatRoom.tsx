@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Image from '../../../assets/chat/Image.svg';
+import Gallery from '../../../assets/chat/Gallery.svg'
 import QuotationCard from './QuotationCard';
 import PaymentCard from './PaymentCard';
 import PaymentModal, { type PaymentRequestData } from './PaymentModal';
@@ -181,53 +181,68 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
             )}
 
             {/* 메시지 + 시간 */}
-            <div className={`flex ${msg.senderRole === myRole ? 'flex-row-reverse' : 'flex-row'} gap-1.5`}>
-              {msg.type === 'payment' ? (
+            <div className={`flex ${msg.senderRole === myRole ? 'flex-row-reverse' : 'flex-row'} items-end gap-1.5`}>
+              
+              {/* 견적서와 결제창은 말풍선 디자인이 다르므로 별도 처리 */}
+              {msg.type === 'quotation' ? (
+                <QuotationCard type={msg.senderRole === myRole ? 'sent' : 'received'} id={msg.id} chatId={chatId} />
+              ) : msg.type === 'payment' ? (
                 <PaymentCard 
                   price={msg.price!} 
                   delivery={msg.delivery!} 
                   days={msg.days!} 
                   type={msg.senderRole === myRole ? 'sent' : 'received'}
                 />
-              ) : msg.type === 'quotation' ? (
-                <QuotationCard type={msg.senderRole === myRole ? 'sent' : 'received'} id={msg.id} chatId={chatId} />
-              ) : msg.type === 'text' ? (
-                <div className={`p-3 rounded-[0.625rem] max-w-[40rem] text-[1rem] leading-relaxed ${
+              ) : (
+                /* 텍스트와 이미지는 동일한 말풍선 배경(Mint/Gray)을 사용하도록 통합 */
+                <div className={`p-2 rounded-[0.625rem] max-w-[40rem] ${
                     msg.senderRole === myRole
                       ? 'bg-[var(--color-mint-5)] text-black rounded-tr-none'
                       : 'bg-[var(--color-gray-20)] text-black rounded-tl-none'
                   }`}>
-                  {msg.text}
-                </div>
-              ) : msg.type === 'image' && msg.imageUrls ? (
-                <div className={`grid gap-1.5 ${
-                    msg.imageUrls.length === 1
-                      ? 'grid-cols-1 w-[240px]'
-                      : msg.imageUrls.length === 2
-                      ? 'grid-cols-2 w-[320px]'
-                      : 'grid-cols-3 w-[360px]'
-                  }`}>
-                  {msg.imageUrls.map((url, idx) => (
-                    <div key={idx} className="relative aspect-square w-full overflow-hidden border border-[var(--color-line-gray-40)]">
-                      <img
-                        src={url}
-                        alt={`sent-${idx}`}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-200 hover:scale-105"
-                      />
+                  
+                  {/* 텍스트 렌더링 */}
+                  {msg.type === 'text' && (
+                    <div className="p-1 text-[1rem] leading-relaxed">
+                      {msg.text}
                     </div>
-                  ))}
-                </div>
-              ) : null}
+                  )}
 
-              <div className={`flex flex-col justify-end body-b5-rg text-[var(--color-gray-50)] min-w-max ${
+                  {/* 이미지 렌더링 (말풍선 안으로 들어옴) */}
+                  {msg.type === 'image' && msg.imageUrls && (
+                    <div className={`grid gap-1.5 ${
+                        msg.imageUrls.length === 1
+                          ? 'grid-cols-1 w-[240px]'
+                          : msg.imageUrls.length === 2
+                          ? 'grid-cols-2 w-[320px]'
+                          : 'grid-cols-3 w-[360px]'
+                      }`}>
+                      {msg.imageUrls.map((url, idx) => (
+                        <div key={idx} className="relative aspect-square w-full overflow-hidden border border-[var(--color-line-gray-40)] rounded-md">
+                          <img
+                            src={url}
+                            alt={`sent-${idx}`}
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* 시간 표시 영역 */}
+              <div className={`flex flex-col justify-end body-b5-rg text-[var(--color-gray-50)] min-w-max pb-0.5 ${
                 msg.senderRole === myRole ? 'items-end' : 'items-start'
               }`}>
-                {msg.isRead && <span className="body-b5-rg text-[var(--color-gray-50)] mb-0.5">읽음</span>}
+                {msg.isRead && <span className="mb-0.5">읽음</span>}
                 <span>{msg.time}</span>
               </div>
             </div>
           </div>
         ))}
+
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -251,34 +266,56 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
         />
 
         <div className="flex justify-between items-center mt-2">
-          <div className="flex items-center gap-3">
-            <button className="text-[var(--color-gray-50)]" onClick={handleImageClick}>
-              <img src={Image} alt='갤러리 이모콘' />
-            </button>
-            <button 
-              onClick={() => setIsPaymentModalOpen(true)}
-              className="flex items-center gap-1 px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]">
-              결제창 보내기
-            </button>
-            {!messages.some((msg) => msg.type === 'quotation') && (
-              <button 
-                onClick={handleSendQuotation}
-                className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]">
-                견적서 제안하기
-              </button>
-            )}
-          </div>
-          
-          <button
-            onClick={handleSend}
-            disabled={!message.trim()}
-            className={`px-6 py-2 rounded-lg body-b1-sb transition-colors ${
-              message.trim() ? 'bg-[var(--color-mint-1)] text-white' : 'bg-[var(--color-gray-30)] text-[var(--color-gray-40)]'
-            }`}
-          >
-            보내기
+        {/* 왼쪽 버튼 그룹 */}
+        <div className="flex items-center gap-3">
+          {/* 이미지 버튼은 항상 */}
+          <button className="text-[var(--color-gray-50)]" onClick={handleImageClick}>
+            <img src={Gallery} alt="갤러리 이모콘" className='w-7' />
           </button>
+
+          {/* REFORMER 전용 버튼 */}
+          {myRole === 'REFORMER' && (
+            <>
+              <button
+                onClick={() => setIsPaymentModalOpen(true)}
+                className="flex items-center gap-1 px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+              >
+                결제창 보내기
+              </button>
+              {!messages.some((msg) => msg.type === 'quotation') && (
+                <button
+                  onClick={handleSendQuotation}
+                  className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+                >
+                  견적서 제안하기
+                </button>
+              )}
+            </>
+          )}
+
+          {/* USER 전용 버튼 */}
+          {myRole === 'USER' && !messages.some((msg) => msg.type === 'quotation') && (
+            <button
+              onClick={handleSendQuotation}
+              className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+            >
+              요청서 보내기
+            </button>
+          )}
         </div>
+
+        {/* 오른쪽 보내기 버튼 */}
+        <button
+          onClick={handleSend}
+          disabled={!message.trim()}
+          className={`px-6 py-2 rounded-lg body-b1-sb transition-colors ${
+            message.trim() ? 'bg-[var(--color-mint-1)] text-white' : 'bg-[var(--color-gray-30)] text-[var(--color-gray-40)]'
+          }`}
+        >
+          보내기
+        </button>
+      </div>
+
       </div>
     </div>
   );
