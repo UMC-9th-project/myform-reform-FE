@@ -18,6 +18,7 @@ import SignupTypeSelection from './pages/Signup/SignupTypeSelection';
 import SignupFormPage from './pages/Signup/SignupFormPage';
 import SignupComplete from './pages/Signup/SignupComplete';
 
+
 function App() {
   return (
     <Routes>
@@ -49,10 +50,9 @@ function App() {
         <Route path="/normal-mypage" element={<NormalMyPage />} />
         <Route path="/normal-profile-edit" element={<EditProfilePage />} />
         <Route path="/mypage/review/write" element= {<ReviewWritePage />} />
-        <Route path="/reformer/chat" element={<ChatReformer />} />
-        
+  
       </Route>
-
+      
       <Route
         element={
           <Layout
@@ -68,6 +68,18 @@ function App() {
         <Route path="/signup/customer-form" element={<SignupFormPage />} />
         <Route path="/signup/reformer-form" element={<SignupFormPage />} />
         <Route path="/signup/complete" element={<SignupComplete />} />
+      </Route>
+      
+      {/*채팅 창 푸터 없음 */}
+      <Route
+        element={
+          <Layout
+            showHeader={true}
+            showNavbar={true}
+            showFooter={false}
+          />
+        }>
+        <Route path="/reformer/chat" element={<ChatReformer />} />
       </Route>
 
       {/* 404 처리 */}
