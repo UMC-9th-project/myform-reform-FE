@@ -3,8 +3,10 @@ import Image from '../../../assets/chat/Image.svg';
 
 interface Message {
   id: number;
-  text: string;
+  text?: string;
+  imageUrls?: string[];
   sender: 'me' | 'other';
+  type: 'text' | 'image';
   time: string;
   isRead: boolean; // 읽음 상태 추가
 }
@@ -17,21 +19,21 @@ interface ChatRoomProps {
 // mock 데이터 정의
 const mockMessages: Record<number, Message[]> = {
   1: [
-    { id: 1, text: "1번 채팅방 첫 메시지입니다.", sender: 'other', time: '오후 08:30', isRead: false },
-    { id: 2, text: "1번 채팅방 두 번째 메시지입니다.", sender: 'me', time: '오후 08:35', isRead: true },
+    { id: 1, text: "1번 채팅방 첫 메시지입니다.", sender: 'other', time: '오후 08:30', type: 'text', isRead: false },
+    { id: 2, text: "1번 채팅방 두 번째 메시지입니다.", sender: 'me', time: '오후 08:35', type: 'text', isRead: true },
   ],
   2: [
-    { id: 3, text: "2번 채팅방 첫 메시지입니다.", sender: 'other', time: '오후 09:00', isRead: false },
-    { id: 4, text: "2번 채팅방 두 번째 메시지입니다.", sender: 'me', time: '오후 09:05', isRead: false },
+    { id: 3, text: "2번 채팅방 첫 메시지입니다.", sender: 'other', time: '오후 09:00', type:'text', isRead: false },
+    { id: 4, text: "2번 채팅방 두 번째 메시지입니다.", sender: 'me', time: '오후 09:05', type: 'text', isRead: false },
   ],
   3: [
-    { id: 5, text: "3번 채팅방 첫 메시지!", sender: 'other', time: '오전 10:00', isRead: false },
+    { id: 5, text: "3번 채팅방 첫 메시지!", sender: 'other', time: '오전 10:00', type: 'text', isRead: false },
   ],
   4: [
-    { id: 6, text: "4번 채팅방 첫 메시지입니다.", sender: 'other', time: '오전 11:00', isRead: true },
+    { id: 6, text: "4번 채팅방 첫 메시지입니다.", sender: 'other', time: '오전 11:00', type: 'text',isRead: true },
   ],
   5: [
-    { id: 7, text: "5번 채팅방 첫 메시지!", sender: 'other', time: '오후 01:00', isRead: false },
+    { id: 7, text: "5번 채팅방 첫 메시지!", sender: 'other', time: '오후 01:00', type:'text', isRead: false },
   ],
 };
 
@@ -39,6 +41,60 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId }) => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+
+  // 사진 첨부 버튼 클릭 시 실행
+  const handleImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const MAX_IMAGES = 5;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    if (files.length > MAX_IMAGES) {
+      alert(`사진은 최대 ${MAX_IMAGES}개까지 보낼 수 있어요.`);
+      e.target.value = '';
+      return;
+    }
+
+    const imageUrls: string[] = [];
+    let loadedCount = 0;
+
+    files.forEach((file) => {
+      const reader = new FileReader();
+
+      reader.onloadend = () => {
+        imageUrls.push(reader.result as string);
+        loadedCount++;
+
+        // 🔥 전부 로드되면 한 번만 메시지 추가
+        if (loadedCount === files.length) {
+          const newMessage: Message = {
+            id: Date.now(),
+            type: 'image',
+            imageUrls,
+            sender: 'me',
+            time: new Date().toLocaleTimeString('ko-KR', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            }),
+            isRead: false,
+          };
+
+          setMessages((prev) => [...prev, newMessage]);
+        }
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+    e.target.value = '';
+  };
 
   // chatId가 바뀔 때마다 메시지 초기화
   useEffect(() => {
@@ -51,9 +107,9 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId }) => {
   // 메시지 보내기
   const handleSend = () => {
     if (!message.trim()) return;
-
     const newMessage: Message = {
       id: Date.now(),
+      type: 'text',
       text: message.trim(),
       sender: 'me',
       time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true }),
@@ -124,13 +180,42 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId }) => {
 
             {/* 메시지 + 시간/읽음 */}
             <div className={`flex ${msg.sender === 'me' ? 'flex-row-reverse' : 'flex-row'} items-end gap-1.5`}>
-              <div className={`p-3 rounded-2xl max-w-[280px] text-[1rem] leading-relaxed ${
-                msg.sender === 'me' 
-                  ? 'bg-[var(--color-mint-5)] text-black rounded-tr-none' 
-                  : 'bg-[var(--color-gray-20)] text-black rounded-tl-none'
-              }`}>
-                {msg.text}
+              <div
+                className={`p-3 rounded-[0.625rem] max-w-[40rem] text-[1rem] leading-relaxed ${
+                  msg.sender === 'me'
+                    ? 'bg-[var(--color-mint-5)] text-black rounded-tr-none'
+                    : 'bg-[var(--color-gray-20)] text-black rounded-tl-none'
+                }`}
+              >
+                {msg.type === 'text' && msg.text}
+
+                {msg.type === 'image' && msg.imageUrls && (
+                  <div
+                    className={`grid gap-1.5 ${
+                      msg.imageUrls.length === 1
+                        ? 'grid-cols-1 w-[240px]'
+                        : msg.imageUrls.length === 2
+                        ? 'grid-cols-2 w-[320px]'
+                        : 'grid-cols-3 w-[360px]'
+                    }`}
+                  >
+                    {msg.imageUrls.map((url, idx) => (
+                      <div
+                        key={idx}
+                        className="relative aspect-square w-full overflow-hidden border border-[var(--color-line-gray-40)]"
+                      >
+                        <img
+                          src={url}
+                          alt={`sent-${idx}`}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
+
+
 
               <div className={`flex flex-col body-b5-rg text-[var(--color-gray-50)] min-w-max ${
                 msg.sender === 'me' ? 'items-end' : 'items-start'
@@ -146,6 +231,15 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId }) => {
 
       {/* 입력창 */}
       <div className="p-4 border-t border-[var(--color-line-gray-40)]">
+        <input 
+          title="사진 입력창"
+          type="file" 
+          ref={fileInputRef} 
+          onChange={handleFileChange} 
+          accept="image/*"
+          multiple 
+          className="hidden" 
+        />
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
@@ -156,7 +250,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId }) => {
 
         <div className="flex justify-between items-center mt-2">
           <div className="flex items-center gap-3">
-            <button className="text-[var(--color-gray-50)]">
+            <button className="text-[var(--color-gray-50)]" onClick={handleImageClick}>
               <img src={Image} alt='갤러리 이모콘' />
             </button>
             <button className="flex items-center gap-1 px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]">
