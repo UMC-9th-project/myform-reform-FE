@@ -14,6 +14,7 @@ import ReformerSearchResults from './pages/reformer-search/ReformerSearchResults
 import ReformerListView from './pages/reformer-search/ReformerListView';
 import FeedListView from './pages/reformer-search/FeedListView';
 import ReviewWritePage from './pages/my-page/ReviewWritePage';
+import OrderPage from './pages/order/OrderPage';
 
 import SignupPage from './pages/Signup/SignupPage';
 import SignupTypeSelection from './pages/Signup/SignupTypeSelection';
@@ -35,13 +36,16 @@ function App() {
       >
         <Route path="/" element={<Home />} />
 
-         {/* 카트 페이지 */}
+         {/* 장바구니 페이지 */}
         <Route path="/cart" element={<Cart />} />
+
+         {/* 주문제작 페이지 */}
+        <Route path="/order" element={<OrderPage />} />
 
          {/* 프로필 페이지 */}
         <Route path="/profile" element={<Profile />} />
 
-         {/* 위시리스트 페이지 */}
+         {/* 찜 페이지 */}
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/reformer/wishlist" element={<ReformerWishlist />} />
 
