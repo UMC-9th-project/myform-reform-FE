@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export interface Message {
   id: number;
-  type: 'text' | 'image' | 'quotation' | 'payment';
+  type: 'text' | 'image' | 'quotation' | 'payment' | 'require';
   senderRole: 'REFORMER' | 'USER';
   text?: string;
   imageUrls?: string[];

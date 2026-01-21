@@ -4,6 +4,7 @@ import QuotationCard from './QuotationCard';
 import PaymentCard from './PaymentCard';
 import PaymentModal, { type PaymentRequestData } from './PaymentModal';
 import { useChatStore, type Message } from '../../../stores/chatStore';
+import RequireCard from './RequireCard';
 
 interface ChatRoomProps {
   chatId: number;
@@ -71,12 +72,13 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
   const handleSendQuotation = () => {
     sendMessage({
       id: Date.now(),
-      type: 'quotation',
+      type: myRole === 'USER' ? 'require' : 'quotation',
       senderRole: myRole,
       time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true }),
       isRead: false,
     });
   };
+
 
   // 이미지 업로드
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,7 +186,14 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
             <div className={`flex ${msg.senderRole === myRole ? 'flex-row-reverse' : 'flex-row'} items-end gap-1.5`}>
               
               {/* 견적서와 결제창은 말풍선 디자인이 다르므로 별도 처리 */}
-              {msg.type === 'quotation' ? (
+              {msg.type === 'require' ? (
+                <RequireCard
+                  type={msg.senderRole === myRole ? 'sent' : 'received'}
+                  price={50000}       // 예: 실제 데이터로 바꾸면 됨
+                  title="제 유니폼 원숄더 원피스로 가방 짐색 리폼 요청드립니다 제발요"
+                />
+              ) :
+                msg.type === 'quotation' ? (
                 <QuotationCard type={msg.senderRole === myRole ? 'sent' : 'received'} id={msg.id} chatId={chatId} />
               ) : msg.type === 'payment' ? (
                 <PaymentCard 
@@ -294,7 +303,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
           )}
 
           {/* USER 전용 버튼 */}
-          {myRole === 'USER' && !messages.some((msg) => msg.type === 'quotation') && (
+          {myRole === 'USER' && !messages.some((msg) => msg.type === 'require') && (
             <button
               onClick={handleSendQuotation}
               className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
