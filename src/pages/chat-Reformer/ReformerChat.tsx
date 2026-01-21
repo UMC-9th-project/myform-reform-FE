@@ -27,7 +27,7 @@ const ReformerChat = () => {
     {selectedChatId === null ? (
       <EmptyChatRoom />
     ) : (
-      <ChatRoom chatId={selectedChatId} />
+      <ChatRoom chatId={selectedChatId} myRole='USER' />
     )}
   </div>
   
