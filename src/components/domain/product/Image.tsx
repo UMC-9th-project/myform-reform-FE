@@ -16,7 +16,7 @@ interface ImageColumnProps {
   isClosed?: boolean;
 }
 
-const ImageCarousel = ({
+export const ImageCarousel = ({
   images,
   isClosed = false,
 }: {
@@ -36,7 +36,7 @@ const ImageCarousel = ({
   return (
     <div className="relative w-full">
       {/* 이미지 */}
-      <div className="relative w-[37.5rem] h-[37.5rem] bg-gray-100 overflow-hidden">
+      <div className="relative w-full aspect-square bg-gray-100 overflow-hidden">
         <img
           src={images[currentIndex]}
           alt={`Image ${currentIndex + 1}`}

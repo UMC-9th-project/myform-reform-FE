@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../components/common/Breadcrumb/Breadcrumb';
 import RequestCard from '../../components/domain/order/Request';
 import Pagination from '../../components/common/Pagination/Pagination';
@@ -23,6 +24,7 @@ const ITEMS_PER_PAGE = 15; // 3열 x 5행
 const TOTAL_PAGES = Math.ceil(MOCK_REQUESTS.length / ITEMS_PER_PAGE);
 
 const OrderRequestListPage = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<{
     categoryTitle: string;
@@ -93,13 +95,18 @@ const OrderRequestListPage = () => {
             <div className="mb-12">
               <div className="grid grid-cols-3 gap-[1.875rem]">
                 {displayedRequests.map((request) => (
-                  <RequestCard
+                  <div
                     key={request.id}
-                    imgSrc={request.img}
-                    title={request.name}
-                    priceRange={request.price}
-                    className="pb-[5.875rem] w-full"
-                  />
+                    onClick={() => navigate(`/order/requests/${request.id}`)}
+                    className="cursor-pointer"
+                  >
+                    <RequestCard
+                      imgSrc={request.img}
+                      title={request.name}
+                      priceRange={request.price}
+                      className="pb-[5.875rem] w-full"
+                    />
+                  </div>
                 ))}
               </div>
             </div>

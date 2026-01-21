@@ -111,12 +111,17 @@ const OrderPage = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-[1.875rem]">
             {newRequests.map((item) => (
-              <RequestCard
+              <div
                 key={item.id}
-                imgSrc={item.img}
-                title={item.name}
-                priceRange={item.price}
-              />
+                onClick={() => navigate(`/order/requests/${item.id}`)}
+                className="cursor-pointer"
+              >
+                <RequestCard
+                  imgSrc={item.img}
+                  title={item.name}
+                  priceRange={item.price}
+                />
+              </div>
             ))}
           </div>
         </section>
