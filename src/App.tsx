@@ -10,6 +10,7 @@ import EditProfilePage from './pages/MyPage-Reform/EditProfilePage';
 import Profile from './pages/Profile';
 import NormalMyPage from './pages/MyPage/NormalMyPage';
 import ReviewWritePage from './pages/MyPage/ReviewWritePage';
+import ChatReformer from './pages/chat-Reformer/ReformerChat';
 
  {/* 회원가입 페이지 */}
 import SignupPage from './pages/Signup/SignupPage';
@@ -48,6 +49,8 @@ function App() {
         <Route path="/normal-mypage" element={<NormalMyPage />} />
         <Route path="/normal-profile-edit" element={<EditProfilePage />} />
         <Route path="/mypage/review/write" element= {<ReviewWritePage />} />
+        <Route path="/reformer/chat" element={<ChatReformer />} />
+        
       </Route>
 
       <Route
