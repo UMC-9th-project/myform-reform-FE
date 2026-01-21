@@ -11,6 +11,7 @@ interface Message {
 
 interface ChatRoomProps {
   chatId: number;
+  
 }
 
 // mock 데이터 정의
