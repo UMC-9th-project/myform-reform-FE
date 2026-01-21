@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../components/common/Breadcrumb/Breadcrumb';
-import Select from '../../components/common/Select/Select';
+import Select from '../../components/common/Dropdown/SortDropdown';
 import ReformerProfileCard from '../../components/domain/reformer-search/ReformerProfileCard';
 import Pagination from '../../components/common/Pagination/Pagination';
 

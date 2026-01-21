@@ -125,7 +125,10 @@ const OrderPage = () => {
         <section className="pt-[7rem] px-0 md:px-[110px]">
           <div className="flex items-center justify-between mb-[1.5rem]">
             <h2 className="heading-h4-bd">리폼러가 주문제작을 받고 있어요 🔥</h2>
-            <button className="cursor-pointer body-b1-rg text-[var(--color-gray-60)] hover:text-[var(--color-black)] transition-colors">
+            <button 
+              onClick={() => navigate('/order/suggestions')}
+              className="cursor-pointer body-b1-rg text-[var(--color-gray-60)] hover:text-[var(--color-black)] transition-colors"
+            >
               더보기 &gt;
             </button>
           </div>

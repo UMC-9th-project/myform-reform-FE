@@ -52,15 +52,15 @@ const Select = ({ options, value, onChange, className = '' }: SelectProps) => {
           className="absolute top-full right-0 mt-2 bg-white rounded-[20px] z-50 w-[184px] overflow-hidden"
           style={{
             boxShadow: '1px 3px 11.7px 0px rgba(0, 0, 0, 0.15)',
-            padding: '15px 10px 15px 17px',
+            padding: '23px 10px 23px 23px',
           }}
         >
           {/* 라디오 버튼 옵션 */}
-          <div className="flex flex-col gap-[7px]">
+          <div className="flex flex-col gap-[17px]">
             {options.map((option) => (
               <label
                 key={option.value}
-                className="flex items-center gap-3 cursor-pointer hover:bg-[var(--color-gray-30)] transition-colors"
+                className="flex items-center  gap-3 cursor-pointer transition-colors"
               >
                 <div className="relative flex items-center justify-center w-5 h-5">
                   {/* 외부 원 */}
@@ -87,10 +87,10 @@ const Select = ({ options, value, onChange, className = '' }: SelectProps) => {
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
                 </div>
-                <span className={`body-b1-rg ${
+                <span className={` ${
                   option.value === value 
-                    ? 'text-[var(--color-black)]' 
-                    : 'text-[var(--color-gray-50)]'
+                    ? 'text-[var(--color-black)] body-b1-sb' 
+                    : 'text-[var(--color-gray-50)] body-b1-rg hover:text-[var(--color-gray-60)]'
                 }`}>
                   {option.label}
                 </span>
