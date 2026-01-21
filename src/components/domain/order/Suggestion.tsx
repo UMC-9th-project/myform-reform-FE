@@ -1,4 +1,5 @@
 import star from '../market/icons/star.svg';
+import LikeButton from '../../common/LikeButton/LikeButton';
 
 interface SuggestionCardProps {
   imgSrc?: string;
@@ -21,12 +22,15 @@ export default function SuggestionCard({
 }: SuggestionCardProps) {
   return (
     <article className={`w-full ${className}`}>
-      <div className="relative w-full h-[21.375rem] rounded-[1.25rem] overflow-hidden bg-[var(--color-gray-20)]">
+      <div className="relative w-full h-[22.375rem] rounded-[1.25rem] overflow-hidden bg-[var(--color-gray-20)]">
         <img
           src={imgSrc}
           alt={title}
           className="w-full h-full object-cover"
         />
+        <div className="absolute bottom-0 right-0 p-2">
+          <LikeButton />
+        </div>
       </div>
 
       <div className="mt-[1.125rem]">

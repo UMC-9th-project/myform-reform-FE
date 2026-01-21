@@ -14,7 +14,7 @@ export default function RequestCard({
 }: RequestCardProps) {
   return (
     <article className={`w-full ${className}`}>
-      <div className="w-full h-[21.375rem] rounded-[1.25rem] overflow-hidden bg-[var(--color-gray-20)]">
+      <div className="w-full h-[22.375rem] rounded-[1.25rem] overflow-hidden bg-[var(--color-gray-20)]">
         <img
           src={imgSrc}
           alt={title}
