@@ -1,19 +1,17 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import { z } from 'zod';
 import eyeIcon from './icons/Eye.svg';
 import eyeOffIcon from './icons/EyeOff.svg';
-
 type InputType = 'email' | 'password' | 'text' | 'tel';
+type InputVariant = 'login' | 'signup';
 
 interface InputProps {
   label?: string;
   required?: boolean;
   placeholder?: string;
-
+  variant?: InputVariant;
   type: InputType;
   value?: string;
-  schema?: z.ZodString;
   error?: string | null;
   showPasswordToggle?: boolean;
   timerSeconds?: number | null;
@@ -32,10 +30,10 @@ export default function Input({
   label,
   required,
   placeholder,
-  type = 'text',
+  variant,
+  type,
   value: controlledValue,
-  schema,
-  error: externalError,
+  error,
   showPasswordToggle = false,
   timerSeconds = null,
   showButton = false,
@@ -48,12 +46,10 @@ export default function Input({
 }: InputProps) {
   const [internalValue, setInternalValue] = useState(controlledValue || '');
   const [isFocused, setIsFocused] = useState(false);
-  const [internalError, setInternalError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
   const currentValue =
     controlledValue !== undefined ? controlledValue : internalValue;
-  const error = externalError !== undefined ? externalError : internalError;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -74,19 +70,6 @@ export default function Input({
       setInternalValue(value);
     }
 
-    if (schema) {
-      if (value.trim() === '') {
-        setInternalError(null);
-      } else {
-        const result = schema.safeParse(value);
-        if (!result.success) {
-          setInternalError(result.error.errors[0].message);
-        } else {
-          setInternalError(null);
-        }
-      }
-    }
-
     if (onChange) {
       onChange(value);
     }
@@ -95,13 +78,6 @@ export default function Input({
   const handleBlur = () => {
     setIsFocused(false);
     if (onBlur) onBlur();
-
-    if (currentValue.trim() !== '' && schema) {
-      const result = schema.safeParse(currentValue);
-      if (!result.success) {
-        setInternalError(result.error.errors[0].message);
-      }
-    }
   };
 
   const handleFocus = () => {
@@ -111,8 +87,58 @@ export default function Input({
 
   const getBorderColor = () => {
     if (error) return 'border-[var(--color-red-1)]';
-    if (isFocused) return 'border-[var(--color-black)]';
-    return 'border-[var(--color-line-gray-30)]';
+    if (isFocused) {
+      return variant === 'login'
+        ?  'border-[var(--color-line-gray-40)]'
+        : 'border-[var(--color-black)]';
+    }
+    return variant === 'login'
+    ?  'border-[var(--color-line-gray-40)]'
+    : 'border-[var(--color-black)]';
+  };
+
+
+  const getInputStyles = () => {
+    const baseStyles = 'w-full rounded-[0.9375rem] px-[1.375rem] py-[1.4375rem] body-b1-rg border focus:outline-none transition-colors duration-200';
+    
+    if (variant === 'login') {
+      if (error) {
+        return `
+          ${baseStyles}
+          bg-[#FFEEEE]
+          border-[var(--color-red-1)]
+         
+          ${getBorderColor()}
+          ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+        `;
+      }
+      return `
+        ${baseStyles}
+        text-[var(--color-black)]
+        focus:border-[var(--color-black)]
+        ${getBorderColor()}
+        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+      `;
+    }
+    
+    if (error) {
+      return `
+        ${baseStyles}
+        border-[var(--color-red-1)]
+        ${getBorderColor()}
+        ${hasRightContent ? (type === 'tel' || (type === 'text' && timerSeconds !== null) ? 'pr-[5rem]' : 'pr-[3rem]') : ''}
+        ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+      `;
+    }
+    
+    return `
+      ${baseStyles}
+      border-[var(--color-line-gray-40)]
+      focus:border-[var(--color-black)]
+      ${getBorderColor()}
+      ${hasRightContent ? (type === 'tel' || (type === 'text' && timerSeconds !== null) ? 'pr-[5rem]' : 'pr-[3rem]') : ''}
+      ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
+    `;
   };
 
   const inputType = showPasswordToggle
@@ -126,7 +152,7 @@ export default function Input({
     rightElement;
 
   return (
-    <div className="flex flex-col gap-[0.5rem]">
+    <div className={`flex flex-col ${variant === 'login' ? 'gap-[0.5625rem]' : 'gap-[0.5rem]'}`}>
       {label && (
         <label className="body-b1-sb text-[var(--color-black)]">
           {label}
@@ -145,23 +171,7 @@ export default function Input({
             onBlur={handleBlur}
             placeholder={placeholder}
             disabled={disabled}
-            className={`
-              w-full
-              px-[1.375rem]
-              py-[1.4375rem]
-              body-b1-rg
-              border
-              text-[var(--color-gray-50)]
-              border-[var(--color-line-gray-40)]
-              focus:border-[var(--color-black)]
-              rounded-[0.9375rem]
-              ${getBorderColor()}
-              focus:outline-none
-              transition-colors
-              duration-200
-              ${hasRightContent ? (type === 'tel' || (type === 'text' && timerSeconds !== null) ? 'pr-[5rem]' : 'pr-[3rem]') : ''}
-              ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
-            `}
+            className={getInputStyles()}
           />
           {hasRightContent && (
             <div className="absolute right-[1rem] top-1/2 -translate-y-1/2 flex items-center gap-[0.5rem]">

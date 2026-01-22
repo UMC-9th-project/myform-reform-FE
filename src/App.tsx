@@ -17,6 +17,9 @@ import SignupTypeSelection from './pages/Signup/SignupTypeSelection';
 import SignupFormPage from './pages/Signup/SignupFormPage';
 import SignupComplete from './pages/Signup/SignupComplete';
 
+ {/* 로그인 페이지 */}
+import Login from './pages/Login/Login';
+
 function App() {
   return (
     <Routes>
@@ -64,6 +67,11 @@ function App() {
         <Route path="/signup/customer-form" element={<SignupFormPage />} />
         <Route path="/signup/reformer-form" element={<SignupFormPage />} />
         <Route path="/signup/complete" element={<SignupComplete />} />
+
+
+        {/* 로그인 페이지 */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/login/type" element={<SignupTypeSelection />} />
       </Route>
 
       {/* 404 처리 */}
