@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSellerTabStore } from '../../../stores/tabStore';
+import { useUserTabStore } from '../../../../stores/tabStore';
 
 interface OrderDetailType {
   orderNo: string;
@@ -18,8 +18,8 @@ interface OrderDetailType {
 
 
 
-const OrderDetail = () => {
-  const {selectedOrderId, setSelectedOrderId} = useSellerTabStore();
+const UserOrderDetail = () => {
+  const {selectedOrderId, setSelectedOrderId} = useUserTabStore();
 
   // 가상 데이터
   const initialData: OrderDetailType = {
@@ -191,4 +191,4 @@ const OrderDetail = () => {
   );
 };
 
-export default OrderDetail;
+export default UserOrderDetail;

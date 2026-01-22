@@ -2,7 +2,7 @@ import { useState } from 'react';
 import WishlistSidebar from '../../components/domain/wishlist/WishlistSidebar';
 import WishlistItemCard from '../../components/domain/wishlist/WishlistItemCard';
 import EmptyWishlist from '../../components/domain/wishlist/EmptyWishlist';
-import type { WishlistItem } from '../../components/domain/wishlist/types';
+import type { WishlistItem } from '../../types/domain/wishlist/wishlist';
 
 // 이미지 URL - public 폴더의 이미지 사용
 const IMAGE_URLS = {

@@ -13,16 +13,16 @@ const SELLER_TABS: readonly SellerTabType[] = [
 ];
 
 const ReformerMyPage = () => {
-  const { activeTab, setActiveTab, selectedOrderId } = useSellerTabStore();
+  const { activeTab, setActiveTab, selectedOrderId, setSelectedOrderId } = useSellerTabStore();
 
   // EditProfileCard가 표시되는 탭인지 확인
   const showEditProfileCard = activeTab === '프로필 관리';
 
   return (
-    <div className="w-full min-h-screen bg-white">
+    <div className="w-full min-h-screen bg-white p-6">
       <div className="max-w-8xl mx-auto px-0 py-0 flex gap-3">
         {/* 왼쪽: 사이드바 */}
-        <aside className="w-64 flex-shrink-0 px-5 pt-10">
+        <aside className="w-64 flex-shrink-0 px-5">
           <MyPageTab
             tabs={SELLER_TABS}
             activeTab={activeTab}
@@ -43,7 +43,7 @@ const ReformerMyPage = () => {
           {/* 탭별 컨텐츠 */}
           {activeTab === '프로필 관리' && <EditProfile mode={'edit'} />}
           {activeTab === '판매 관리' &&
-            (selectedOrderId ? <OrderDetail /> : <OrderList />)}
+            (selectedOrderId ? <OrderDetail /> : <OrderList onClickDetail={setSelectedOrderId} />)}
           {/* 다른 탭들 추가 */}
         </main>
       </div>
