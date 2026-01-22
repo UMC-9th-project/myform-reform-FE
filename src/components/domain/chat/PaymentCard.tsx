@@ -53,7 +53,7 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ price, delivery, days, type }
           </div>
 
           {/* 결제 버튼 */}
-          <button className="w-full bg-black text-white py-3.5 rounded-xl body-b4-sb hover:bg-gray-800 transition-colors cursor-pointer">
+          <button className="w-full bg-black text-white py-3 rounded-xl body-b4-sb transition-colors cursor-pointer">
             결제창으로 이동하기
           </button>
         </div>

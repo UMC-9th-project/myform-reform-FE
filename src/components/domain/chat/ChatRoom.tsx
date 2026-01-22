@@ -5,6 +5,7 @@ import PaymentCard from './PaymentCard';
 import PaymentModal, { type PaymentRequestData } from './PaymentModal';
 import { useChatStore, type Message } from '../../../stores/chatStore';
 import RequireCard from './RequireCard';
+import PayFinishCard from './PayFinishCard';
 
 interface ChatRoomProps {
   chatId: number;
@@ -22,7 +23,23 @@ const mockMessages: Record<number, Message[]> = {
     { id: 4, text: "2번 채팅방 두 번째 메시지입니다.", senderRole: 'REFORMER', time: '오후 09:05', type: 'text', isRead: false },
   ],
   3: [
-    { id: 5, type: 'quotation', senderRole: 'REFORMER', time: '오후 10:00', isRead: false }
+    { id: 5, type: 'quotation', senderRole: 'REFORMER', time: '오후 10:00', isRead: false },
+    {
+      id: 6,
+      type: 'payFinish',
+      senderRole: 'USER',
+      time: '오후 10:12',
+      isRead: true,
+
+      price: 46500,
+      orderNumber: 'ORD-20260122-0001',
+      paymentMethod: '카드 간편결제',
+      paymentDetail: '신한은행 / 0000-****-****-0000',
+      date: '2026.01.22 10:12',
+      receiverName: '김가인',
+      phone: '010-1234-5678',
+      address: '서울시 마포구 어딘가로 123',
+    },
   ]
 };
 
@@ -202,7 +219,18 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
                   days={msg.days!} 
                   type={msg.senderRole === myRole ? 'sent' : 'received'}
                 />
-              ) : (
+              ) : msg.type === 'payFinish' ? (
+                <PayFinishCard
+                  type={msg.senderRole === myRole ? 'sent' : 'received'}
+                  price={msg.price!}
+                  orderNumber={msg.orderNumber!}
+                  paymentMethod={msg.paymentMethod!}
+                  paymentDetail={msg.paymentDetail!}
+                  date={msg.date!}
+                  receiverName={msg.receiverName!}
+                  phone={msg.phone!}
+                  address={msg.address!}
+                />) : (
                 /* 텍스트와 이미지는 동일한 말풍선 배경(Mint/Gray)을 사용하도록 통합 */
                 <div className={`p-2 rounded-[0.625rem] max-w-[40rem] ${
                     msg.senderRole === myRole
