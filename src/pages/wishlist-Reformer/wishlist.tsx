@@ -6,7 +6,7 @@ import EmptyWishlist from '../../components/domain/wishlist/EmptyWishlist';
 import type {
   WishlistItem,
   WishlistCustomItem,
-} from '../../components/domain/wishlist/types';
+} from '../../types/domain/wishlist/wishlist';
 
 // 이미지 URL - public 폴더의 이미지 사용
 const IMAGE_URLS = {
