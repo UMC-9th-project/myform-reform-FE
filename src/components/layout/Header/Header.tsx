@@ -100,16 +100,16 @@ export default function Header() {
     <header className="w-full flex flex-col">
       <div className="body-b1-sb flex justify-end py-[0.75rem] pr-[2rem] gap-[2.75rem]">
         <Link to="/signup" className='cursor-pointer' >회원가입</Link>
-        <div>로그인</div>
+        <Link to="/login/type" className='cursor-pointer' >로그인</Link>
       </div>
       <div className="h-25 flex items-center  ml-[3.125rem] mr-[2rem] ">
-        <div className="w-[191px] h-[44.6px] mr-[2.19rem] ">
+        <Link to="/" className="w-[191px] h-[44.6px] mr-[2.19rem] ">
           <img
             src={logo}
             alt="logo"
             className="w-full h-full object-contain cursor-pointer"
           />
-        </div>
+        </Link>
         <div className="relative w-[571px]" ref={searchRef}>
           <input
             type="text"
