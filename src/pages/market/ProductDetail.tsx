@@ -84,7 +84,7 @@ const ProductDetail = () => {
     <div className=" min-h-screen  mt-[2.75rem]">
     
       {/* 메인 제품 섹션 */}
-      <div className="flex mx-[7.125rem] gap-[2.9375rem] mb-[6.25rem]">
+      <div className="flex mx-[7.125rem] gap-[2.9375rem] mb-[2.75rem]">
         {/* 왼쪽: 제품 이미지 캐러셀 */}
         <div className="">
           <div className="relative w-[600px] h-[600px]  overflow-hidden">
@@ -179,7 +179,7 @@ const ProductDetail = () => {
                 {mockProduct.shipping.fee}
               </span>
             </div>
-            
+
             <div className="flex gap-[1.5rem]">
               <span className="body-b1-sb ">배송 정보</span>
               <span className="body-b1-rg">
@@ -250,23 +250,24 @@ const ProductDetail = () => {
       </div>
 
       {/* 탭 네비게이션 */}
-      <div className="sticky top-0 z-20 bg-white border-b border-[var(--color-line-gray-40)]">
-        <div className="px-[3.125rem] flex gap-[6.4375rem]">
+      <div className="top-0 z-20 border-b border-[var(--color-line-gray-40)]">
+        <div className="flex px-[7.125rem] gap-[6.4375rem] body-b0-bd">
           <button
             onClick={() => setActiveTab('info')}
-            className={`pb-5 pt-[0.625rem] body-b0-bd ${
+            className={`pb-5 pt-[0.625rem] ${
               activeTab === 'info'
-                ? 'text-[var(--color-black)] border-b-2 border-[var(--color-black)]'
+                ? 'text-[var(--color-mint-1)] border-b-2 border-[var(--color-mint-1)]'
                 : 'text-[var(--color-gray-60)]'
             }`}
           >
             상품 정보
           </button>
+
           <button
             onClick={() => setActiveTab('reformer')}
-            className={`pb-5 pt-[0.625rem] body-b0-bd ${
+            className={`pb-5 pt-[0.625rem]${
               activeTab === 'reformer'
-                ? 'text-[var(--color-black)] border-b-2 border-[var(--color-black)]'
+                ? 'text-[var(--color-mint-1)] border-b-2 border-[var(--color-mint-1)]'
                 : 'text-[var(--color-gray-60)]'
             }`}
           >
@@ -274,9 +275,9 @@ const ProductDetail = () => {
           </button>
           <button
             onClick={() => setActiveTab('review')}
-            className={`pb-5 pt-[0.625rem] body-b0-bd ${
+            className={`pb-5 pt-[0.625rem] ${
               activeTab === 'review'
-                ? 'text-[var(--color-black)] border-b-2 border-[var(--color-black)]'
+                ? 'text-[var(--color-mint-1)] border-b-2 border-[var(--color-mint-1)]'
                 : 'text-[var(--color-gray-60)]'
             }`}
           >
