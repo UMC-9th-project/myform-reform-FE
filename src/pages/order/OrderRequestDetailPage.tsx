@@ -17,6 +17,7 @@ interface RequestDetail {
   budget: string;
   deadline: string;
   description: string;
+  type: 'myRequest' | 'Request';
 }
 
 interface RecommendedReformer {
@@ -43,6 +44,7 @@ const getMockRequestDetail = (id: string): RequestDetail => {
       deadline: '2026년 5월 22일',
       description: `2026년 5월 22일 마감일로 설정된 테스트 데이터입니다.
       마감되지 않은 상태로 표시되어야 합니다.`,
+      type: 'Request',
     },
     '2': {
       id: '2',
@@ -56,6 +58,7 @@ const getMockRequestDetail = (id: string): RequestDetail => {
       상세 요청 내용 텍스트 샘플입니다.
       상세 요청 내용 텍스트 샘플입니다.
       상세 요청 내용 텍스트 샘플입니다.`,
+      type: 'myRequest',
     },
     '3': {
       id: '3',
@@ -69,6 +72,7 @@ const getMockRequestDetail = (id: string): RequestDetail => {
       상세 요청 내용 텍스트 샘플입니다.
       상세 요청 내용 텍스트 샘플입니다.
       상세 요청 내용 텍스트 샘플입니다.`,
+      type: 'Request',
     },
   };
 
@@ -183,7 +187,8 @@ const OrderRequestDetailPage = () => {
     return <div>요청을 찾을 수 없습니다.</div>;
   }
 
-  const { title, images, nickname, profileImg, budget, deadline, description } = requestDetail;
+  const { title, images, nickname, profileImg, budget, deadline, description, type } = requestDetail;
+  const isMyRequest = type === 'myRequest';
 
   // 마감일 확인 (예: "2025년 12월 31일" 형식)
   const isClosed = (() => {
@@ -329,20 +334,23 @@ const OrderRequestDetailPage = () => {
             </div>
 
             {/* 액션 버튼들 */}
-            <div className="flex gap-7 mt-7">
-              <Button variant="white" onClick={handleEdit} className="flex-1">
-                글 수정하기
-              </Button>
-              <Button variant="outlined-mint" onClick={handleCheckSuggestions} className="flex-2">
-                받은 제안 확인하기
-              </Button>
-            </div>
+            {isMyRequest && (
+              <div className="flex gap-7 mt-7">
+                <Button variant="white" onClick={handleEdit} className="flex-1">
+                  글 수정하기
+                </Button>
+                <Button variant="outlined-mint" onClick={handleCheckSuggestions} className="flex-2">
+                  받은 제안 확인하기
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
         {/* 추천 리폼러 섹션 */}
-        <div className="mt-16">
-          <h2 className="heading-h4-bd text-[var(--color-black)] ml-24">추천 리폼러</h2>
+        {isMyRequest && (
+          <div className="mt-16">
+            <h2 className="heading-h4-bd text-[var(--color-black)] ml-24">추천 리폼러</h2>
           <div className="flex items-center gap-4">
             {/* 왼쪽 화살표 */}
             <button
@@ -401,6 +409,7 @@ const OrderRequestDetailPage = () => {
             </button>
           </div>
         </div>
+        )}
       </div>
     </div>
   );
