@@ -48,7 +48,7 @@ const ProductInfoToggle = ({
   };
 
   return (
-    <div className={`w-full space-y-4 ${className}`}>
+    <div className={`w-full pt-10 space-y-4 ${className}`}>
       {firstImage && (
         <div className="flex flex-col">
           <div

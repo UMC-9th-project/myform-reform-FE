@@ -19,6 +19,7 @@ import OrderRequestListPage from './pages/order/OrderRequestListPage';
 import OrderRequestDetailPage from './pages/order/OrderRequestDetailPage';
 import OrderRequestCreatePage from './pages/order/OrderRequestCreatePage';
 import OrderSuggestionListPage from './pages/order/OrderSuggestionListPage';
+import OrderSuggestionDetailPage from './pages/order/OrderSuggestionDetailPage';
 
 import SignupPage from './pages/Signup/SignupPage';
 import SignupTypeSelection from './pages/Signup/SignupTypeSelection';
@@ -46,9 +47,9 @@ function App() {
          {/* 주문제작 페이지 */}
         <Route path="/order" element={<OrderPage />} />
         <Route path="/order/requests" element={<OrderRequestListPage />} />
-        <Route path="/order/requests/create" element={<OrderRequestCreatePage />} />
         <Route path="/order/requests/:id" element={<OrderRequestDetailPage />} />
         <Route path="/order/suggestions" element={<OrderSuggestionListPage />} />
+        <Route path="/order/suggestions/:id" element={<OrderSuggestionDetailPage />} />
 
          {/* 프로필 페이지 */}
         <Route path="/profile" element={<Profile />} />
@@ -78,6 +79,19 @@ function App() {
       <Route
         element={
           <Layout
+            showHeader={true}
+            showNavbar={true}
+            showFooter={false}
+          />
+        }
+      >
+        {/* 푸터 x */}
+        <Route path="/order/requests/create" element={<OrderRequestCreatePage />} />
+      </Route>
+
+      <Route
+        element={
+          <Layout
             showHeader={false}
             showNavbar={false}
             showFooter={false}
@@ -99,5 +113,3 @@ function App() {
 }
 
 export default App;
-//app.tsx에선 라우팅만 담당
-//페이지를 많이 만드는거 xx , 라우팅을 다르게 + 내부 컴포넌트는 재사용 할 수 있도록 설계

@@ -3,7 +3,6 @@ import UpIcon from '../../../assets/icons/up.svg?react';
 import DownIcon from '../../../assets/icons/down.svg?react';
 
 interface AccordionItemProps {
-  id: string;
   fullText: string;
   isExpanded: boolean;
   onToggle: () => void;
@@ -14,57 +13,59 @@ const AccordionItem = ({
   isExpanded,
   onToggle,
 }: AccordionItemProps) => {
-  const lines = fullText.split('\n');
+  const lines = fullText.split('\n').filter((line) => line.trim() !== '');
   const firstTwoLines = lines.slice(0, 2);
-  const remainingLines = lines.slice(2);
+  const hasMoreLines = lines.length > 2;
 
   return (
-    <div className="border-b  last:border-b-0">
+    <div className="flex gap-2">
       <button
         onClick={onToggle}
-        className="w-full flex items-start justify-between gap-4 py-4 text-left hover:opacity-80 transition-opacity"
+        className="w-full flex items-start justify-between gap-4 text-left hover:opacity-80 transition-opacity"
       >
-        <div className={isExpanded ? 'w-[634px]' : 'flex-1'}>
+        <div className="flex-1">
           {!isExpanded ? (
-            <div className="space-y-1">
+            <div className="flex flex-col gap-1">
               {firstTwoLines.map((line, index) => (
                 <p
                   key={index}
-                  className={`body-b1-rg text-gray-900 ${
-                    index === 1 ? 'truncate' : ''
-                  }`}
+                  className="body-b1-rg text-[var(--color-black)]"
                 >
                   {line}
-                  {index === 1 && remainingLines.length > 0 && ' ...'}
+                  {index === 1 && hasMoreLines && '...'}
                 </p>
               ))}
             </div>
           ) : (
-            <div className="space-y-1 break-words">
+            <div className="flex flex-col gap-1">
               {lines.map((line, index) => (
-                <p key={index} className="body-b1-rg text-gray-900 break-words">
+                <p key={index} className="body-b1-rg text-[var(--color-black)]">
                   {line}
                 </p>
               ))}
             </div>
           )}
         </div>
-        <div className="flex-shrink-0 mt-1">
-          {isExpanded ? (
-            <UpIcon className="w-8 h-8 text-black" />
-          ) : (
-            <DownIcon className="w-8 h-8 text-black" />
-          )}
-        </div>
+        {hasMoreLines && (
+          <div className="flex-shrink-0 pt-0.5">
+            {isExpanded ? (
+              <UpIcon className="w-10 h-10 text-[var(--color-gray-60)] hover:text-[var(--color-black)]" />
+            ) : (
+              <DownIcon className="w-10 h-10 text-[var(--color-gray-60)] hover:text-[var(--color-black)]" />
+            )}
+          </div>
+        )}
       </button>
     </div>
   );
 };
 
-const ProfileTextAccordion = () => {
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(
-    new Set(['item-2'])
-  );
+interface ProfileTextAccordionProps {
+  className?: string;
+}
+
+const ProfileTextAccordion = ({ className = '' }: ProfileTextAccordionProps) => {
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const toggleItem = (id: string) => {
     setExpandedItems((prev) => {
@@ -89,11 +90,10 @@ const ProfileTextAccordion = () => {
   ];
 
   return (
-    <div className="w-[752px] space-y-0">
+    <div className={`w-full space-y-0 ${className}`}>
       {accordionData.map((item) => (
         <AccordionItem
           key={item.id}
-          id={item.id}
           fullText={item.fullText}
           isExpanded={expandedItems.has(item.id)}
           onToggle={() => toggleItem(item.id)}
