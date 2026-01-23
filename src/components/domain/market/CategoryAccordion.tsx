@@ -14,17 +14,20 @@ interface CategoryData {
 
 const categoriesData: CategoryData[] = [
   {
-    title: '유니폼 리폼',
+    title: '의류',
     items: [
       { id: 1, label: '전체' },
       { id: 2, label: '상의' },
       { id: 3, label: '하의' },
-      { id: 4, label: '원피스' },
+      { id: 4, label: '아우터' },
+      { id: 5, label: '원피스' },
+      { id: 6, label: '세트' },
+      { id: 7, label: '유니폼' },
     ],
-    defaultOpen: false,
+    defaultOpen: true,
   },
   {
-    title: '패션잡화 리폼',
+    title: '잡화',
     items: [
       { id: 1, label: '전체' },
       { id: 2, label: '가방·짐색' },
@@ -34,14 +37,27 @@ const categoriesData: CategoryData[] = [
     defaultOpen: false,
   },
   {
-    title: '악세사리 리폼',
+    title: '악세서리',
     items: [
       { id: 1, label: '전체' },
       { id: 2, label: '헤어 악세사리' },
       { id: 3, label: '폰케이스' },
-      { id: 4, label: '디지털 악세사리' },
-      { id: 5, label: '키링' },
+      { id: 4, label: '키링' },
     ],
+    defaultOpen: false,
+  },
+  {
+    title: '홈·리빙',
+    items: [
+      { id: 1, label: '전체' },
+      { id: 2, label: '패브릭 소품' },
+      { id: 3, label: '쿠션·방석' },
+    ],
+    defaultOpen: false,
+  },
+  {
+    title: '기타',
+    items: [{ id: 1, label: '전체' }],
     defaultOpen: false,
   },
 ];
