@@ -255,7 +255,8 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
                 <PaymentCard 
                   price={msg.price!} 
                   delivery={msg.delivery!} 
-                  days={msg.days!} 
+                  days={msg.days!}
+                  nickname= "심심한 리본" 
                   type={msg.senderRole === myRole ? 'sent' : 'received'}
                 />
               ) : msg.type === 'payFinish' ? (
