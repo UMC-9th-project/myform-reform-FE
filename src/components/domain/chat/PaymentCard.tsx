@@ -46,7 +46,7 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ price, delivery, days, type, 
             </div>
             <div className="flex justify-between body-b4-sb">
               <span>배송비</span>
-              <span className="body-b4-sb">{delivery.toLocaleString()}</span>
+              <span className="body-b4-sb">{delivery.toLocaleString()}원</span>
             </div>
             <div className="flex justify-between body-b4-sb">
               <span>예상 작업 소요일</span>

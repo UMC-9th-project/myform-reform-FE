@@ -23,6 +23,12 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSend }) 
     price.trim() != '' &&
     delivery.trim() !== '' &&
     days.trim() !== '';
+
+  const formatNumber = (value: string) => {
+    if (!value) return '';
+    return Number(value).toLocaleString();
+  };
+
     
 
   return (
@@ -45,11 +51,18 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSend }) 
               <label className="block heading-h5-sb text-[var(--color-gray-60)] mb-2">예상 가격</label>
               <div className="flex items-center justify-between border-[0.6rem] border-white rounded-xl">
                 <input
-                    title="예상 가격" 
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}  
-                    className="flex-1 outline-none text-left text-[1.3rem] w-[15rem] bg-white" />
+                  title="예상 가격"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={formatNumber(price)}
+                  onChange={(e) => {
+                    const onlyNumber = e.target.value.replace(/\D/g, '');
+                    setPrice(onlyNumber);
+                  }}
+                  className="flex-1 outline-none text-left text-[1.3rem] w-[15rem] bg-white"
+                />
+
                 <span className="shrink-0 bg-white text-[1.3rem]">원</span>
               </div>
             </div>
@@ -57,11 +70,18 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSend }) 
               <label className="block heading-h5-sb text-[var(--color-gray-60)] mb-2">배송비</label>
               <div className="flex items-center justify-between border-[0.6rem] border-white rounded-xl">
                 <input
-                    title="배송비" 
-                    value={delivery}
-                    onChange={(e) => setDelivery(e.target.value)}
-                    type="number" 
-                    className="flex-1 outline-none text-left text-[1.3rem] w-[15rem] bg-white" />
+                  title="배송비"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={formatNumber(delivery)}
+                  onChange={(e) => {
+                    const onlyNumber = e.target.value.replace(/\D/g, '');
+                    setDelivery(onlyNumber);
+                  }}
+                  className="flex-1 outline-none text-left text-[1.3rem] w-[15rem] bg-white"
+                />
+
                 <span className="shrink-0 bg-white text-[1.3rem]">원</span>
               </div>
             </div>
@@ -71,11 +91,19 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSend }) 
             <label className="block heading-h5-sb text-[var(--color-gray-60)] mb-2">예상 작업 소요일</label>
             <div className="flex items-center justify-between border-white border-[0.6rem] rounded-xl">
             <input
-                title="예상 작업 소요일" 
-                type="number"
-                value={days}
-                onChange={(e) => setDays(e.target.value)} 
-                className="flex-1 outline-none text-left text-[1.3rem] bg-white" />
+              title="예상 작업 소요일"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={days}
+              onChange={(e) => {
+                // 숫자만 허용
+                const onlyNumber = e.target.value.replace(/\D/g, '');
+                setDays(onlyNumber);
+              }}
+              className="flex-1 outline-none text-left text-[1.3rem] bg-white"
+            />
+
             <span className="shrink-0 bg-white text-[1.3rem]">일 이내</span>
             </div>
           </div>
