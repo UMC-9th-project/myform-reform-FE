@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import chat from '../../../assets/icons/chat.svg';
+import bell from '../../../assets/icons/bell.svg';
 import heart from '../../../assets/icons/heart.svg';
 import shoppingCart from '../../../assets/icons/shoppingCart.svg';
 import profile from '../../../assets/icons/profile.svg';
@@ -100,16 +100,16 @@ export default function Header() {
     <header className="w-full flex flex-col">
       <div className="body-b1-sb flex justify-end py-[0.75rem] pr-[2rem] gap-[2.75rem]">
         <Link to="/signup" className='cursor-pointer' >회원가입</Link>
-        <div>로그인</div>
+        <Link to="/login/type" className='cursor-pointer' >로그인</Link>
       </div>
       <div className="h-25 flex items-center  ml-[3.125rem] mr-[2rem] ">
-        <div className="w-[191px] h-[44.6px] mr-[2.19rem] ">
+        <Link to="/" className="w-[191px] h-[44.6px] mr-[2.19rem] ">
           <img
             src={logo}
             alt="logo"
             className="w-full h-full object-contain cursor-pointer"
           />
-        </div>
+        </Link>
         <div className="relative w-[571px]" ref={searchRef}>
           <input
             type="text"
@@ -192,7 +192,7 @@ export default function Header() {
         </div>
         <div className="flex items-center gap-[1.625rem] ml-auto">
           <button className="cursor-pointer">
-            <img src={chat} alt="chat" />
+            <img src={bell} alt="bell" />
           </button>
           <Link to="/wishlist" className="cursor-pointer">
             <img src={heart} alt="heart" />
