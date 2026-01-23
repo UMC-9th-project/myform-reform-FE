@@ -10,8 +10,8 @@ import EditProfilePage from './pages/MyPage-Reform/EditProfilePage';
 import Profile from './pages/Profile';
 import NormalMyPage from './pages/MyPage/NormalMyPage';
 import ReviewWritePage from './pages/MyPage/ReviewWritePage';
-import ChatReformer from './pages/chat/ReformerChat';
-import ChatNormal from './pages/chat/ReformerChat';
+import ReformerChat from './pages/chat/ReformerChat';
+import NormalChat from './pages/chat/NormalChat';
 
  {/* 회원가입 페이지 */}
 import SignupPage from './pages/Signup/SignupPage';
@@ -80,8 +80,8 @@ function App() {
             showFooter={false}
           />
         }>
-        <Route path="/reformer/chat" element={<ChatReformer />} />
-        <Route path="/normal/chat" element={<ChatNormal />} />
+        <Route path="/reformer/chat" element={<ReformerChat />} />
+        <Route path="/normal/chat" element={<NormalChat />} />
       </Route>
 
       {/* 404 처리 */}

@@ -8,7 +8,7 @@ interface QuotationCardProps {
 
 const QuotationCard: React.FC<QuotationCardProps> = ({ type }) => {
   const isSent = type === 'sent';
-  const bgColor = isSent ? 'bg-[var(--color-mint-5)]' : 'bg-[var(--color-gray-30)]'; 
+  const bgColor = isSent ? 'bg-[var(--color-mint-5)]' : 'bg-[var(--color-gray-20)]'; 
   const title = isSent ? '견적서 전송완료!' : '견적서 도착!';
   const description = isSent 
     ? <>00님께<br /> 견적서가 성공적으로 전송되었습니다.</>

@@ -10,7 +10,7 @@ const RequireCard: React.FC<RequireCardProps> = ({ price, title, type }) => {
   const isSent = type === 'sent';
   
   // 디자인 및 문구 설정
-  const bgColor = isSent ? 'bg-[var(--color-mint-5)]' : 'bg-[var(--color-gray-30)]';
+  const bgColor = isSent ? 'bg-[var(--color-mint-5)]' : 'bg-[var(--color-gray-20)]';
   const borderRadiusClass = isSent ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none';
 
   return (

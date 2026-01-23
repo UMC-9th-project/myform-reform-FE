@@ -52,6 +52,7 @@ const mockMessages: Record<number, Message[]> = {
 };
 
 const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
+  
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -373,7 +374,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
           )}
 
           {/* USER 전용 버튼 */}
-          {myRole === 'USER' && !messages.some((msg) => msg.type === 'require') && (
+          {myRole === 'USER' && !messages.some((msg) => msg.type === 'quotation') && (
             <button
               onClick={handleSendQuotation}
               className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"

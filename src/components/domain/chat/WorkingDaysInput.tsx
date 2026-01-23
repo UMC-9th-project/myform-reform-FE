@@ -21,7 +21,6 @@ const WorkingDaysInput: React.FC<WorkingDaysInputProps> = ({ initialValue = 0, o
   };
 
   // 콤마 없이 숫자만 그대로 보여주도록 변경
-  // 0일 때 포커스되면 비워주는 UX는 유지했습니다.
   const displayValue = (internalValue === 0 && isFocused) 
     ? '' 
     : String(internalValue); // .toLocaleString() 제거
