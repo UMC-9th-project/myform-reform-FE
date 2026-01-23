@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 export interface PaymentRequestData {
   price: number;
@@ -13,7 +13,17 @@ interface PaymentModalProps {
 }
 
 const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSend }) => {
+  const [price, setPrice] = useState('');
+  const [delivery, setDelivery] = useState('');
+  const [days, setDays] = useState('');
+
   if (!isOpen) return null;
+
+  const isFormValid =
+    price.trim() != '' &&
+    delivery.trim() !== '' &&
+    days.trim() !== '';
+    
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-8">
@@ -36,8 +46,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSend }) 
               <div className="flex items-center justify-between border-[0.6rem] border-white rounded-xl">
                 <input
                     title="예상 가격" 
-                    type="text" 
-                    defaultValue="3,500" 
+                    type="number"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}  
                     className="flex-1 outline-none text-left text-[1.3rem] w-[15rem] bg-white" />
                 <span className="shrink-0 bg-white text-[1.3rem]">원</span>
               </div>
@@ -47,8 +58,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSend }) 
               <div className="flex items-center justify-between border-[0.6rem] border-white rounded-xl">
                 <input
                     title="배송비" 
-                    type="text" 
-                    defaultValue="3,500" 
+                    value={delivery}
+                    onChange={(e) => setDelivery(e.target.value)}
+                    type="number" 
                     className="flex-1 outline-none text-left text-[1.3rem] w-[15rem] bg-white" />
                 <span className="shrink-0 bg-white text-[1.3rem]">원</span>
               </div>
@@ -60,23 +72,32 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSend }) 
             <div className="flex items-center justify-between border-white border-[0.6rem] rounded-xl">
             <input
                 title="예상 작업 소요일" 
-                type="text" 
-                defaultValue="3,500" 
+                type="number"
+                value={days}
+                onChange={(e) => setDays(e.target.value)} 
                 className="flex-1 outline-none text-left text-[1.3rem] bg-white" />
             <span className="shrink-0 bg-white text-[1.3rem]">일 이내</span>
             </div>
           </div>
         </div>
         <div className='flex justify-center'>
-        <button 
+        <button
+          disabled={!isFormValid}
           onClick={() => {
-            onSend({ price: 46500, delivery: 3500, days: 5 });
+            onSend({
+              price: Number(price),
+              delivery: Number(delivery),
+              days: Number(days),
+            });
             onClose();
           }}
-          className="w-40 bg-[var(--color-gray-50)] text-white rounded-xl py-4 mt-20 font-semibold cursor-pointer"
-        >
-          전송하기
-        </button>
+          className={`w-50 text-[1.31rem] font-semibold rounded-xl py-4 mt-20 transition
+            ${
+              isFormValid
+              ? 'bg-[black] text-white'
+              : 'bg-[var(--color-gray-50)] text-white'
+            }`}
+          > 전송하기 </button>
         </div>
         </div>
       </div>

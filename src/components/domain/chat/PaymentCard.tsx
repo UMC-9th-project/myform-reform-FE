@@ -1,14 +1,17 @@
 import React from 'react';
 
 export interface PaymentCardProps {
+  nickname: string;
   price: number;
   delivery: number;
   days: number;
   type: 'sent' | 'received';
 }
 
-const PaymentCard: React.FC<PaymentCardProps> = ({ price, delivery, days, type }) => {
+const PaymentCard: React.FC<PaymentCardProps> = ({ price, delivery, days, type, nickname }) => {
   const isSent = type === 'sent';
+  const totalPrice = (Number(price) || 0) + (Number(delivery) || 0);
+  const displayNickname = nickname || '심심한 리본'; //임시 닉네임
   
   // 디자인 및 문구 설정
   const bgColor = isSent ? 'bg-[var(--color-mint-5)]' : 'bg-[var(--color-gray-20)]';
@@ -21,8 +24,19 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ price, delivery, days, type }
         <div className={`${bgColor} ${borderRadiusClass} p-5 min-w-[23rem] shadow-sm`}>
           <h2 className="heading-h5-sb mb-3 text-black">내폼리폼 안전 결제</h2>
           <p className="body-b4-sb mb-5">
-            심심한 리본님께<br />확정된 견적서에 따른 결제 요청을 보내왔습니다.
-          </p>
+          {type === 'sent' ? (
+            <>
+              {displayNickname}님께<br />
+              확정된 견적서에 따른 결제 요청을 보냈습니다.
+            </>
+          ) : (
+            <>
+              {displayNickname}님이<br />
+              확정된 견적서에 따른 결제 요청을 보내왔습니다.
+            </>
+          )}
+        </p>
+
 
           {/* 가격 정보 박스 (재사용 가능하게 분리하면 더 좋음) */}
           <div className="bg-white rounded-xl p-4 space-y-3 shadow-sm text-sm">
@@ -40,7 +54,7 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ price, delivery, days, type }
             </div>
             <div className="border-t border-[var(--color-gray-40)] pt-3 flex justify-between items-center">
               <span className="body-b4-sb">총 예상 금액</span>
-              <span className="body-b4-sb">50,000원</span>
+              <span className="body-b4-sb">{totalPrice.toLocaleString()}원</span>
             </div>
           </div>
 
