@@ -17,6 +17,7 @@ import ReviewWritePage from './pages/my-page/ReviewWritePage';
 import OrderPage from './pages/order/OrderPage';
 import OrderRequestListPage from './pages/order/OrderRequestListPage';
 import OrderRequestDetailPage from './pages/order/OrderRequestDetailPage';
+import OrderRequestCreatePage from './pages/order/OrderRequestCreatePage';
 import OrderSuggestionListPage from './pages/order/OrderSuggestionListPage';
 
 import SignupPage from './pages/Signup/SignupPage';
@@ -45,6 +46,7 @@ function App() {
          {/* 주문제작 페이지 */}
         <Route path="/order" element={<OrderPage />} />
         <Route path="/order/requests" element={<OrderRequestListPage />} />
+        <Route path="/order/requests/create" element={<OrderRequestCreatePage />} />
         <Route path="/order/requests/:id" element={<OrderRequestDetailPage />} />
         <Route path="/order/suggestions" element={<OrderSuggestionListPage />} />
 

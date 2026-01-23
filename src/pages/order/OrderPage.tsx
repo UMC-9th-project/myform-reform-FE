@@ -8,7 +8,7 @@ import pencilIcon from '../../assets/icons/pencilLine.svg';
 const OrderPage = () => {
   const navigate = useNavigate();
   const handleRequestReform = () => {
-    navigate('/order/임시경로');
+    navigate('/order/requests/create');
   };
   // 새로 등록된 요청 데이터
   const newRequests = [
