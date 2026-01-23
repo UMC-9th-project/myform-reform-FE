@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
 import Breadcrumb from '../../components/common/Breadcrumb/Breadcrumb';
 import shareIcon from '../../assets/icons/share.svg';
-import { ImageCarousel } from '../../components/domain/product/Image';
+import { ImageCarousel } from '../../components/common/product/Image';
 import Button from '../../components/common/Button/button1';
 import ReformerSearchCard from '../../components/domain/reformer-search/ReformerProfileCard';
 import LeftIcon from '../../assets/icons/left.svg?react';
