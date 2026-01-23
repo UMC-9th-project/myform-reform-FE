@@ -15,24 +15,16 @@ interface ProductInfoCardProps {
   title: string;
   price: string;
   rating: number;
-  /** 최근 3개월 평점 (선택) */
   recentRating?: number;
-  /** 배송비 */
   shippingFee: string;
-  /** 예상 작업기간 */
   estimatedPeriod: string;
-  /** 리폼러 정보 */
   reformer: ReformerInfo;
-  /** 찜하기 상태 */
   isLiked?: boolean;
-  /** 찜하기 클릭 핸들러 */
   onLikeClick?: (isLiked: boolean) => void;
-  /** 공유하기 클릭 핸들러 */
   onShareClick?: () => void;
-  /** 이대로 요청하기 클릭 핸들러 */
   onRequestClick?: () => void;
-  /** 추가 클래스명 */
   className?: string;
+  showButtons?: boolean;
 }
 
 const ProductInfoCard = ({
@@ -48,6 +40,7 @@ const ProductInfoCard = ({
   onShareClick,
   onRequestClick,
   className = '',
+  showButtons = true,
 }: ProductInfoCardProps) => {
   return (
     <div className={`flex flex-col ${className}`}>
@@ -110,19 +103,21 @@ const ProductInfoCard = ({
       </div>
 
       {/* 액션 버튼들 */}
-      <div className="flex gap-7 mt-7">
-        <Button
-          variant="white"
-          onClick={() => onLikeClick?.(!isLiked)}
-          className="flex items-center justify-center gap-2 flex-1"
-        >
-          <LikeButton initialLiked={isLiked} variant="blackLine" readOnly className="!w-6 !h-6" />
-          <span>찜하기</span>
-        </Button>
-        <Button variant="outlined-mint" onClick={onRequestClick} className="flex-[2]">
-          이대로 요청하기
-        </Button>
-      </div>
+      {showButtons && (
+        <div className="flex gap-7 mt-7">
+          <Button
+            variant="white"
+            onClick={() => onLikeClick?.(!isLiked)}
+            className="flex items-center justify-center gap-2 flex-1"
+          >
+            <LikeButton initialLiked={isLiked} variant="blackLine" readOnly className="!w-6 !h-6" />
+            <span>찜하기</span>
+          </Button>
+          <Button variant="outlined-mint" onClick={onRequestClick} className="flex-[2]">
+            이대로 요청하기
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

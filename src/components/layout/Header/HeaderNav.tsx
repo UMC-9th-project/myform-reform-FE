@@ -24,7 +24,7 @@ export default function HeaderNav() {
             item.path === '/reformer-search'
               ? location.pathname.startsWith('/reformer-search')
               : item.path === '/order'
-                ? location.pathname.startsWith('/order')
+                ? location.pathname.startsWith('/order') || location.pathname.startsWith('/reformer/order')
                 : location.pathname === item.path;
           return (
             <button
