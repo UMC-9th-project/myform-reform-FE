@@ -17,7 +17,7 @@ const RequireCard: React.FC<RequireCardProps> = ({ price, title, type }) => {
     /* 1. 전체 가로 배치: 보낸 건 우측(end), 받은 건 좌측(start) */
     <div className={`flex w-[22rem] gap-2 ${isSent ? 'justify-end' : 'justify-start'}`}>        
         {/* 4. 결제 카드 본체 */}
-        <div className={`${bgColor} ${borderRadiusClass} p-5 min-w-[22rem] shadow-sm`}>
+        <div className={`${bgColor} ${borderRadiusClass} p-5 min-w-[23rem] shadow-sm`}>
           <h2 className="heading-h5-sb mb-2 text-black">요청서 전송완료!</h2>
             {type === 'sent' 
                 ? <p className='body-b4-sb mb-3'>심심한 리본님께<br />요청서가 성공적으로 전송되었습니다.</p>

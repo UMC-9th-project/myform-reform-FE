@@ -18,7 +18,7 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ price, delivery, days, type }
     /* 1. 전체 가로 배치: 보낸 건 우측(end), 받은 건 좌측(start) */
     <div className={`flex w-full gap-2 ${isSent ? 'justify-end' : 'justify-start'}`}>        
         {/* 4. 결제 카드 본체 */}
-        <div className={`${bgColor} ${borderRadiusClass} p-5 min-w-[22rem] shadow-sm`}>
+        <div className={`${bgColor} ${borderRadiusClass} p-5 min-w-[23rem] shadow-sm`}>
           <h2 className="heading-h5-sb mb-3 text-black">내폼리폼 안전 결제</h2>
           <p className="body-b4-sb mb-5">
             심심한 리본님께<br />확정된 견적서에 따른 결제 요청을 보내왔습니다.

@@ -6,6 +6,7 @@ import PaymentModal, { type PaymentRequestData } from './PaymentModal';
 import { useChatStore, type Message } from '../../../stores/chatStore';
 import RequireCard from './RequireCard';
 import PayFinishCard from './PayFinishCard';
+import EstimateArrivalCard from './EstimateArriveCard';
 
 interface ChatRoomProps {
   chatId: number;
@@ -26,6 +27,13 @@ const mockMessages: Record<number, Message[]> = {
     { id: 5, type: 'quotation', senderRole: 'REFORMER', time: '오후 10:00', isRead: false },
     {
       id: 6,
+      type: 'estimateArrival',
+      senderRole: 'REFORMER',
+      time: '오후 10:01',
+      isRead: true,
+    },
+    {
+      id: 7,
       type: 'payFinish',
       senderRole: 'USER',
       time: '오후 10:12',
@@ -92,6 +100,22 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
       type: myRole === 'USER' ? 'require' : 'quotation',
       senderRole: myRole,
       time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true }),
+      isRead: false,
+    });
+  };
+
+  //견적서 거절
+  const handleRejectEstimate = () => {
+    sendMessage({
+      id: Date.now(),
+      type: 'system',
+      systemType: 'quotationRejected',
+      senderRole: myRole,
+      time: new Date().toLocaleTimeString('ko-KR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      }),
       isRead: false,
     });
   };
@@ -181,13 +205,27 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto bg-white p-4 space-y-6"
       >
+        
         <div className="flex justify-center">
           <span className="bg-[var(--color-gray-30)] text-[var(--color-gray-60)] body-b3-rg px-4 py-1 rounded-full">
             2025년 12월 3일 수요일
           </span>
         </div>
+        
+        {messages.map((msg) => {
 
-        {messages.map((msg) => (
+          if (msg.type === 'system' && msg.systemType === 'quotationRejected') {
+            return (
+              <div key={msg.id} className="my-6 flex justify-center">
+                <span className="body-b3-rg text-[var(--color-gray-50)] border-b border-[var(--color-gray-50)] pb-0">
+                  제안이 거절되었습니다
+                </span>
+              </div>
+            );
+          }
+
+
+          return (
           <div
             key={msg.id}
             className={`flex ${msg.senderRole === myRole ? 'flex-row-reverse' : 'flex-row'} items-start gap-2`}
@@ -230,7 +268,12 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
                   receiverName={msg.receiverName!}
                   phone={msg.phone!}
                   address={msg.address!}
-                />) : (
+                />
+              ) : msg.type === 'estimateArrival' ? (
+                  <EstimateArrivalCard
+                    type={msg.senderRole === myRole ? 'sent' : 'received'}
+                    onReject={handleRejectEstimate} />
+              ) : (
                 /* 텍스트와 이미지는 동일한 말풍선 배경(Mint/Gray)을 사용하도록 통합 */
                 <div className={`p-2 rounded-[0.625rem] max-w-[40rem] ${
                     msg.senderRole === myRole
@@ -265,6 +308,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
                       ))}
                     </div>
                   )}
+
                 </div>
               )}
 
@@ -277,9 +321,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
               </div>
             </div>
           </div>
-        ))}
-
-
+        )})}
         <div ref={messagesEndRef} />
       </div>
 

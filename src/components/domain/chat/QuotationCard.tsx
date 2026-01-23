@@ -20,7 +20,7 @@ const QuotationCard: React.FC<QuotationCardProps> = ({ type }) => {
     /* 1. 전체 가로 정렬 */
     <div className={`flex w-full h-full mb-1 gap-3 ${isSent ? 'justify-end' : 'justify-start'}`}>
 
-        <div className={`${bgColor} ${borderRadiusClass} p-5 w-full min-w-[22rem] shadow-sm`}>
+        <div className={`${bgColor} ${borderRadiusClass} p-5 w-full min-w-[23rem] shadow-sm`}>
           <h2 className="text-2xl heading-h5-sb">{title}</h2>
           <p className="body-b4-sb mt-1 mb-4">{description}</p>
           

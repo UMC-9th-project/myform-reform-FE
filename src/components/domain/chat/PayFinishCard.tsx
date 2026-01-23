@@ -31,7 +31,7 @@ const PayFinishCard: React.FC<PayFinishCardProps> = ({
   return (
     <div className={`flex w-full ${isSent ? 'justify-end' : 'justify-start'}`}>         
         {/* 카드 본체 */}
-        <div className={`${bgColor} ${borderRadiusClass} p-5 min-w-[22rem] shadow-sm`}>
+        <div className={`${bgColor} ${borderRadiusClass} p-5 min-w-[23rem] shadow-sm`}>
           
           {/* 1. 상단 타이틀 & 주문번호 */}
           <div className="mb-3">
