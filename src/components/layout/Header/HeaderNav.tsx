@@ -7,7 +7,7 @@ export default function HeaderNav() {
   const navItems = [
     { label: '홈', path: '/home' }, //임시 경로
     { label: '마켓', path: '/market' }, //임시 경로
-    { label: '주문제작', path: '/create' }, //임시 경로
+    { label: '주문제작', path: '/order' }, 
     { label: '리폼러 찾기', path: '/reformer-search' },
     { label: '채팅하기', path: '/chat' }, //임시 경로
   ];
@@ -20,9 +20,12 @@ export default function HeaderNav() {
     <nav className="w-full h-[77px] border-b border-[var(--color-gray-30)]">
       <div className=" flex pl-[3.125rem] pt-[1.0625rem] gap-[2.1875rem] ">
         {navItems.map((item, index) => {
-          const isActive = item.path === '/reformer-search'
-            ? location.pathname.startsWith('/reformer-search')
-            : location.pathname === item.path;
+          const isActive =
+            item.path === '/reformer-search'
+              ? location.pathname.startsWith('/reformer-search')
+              : item.path === '/order'
+                ? location.pathname.startsWith('/order') || location.pathname.startsWith('/reformer/order')
+                : location.pathname === item.path;
           return (
             <button
               key={index}

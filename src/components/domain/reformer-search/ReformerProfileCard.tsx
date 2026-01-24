@@ -1,5 +1,6 @@
 import profile from '../market/images/profile.png';
 import starIcon from '../../../assets/icons/star.svg';
+import { useNavigate } from 'react-router-dom';
 
 interface ReformerSearchCardProps {
   name: string;
@@ -20,6 +21,12 @@ const ReformerSearchCard = ({
   tags,
   onClick,
 }: ReformerSearchCardProps) => {
+  const navigate = useNavigate();
+  const handleClick = () => {
+    if (onClick) return onClick();
+    navigate('/profile');
+  };
+
   return (
     <div
       className="bg-white rounded-[1.25rem] p-4 md:p-[1.5rem] flex flex-col gap-2 md:gap-[0.875rem] cursor-pointer w-full"
@@ -27,7 +34,7 @@ const ReformerSearchCard = ({
         boxShadow: '0px 3px 11px 0px rgba(0, 0, 0, 0.22)',
         minHeight: '250px',
       }}
-      onClick={onClick}
+      onClick={handleClick}
     >
       {/* 프로필 이미지와 이름 */}
       <div className="flex items-center gap-2 md:gap-[0.75rem]">
