@@ -1,17 +1,21 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export interface RequireCardProps {
   price: number;
   title: string;
   type: 'sent' | 'received';
+  id?: number;
+  chatId?: number;
 }
 
-const RequireCard: React.FC<RequireCardProps> = ({ price, title, type }) => {
+const RequireCard: React.FC<RequireCardProps> = ({ price, title, type, id, chatId }) => {
   const isSent = type === 'sent';
-  
+  const navigate = useNavigate();
   // 디자인 및 문구 설정
   const bgColor = isSent ? 'bg-[var(--color-mint-5)]' : 'bg-[var(--color-gray-20)]';
   const borderRadiusClass = isSent ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none';
+
 
   return (
     /* 1. 전체 가로 배치: 보낸 건 우측(end), 받은 건 좌측(start) */
@@ -36,9 +40,19 @@ const RequireCard: React.FC<RequireCardProps> = ({ price, title, type }) => {
           <div className='flex body-b4-sb justify-center mb-3'>추가 설명 및 견적 조율은 채팅으로 대화해보세요.</div>
 
           {/* 결제 버튼 */}
-          <button className="w-full bg-black text-white py-3.5 rounded-xl body-b4-sb cursor-pointer">
+          <button 
+            className="w-full bg-black text-white py-3.5 rounded-xl body-b4-sb cursor-pointer"
+            onClick={() => navigate('/chat/quotation/detail', {
+              state: {
+                myRole: isSent ? 'USER' : 'REFORMER',
+                isQuotation: false,
+                id: id,
+                chatId: chatId
+              }
+            })}>
             받은 요청서 자세히 보기
           </button>
+          
         </div>
       </div>
     

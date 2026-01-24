@@ -36,6 +36,7 @@ import SignupComplete from './pages/Signup/SignupComplete';
 import Login from './pages/Login/Login';
 import ReformerChat from './pages/chat/ReformerChat';
 import NormalChat from './pages/chat/NormalChat';
+import ChatQuotationDetailPage from './components/domain/chat/ChatQuotationDetailPage';
 
 function App() {
   return (
@@ -89,6 +90,7 @@ function App() {
         <Route path="/normal-mypage" element={<NormalMyPage />} />
         <Route path="/normal-profile-edit" element={<EditProfilePage />} />
         <Route path="/mypage/review/write" element={<ReviewWritePage />} />
+        <Route path="/chat/quotation/detail" element={<ChatQuotationDetailPage />} />
 
         {/* 404 처리 */}
         <Route path="*" element={<div>Not Found</div>} />

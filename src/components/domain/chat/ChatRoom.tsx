@@ -48,6 +48,15 @@ const mockMessages: Record<number, Message[]> = {
       phone: '010-1234-5678',
       address: '서울시 마포구 어딘가로 123',
     },
+  ],
+  4: [
+    {
+      id: 8,
+      type: 'require',
+      price: 7500,
+      senderRole:'USER',
+      time: '오후 3시 20분'
+    }
   ]
 };
 
@@ -244,13 +253,14 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
               {/* 견적서와 결제창은 말풍선 디자인이 다르므로 별도 처리 */}
               {msg.type === 'require' ? (
                 <RequireCard
+                  key={msg.id}
                   type={msg.senderRole === myRole ? 'sent' : 'received'}
                   price={50000}       // 예: 실제 데이터로 바꾸면 됨
                   title="제 유니폼 원숄더 원피스로 가방 짐색 리폼 요청드립니다 제발요"
                 />
               ) :
                 msg.type === 'quotation' ? (
-                <QuotationCard type={msg.senderRole === myRole ? 'sent' : 'received'} id={msg.id} chatId={chatId} />
+                <QuotationCard type={msg.senderRole === myRole ? 'sent' : 'received'} id={msg.id} chatId={chatId} myRole={myRole} key={msg.id} />
               ) : msg.type === 'payment' ? (
                 <PaymentCard 
                   price={msg.price!} 

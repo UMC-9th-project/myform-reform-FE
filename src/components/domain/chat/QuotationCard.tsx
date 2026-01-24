@@ -1,12 +1,16 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface QuotationCardProps {
   type: 'sent' | 'received';
   id?: number;
   chatId?: number;
+  myRole?: 'REFORMER' | 'USER';
+  msgType?: 'quotation' | 'require';
 }
 
-const QuotationCard: React.FC<QuotationCardProps> = ({ type }) => {
+const QuotationCard: React.FC<QuotationCardProps> = ({ type, id, chatId }) => {
+  const navigate = useNavigate();
   const isSent = type === 'sent';
   const bgColor = isSent ? 'bg-[var(--color-mint-5)]' : 'bg-[var(--color-gray-20)]'; 
   const title = isSent ? '견적서 전송완료!' : '견적서 도착!';
@@ -47,7 +51,17 @@ const QuotationCard: React.FC<QuotationCardProps> = ({ type }) => {
             추가 설명 및 견적 조율은 채팅으로 물어보세요
           </p>
           
-          <button className="w-full bg-black text-white py-2.5 rounded-xl body-b4-sb hover:bg-gray-800 transition-colors cursor-pointer shadow-md">
+          <button
+            className="w-full bg-black text-white py-2.5 rounded-xl body-b4-sb hover:bg-gray-800 transition-colors shadow-md"
+            onClick={() => navigate('/chat/quotation/detail', {
+              state: {
+                myRole: type === 'sent' ? 'REFORMER' : 'USER',
+                isQuotation: true,
+                id: id,
+                chatId: chatId,  // 이제 여기서 id 사용 가능
+              }
+            })}
+          >
             {btnText}
           </button>
         </div>
