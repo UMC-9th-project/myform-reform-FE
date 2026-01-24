@@ -2,14 +2,13 @@ import React, { useEffect, useState } from 'react';
 import ChatListTab from '../../components/domain/chat/ChatListTab';
 import ChatRoom from '../../components/domain/chat/ChatRoom';
 import EmptyChatRoom from '../../components/domain/chat/EmptyChatRoom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const ReformerChat = () => {
-  const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
-  
+  const { chatId } = useParams<{ chatId?: string }>();
+  const navigate = useNavigate();
 
-    useEffect(() => {
-    console.log('selectedChatId:', selectedChatId);
-  }, [selectedChatId]);
+  const selectedChatId = chatId ? Number(chatId) : null;
 
   return (
     <div className="flex flex-row-reverse w-full h-screen bg-[var(--color-gray-20)] overflow-hidden">
@@ -18,7 +17,7 @@ const ReformerChat = () => {
   <div className="w-[24rem] ml-3 m-10 border-[var(--color-line-gray-40)] bg-white">
     <ChatListTab
       selectedChat={selectedChatId}
-      setSelectedChat={setSelectedChatId} />
+      setSelectedChat={(id) => navigate(`/chat/reformer/${id}`)} />
   </div>
 
   {/* 왼쪽 채팅방 컨테이너 */}

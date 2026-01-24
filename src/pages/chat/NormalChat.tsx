@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import ChatListTab from '../../components/domain/chat/ChatListTab';
 import ChatRoom from '../../components/domain/chat/ChatRoom';
 import EmptyChatRoom from '../../components/domain/chat/EmptyChatRoom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 const NormalChat = () => {
-  const [selectedChatId, setSelectedChatId] = useState<number | null>(null);
+  const { chatId } = useParams();
+  const navigate = useNavigate();
+  const selectedChatId = chatId ? Number(chatId) : null;
   
 
     useEffect(() => {
@@ -18,7 +21,7 @@ const NormalChat = () => {
   <div className="w-[24rem] ml-3 m-10 border-[var(--color-line-gray-40)] bg-white">
     <ChatListTab
       selectedChat={selectedChatId}
-      setSelectedChat={setSelectedChatId} />
+      setSelectedChat={(id) => navigate(`/chat/normal/${id}`)} />
   </div>
 
   {/* 왼쪽 채팅방 컨테이너 */}

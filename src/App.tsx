@@ -139,8 +139,8 @@ function App() {
             showFooter={false}
           />
         }>
-        <Route path="/chat/reformer" element={<ReformerChat />} />
-        <Route path="/chat/normal" element={<NormalChat />} />
+        <Route path="/chat/reformer/:chatId?" element={<ReformerChat />} />
+        <Route path="/chat/normal/:chatId?" element={<NormalChat />} />
       </Route>
 
 
