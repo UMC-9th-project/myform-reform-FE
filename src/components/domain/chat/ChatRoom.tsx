@@ -189,7 +189,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
     if (myRole === 'REFORMER') {
       navigate('/chat/create/quotation', { state: { chatId } });
     } else {
-      navigate('/chat/create/require', { state: { chatId } });
+      navigate('/chat/create/request', { state: { chatId } });
     }
   };
 

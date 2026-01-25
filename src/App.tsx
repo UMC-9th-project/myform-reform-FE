@@ -40,6 +40,7 @@ import NormalChat from './pages/chat/NormalChat';
 
 import ChatQuotationDetailPage from './pages/chat/ChatQuotationDetailPage';
 import ChatQuotationFormPage from './pages/chat/ChatQuotationFormPage';
+import ChatRequestFormPage from './pages/chat/ChatRequestFormPage';
 
 function App() {
   return (
@@ -147,6 +148,7 @@ function App() {
         <Route path="/chat/reformer/:chatId?" element={<ReformerChat />} />
         <Route path="/chat/normal/:chatId?" element={<NormalChat />} />
         <Route path="/chat/create/quotation" element={<ChatQuotationFormPage />} />
+        <Route path="/chat/create/request" element={<ChatRequestFormPage />} />
       </Route>
 
 
