@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 interface QuotationImage {
   file: File;
@@ -16,13 +17,16 @@ interface ChatQuotationFormData {
 
 const ChatQuotationFormPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const location = useLocation();
+  const mode: 'create' | 'edit' = location.state?.mode ?? 'create';
+const quotationData = location.state?.quotationData;
 
   const [formData, setFormData] = useState<ChatQuotationFormData>({
-    images: [],
-    price: '',
-    delivery: '',
-    content: '',
-    estimatedDays: '',
+    images: quotationData?.images ?? [],
+    price: quotationData?.price ??'',
+    delivery: quotationData?.delivery ?? '',
+    content: quotationData?.content ?? '',
+    estimatedDays: quotationData?.estimatedDays ?? '',
   });
 
   const MAX_IMAGES = 10;
@@ -89,7 +93,7 @@ const isFormComplete =
     <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
       <>
         <h1 className="heading-h2-bd text-black mb-10 pb-6 border-b border-black">
-          리폼 견적서 작성하기
+          {mode === 'edit' ? '리폼 견적서 수정하기' : '리폼 견적서 작성하기'}
         </h1>
 
         <div className="space-y-12">
@@ -251,7 +255,7 @@ const isFormComplete =
               transition-colors
             `}
           >
-            전송하기
+            {mode === 'edit' ? '수정하기' : '전송하기'}
           </button>
 
         </div>
