@@ -5,8 +5,9 @@ import WishlistItemCard from '../../components/domain/wishlist/WishlistItemCard'
 import ReformerSearchCard from '../../components/domain/reformer-search/ReformerProfileCard';
 import HomeServiceCard from '../../components/domain/home/HomeServiceCard';
 import crownIcon from '../../assets/home/crown.svg';
-import leftIcon from '../../assets/icons/left.svg';
-import rightIcon from '../../assets/icons/right.svg';
+import swiperLeftIcon from '../../assets/home/swiperprev.svg';
+import swiperRightIcon from '../../assets/home/swipernext.svg';
+
 
 import service1 from '../../assets/home/service1.jpg';
 import service2 from '../../assets/home/service2.jpg';
@@ -51,19 +52,21 @@ const productData = [
 const Home = () => {
   return (
     <div>
-      <div className="w-full h-[457px] mt-[3.25rem] home-swiper-container">
-        <style>{`
-          .home-swiper-container .swiper-button-prev::before {
-            background-image: url(${leftIcon}) !important;
-          }
-          .home-swiper-container .swiper-button-next::before {
-            background-image: url(${rightIcon}) !important;
-          }
-        `}</style>
+      <div className="w-full h-[457px] mt-[3.25rem] home-swiper-container relative">
+        <button className="home-swiper-prev absolute left-[1.25rem] top-1/2 -translate-y-1/2 z-10">
+          <img src={swiperLeftIcon} alt="이전"/>
+        </button>
+        <button className="home-swiper-next absolute right-[1.25rem] top-1/2 -translate-y-1/2 z-10 ">
+          <img src={swiperRightIcon} alt="다음" />
+        </button>
+        
         <Swiper
           loop={true}
           modules={[Navigation, Autoplay]}
-          navigation  
+          navigation={{
+            prevEl: '.home-swiper-prev',
+            nextEl: '.home-swiper-next',
+          }}
           autoplay={{
             delay: 3000,
             disableOnInteraction: false,
@@ -120,14 +123,14 @@ const Home = () => {
 
       <div className='mt-[3.4375rem]'>
         <div className='heading-h4-bd'>요즘 뜨는 리폼 스타일 👕</div>
-        <div className='flex mt-[1.875rem] gap-[1.875rem] items-center'>
+        <div className='grid grid-cols-3 mt-[1.875rem] gap-[1.875rem] items-center'>
           {productData.map((item) => (
             <WishlistItemCard key={item.id} item={item} onRemove={() => {}} />
           ))}
         </div>
 
         <div className='heading-h4-bd mt-[5rem]'>주문제작으로 나만의 스타일 완성! ✨</div>
-        <div className='flex mt-[1.875rem] gap-[1.875rem] items-center'>
+        <div className='grid grid-cols-3 mt-[1.875rem] gap-[1.875rem] items-center'>
           {productData.map((item) => (
             <WishlistItemCard key={item.id} item={item} onRemove={() => {}} />
           ))}
@@ -138,20 +141,23 @@ const Home = () => {
           <div className='heading-h4-bd flex pl-[1.3125rem] gap-[0.75rem] w-[260px] rounded-[1.875rem] bg-[var(--color-black)] text-[var(--color-white)] py-[0.5rem] '>
             <img src={crownIcon} alt="crown"/> 베스트 리폼러</div>
             
-          <div className='mt-[0.75rem] py-[1.375rem]'>
-            <style>{`
-              .best-reformer-swiper .swiper-button-prev::before {
-                background-image: url(${leftIcon}) !important;
-              }
-              .best-reformer-swiper .swiper-button-next::before {
-                background-image: url(${rightIcon}) !important;
-              }
-            `}</style>
+          <div className='mt-[0.75rem] py-[1.375rem] relative'>
+            {/* 네비게이션 버튼 - Swiper 외부에 위치 */}
+            <button className="product-image-prev absolute left-[1.25rem] top-1/2 -translate-y-1/2 w-[3.125rem] h-[3.125rem] bg-white rounded-full flex items-center justify-center shadow-md z-10">
+              <img src={swiperLeftIcon} alt="이전" className="w-6 h-6" />
+            </button>
+            <button className="product-image-next absolute right-[1.25rem] top-1/2 -translate-y-1/2 w-[3.125rem] h-[3.125rem] bg-white rounded-full flex items-center justify-center shadow-md z-10">
+              <img src={swiperRightIcon} alt="다음" className="w-6 h-6" />
+            </button>
+
             <Swiper
               loop={true}
               loopPreventsSliding={false}
               modules={[Navigation]}
-              navigation
+              navigation={{
+                prevEl: '.product-image-prev',
+                nextEl: '.product-image-next',
+              }}
               spaceBetween={15}
               slidesPerView={3}
               className="w-full h-full"
