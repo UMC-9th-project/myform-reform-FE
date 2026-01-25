@@ -7,6 +7,7 @@ import { useChatStore, type Message } from '../../../stores/chatStore';
 import RequireCard from './RequireCard';
 import PayFinishCard from './PayFinishCard';
 import EstimateArrivalCard from './EstimateArriveCard';
+import { useNavigate } from 'react-router-dom';
 
 interface ChatRoomProps {
   chatId: number;
@@ -74,6 +75,8 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
+  const navigate = useNavigate();
+
   // 스크롤 아래로
   useEffect(() => {
     if (messagesContainerRef.current) {
@@ -105,12 +108,11 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
 
   // 견적서 메시지 전송
   const handleSendQuotation = () => {
-    sendMessage({
-      id: Date.now(),
-      type: myRole === 'USER' ? 'require' : 'quotation',
-      senderRole: myRole,
-      time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true }),
-      isRead: false,
+    navigate('/chat/create/form', {
+    state: {
+      fromChatId: chatId,
+      myRole,
+    },
     });
   };
 
@@ -378,7 +380,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
                   onClick={handleSendQuotation}
                   className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
                 >
-                  견적서 제안하기
+                  견적서 보내기
                 </button>
               )}
             </>

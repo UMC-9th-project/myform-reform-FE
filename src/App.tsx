@@ -27,6 +27,8 @@ import ReformerOrderEstimateCreatePage from './pages/order/reformer/ReformerOrde
 import ReformerOrderSuggestionListPage from './pages/order/reformer/ReformerOrderSuggestionListPage';
 import ReformerOrderSuggestionDetailPage from './pages/order/reformer/ReformerOrderSuggestionDetailPage';
 
+import ChatWriteForm from './components/domain/chat/ChatWriteForm';
+
 import SignupPage from './pages/Signup/SignupPage';
 import SignupTypeSelection from './pages/Signup/SignupTypeSelection';
 import SignupFormPage from './pages/Signup/SignupFormPage';
@@ -143,6 +145,7 @@ function App() {
         }>
         <Route path="/chat/reformer/:chatId?" element={<ReformerChat />} />
         <Route path="/chat/normal/:chatId?" element={<NormalChat />} />
+        <Route path="/chat/create/form" element={<ChatWriteForm />} />
       </Route>
 
 
