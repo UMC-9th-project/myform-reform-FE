@@ -95,7 +95,7 @@ const Home = () => {
             <img
               src="/Home/images/home3.jpg"
               alt="image3"
-              className="w-[1019px] h-full object-cover"
+              className="h-full"
             />
           </SwiperSlide>
           <SwiperSlide>
@@ -139,15 +139,16 @@ const Home = () => {
 
       <div className='mt-[4.75rem]'>
           <div className='heading-h4-bd flex pl-[1.3125rem] gap-[0.75rem] w-[260px] rounded-[1.875rem] bg-[var(--color-black)] text-[var(--color-white)] py-[0.5rem] '>
-            <img src={crownIcon} alt="crown"/> 베스트 리폼러</div>
-            
-          <div className='mt-[0.75rem] py-[1.375rem] relative'>
-            {/* 네비게이션 버튼 - Swiper 외부에 위치 */}
-            <button className="product-image-prev absolute left-[1.25rem] top-1/2 -translate-y-1/2 w-[3.125rem] h-[3.125rem] bg-white rounded-full flex items-center justify-center shadow-md z-10">
-              <img src={swiperLeftIcon} alt="이전" className="w-6 h-6" />
+            <img src={crownIcon} alt="crown"/> 베스트 리폼러</div>    
+        </div>
+      </div>
+
+      <div className='mt-[0.75rem] py-[1.375rem]  relative'>
+            <button className="product-image-prev absolute left-[68px] top-1/2 -translate-y-1/2 w-[3.125rem] h-[3.125rem] cursor-pointer z-10">
+              <img src={swiperLeftIcon} alt="이전"  />
             </button>
-            <button className="product-image-next absolute right-[1.25rem] top-1/2 -translate-y-1/2 w-[3.125rem] h-[3.125rem] bg-white rounded-full flex items-center justify-center shadow-md z-10">
-              <img src={swiperRightIcon} alt="다음" className="w-6 h-6" />
+            <button className="product-image-next absolute right-[68px] top-1/2 -translate-y-1/2 w-[3.125rem] h-[3.125rem] cursor-pointer z-10">
+              <img src={swiperRightIcon} alt="다음" />
             </button>
 
             <Swiper
@@ -160,8 +161,19 @@ const Home = () => {
               }}
               spaceBetween={15}
               slidesPerView={3}
-              className="w-full h-full"
+              className="w-300 h-full rounded-[0.625rem]"
             >
+              <SwiperSlide>
+                <ReformerSearchCard
+                  name="침착한 대머리독수리"
+                  rating={4.9}
+                  reviewCount={271}
+                  transactionCount={415}
+                  description="- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움..."
+                  tags={['#빠른', '#친절한']}
+                />
+              </SwiperSlide>
+
               <SwiperSlide>
                 <ReformerSearchCard
                   name="침착한 대머리독수리"
@@ -194,8 +206,6 @@ const Home = () => {
               </SwiperSlide>
             </Swiper>
           </div>
-        </div>
-      </div>
 
        
        <div className="w-full mt-[3.3125rem] pt-[4.4375rem] px-[9.375rem] h-[581px] bg-gradient-to-b from-white to-[#06dbd3] ">
