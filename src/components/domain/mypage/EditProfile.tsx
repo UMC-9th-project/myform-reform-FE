@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import star from '../../../assets/icons/star.svg';
 
 // 데이터 구조 정의
 interface ProfileData {
@@ -39,7 +40,7 @@ const EditProfile = ({ mode }: { mode: 'edit' | 'view' }) => {
               <h1 className="text-2xl md:text-3xl font-bold text-black mt-1">{mockProfile.nickname}</h1>
               <div className="flex items-center gap-1 mt-3">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <span key={i} className={`text-xl ${i <= Math.floor(mockProfile.rating) ? 'text-yellow-400' : 'text-gray-200'}`}>★</span>
+                  <span key={i} className={`text-xl ${i <= Math.floor(mockProfile.rating) ? 'text-yellow-400' : 'text-gray-200'}`}><img src={star} alt="별" /></span>
                 ))}
                 <span className="ml-1 font-bold text-gray-800">{mockProfile.rating}</span>
               </div>
