@@ -5,7 +5,7 @@ export default function HeaderNav() {
   const location = useLocation();
 
   const navItems = [
-    { label: '홈', path: '/home' }, //임시 경로
+    { label: '홈', path: '/' }, //임시 경로
     { label: '마켓', path: '/market' }, //임시 경로
     { label: '주문제작', path: '/order' }, 
     { label: '리폼러 찾기', path: '/reformer-search' },
