@@ -77,6 +77,8 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
 
   const navigate = useNavigate();
 
+
+
   // 스크롤 아래로
   useEffect(() => {
     if (messagesContainerRef.current) {
@@ -104,16 +106,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
       isRead: false,
     });
     setIsPaymentModalOpen(false);
-  };
-
-  // 견적서 메시지 전송
-  const handleSendQuotation = () => {
-    navigate('/chat/create/form', {
-    state: {
-      fromChatId: chatId,
-      myRole,
-    },
-    });
   };
 
   //견적서 거절
@@ -191,6 +183,16 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
       handleSend();
     }
   };
+
+    // 견적서/요청서 이동만
+  const handleSendQuotationOrRequire = () => {
+    if (myRole === 'REFORMER') {
+      navigate('/chat/create/quotation', { state: { chatId } });
+    } else {
+      navigate('/chat/create/require', { state: { chatId } });
+    }
+  };
+
 
   return (
     <div className="flex flex-col w-full h-full mx-auto h-[800px] border border-[var(--color-line-gray-40)] bg-white overflow-hidden">
@@ -377,7 +379,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
               </button>
               {!messages.some((msg) => msg.type === 'quotation') && (
                 <button
-                  onClick={handleSendQuotation}
+                  onClick={handleSendQuotationOrRequire}
                   className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
                 >
                   견적서 보내기
@@ -389,7 +391,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
           {/* USER 전용 버튼 */}
           {myRole === 'USER' && !messages.some((msg) => msg.type === 'quotation') && (
             <button
-              onClick={handleSendQuotation}
+              onClick={handleSendQuotationOrRequire}
               className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
             >
               요청서 보내기

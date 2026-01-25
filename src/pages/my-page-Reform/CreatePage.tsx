@@ -92,7 +92,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
 
   return (
     <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
-      <h1 className="heading-h2-bd pb-6 border-b mb-8 border-[black]"> {type === 'order' ? '주문제작 글 등록하기' : '판매글 등록'}</h1>
+      <h1 className="heading-h2-bd pb-6 border-b mb-8 border-[black]"> {type === 'order' ? '주문제작 글 등록하기' : '판매글 등록하기'}</h1>
 
       {/* Step 1: Image Upload */}
       <section className="mb-10">

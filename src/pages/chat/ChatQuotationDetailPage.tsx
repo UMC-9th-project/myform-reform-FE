@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import whiteright from '../../../assets/icons/whiteright.svg';
+import whiteright from '../../assets/icons/whiteright.svg';
 import { useLocation } from 'react-router-dom';
 
 const ChatQuotationDetailPage = () => {
