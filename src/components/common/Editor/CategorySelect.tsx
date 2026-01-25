@@ -1,6 +1,18 @@
 import { useState } from 'react';
 
-const CategorySelect = () => {
+interface CategorySelectProps {
+  onCategoryChange?: (category: string | null) => void;
+  onSubCategoryChange?: (subCategory: string | null) => void;
+  initialCategory?: string | null;
+  initialSubCategory?: string | null;
+}
+
+const CategorySelect = ({
+  onCategoryChange,
+  onSubCategoryChange,
+  initialCategory = null,
+  initialSubCategory = null,
+}: CategorySelectProps) => {
   const categories = ['의류', '잡화', '악세서리', '홈·리빙', '기타'];
 
   const subCategories: Record<string, string[]> = {
@@ -11,25 +23,30 @@ const CategorySelect = () => {
     기타: [],
   };
 
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
+    initialCategory
+  );
   const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
-    null
+    initialSubCategory
   );
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory(category);
     setSelectedSubCategory(null); // 대분류 변경 시 소분류 선택 초기화
+    onCategoryChange?.(category);
+    onSubCategoryChange?.(null);
   };
 
   const handleSubCategoryClick = (subCategory: string) => {
     setSelectedSubCategory(subCategory);
+    onSubCategoryChange?.(subCategory);
   };
 
   return (
-    <div className="border border-[var(--color-line-gray-40)] w-[780px] min-h-[285px]">
+    <div className="border border-[var(--color-line-gray-40)] w-full min-h-[285px]">
       <div className="flex h-full">
         {/* 대분류 컬럼 */}
-        <div className="flex flex-col border-r border-[var(--color-line-gray-40)] w-[390px]">
+        <div className="flex flex-col border-r border-[var(--color-line-gray-40)] w-1/2">
           {categories.map((category) => (
             <button
               key={category}
@@ -47,7 +64,7 @@ const CategorySelect = () => {
         </div>
 
         {/* 소분류 컬럼 */}
-        <div className="flex-1 flex flex-col">
+        <div className="w-1/2 flex flex-col">
           {selectedCategory ? (
             subCategories[selectedCategory].length > 0 ? (
               <div className="flex flex-col">

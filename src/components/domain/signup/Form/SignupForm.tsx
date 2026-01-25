@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Input from '../../../common/Input/Input';
 import Button from '../../../common/Button/button1';
@@ -9,6 +9,9 @@ import {
   nicknameSchema,
   phoneSchema,
 } from '../../../../schemas/signup';
+import { validateField } from '../../../../utils/domain/formValidation';
+import { usePhoneVerification } from '../../../../hooks/domain/signup/usePhoneVerification';
+import { useNicknameDuplicate } from '../../../../hooks/domain/signup/useNicknameDuplicate';
 
 export default function SignupForm() {
   const navigate = useNavigate();
@@ -26,62 +29,25 @@ export default function SignupForm() {
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
 
-  const [nicknameDuplicateError, setNicknameDuplicateError] = useState(false);
-  const [phoneTimerActive, setPhoneTimerActive] = useState(false);
-  const [phoneTimeLeft, setPhoneTimeLeft] = useState(180);
-  const [isNicknameVerified, setIsNicknameVerified] = useState(false);
-
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeAge, setAgreeAge] = useState(false);
   const [agreeServiceTerms, setAgreeServiceTerms] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
 
-  const phoneIntervalRef = useRef<number | null>(null);
+  // Custom Hooks
+  const {
+    phoneTimerActive,
+    phoneTimeLeft,
+    startTimer: startPhoneTimer,
+  } = usePhoneVerification(180);
 
-  useEffect(() => {
-    if (phoneTimerActive && phoneTimeLeft > 0) {
-      phoneIntervalRef.current = window.setInterval(() => {
-        setPhoneTimeLeft((prev) => {
-          if (prev <= 1) {
-            setPhoneTimerActive(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-
-    return () => {
-      if (phoneIntervalRef.current) {
-        window.clearInterval(phoneIntervalRef.current);
-      }
-    };
-  }, [phoneTimerActive, phoneTimeLeft]);
-
-  const validateField = (
-    value: string,
-    schema: typeof emailSchema,
-    setError: (error: string | null) => void,
-    required = false
-  ): boolean => {
-    if (value.trim() === '') {
-      if (required) {
-        setError('필수 입력 항목입니다.');
-        return false;
-      }
-      setError(null);
-      return true;
-    }
-
-    const result = schema.safeParse(value);
-    if (!result.success) {
-      setError(result.error.errors[0].message);
-      return false;
-    } else {
-      setError(null);
-      return true;
-    }
-  };
+  const {
+    isNicknameVerified,
+    nicknameDuplicateError,
+    verifyNickname,
+    resetVerification: resetNicknameVerification,
+    setDuplicateError: setNicknameDuplicateError,
+  } = useNicknameDuplicate();
 
   const validateForm = () => {
     let isValid = true;
@@ -149,8 +115,7 @@ export default function SignupForm() {
   const handleNicknameChange = (value: string) => {
     setNickname(value);
     validateField(value, nicknameSchema, setNicknameError, false);
-    setNicknameDuplicateError(false);
-    setIsNicknameVerified(false);
+    resetNicknameVerification();
   };
 
   const handlePhoneChange = (value: string) => {
@@ -160,15 +125,13 @@ export default function SignupForm() {
 
   const handlePhoneVerificationRequest = () => {
     if (!phoneError && phone) {
-      setPhoneTimerActive(true);
-      setPhoneTimeLeft(180);
+      startPhoneTimer();
     }
   };
 
   const handleNicknameDuplicateCheck = () => {
     if (!nicknameError && nickname.trim()) {
-      setIsNicknameVerified(true);
-      setNicknameDuplicateError(false);
+      verifyNickname();
     }
   };
 
@@ -231,11 +194,11 @@ export default function SignupForm() {
       <div className="flex flex-col gap-[2.5rem]">
         <Input
           type="email"
+          variant="signup"
           label="이메일"
           required
           placeholder="이메일을 입력해주세요."
           value={email}
-          schema={emailSchema}
           error={emailError}
           onChange={handleEmailChange}
         />
@@ -243,11 +206,11 @@ export default function SignupForm() {
         <div className="flex flex-col gap-[0.6875rem]">
           <Input
             type="password"
+            variant="signup"
             label="비밀번호"
             required
             placeholder="영문, 숫자, 특수문자가 들어간 8자 이상으로 조합해주세요."
             value={password}
-            schema={passwordSchema}
             error={passwordError}
             showPasswordToggle
             onChange={handlePasswordChange}
@@ -255,6 +218,7 @@ export default function SignupForm() {
 
           <Input
             type="password"
+            variant="signup"
             placeholder="비밀번호를 한번 더 입력해주세요."
             value={passwordConfirm}
             error={passwordConfirmError}
@@ -265,11 +229,11 @@ export default function SignupForm() {
 
         <Input
           type="text"
+          variant="signup"
           label="닉네임"
           required
           placeholder="닉네임을 입력해주세요. (10자 이내)"
           value={nickname}
-          schema={nicknameSchema}
           error={
             nicknameDuplicateError
               ? '사용할 수 없는 닉네임입니다.'
@@ -283,11 +247,11 @@ export default function SignupForm() {
 
         <Input
           type="tel"
+          variant="signup"
           label="전화번호"
           required
           placeholder="-를 제외한 숫자만 입력해주세요."
           value={phone}
-          schema={phoneSchema}
           error={phoneError}
           timerSeconds={phoneTimerActive ? phoneTimeLeft : null}
           showButton

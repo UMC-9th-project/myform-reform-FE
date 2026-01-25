@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/PageLayout';
-import Home from './pages/Home';
+import Home from './pages/Home/Home';
 import Cart from './pages/cart/Cart';
 import Market from './pages/market/Market';
 import ProductDetail from './pages/market/ProductDetail';
@@ -16,11 +16,26 @@ import ReformerSearchResults from './pages/reformer-search/ReformerSearchResults
 import ReformerListView from './pages/reformer-search/ReformerListView';
 import FeedListView from './pages/reformer-search/FeedListView';
 import ReviewWritePage from './pages/my-page/ReviewWritePage';
+import OrderPage from './pages/order/OrderPage';
+import OrderRequestListPage from './pages/order/OrderRequestListPage';
+import OrderRequestDetailPage from './pages/order/OrderRequestDetailPage';
+import OrderRequestCreatePage from './pages/order/OrderRequestCreatePage';
+import OrderSuggestionListPage from './pages/order/OrderSuggestionListPage';
+import OrderSuggestionDetailPage from './pages/order/OrderSuggestionDetailPage';
+import ReformerOrderPage from './pages/order/reformer/ReformerOrderPage';
+import ReformerOrderRequestListPage from './pages/order/reformer/ReformerOrderRequestListPage';
+import ReformerOrderRequestDetailPage from './pages/order/reformer/ReformerOrderRequestDetailPage';
+import ReformerOrderEstimateCreatePage from './pages/order/reformer/ReformerOrderEstimateCreatePage';
+import ReformerOrderSuggestionListPage from './pages/order/reformer/ReformerOrderSuggestionListPage';
+import ReformerOrderSuggestionDetailPage from './pages/order/reformer/ReformerOrderSuggestionDetailPage';
 
 import SignupPage from './pages/Signup/SignupPage';
 import SignupTypeSelection from './pages/Signup/SignupTypeSelection';
 import SignupFormPage from './pages/Signup/SignupFormPage';
 import SignupComplete from './pages/Signup/SignupComplete';
+
+ {/* 로그인 페이지 */}
+import Login from './pages/Login/Login';
 
 function App() {
   return (
@@ -37,15 +52,27 @@ function App() {
       >
         <Route path="/" element={<Home />} />
 
-       
-
-         {/* 카트 페이지 */}
+         {/* 장바구니 페이지 */}
         <Route path="/cart" element={<Cart />} />
+
+         {/* 주문제작 페이지 (일반 유저) */}
+        <Route path="/order" element={<OrderPage />} />
+        <Route path="/order/requests" element={<OrderRequestListPage />} />
+        <Route path="/order/requests/:id" element={<OrderRequestDetailPage />} />
+        <Route path="/order/suggestions" element={<OrderSuggestionListPage />} />
+        <Route path="/order/suggestions/:id" element={<OrderSuggestionDetailPage />} />
+
+         {/* 주문제작 페이지 (리폼러) */}
+        <Route path="/reformer/order" element={<ReformerOrderPage />} />
+        <Route path="/reformer/order/requests" element={<ReformerOrderRequestListPage />} />
+        <Route path="/reformer/order/requests/:id" element={<ReformerOrderRequestDetailPage />} />
+        <Route path="/reformer/order/suggestions" element={<ReformerOrderSuggestionListPage />} />
+        <Route path="/reformer/order/suggestions/:id" element={<ReformerOrderSuggestionDetailPage />} />
 
          {/* 프로필 페이지 */}
         <Route path="/profile" element={<Profile />} />
 
-         {/* 위시리스트 페이지 */}
+         {/* 찜 페이지 */}
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/reformer/wishlist" element={<ReformerWishlist />} />
 
@@ -75,6 +102,20 @@ function App() {
       <Route
         element={
           <Layout
+            showHeader={true}
+            showNavbar={true}
+            showFooter={false}
+          />
+        }
+      >
+        {/* 푸터 x */}
+        <Route path="/order/requests/create" element={<OrderRequestCreatePage />} />
+        <Route path="/reformer/order/requests/:id/estimate" element={<ReformerOrderEstimateCreatePage />} />
+      </Route>
+
+      <Route
+        element={
+          <Layout
             showHeader={false}
             showNavbar={false}
             showFooter={false}
@@ -87,6 +128,11 @@ function App() {
         <Route path="/signup/customer-form" element={<SignupFormPage />} />
         <Route path="/signup/reformer-form" element={<SignupFormPage />} />
         <Route path="/signup/complete" element={<SignupComplete />} />
+
+
+        {/* 로그인 페이지 */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/login/type" element={<SignupTypeSelection />} />
       </Route>
 
       {/* 404 처리 */}
@@ -96,5 +142,3 @@ function App() {
 }
 
 export default App;
-//app.tsx에선 라우팅만 담당
-//페이지를 많이 만드는거 xx , 라우팅을 다르게 + 내부 컴포넌트는 재사용 할 수 있도록 설계

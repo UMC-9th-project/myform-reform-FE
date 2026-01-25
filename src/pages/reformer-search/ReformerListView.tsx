@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../components/common/Breadcrumb/Breadcrumb';
-import Select from '../../components/common/Select/Select';
+import Select from '../../components/common/Dropdown/SortDropdown';
 import ReformerProfileCard from '../../components/domain/reformer-search/ReformerProfileCard';
 import Pagination from '../../components/common/Pagination/Pagination';
 
@@ -33,6 +34,7 @@ const SORT_OPTIONS = [
 ];
 
 const ReformerListView = () => {
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('alphabetical');
 
@@ -94,10 +96,7 @@ const ReformerListView = () => {
                 transactionCount={reformer.transactionCount}
                 description={reformer.description}
                 tags={reformer.tags}
-                onClick={() => {
-                  // 리폼러 상세 페이지로 이동 (추후 구현)
-                  console.log('리폼러 클릭:', reformer.id);
-                }}
+                onClick={() => navigate('/profile')}
               />
             ))}
           </div>
