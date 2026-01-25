@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import CategoryAccordion from '../../components/domain/market/CategoryAccordion';
+import OrderCategoryFilter from '../../components/domain/order/OrderCategoryFilter';
 import WishlistItemCard from '../../components/domain/wishlist/WishlistItemCard';
 import leftArrowIcon from '../../assets/icons/left.svg';
 import rightArrowIcon from '../../assets/icons/right.svg';
@@ -33,7 +33,7 @@ const Market = () => {
         
         <div className="pl-[3.125rem] sticky top-0">
           <div className="w-[237px] rounded-[1.875rem] py-[0.625rem] pr-[1.25rem]">
-            <CategoryAccordion />
+           <OrderCategoryFilter />
           </div>
         </div>
 
