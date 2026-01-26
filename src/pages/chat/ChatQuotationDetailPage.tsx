@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import whiteright from '../../assets/icons/whiteright.svg';
+import rightIcon from '../../assets/icons/right.svg';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const ChatQuotationDetailPage = () => {
@@ -93,7 +93,14 @@ const ChatQuotationDetailPage = () => {
                   onClick={handleNext}
                   className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/50"
                 >
-                  <img src={whiteright} alt="오른쪽 화살표" />
+                  <img
+                    src={rightIcon}
+                    alt="오른쪽 화살표"
+                    className="w-10 h-10 pb-1"
+                    style={{
+                      filter: 'brightness(0) saturate(100%) invert(100%)',
+                    }}
+                  />
                 </button>
               )}
             </div>

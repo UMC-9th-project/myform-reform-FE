@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import whiteRight from '../../assets/icons/whiteRight.svg';
+import rightIcon from '../../assets/icons/right.svg';
 
 const MarketPurchaseCompletePage = () => {
   const navigate = useNavigate();
@@ -160,7 +160,14 @@ const MarketPurchaseCompletePage = () => {
           className="bg-[var(--color-mint-0)] flex gap-[0.625rem] h-[4.625rem] items-center justify-center px-[1.875rem] py-[0.625rem] rounded-[0.625rem] w-[26.4375rem] cursor-pointer hover:opacity-90 transition-opacity"
         >
           <span className="body-b0-bd text-white">홈으로 돌아가기</span>
-          <img src={whiteRight} alt="화살표" />
+          <img
+            src={rightIcon}
+            alt=""
+            className="w-10 h-10 pb-1"
+            style={{
+              filter: 'brightness(0) saturate(100%) invert(100%)',
+            }}
+          />
         </button>
       </div>
     </div>

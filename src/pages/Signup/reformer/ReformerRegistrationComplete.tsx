@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import Button from '../../../components/common/Button/button1';
 import signupcomplete from '../../../assets/signup/signupcomplete.jpg';
-import rightArrowWhite from '../../../assets/icons/whiteright.svg';
+import rightIcon from '../../../assets/icons/right.svg';
 
 
 const ReformerRegistrationComplete = () => {
@@ -48,8 +48,14 @@ const ReformerRegistrationComplete = () => {
           >
             <span>내 프로필 업로드하러 가기</span>
             <div className="w-10 h-10 flex items-center justify-center">
-              <img src={rightArrowWhite} alt="화살표"  />
-            </div>
+            <img
+            src={rightIcon}
+            alt=""
+            className="w-10 h-10 pb-1"
+            style={{
+              filter: 'brightness(0) saturate(100%) invert(100%)',
+            }}
+          />            </div>
           </Button>
           <Button
             variant="outlined-mint"
@@ -59,7 +65,14 @@ const ReformerRegistrationComplete = () => {
           >
             <span>홈으로 돌아가기</span>
             <div className="w-10 h-10 flex items-center justify-center">
-              <img src={rightArrowWhite} alt="화살표"  />
+            <img
+            src={rightIcon}
+            alt=""
+            className="w-10 h-10 pb-1"
+            style={{
+              filter: 'brightness(0) saturate(100%) invert(100%)',
+            }}
+          />
             </div>
           </Button>
         </div>
