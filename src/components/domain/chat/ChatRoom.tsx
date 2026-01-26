@@ -58,7 +58,8 @@ const mockMessages: Record<number, Message[]> = {
       senderRole:'USER',
       time: '오후 3시 20분'
     }
-  ]
+  ],
+
 };
 
 const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {

@@ -25,22 +25,39 @@ const ChatQuotationDetailPage = () => {
   if (!myRole) return <div>권한 정보가 없습니다.</div>
 
   const handleEditQuotation = () => {
-  navigate('/chat/create/quotation', {
-    state: {
-      mode: 'edit',
-      quotationData: {
-        images: images.map((url) => ({
-          file: null, 
-          preview: url,
-        })),
-        price: '46500',
-        delivery: '3500',
-        estimatedDays: '5',
-        content: '기존에 작성했던 상세 제안 내용입니다.',
+    navigate('/chat/create/quotation', {
+      state: {
+        mode: 'edit',
+        quotationData: {
+          images: images.map((url) => ({
+            file: null, 
+            preview: url,
+          })),
+          price: '46500',
+          delivery: '3500',
+          estimatedDays: '5',
+          content: '기존에 작성했던 상세 제안 내용입니다.',
+        },
       },
-    },
-  });
-};
+    });
+  };
+
+  const handleEditRequest = () => {
+    navigate('/chat/create/request', {
+      state: {
+        mode: 'edit',
+        requestData: {
+          images,
+          title: '기존 요청서 제목',
+          content: '기존 요청서 내용',
+          minBudget: '50000',
+          maxBudget: '70000',
+        },
+      },
+    });
+  };
+
+
   return (
     <div className="min-h-screen bg-white mb-10">
       <div className="max-w-[80rem] mx-auto px-6 py-4">
@@ -173,7 +190,9 @@ const ChatQuotationDetailPage = () => {
               )}
 
               {myRole === 'USER' && !isQuotation && (
-                <button className="w-full py-4 border-1 border-[var(--color-mint-1)] body-b0-bd text-[var(--color-mint-1)] rounded-[0.625rem]">
+                <button
+                  onClick={handleEditRequest} 
+                  className="w-full py-4 border-1 border-[var(--color-mint-1)] body-b0-bd text-[var(--color-mint-1)] rounded-[0.625rem]">
                   요청서 수정하기
                 </button> 
               )}
