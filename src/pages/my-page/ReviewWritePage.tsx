@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useUserTabStore } from '../../stores/tabStore';
 import Button from '../../components/common/Button/button1';
+import starYellow from '../../assets/icons/star.svg';
+import starGray from '../../assets/icons/emptyStar.svg';
 
 const ReviewWritePage: React.FC = () => {
   const { selectedOrderId, setSelectedOrderId, setActiveTab } = useUserTabStore();
@@ -47,14 +49,20 @@ const ReviewWritePage: React.FC = () => {
       <div className='mx-auto pr-15 max-w-[50rem]'>
       <div className="mb-10 text-center">
         <p className="mb-2 body-b1-md text-left">제품에 대해서 만족하셨나요?<span className='text-[var(--color-red-1)]'> *</span></p>
-        <div className="flex justify-start gap-1 mb-6">
-          {[1, 2, 3, 4, 5].map(star => (
+        <div className="flex justify-start gap-3 mb-6">
+          {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
+              type="button"
               onClick={() => setRating(star)}
-              className={`text-4xl transition-colors ${rating >= star ? 'text-yellow-400' : 'text-gray-200'}`}
+              className="transition-transform hover:scale-110 w-10"
+              aria-label={`${star}점 선택`}
             >
-              ★
+              <img
+                src={rating >= star ? starYellow : starGray}
+                alt="별"
+                className="w-8 h-8"
+              />
             </button>
           ))}
         </div>

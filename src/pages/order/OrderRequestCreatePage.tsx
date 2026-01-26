@@ -64,7 +64,7 @@ const OrderRequestCreatePage = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
+    <div className="">
     
 
       {/* 페이지 제목 */}

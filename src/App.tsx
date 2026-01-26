@@ -40,6 +40,13 @@ import ReformerRegistrationComplete from './pages/Signup/reformer/ReformerRegist
 
  {/* 로그인 페이지 */}
 import Login from './pages/Login/Login';
+import ReformerChat from './pages/chat/ReformerChat';
+import NormalChat from './pages/chat/NormalChat';
+
+
+import ChatQuotationDetailPage from './pages/chat/ChatQuotationDetailPage';
+import ChatQuotationFormPage from './pages/chat/ChatQuotationFormPage';
+import ChatRequestFormPage from './pages/chat/ChatRequestFormPage';
 
 function App() {
   return (
@@ -100,6 +107,7 @@ function App() {
         <Route path="/normal-mypage" element={<NormalMyPage />} />
         <Route path="/normal-profile-edit" element={<EditProfilePage />} />
         <Route path="/mypage/review/write" element={<ReviewWritePage />} />
+        <Route path="/chat/quotation/detail" element={<ChatQuotationDetailPage />} />
 
         {/* 404 처리 */}
         <Route path="*" element={<div>Not Found</div>} />
@@ -142,6 +150,22 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/login/type" element={<SignupTypeSelection />} />
       </Route>
+
+      {/*채팅 창 푸터 없음 */}
+      <Route
+        element={
+          <Layout
+            showHeader={true}
+            showNavbar={true}
+            showFooter={false}
+          />
+        }>
+        <Route path="/chat/reformer/:chatId?" element={<ReformerChat />} />
+        <Route path="/chat/normal/:chatId?" element={<NormalChat />} />
+        <Route path="/chat/create/quotation" element={<ChatQuotationFormPage />} />
+        <Route path="/chat/create/request" element={<ChatRequestFormPage />} />
+      </Route>
+
 
       {/* 404 처리 */}
       <Route path="*" element={<div>Not Found</div>} />

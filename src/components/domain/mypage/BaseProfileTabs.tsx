@@ -3,6 +3,7 @@ import lotpictures from '../../../assets/mypage/lotpictures.svg';
 import { useNavigate } from 'react-router-dom';
 import MyPageUpload from './ReformerFeedUpload';
 import MyReviewGrid from './MyReviewGrid';
+import star from '../../../assets/icons/star.svg';
 
 export type ProfileTabType = '피드' | '판매 상품' | '후기';
 export type ProfileMode = 'view' | 'edit';
@@ -218,7 +219,7 @@ const BaseProfileTabs = ({ mode = 'view' } : BaseProfileTabsProps) => {
                     <h3 className="body-b0-sb text-black line-clamp-2 min-h-[2.5rem]">{item.title}</h3>
                     <div className="heading-h4-bd text-black">{item.price}</div>
                     <div className="flex items-center">
-                      <span className="text-[#FFCF41] text-[1.125rem] mr-1 relative -translate-y-[0.125rem]">★</span>
+                      <span className="text-[#FFCF41] text-[1.125rem] mr-1 relative -translate-y-[0.125rem]"><img src={star} alt="별" /></span>
                       <span className="body-b3-rg text-black">{item.rating}</span>
                       <span className="ml-1 text-[var(--color-gray-50)]">({item.reviews})</span>
                     </div>

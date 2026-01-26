@@ -1,4 +1,6 @@
 import React from 'react';
+import starYellow from '../../../assets/icons/star.svg';
+import starGray from '../../../assets/icons/emptyStar.svg';
 
 interface ReviewItem {
   id: number;
@@ -18,7 +20,7 @@ const REVIEW_ITEMS: ReviewItem[]= [
     id: 1,
     author: "열정적인 직관러",
     rating: 5,
-    date: "2024.03.20",
+    date: "2024년 03월 20일",
     productName: "이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.",
     productImg: "https://picsum.photos/seed/p1/100/100",
     content: "정말 만족스러워요! 마감 처리도 깔끔하고 배송도 생각보다 빨랐습니다. 다음에 원정 유니폼도 맡길게요.",
@@ -33,7 +35,7 @@ const REVIEW_ITEMS: ReviewItem[]= [
     id: 2,
     author: "KBO팬123",
     rating: 4,
-    date: "2024.03.18",
+    date: "2024년 03월 18일",
     productName: "롯데 자이언츠 유니폼 리폼 상품",
     productImg: "https://picsum.photos/seed/p2/100/100",
     productPrice: 68000,
@@ -45,7 +47,7 @@ const REVIEW_ITEMS: ReviewItem[]= [
     id: 3,
     author: "유니폼수집가",
     rating: 5,
-    date: "2024.03.15",
+    date: "2024년 03월 15일",
     productName: "메시 아르헨티나 국대 리폼",
     productImg: "https://picsum.photos/seed/p3/100/100",
     productPrice: 75000,
@@ -56,7 +58,7 @@ const REVIEW_ITEMS: ReviewItem[]= [
     id: 4,
     author: "야구광팬",
     rating: 3,
-    date: "2024.03.12",
+    date: "2024년 03월 12일",
     productName: "LG 트윈스 유니폼 리폼",
     productImg: "https://picsum.photos/seed/p4/100/100",
     productPrice: 7000,
@@ -67,7 +69,7 @@ const REVIEW_ITEMS: ReviewItem[]= [
     id: 5,
     author: "소심한팬",
     rating: 4,
-    date: "2024.03.10",
+    date: "2024년 03월 10일",
     productName: "삼성 라이온즈 유니폼 리폼",
     productImg: "https://picsum.photos/seed/p5/100/100",
     productPrice: 80000,
@@ -78,7 +80,7 @@ const REVIEW_ITEMS: ReviewItem[]= [
     id: 6,
     author: "열혈서포터",
     rating: 5,
-    date: "2024.03.08",
+    date: "2024년 03월 08일",
     productName: "두산 베어스 유니폼 리폼",
     productImg: "https://picsum.photos/seed/p6/100/100",
     productPrice: 72000,
@@ -89,7 +91,7 @@ const REVIEW_ITEMS: ReviewItem[]= [
     id: 7,
     author: "야구소년",
     rating: 2,
-    date: "2024.03.05",
+    date: "2024년 03월 05일",
     productName: "KIA 타이거즈 유니폼 리폼",
     productImg: "https://picsum.photos/seed/p7/100/100",
     productPrice: 68000,
@@ -121,11 +123,17 @@ const MyReviewGrid: React.FC = () => {
                     {item.author}
                   </div>
                   <div className="flex items-center gap-1.5 text-[0.68rem] text-[var(--color-gray-40)]">
-                    <span className="text-[#FFCF41]">
-                      {'★'.repeat(item.rating)}
-                      {'☆'.repeat(5 - item.rating)}
+                    <span className="flex gap-1">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <img
+                          key={index}
+                          src={index < item.rating ? starYellow : starGray}
+                          alt="별"
+                          className="w-4 h-4"
+                        />
+                      ))}
                     </span>
-                    <span>{item.date}</span>
+                    <span className='body-b3-rg text-[var(--color-gray-50)]'>{item.date}</span>
                   </div>
                 </div>
               </div>
