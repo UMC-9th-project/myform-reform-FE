@@ -1,4 +1,3 @@
-import React from 'react';
 
 interface DeleteModalProps {
   isOpen: boolean; // 모달 열림 상태

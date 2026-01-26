@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useSellerTabStore } from '../../../stores/tabStore';
 
 interface OrderDetailType {
@@ -19,7 +19,7 @@ interface OrderDetailType {
 
 
 const OrderDetail = () => {
-  const {selectedOrderId, setSelectedOrderId} = useSellerTabStore();
+  const { setSelectedOrderId } = useSellerTabStore();
 
   // 가상 데이터
   const initialData: OrderDetailType = {

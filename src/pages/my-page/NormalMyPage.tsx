@@ -1,4 +1,3 @@
-import React from 'react';
 import MyPageTab from '../../components/domain/mypage/MyPageTab';
 import { useUserTabStore, type UserTabType } from '../../stores/tabStore';
 import MyInfoPage from '../../components/domain/mypage/NormalMyPage/MyInfoPage';

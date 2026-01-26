@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Camera } from 'lucide-react';
 import Button from '../../../common/Button/button2';
 import NicknameModal from '../NicknameModal';

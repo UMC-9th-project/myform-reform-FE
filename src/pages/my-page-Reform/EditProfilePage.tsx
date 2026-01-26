@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import NicknameModal from '../../components/domain/mypage/NicknameModal';
 import Button from '../../components/common/Button/button1';
 
