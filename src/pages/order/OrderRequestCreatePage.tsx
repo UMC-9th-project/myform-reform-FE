@@ -64,8 +64,8 @@ const OrderRequestCreatePage = () => {
   };
 
   return (
-    <div className="">
-    
+    <div className="w-full px-28 mx-auto py-13 bg-white text-gray-800">
+   
 
       {/* 페이지 제목 */}
       <h1 className="heading-h2-bd pb-6 border-b mb-8 border-[black]">리폼 요청글 작성하기</h1>

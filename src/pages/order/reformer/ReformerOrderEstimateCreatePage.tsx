@@ -98,7 +98,7 @@ const ReformerOrderEstimateCreatePage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
+    <div className="w-full px-28 mx-auto py-13 bg-white text-gray-800">
     
 
       {/* 페이지 제목 */}
