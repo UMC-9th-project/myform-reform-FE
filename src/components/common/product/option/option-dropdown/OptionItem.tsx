@@ -4,6 +4,7 @@ export interface OptionItem {
 }
 
 interface OptionItemProps {
+
   option: OptionItem;
   onClick: () => void;
 }
@@ -13,7 +14,6 @@ const OptionItem = ({ option, onClick }: OptionItemProps) => {
     <div
       onClick={onClick}
       className="
-         w-[573px] 
           h-[58px] 
           bg-[var(--color-bg-white)] 
           border-b
