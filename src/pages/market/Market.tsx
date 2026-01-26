@@ -6,7 +6,7 @@ import leftArrowIcon from '../../assets/icons/left.svg';
 import rightArrowIcon from '../../assets/icons/right.svg';
 import downArrowIcon from '../../assets/icons/down.svg';
 
-// 임시 제품 데이터
+
 const mockProducts = Array.from({ length: 15 }, (_, i) => ({
   id: i + 1,
   image: 'public/crt1.jpg',

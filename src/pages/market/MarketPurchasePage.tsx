@@ -34,10 +34,10 @@ const MarketPurchasePage = () => {
   };
 
   const handlePayment = () => {
-    // 주문번호 생성 (실제로는 서버에서 받아와야 함)
+    
     const orderNumber = Date.now().toString().padStart(11, '0');
     
-    // 주문 정보 구성
+   
     const orderData = {
       orderNumber,
       deliveryInfo: {
@@ -72,7 +72,7 @@ const MarketPurchasePage = () => {
       },
     };
 
-    // 결제 완료 페이지로 이동
+  
     navigate(`/market/product/${id}/purchase/complete`, {
       state: { order: orderData },
     });
@@ -132,7 +132,7 @@ const MarketPurchasePage = () => {
                   </div>
                 </div>
 
-                {/* 수령인 */}
+               
                 <div className="flex gap-[2rem] items-center">
                   <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem]">
                     <span>수령인</span>
@@ -193,7 +193,7 @@ const MarketPurchasePage = () => {
               </div>
             </div>
 
-            {/* 주문 정보 */}
+          
             <div className="border-b border-[var(--color-line-gray-40)] pb-[4.125rem]">
               <h2 className="heading-h4-bd text-[1.875rem] text-black mb-[1.125rem]">
                 주문 정보

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ImageCarousel } from '../../components/common/product/Image';
 import OptionDropdown from '../../components/common/product/option/option-dropdown/OptionDropdown';  
@@ -62,7 +62,11 @@ const MarketProductDetailPage = () => {
   const navigate = useNavigate();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<'info' | 'reformer' | 'review'>('info');
+  const [activeSection, setActiveSection] = useState<'info' | 'reformer' | 'review'>('info');
+  
+  const infoRef = useRef<HTMLDivElement>(null);
+  const reformerRef = useRef<HTMLDivElement>(null);
+  const reviewRef = useRef<HTMLDivElement>(null);
 
   const basePrice = mockProduct.price;
   const optionPrice = selectedOption
@@ -73,6 +77,52 @@ const MarketProductDetailPage = () => {
   const formatPrice = (price: number) => {
     return price.toLocaleString('ko-KR');
   };
+
+  const scrollToSection = (section: 'info' | 'reformer' | 'review') => {
+    const refs = {
+      info: infoRef,
+      reformer: reformerRef,
+      review: reviewRef,
+    };
+    
+    const targetRef = refs[section];
+    if (targetRef.current) {
+      const offset = 100; 
+      const elementPosition = targetRef.current.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
+      setActiveSection(section);
+    }
+  };
+
+ 
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY + 200; 
+
+      if (reviewRef.current && reformerRef.current && infoRef.current) {
+        const reviewTop = reviewRef.current.offsetTop;
+        const reformerTop = reformerRef.current.offsetTop;
+        const infoTop = infoRef.current.offsetTop;
+
+        if (scrollPosition >= reviewTop - 100) {
+          setActiveSection('review');
+        } else if (scrollPosition >= reformerTop - 100) {
+          setActiveSection('reformer');
+        } else if (scrollPosition >= infoTop - 100) {
+          setActiveSection('info');
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <div className=" min-h-screen  mt-[2.75rem]">
@@ -127,7 +177,7 @@ const MarketProductDetailPage = () => {
           </div>
           
 
-          {/* 배송 정보 */}
+         
           <div className="my-[1.25rem] flex flex-col gap-[0.8125rem] text-[var(--color-gray-60)]">
             <div className="flex gap-[2.8125rem]">
               <span className="body-b1-sb ">배송비</span>
@@ -144,7 +194,7 @@ const MarketProductDetailPage = () => {
             </div>
           </div>
 
-          {/* 옵션 선택 */}
+       
           <div className='mt-[1.875rem]'>
             <OptionDropdown
               options={mockProduct.options}
@@ -231,12 +281,12 @@ const MarketProductDetailPage = () => {
       </div>
 
      
-      <div className="top-0 z-20 border-b border-[var(--color-line-gray-40)]">
+      <div className="top-0 z-20 bg-white border-b border-[var(--color-line-gray-40)]">
         <div className="flex px-[7.125rem] gap-[6.4375rem] body-b0-bd">
           <button
-            onClick={() => setActiveTab('info')}
-            className={`pb-5 pt-[0.625rem] ${
-              activeTab === 'info'
+            onClick={() => scrollToSection('info')}
+            className={`pb-5 pt-[0.625rem] cursor-pointer ${
+              activeSection === 'info'
                 ? 'text-[var(--color-mint-1)] border-b-2 border-[var(--color-mint-1)]'
                 : 'text-[var(--color-gray-60)]'
             }`}
@@ -245,9 +295,9 @@ const MarketProductDetailPage = () => {
           </button>
 
           <button
-            onClick={() => setActiveTab('reformer')}
-            className={`pb-5 pt-[0.625rem]${
-              activeTab === 'reformer'
+            onClick={() => scrollToSection('reformer')}
+            className={`pb-5 pt-[0.625rem] cursor-pointer ${
+              activeSection === 'reformer'
                 ? 'text-[var(--color-mint-1)] border-b-2 border-[var(--color-mint-1)]'
                 : 'text-[var(--color-gray-60)]'
             }`}
@@ -255,9 +305,9 @@ const MarketProductDetailPage = () => {
             리폼러 정보
           </button>
           <button
-            onClick={() => setActiveTab('review')}
-            className={`pb-5 pt-[0.625rem] ${
-              activeTab === 'review'
+            onClick={() => scrollToSection('review')}
+            className={`pb-5 pt-[0.625rem] cursor-pointer ${
+              activeSection === 'review'
                 ? 'text-[var(--color-mint-1)] border-b-2 border-[var(--color-mint-1)]'
                 : 'text-[var(--color-gray-60)]'
             }`}
@@ -268,17 +318,17 @@ const MarketProductDetailPage = () => {
       </div>
 
      
-      <div className="px-[3.125rem] pt-[6.25rem]">
-        {activeTab === 'info' && (
-          <div>
-            <ProductInfoToggle
-              firstImage={mockProduct.descriptionImages[0]}
-              additionalImages={mockProduct.descriptionImages.slice(1)}
-            />
-          </div>
-        )}
+      <div className=" mx-[7.125rem] pt-[6.25rem]">
+     
+        <div ref={infoRef} id="product-info" className="scroll-mt-[100px]">
+          <ProductInfoToggle
+            firstImage={mockProduct.descriptionImages[0]}
+            additionalImages={mockProduct.descriptionImages.slice(1)}
+          />
+        </div>
 
-        {activeTab === 'reformer' && (
+       
+        <div ref={reformerRef} id="reformer-info" className="scroll-mt-[100px] mx-[7.125rem] pt-[6.25rem]">
           <div className="flex gap-[3.3125rem] items-start">
             <img
               src={mockProduct.seller.profileImage}
@@ -327,11 +377,11 @@ const MarketProductDetailPage = () => {
               </button>
             </div>
           </div>
-        )}
+        </div>
 
-        {activeTab === 'review' && (
+       
+        <div ref={reviewRef} id="review" className="scroll-mt-[100px] pt-[6.25rem] mb-[7.4375rem]">
           <div className="flex flex-col gap-[2.5rem]">
-            
             <div className="flex flex-col gap-[1.4375rem]">
               <div className="flex flex-col gap-[1.4375rem]">
                 <h2 className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
@@ -353,7 +403,6 @@ const MarketProductDetailPage = () => {
                   </span>
                 </div>
               </div>
-            
               <div className="border-b border-[var(--color-line-gray-40)] pb-[2.6875rem]">
                 <h3 className="body-b0-bd text-[1.25rem] text-[var(--color-black)] mb-[0.75rem]">
                   사진 후기 (182)
@@ -389,7 +438,6 @@ const MarketProductDetailPage = () => {
               </div>
             </div>
 
-      
             <ReviewFilter />
 
             <div className="flex flex-col">
@@ -403,12 +451,11 @@ const MarketProductDetailPage = () => {
               ))}
             </div>
 
-            
             <div className="flex justify-center">
               <PageNumber />
             </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

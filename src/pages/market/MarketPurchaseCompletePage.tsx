@@ -38,25 +38,25 @@ const MarketPurchaseCompletePage = () => {
   return (
     <div className="bg-white min-h-screen pb-[7.4375rem]">
       <div className="flex flex-col items-center gap-[6.25rem] w-full">
-        {/* 제목 */}
+       
         <div className="w-[76.25rem] border-b border-black pb-[1.375rem] pt-[0.625rem]">
           <h1 className="heading-h2-bd text-[2.5rem] text-black">주문/결제</h1>
         </div>
 
-        {/* 메인 컨텐츠 */}
+      
         <div className="flex gap-[2.5625rem] items-start w-[76.25rem]">
-          {/* 왼쪽: 주문 완료 정보 */}
+          
           <div className="flex flex-[1_0_0] pl-[3.125rem] flex-col gap-[4.375rem] items-start">
-            {/* 완료 메시지 */}
+         
             <div className="flex flex-col gap-[4.375rem] items-start">
               <p className="heading-h2-bd text-[2.5rem]">
                 <span className="text-[var(--color-mint-1)]">주문이 정상적으로 완료</span>
                 <span className="text-black">되었습니다.</span>
               </p>
 
-              {/* 주문 정보 */}
+             
               <div className="flex flex-col gap-[1.75rem] items-start w-[43.75rem]">
-                {/* 주문번호 */}
+                
                 <div className="flex items-start ">
                   <div className="w-[12.5rem]">
                     <p className="body-b0-md ">주문번호</p>
@@ -66,7 +66,7 @@ const MarketPurchaseCompletePage = () => {
                   </p>
                 </div>
 
-                {/* 배송지 정보 */}
+              
                 <div className="flex items-start">
                   <div className="w-[12.5rem]">
                     <p className="body-b0-md ">배송지 정보</p>
@@ -83,14 +83,14 @@ const MarketPurchaseCompletePage = () => {
             </div>
           </div>
 
-          {/* 오른쪽: 결제 정보 카드 */}
+         
           <div className="flex flex-col items-start sticky top-0 w-[26.4375rem]">
             <div className="bg-white border border-[var(--color-line-gray-40)] flex flex-col gap-[1.6875rem] items-start px-[2.375rem] py-[2.3125rem] rounded-[0.625rem] w-full">
-              {/* 상품 정보 */}
+          
               <div className="flex flex-col items-end w-full">
                 <div className="border-b border-[var(--color-line-gray-40)] flex flex-col gap-[0.625rem] items-end pb-[0.625rem] w-full">
                   <div className="flex gap-[1.1875rem] items-start w-full">
-                    {/* 상품 이미지 */}
+                   
                     <div className="w-[5.875rem] h-[5.875rem] relative shrink-0">
                       <img
                         src={orderData.product.image}
@@ -99,7 +99,7 @@ const MarketPurchaseCompletePage = () => {
                       />
                     </div>
 
-                    {/* 상품 정보 */}
+                
                     <div className="flex flex-[1_0_0] flex-col gap-[0.625rem] items-start">
                       <div className="flex flex-col gap-[0.625rem] items-start justify-center w-full">
                         <p className="body-b0-md text-[1.25rem] text-black line-clamp-2">
@@ -119,7 +119,7 @@ const MarketPurchaseCompletePage = () => {
                   </p>
                 </div>
 
-                {/* 결제 금액 */}
+                
                 <div className="border-b border-[var(--color-line-gray-40)] flex flex-col gap-[0.5rem] items-start py-[1.25rem] w-full">
                   <div className="flex items-start justify-between w-full">
                     <p className="body-b0-md text-[1.25rem] text-black">결제 금액</p>
@@ -137,7 +137,7 @@ const MarketPurchaseCompletePage = () => {
                   </div>
                 </div>
 
-                {/* 결제 수단 */}
+             
                 <div className="flex flex-col gap-[0.5rem] items-start py-[1.25rem] w-full">
                   <p className="body-b1-rg text-[var(--color-gray-50)] text-[1.125rem]">
                     {orderData.payment.method}
@@ -154,7 +154,7 @@ const MarketPurchaseCompletePage = () => {
           </div>
         </div>
 
-        {/* 홈으로 돌아가기 버튼 */}
+       
         <button
           onClick={() => navigate('/')}
           className="bg-[var(--color-mint-0)] flex gap-[0.625rem] h-[4.625rem] items-center justify-center px-[1.875rem] py-[0.625rem] rounded-[0.625rem] w-[26.4375rem] cursor-pointer hover:opacity-90 transition-opacity"
