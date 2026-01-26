@@ -1,7 +1,11 @@
 import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import logo2 from '../../../assets/logos/logo2.svg';
+import plus from '../../../assets/icons/plus.svg';
+import share from '../../../assets/icons/share.svg';
 import Button from '../../../components/common/Button/button1';
 import ProgressIndicator from '../../../components/common/ProgressIndicator/ProgressIndicator';
+import Checkbox from '../../../components/common/Checkbox/Checkbox';
 
 type ImageType = {
   file: File;
@@ -9,8 +13,12 @@ type ImageType = {
 };
 
 const ReformerRegistration = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [images, setImages] = useState<ImageType[]>([]);
+  const [introduction, setIntroduction] = useState('');
+  const [businessNumber, setBusinessNumber] = useState('');
+  const [agreementChecked, setAgreementChecked] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,7 +37,6 @@ const ReformerRegistration = () => {
   const removeImage = (index: number) => {
     setImages((prev) => {
       const newImages = prev.filter((_, i) => i !== index);
-      // URL 해제
       URL.revokeObjectURL(prev[index].preview);
       return newImages;
     });
@@ -44,15 +51,28 @@ const ReformerRegistration = () => {
       alert('리폼 작업물 사진을 업로드해주세요.');
       return;
     }
-    // TODO: 다음 단계로 이동하는 로직 구현
-    setCurrentStep(currentStep + 1);
+    if (currentStep === 2 && !introduction.trim()) {
+      alert('자기소개와 본인 작업물에 대해 설명해주세요.');
+      return;
+    }
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+    }
   };
 
-  const isNextButtonEnabled = currentStep === 1 ? images.length > 0 : true;
+  const handleSubmit = () => {
+    if (!agreementChecked) {
+      alert('이용약관에 동의해주세요.');
+      return;
+    }
+    navigate('/signup/reformer-complete');
+  };
+
+  const isNextButtonEnabled = currentStep === 1 ? images.length > 0 : currentStep === 2 ? introduction.trim().length > 0 : true;
 
   return (
     <div className="w-full min-h-screen flex flex-col items-center pt-[3.1875rem] pb-[7.5rem]">
-      {/* 로고 및 제목 */}
+      
       <div className="flex flex-col items-center mb-[2.19rem]">
         <div className="mb-[2.1875rem]">
           <img src={logo2} alt="내폼리폼 로고" className="h-[5.46875rem]" />
@@ -63,10 +83,13 @@ const ReformerRegistration = () => {
         </h1>
       </div>
 
-      {/* 진행 단계 표시 */}
+    
       <ProgressIndicator
         totalSteps={3}
         currentStep={currentStep}
+        barWidth="w-[9.21875rem]"
+        leftBarWidth="w-[3.21875rem]"
+        rightBarWidth="w-[3.21875rem]"
         className="mb-[2.625rem]"
       />
 
@@ -80,85 +103,59 @@ const ReformerRegistration = () => {
             </p>
           </div>
 
-          {/* 이미지 업로드 영역 */}
-          <div className="w-full mb-[3.75rem]">
-            {/* 업로드된 이미지가 있을 때 */}
-            {images.length > 0 ? (
-              <div className="flex flex-col gap-[1.25rem]">
-                <div className="flex flex-wrap gap-[0.625rem]">
-                  {images.map((img, index) => (
-                    <div
-                      key={index}
-                      className="relative w-[8.75rem] h-[8.75rem] rounded-[1.25rem] overflow-hidden border border-[var(--color-gray-30)]"
+         
+          <div className="w-[54.5rem] mb-[3.75rem]  ">
+            {images.length === 0 ? (
+             
+              <button
+                onClick={handleUploadClick}
+                className="w-[27.6875rem] h-[18.05625rem] mx-auto bg-[var(--color-gray-30)] rounded-[1.25rem] flex flex-col items-center justify-center gap-[0.3125rem] hover:bg-[var(--color-gray-40)] transition-colors"
+              >
+               <img src={share} alt="shape"  />
+                <p className="body-b2-rg text-[var(--color-gray-50)]">
+                  이미지 업로드
+                </p>
+              </button>
+            ) : (
+              
+              <div className="flex flex-wrap gap-y-[1.6875rem] gap-x-[1.5rem]">
+                {images.map((img, index) => (
+                  <div
+                    key={index}
+                    className="relative w-[12.5rem] h-[12.5rem] rounded-[0.9375rem] overflow-hidden"
+                  >
+                    <img
+                      src={img.preview}
+                      alt={`업로드된 이미지 ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeImage(index);
+                      }}
+                      className="absolute top-[0.3125rem] right-[0.3125rem] w-[1.875rem] h-[1.875rem] bg-black/50 rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
                     >
-                      <img
-                        src={img.preview}
-                        alt={`업로드된 이미지 ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                      <button
-                        onClick={() => removeImage(index)}
-                        className="absolute top-[0.3125rem] right-[0.3125rem] w-[1.875rem] h-[1.875rem] bg-black/50 rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
-                      >
-                        <span className="text-white text-[0.875rem]">×</span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                {images.length < 10 && (
+                      <span className="text-white text-[0.875rem]">×</span>
+                    </button>
+                  </div>
+                ))}
+              
+                {images.length < 8 && (
                   <button
                     onClick={handleUploadClick}
-                    className="w-full h-[18.05625rem] bg-[var(--color-gray-30)] rounded-[1.25rem] flex flex-col items-center justify-center gap-[0.3125rem] hover:bg-[var(--color-gray-40)] transition-colors border-2 border-dashed border-[var(--color-gray-40)]"
+                    className="w-[12.5rem] h-[12.5rem] bg-[var(--color-gray-30)] rounded-[0.9375rem] flex flex-col items-center justify-center gap-[0.125rem] hover:bg-[var(--color-gray-40)] transition-colors border-2 border-dashed border-[var(--color-gray-40)]"
                   >
-                    <svg
-                      width="30"
-                      height="30"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M12 5V19M5 12H19"
-                        stroke="#646F7C"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <p className="body-b5-rg text-[var(--color-gray-50)]">
-                      이미지 추가
+                    <img src={plus} alt="plus" />
+                    <p className="body-b2-rg text-[var(--color-gray-50)]">
+                      추가
                     </p>
                   </button>
                 )}
               </div>
-            ) : (
-              /* 업로드된 이미지가 없을 때 */
-              <button
-                onClick={handleUploadClick}
-                className="w-full h-[18.05625rem] bg-[var(--color-gray-30)] rounded-[1.25rem] flex flex-col items-center justify-center gap-[0.3125rem] hover:bg-[var(--color-gray-40)] transition-colors border-2 border-dashed border-[var(--color-gray-40)]"
-              >
-                <svg
-                  width="30"
-                  height="30"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M17 8L12 3M12 3L7 8M12 3V15"
-                    stroke="#646F7C"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <p className="body-b5-rg text-[var(--color-gray-50)]">
-                  이미지 업로드
-                </p>
-              </button>
             )}
 
-            {/* 숨겨진 파일 입력 */}
+        
             <input
               type="file"
               ref={fileInputRef}
@@ -169,13 +166,13 @@ const ReformerRegistration = () => {
             />
           </div>
 
-          {/* 다음 단계 버튼 */}
+         
           <Button
             variant={isNextButtonEnabled ? 'primary' : 'disabled'}
             size="big"
             onClick={handleNextStep}
             disabled={!isNextButtonEnabled}
-            className="w-full"
+            className="w-[33.9375rem] h-[4.625rem]"
           >
             다음 단계로 넘어가기
           </Button>
@@ -184,7 +181,7 @@ const ReformerRegistration = () => {
 
       {/* Step 2: 자기소개 */}
       {currentStep === 2 && (
-        <div className="w-[28.125rem] flex flex-col items-center">
+        <div className="w-[33.9375rem] flex flex-col items-center">
           <div className="flex flex-col items-center gap-[0.8125rem] mb-[3.375rem]">
             <h2 className="heading-h5-sb text-[var(--color-black)]">Step 2</h2>
             <p className="body-b1-md text-[var(--color-black)] text-center">
@@ -192,60 +189,77 @@ const ReformerRegistration = () => {
             </p>
           </div>
 
-          <textarea
-            className="w-full h-[18.75rem] p-[1.25rem] border border-[var(--color-gray-30)] rounded-[0.625rem] body-b1-rg text-[var(--color-black)] resize-none focus:outline-none focus:border-[var(--color-mint-0)]"
-            placeholder="자기소개와 작업물에 대해 설명해주세요..."
-          />
-
-          <div className="mt-[3.75rem] w-full">
-            <Button
-              variant="primary"
-              size="big"
-              onClick={handleNextStep}
-              className="w-full"
-            >
-              다음 단계로 넘어가기
-            </Button>
+          <div className="w-full mb-[3.75rem]">
+            <textarea
+              value={introduction}
+              onChange={(e) => setIntroduction(e.target.value)}
+              className="w-full h-[16.9375rem] bg-[var(--color-gray-30)] rounded-[0.625rem] p-[1.375rem] body-b2-rg text-[var(--color-gray-50)] resize-none focus:outline-none focus:border focus:border-[var(--color-mint-0)]"
+              placeholder="자기소개와 본인작업물에 대해 설명해주세요.(최대 500자)"
+              maxLength={500}
+            />
           </div>
+
+          <Button
+            variant={isNextButtonEnabled ? 'primary' : 'disabled'}
+            size="big"
+            onClick={handleNextStep}
+            disabled={!isNextButtonEnabled}
+            className="w-[33.9375rem] h-[4.625rem]"
+          >
+            다음 단계로 넘어가기
+          </Button>
         </div>
       )}
 
       {/* Step 3: 사업자 등록번호 */}
       {currentStep === 3 && (
-        <div className="w-[28.125rem] flex flex-col items-center">
+        <div className="w-[33.9375rem] flex flex-col items-center">
           <div className="flex flex-col items-center gap-[0.8125rem] mb-[3.375rem]">
             <h2 className="heading-h5-sb text-[var(--color-black)]">Step 3</h2>
-            <p className="body-b1-md text-[var(--color-black)] text-center">
-              [선택] 사업자인 경우, 사업자 등록번호를 입력해주세요.
+            <p className="body-b1-md text-[var(--color-black)] text-center w-[24.25rem]">
+              [선택] 사업자인 경우, 사업자 등록번호를 입력해주세요!
             </p>
           </div>
 
-          <div className="w-full flex flex-col gap-[1.25rem] mb-[3.75rem]">
+          <div className="w-[24.25rem] flex flex-col gap-[0.6875rem] mb-[1.5625rem]">
+            <p className="body-b1-rg text-[var(--color-black)]">사업자 등록번호</p>
             <input
               type="text"
+              value={businessNumber}
+              onChange={(e) => setBusinessNumber(e.target.value)}
               placeholder="사업자 등록번호를 입력해주세요."
-              className="w-full h-[3.75rem] px-[1.25rem] border border-[var(--color-gray-30)] rounded-[0.625rem] body-b1-rg text-[var(--color-black)] focus:outline-none focus:border-[var(--color-mint-0)]"
+              className="w-full h-[4.625rem] px-[1.4375rem] py-[1.375rem] bg-white border border-[var(--color-gray-40)] rounded-[0.9375rem] body-b1-rg text-[var(--color-black)] focus:outline-none focus:border-[var(--color-mint-0)]"
             />
+          </div>
 
-            <div className="flex items-center gap-[0.625rem]">
-              <input
-                type="checkbox"
-                id="agreement"
-                className="w-[1.25rem] h-[1.25rem] accent-[var(--color-mint-0)]"
-              />
-              <label
-                htmlFor="agreement"
-                className="body-b1-rg text-[var(--color-black)]"
-              >
-                [필수] 내폼리폼 이용약관에 동의합니다.{' '}
-                <span className="text-[var(--color-mint-0)] underline cursor-pointer">
-                  약관보기
-                </span>
-              </label>
+          <div className="w-full flex flex-col gap-[0.9375rem] mb-[3.75rem]">
+            <p className="body-b0-bd text-[var(--color-black)]">리폼러 이용약관 동의</p>
+            <div className="border-t border-[var(--color-gray-40)] pt-[1.25rem]">
+              <div className="flex items-start gap-[1.25rem] px-[1.25rem] py-[0.9375rem]">
+                <Checkbox
+                  checked={agreementChecked}
+                  onChange={setAgreementChecked}
+                  variant="circle"
+                  size="large"
+                />
+                <div className="flex items-center gap-[2.0625rem] body-b1-rg text-[var(--color-black)]">
+                  <span>
+                    [필수] 내폼리폼 리폼러 이용약관에 동의합니다.
+                  </span>
+                  <span className="text-[var(--color-mint-1)] underline cursor-pointer">
+                    약관보기
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <Button variant="primary" size="big" className="w-full">
+          <Button
+            variant="primary"
+            size="big"
+            onClick={handleSubmit}
+            className="w-[33.9375rem] h-[4.625rem]"
+          >
             제출하기
           </Button>
         </div>

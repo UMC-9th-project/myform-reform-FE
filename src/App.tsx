@@ -20,6 +20,7 @@ import SignupTypeSelection from './pages/Signup/SignupTypeSelection';
 import SignupFormPage from './pages/Signup/SignupFormPage';
 import SignupComplete from './pages/Signup/SignupComplete';
 import ReformerRegistration from './pages/Signup/reformer/ReformerRegistration';
+import ReformerRegistrationComplete from './pages/Signup/reformer/ReformerRegistrationComplete';
 
  {/* 로그인 페이지 */}
 import Login from './pages/Login/Login';
@@ -82,6 +83,7 @@ function App() {
         <Route path="/signup/customer-form" element={<SignupFormPage />} />
         <Route path="/signup/reformer-form" element={<SignupFormPage />} />
         <Route path="/signup/reformer-registration" element={<ReformerRegistration />} />
+        <Route path="/signup/reformer-complete" element={<ReformerRegistrationComplete />} />
         <Route path="/signup/complete" element={<SignupComplete />} />
 
 
