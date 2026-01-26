@@ -3,7 +3,9 @@ import Layout from './components/layout/PageLayout';
 import Home from './pages/Home/Home';
 import Cart from './pages/cart/Cart';
 import Market from './pages/market/Market';
-import ProductDetail from './pages/market/ProductDetail';
+import MarketProductDetailPage from './pages/market/MarketProductDetailPage';
+import MarketPurchasePage from './pages/market/MarketPurchasePage';
+import MarketPurchaseCompletePage from './pages/market/MarketPurchaseCompletePage';
 import Wishlist from './pages/wishlist/wishlist';
 import ReformerWishlist from './pages/wishlist-reformer/wishlist';
 import ReformerMyPage from './pages/my-page-Reform/ReformerMyPage';
@@ -78,7 +80,9 @@ function App() {
 
         {/* 마켓 페이지 */}
         <Route path="/market" element={<Market />} />
-        <Route path="/market/product/:id" element={<ProductDetail />} />
+        <Route path="/market/product/:id" element={<MarketProductDetailPage />} />
+        <Route path="/market/product/:id/purchase" element={<MarketPurchasePage />} />
+        <Route path="/market/product/:id/purchase/complete" element={<MarketPurchaseCompletePage />} />
         
 
         {/* 리폼러 찾기 페이지 */}

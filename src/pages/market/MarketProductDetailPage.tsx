@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination } from 'swiper/modules';
+import { ImageCarousel } from '../../components/common/product/Image';
 import OptionDropdown from '../../components/common/product/option/option-dropdown/OptionDropdown';  
 import OptionQuantity from '../../components/common/product/option/option-quantity-button/OptionQuantity';  
 import ProductInfoToggle from '../../components/common/product/detail/ProductInfoToggle';
@@ -13,15 +12,10 @@ import heartIcon from '../../assets/icons/heart.svg';
 import cartIcon from '../../assets/icons/shoppingCart.svg';
 import chatIcon from '../../assets/icons/chat.svg';
 import profileImage from '../../components/domain/market/images/profile.png';
-import leftIcon from '../../assets/icons/left.svg';
-import rightIcon from '../../assets/icons/right.svg';
 import shareIcon from '../../assets/icons/share.svg';
 import type { OptionItem } from '../../components/common/product/option/option-dropdown/OptionItem';  
 
-import 'swiper/css';
-import 'swiper/css/navigation';
 
-// 임시 제품 데이터
 const mockProduct = {
   id: 1,
   title: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
@@ -63,7 +57,7 @@ const mockProduct = {
   ] as OptionItem[],
 };
 
-const ProductDetail = () => {
+const MarketProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -83,56 +77,18 @@ const ProductDetail = () => {
   return (
     <div className=" min-h-screen  mt-[2.75rem]">
     
-      {/* 메인 제품 섹션 */}
+      
       <div className="flex mx-[7.125rem] gap-[2.9375rem] mb-[2.75rem]">
-        {/* 왼쪽: 제품 이미지 캐러셀 */}
-        <div className="">
-          <div className="relative w-[600px] h-[600px]  overflow-hidden">
-            <Swiper
-              modules={[Navigation, Pagination]}
-              navigation={{
-                prevEl: '.product-image-prev',
-                nextEl: '.product-image-next',
-              }}
-              
-              className="w-full h-full"
-            >
-              {mockProduct.images.map((image, index) => (
-                <SwiperSlide key={index}>
-                  <img
-                    src='/public/crt1.jpg'
-                    alt={`제품 이미지 ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </SwiperSlide>
-              ))}
-            </Swiper>
-            <button className="product-image-prev absolute left-[1.25rem] top-1/2 -translate-y-1/2 w-[3.125rem] h-[3.125rem] bg-white rounded-full flex items-center justify-center shadow-md z-10">
-              <img src={leftIcon} alt="이전" className="w-6 h-6" />
-            </button>
-            <button className="product-image-next absolute right-[1.25rem] top-1/2 -translate-y-1/2 w-[3.125rem] h-[3.125rem] rounded-full flex items-center justify-center shadow-md z-10">
-              <img src={rightIcon} alt="다음" className="w-6 h-6" />
-            </button>
-          </div>
-
-
-          
-          {/* 썸네일 */}
-          {/* <div className="flex gap-[0.625rem] justify-center">
-            {mockProduct.images.map((image, index) => (
-              <div
-                key={index}
-                className="w-[3.375rem] h-[3.375rem] rounded-[0.625rem] overflow-hidden cursor-pointer border-2 border-transparent hover:border-[var(--color-mint-1)]"
-              >
-               
-              </div>
-            ))}
-          </div> */}
+        
+        <div className="w-150 h-[630px]">
+          <div className="h-[600px] ">   
+           <ImageCarousel images={mockProduct.images} isClosed={false} />
+          </div>  
         </div>
 
-        {/* 오른쪽: 제품 정보 */}
+       
         <div className="flex-1 flex flex-col">
-          {/* 판매자 정보 */}
+          
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-[0.75rem]">
               <img
@@ -149,7 +105,7 @@ const ProductDetail = () => {
             </button>
           </div>
 
-          {/* 제품 제목 */}
+       
           <div className="flex flex-col mt-[0.5625rem]">
             <h1 className="heading-h5-md">
               {mockProduct.title}
@@ -159,8 +115,8 @@ const ProductDetail = () => {
             </p>
           </div>
 
-          {/* 평점 */}
-          <div className="flex items-center gap-[0.3125rem] mt-[1.4375rem] mb-[0.8125rem]">
+          
+          <div className="flex items-center gap-[0.3125rem] mt-[1.4375rem] mb-[0.8125rem] border-b border-[var(--color-line-gray-40)] pb-[0.8125rem]">
             <img src={starIcon} alt="star" className="w-[1.75rem] h-[1.75rem]" />
             <span className="body-b1-sb">
               {mockProduct.rating}
@@ -189,7 +145,7 @@ const ProductDetail = () => {
           </div>
 
           {/* 옵션 선택 */}
-          <div>
+          <div className='mt-[1.875rem]'>
             <OptionDropdown
               options={mockProduct.options}
               onSelect={(optionLabel) => setSelectedOption(optionLabel)}
@@ -197,9 +153,9 @@ const ProductDetail = () => {
             />
           </div>
 
-          {/* 옵션 선택창 (선택된 옵션이 있을 때) */}
+         
           {selectedOption && (
-            <div className="bg-[var(--color-gray-20)] p-[0.625rem] flex flex-col gap-[1.75rem]">
+            <div className="bg-[var(--color-gray-20)] p-[0.625rem] flex flex-col gap-[1.75rem] mt-[2.25rem]">
               <ol className="body-b1-rg text-[var(--color-black)] list-decimal list-inside">
                 <li>
                   옵션 1: {selectedOption} / 옵션 2: 선택 안 함
@@ -211,15 +167,15 @@ const ProductDetail = () => {
                   onIncrease={() => setQuantity(quantity + 1)}
                   onDecrease={() => setQuantity(Math.max(1, quantity - 1))}
                 />
-                <p className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
+                <p className="body-b0-bd px-[0.625rem]">
                   {formatPrice((basePrice + optionPrice) * quantity)}원
                 </p>
               </div>
             </div>
           )}
 
-          {/* 총 결제 금액 및 액션 버튼 */}
-          <div className="flex flex-col gap-[1.125rem]">
+          
+          <div className="flex flex-col gap-[1.125rem] mt-[2.25rem]">
             <div className="flex items-end justify-between h-[3.375rem]">
               <span className="body-b1-rg text-[var(--color-gray-60)]">총 결제 금액</span>
               <p className="heading-h2-bd text-[2.5rem] text-[var(--color-mint-1)]">
@@ -241,7 +197,32 @@ const ProductDetail = () => {
                   <span className="body-b0-bd text-[1.25rem]">문의하기</span>
                 </button>
               </div>
-              <button className="w-full h-[4.625rem] bg-[var(--color-mint-0)] rounded-[0.625rem] flex items-center justify-center">
+              <button 
+                onClick={() => {
+                  const selectedOptionData = selectedOption
+                    ? mockProduct.options.find((opt) => opt.label === selectedOption)
+                    : null;
+                  
+                  navigate(`/market/product/${id}/purchase`, {
+                    state: {
+                      product: {
+                        id: mockProduct.id,
+                        title: mockProduct.title,
+                        seller: mockProduct.seller.name,
+                        image: mockProduct.images[0],
+                        option: selectedOptionData
+                          ? `${selectedOptionData.label}${selectedOptionData.price > 0 ? ` (+${selectedOptionData.price.toLocaleString()}원)` : ' (+0원)'}`
+                          : '옵션 없음',
+                        shipping: mockProduct.shipping.fee,
+                        quantity: quantity,
+                        price: mockProduct.price,
+                        optionPrice: selectedOptionData?.price || 0,
+                      },
+                    },
+                  });
+                }}
+                className="w-full h-[4.625rem] bg-[var(--color-mint-0)] rounded-[0.625rem] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity"
+              >
                 <span className="body-b1-sb text-[1.5rem] text-white">구매하기</span>
               </button>
             </div>
@@ -249,7 +230,7 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* 탭 네비게이션 */}
+     
       <div className="top-0 z-20 border-b border-[var(--color-line-gray-40)]">
         <div className="flex px-[7.125rem] gap-[6.4375rem] body-b0-bd">
           <button
@@ -286,7 +267,7 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* 탭 컨텐츠 */}
+     
       <div className="px-[3.125rem] pt-[6.25rem]">
         {activeTab === 'info' && (
           <div>
@@ -350,7 +331,7 @@ const ProductDetail = () => {
 
         {activeTab === 'review' && (
           <div className="flex flex-col gap-[2.5rem]">
-            {/* 후기 헤더 */}
+            
             <div className="flex flex-col gap-[1.4375rem]">
               <div className="flex flex-col gap-[1.4375rem]">
                 <h2 className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
@@ -372,7 +353,7 @@ const ProductDetail = () => {
                   </span>
                 </div>
               </div>
-              {/* 사진 후기 */}
+            
               <div className="border-b border-[var(--color-line-gray-40)] pb-[2.6875rem]">
                 <h3 className="body-b0-bd text-[1.25rem] text-[var(--color-black)] mb-[0.75rem]">
                   사진 후기 (182)
@@ -408,10 +389,9 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* 리뷰 필터 */}
+      
             <ReviewFilter />
 
-            {/* 리뷰 목록 */}
             <div className="flex flex-col">
               {[1, 2, 3, 4, 5].map((review) => (
                 <div
@@ -423,7 +403,7 @@ const ProductDetail = () => {
               ))}
             </div>
 
-            {/* 페이지네이션 */}
+            
             <div className="flex justify-center">
               <PageNumber />
             </div>
@@ -434,4 +414,4 @@ const ProductDetail = () => {
   );
 };
 
-export default ProductDetail;
+export default MarketProductDetailPage;
