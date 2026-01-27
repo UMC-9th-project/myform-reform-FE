@@ -1,4 +1,3 @@
-import React from 'react';
 import Image from '../../../assets/chat/Image.svg';
 import NoChatYet from '../../../assets/chat/NoChatYet.svg'
 

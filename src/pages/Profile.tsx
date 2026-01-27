@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import BaseProfileTabs from '../components/domain/mypage/BaseProfileTabs';
 import EditProfile from '../components/domain/mypage/EditProfile';
 import { useProfileModeStore } from '../stores/ProfileModeStore';

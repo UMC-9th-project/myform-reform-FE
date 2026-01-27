@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import MyReviewGrid from '../MyReviewGrid';
 import { useUserTabStore } from '../../../../stores/tabStore';
 import { useNavigate } from 'react-router-dom';

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import moreIcon from '../../../assets/icons/morevertical.svg';
 import Pencil from '../../../assets/icons/pencil.svg'
 import Trash from '../../../assets/icons/trash.svg';

@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/common/Button/button1';
-import whiteright from '../../assets/icons/whiteright.svg';
+import rightIcon from '../../assets/icons/right.svg';
 
 import signupcomplete from '../Signup/images/signupcomplete.png';
 
@@ -43,7 +43,14 @@ const SignupComplete = () => {
               className="w-[543px] h-[4.625rem] !p-0 flex items-center justify-center gap-[0.625rem]"
             >
               <span className="flex items-center justify-center gap-[0.625rem]">홈으로 돌아가기
-              <img src={whiteright} alt="right arrow" />
+              <img
+                src={rightIcon}
+                alt="right arrow"
+                className="w-10 h-10 pb-1"
+                style={{
+                  filter: 'brightness(0) saturate(100%) invert(100%)',
+                }}
+              />
               </span>
              
             </Button>

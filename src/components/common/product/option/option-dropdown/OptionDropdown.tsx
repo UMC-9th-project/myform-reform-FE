@@ -6,41 +6,63 @@ import OptionItemComponent from './OptionItem';
 
 interface OptionDropdownProps {
   options: OptionItem[];
+  onSelect?: (optionLabel: string) => void;
+  selectedOptionLabel?: string | null;
 }
 
-const OptionDropdown = ({ options }: OptionDropdownProps) => {
+const OptionDropdown = ({ 
+  options, 
+  onSelect,
+  selectedOptionLabel 
+}: OptionDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [internalSelectedOption, setInternalSelectedOption] = useState<string | null>(null);
+  const selectedOption = selectedOptionLabel !== undefined ? selectedOptionLabel : internalSelectedOption;
+  
+  const getDisplayText = () => {
+    if (!selectedOption) return '옵션을 선택해주세요.';
+    
+    if (selectedOptionLabel !== undefined) {
+      const selectedOpt = options.find(opt => opt.label === selectedOption);
+      if (selectedOpt) {
+        return `${selectedOpt.label}${selectedOpt.price > 0 ? ` (+${selectedOpt.price.toLocaleString()}원)` : ' (+0원)'}`;
+      }
+      return selectedOption;
+    }
+  
+    return selectedOption;
+  };
 
   const handleClick = () => {
     setIsOpen(!isOpen);
   };
 
-  const handleOptionClick = (option: string) => {
-    setSelectedOption(option);
+  const handleOptionClick = (optionLabel: string, displayText: string) => {
+    if (selectedOptionLabel === undefined) {
+      setInternalSelectedOption(displayText);
+    }
+
+    onSelect?.(optionLabel);
     setIsOpen(false);
   };
 
   return (
-    <div className="relative my-[15px] mx-[16px] border border-[var(--color-gray-black)]">
+    <div className="border border-[var(--color-gray-black)]">
       <div
         onClick={handleClick}
-        className="
-            w-[573px] 
+        className="         
             h-[58px] 
-            bg-[var(--color-bg-white)] 
             border-b
             border-[var(--color-line-gray-40)]
             flex items-center justify-between
             pl-6
             pr-6
             body-b1-rg
-            text-[var(--color-black)]
             cursor-pointer
             transition-colors
         "
       >
-        <span>{selectedOption || '옵션을 선택해주세요.'}</span>
+        <span>{getDisplayText()}</span>
         {isOpen ? (
           <UpIcon className="w-8 h-8" />
         ) : (
@@ -53,11 +75,10 @@ const OptionDropdown = ({ options }: OptionDropdownProps) => {
             <div key={index}>
               <OptionItemComponent
                 option={option}
-                onClick={() =>
-                  handleOptionClick(
-                    `${option.label}${option.price > 0 ? ` (+${option.price.toLocaleString()}원)` : ' (+0원)'}`
-                  )
-                }
+                onClick={() => {
+                  const displayText = `${option.label}${option.price > 0 ? ` (+${option.price.toLocaleString()}원)` : ' (+0원)'}`;
+                  handleOptionClick(option.label, displayText);
+                }}
               />
               {index < options.length - 1}
             </div>

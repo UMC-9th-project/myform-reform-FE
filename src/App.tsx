@@ -1,7 +1,11 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/PageLayout';
-import Home from './pages/Home';
+import Home from './pages/Home/Home';
 import Cart from './pages/cart/Cart';
+import Market from './pages/market/Market';
+import MarketProductDetailPage from './pages/market/MarketProductDetailPage';
+import MarketPurchasePage from './pages/market/MarketPurchasePage';
+import MarketPurchaseCompletePage from './pages/market/MarketPurchaseCompletePage';
 import Wishlist from './pages/wishlist/wishlist';
 import ReformerWishlist from './pages/wishlist-reformer/wishlist';
 import ReformerMyPage from './pages/my-page-Reform/ReformerMyPage';
@@ -31,6 +35,8 @@ import SignupPage from './pages/Signup/SignupPage';
 import SignupTypeSelection from './pages/Signup/SignupTypeSelection';
 import SignupFormPage from './pages/Signup/SignupFormPage';
 import SignupComplete from './pages/Signup/SignupComplete';
+import ReformerRegistration from './pages/Signup/reformer/ReformerRegistration';
+import ReformerRegistrationComplete from './pages/Signup/reformer/ReformerRegistrationComplete';
 
  {/* 로그인 페이지 */}
 import Login from './pages/Login/Login';
@@ -81,6 +87,13 @@ function App() {
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/reformer/wishlist" element={<ReformerWishlist />} />
 
+        {/* 마켓 페이지 */}
+        <Route path="/market" element={<Market />} />
+        <Route path="/market/product/:id" element={<MarketProductDetailPage />} />
+        <Route path="/market/product/:id/purchase" element={<MarketPurchasePage />} />
+        <Route path="/market/product/:id/purchase/complete" element={<MarketPurchaseCompletePage />} />
+        
+
         {/* 리폼러 찾기 페이지 */}
         <Route path="/reformer-search" element={<ReformerSearch />} />
         <Route path="/reformer-search/results" element={<ReformerSearchResults />} />
@@ -128,6 +141,8 @@ function App() {
         <Route path="/signup/type" element={<SignupTypeSelection />} />
         <Route path="/signup/customer-form" element={<SignupFormPage />} />
         <Route path="/signup/reformer-form" element={<SignupFormPage />} />
+        <Route path="/signup/reformer-registration" element={<ReformerRegistration />} />
+        <Route path="/signup/reformer-complete" element={<ReformerRegistrationComplete />} />
         <Route path="/signup/complete" element={<SignupComplete />} />
 
 

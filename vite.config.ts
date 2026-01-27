@@ -14,7 +14,22 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
-  plugins: [react(), tailwindcss(), svgr()],
+  plugins: [
+    react({
+      babel: {
+        plugins: [
+          [
+            '@locator/babel-jsx/dist',
+            {
+              env: 'development',
+            },
+          ],
+        ],
+      },
+    }),
+    tailwindcss(),
+    svgr(),
+  ],
   test: {
     projects: [
       {

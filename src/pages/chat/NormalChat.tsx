@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import ChatListTab from '../../components/domain/chat/ChatListTab';
 import ChatRoom from '../../components/domain/chat/ChatRoom';
 import EmptyChatRoom from '../../components/domain/chat/EmptyChatRoom';

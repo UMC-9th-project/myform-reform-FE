@@ -1,4 +1,3 @@
-import React from 'react';
 import MyPageTab from '../../components/domain/mypage/MyPageTab';
 import EditProfile from '../../components/domain/mypage/EditProfile';
 import BaseProfileTabs from '../../components/domain/mypage/BaseProfileTabs';
