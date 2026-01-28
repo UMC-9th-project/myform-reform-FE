@@ -2,7 +2,14 @@ import { useState } from 'react';
 import { Camera } from 'lucide-react';
 import Button from '../../../common/Button/button2';
 import NicknameModal from '../NicknameModal';
-import DaumPostcode, { type AddressData } from 'react-daum-postcode';
+import DaumPostcode from 'react-daum-postcode';
+
+type AddressData = {
+  zonecode: string;
+  roadAddress: string;
+  jibunAddress?: string;
+  address: string;
+};
 
 type EditField = null | 'nickname' | 'phone' | 'email' | 'address';
 
@@ -14,7 +21,6 @@ const MyInfoPage = () => {
   const [editField, setEditField] = useState<EditField>(null);
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
 
-  // 배송지 관련 상태 (이미지에 맞춰 확장)
   const [address, setAddress] = useState({
     recipient: '',
     phone: '',
