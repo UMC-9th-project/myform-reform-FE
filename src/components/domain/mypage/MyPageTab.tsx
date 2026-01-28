@@ -1,10 +1,11 @@
-
+import Profile from '../../../assets/icons/profile.svg';
 
 interface MyPageTabsProps<T extends string> {
   tabs: readonly T[];
   activeTab: T;
   onChangeTab: (tab: T) => void;
   displayName: string;
+  profileImageUrl?: string | null;
 }
 
 const MyPageTabs = <T extends string>({
@@ -12,7 +13,9 @@ const MyPageTabs = <T extends string>({
   activeTab,
   onChangeTab,
   displayName,
+  profileImageUrl,
 }: MyPageTabsProps<T>) => {
+  const DEFAULT_PROFILE_IMAGE = Profile;
   
   return (
     <div className="w-[15rem] flex flex-col items-start">
@@ -20,7 +23,15 @@ const MyPageTabs = <T extends string>({
       {/* 1. 상단 프로필 섹션 */}
       <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-line-gray-40)] w-full">
         {/* 프로필 이미지 (회색 처리) */}
-        <div className="w-12 h-12 rounded-full border border-[var(--color-gray-30)] flex-shrink-0" />
+        <div className="w-12 h-12 rounded-full border border-[var(--color-gray-30)] flex-shrink-0">
+          <img
+            src={profileImageUrl || DEFAULT_PROFILE_IMAGE}
+            alt="Profile"
+                className={`object-cover w-full h-full ${
+              !profileImageUrl ? "scale-145" : ""
+            }`}
+          />
+        </div>
         {/* 유저 닉네임 */}
         <span className="body-b1-sb text-black">{displayName}</span>
       </div>
