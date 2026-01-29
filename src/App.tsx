@@ -40,10 +40,8 @@ import ReformerRegistrationComplete from './pages/Signup/reformer/ReformerRegist
 
  {/* 로그인 페이지 */}
 import Login from './pages/Login/Login';
-import ReformerChat from './pages/chat/ReformerChat';
-import NormalChat from './pages/chat/NormalChat';
 
-
+import ChatPage from './pages/chat/ChatPage';
 import ChatQuotationDetailPage from './pages/chat/ChatQuotationDetailPage';
 import ChatQuotationFormPage from './pages/chat/ChatQuotationFormPage';
 import ChatRequestFormPage from './pages/chat/ChatRequestFormPage';
@@ -160,8 +158,8 @@ function App() {
             showFooter={false}
           />
         }>
-        <Route path="/chat/reformer/:chatId?" element={<ReformerChat />} />
-        <Route path="/chat/normal/:chatId?" element={<NormalChat />} />
+        <Route path="/chat/reformer/:chatId?" element={<ChatPage role="REFORMER" />} />
+        <Route path="/chat/normal/:chatId?" element={<ChatPage role="USER" />} />
         <Route path="/chat/create/quotation" element={<ChatQuotationFormPage />} />
         <Route path="/chat/create/request" element={<ChatRequestFormPage />} />
       </Route>
