@@ -6,9 +6,6 @@ export interface PayFinishCardProps {
   paymentMethod: string;    // 예: '카드 간편결제'
   paymentDetail: string;    // 예: '신한은행 / 0000-****-****-0000'
   date: string;             // 예: '2026.01.01 12.12'
-  receiverName: string;
-  phone: string;
-  address: string;
   type: 'sent' | 'received';
 }
 
@@ -17,10 +14,7 @@ const PayFinishCard: React.FC<PayFinishCardProps> = ({
   orderNumber, 
   paymentMethod, 
   paymentDetail, 
-  date, 
-  receiverName, 
-  phone, 
-  address, 
+  date,
   type 
 }) => {
   const isSent = type === 'sent';
@@ -60,19 +54,6 @@ const PayFinishCard: React.FC<PayFinishCardProps> = ({
               <p>{paymentDetail}</p>
               <p>승인일시 : {date}</p>
             </div>
-
-            {/* 구분선 */}
-            <div className="border-t border-[var(--color-line-gray-40)] my-2"></div>
-
-            {/* 배송 정보 섹션 */}
-            <div className="space-y-1 body-b4-sb text-[var(--color-gray-50)]">
-              <p>학교</p>
-              <p>{receiverName} / {phone}</p>
-              <p className="leading-relaxed">
-                {address}
-              </p>
-            </div>
-
           </div>
         </div>
       </div>

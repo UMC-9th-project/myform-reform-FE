@@ -45,9 +45,6 @@ const mockMessages: Record<number, Message[]> = {
       paymentMethod: '카드 간편결제',
       paymentDetail: '신한은행 / 0000-****-****-0000',
       date: '2026.01.22 10:12',
-      receiverName: '김가인',
-      phone: '010-1234-5678',
-      address: '서울시 마포구 어딘가로 123',
     },
   ],
   4: [
@@ -284,9 +281,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
                   paymentMethod={msg.paymentMethod!}
                   paymentDetail={msg.paymentDetail!}
                   date={msg.date!}
-                  receiverName={msg.receiverName!}
-                  phone={msg.phone!}
-                  address={msg.address!}
                 />
               ) : msg.type === 'estimateArrival' ? (
                   <EstimateArrivalCard
