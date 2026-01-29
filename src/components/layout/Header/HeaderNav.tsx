@@ -9,7 +9,7 @@ export default function HeaderNav() {
     { label: '마켓', path: '/market' }, //임시 경로
     { label: '주문제작', path: '/order' }, 
     { label: '리폼러 찾기', path: '/reformer-search' },
-    { label: '채팅하기', path: '/chat' }, //임시 경로
+    { label: '채팅하기', path: '/chat/reformer' }, //임시 경로
   ];
 
   const handleNavClick = (path: string) => {
