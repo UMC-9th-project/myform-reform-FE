@@ -13,6 +13,7 @@ interface InputProps {
   type: InputType;
   value?: string;
   error?: string | null;
+  showErrorText?: boolean; 
   showPasswordToggle?: boolean;
   timerSeconds?: number | null;
   showButton?: boolean;
@@ -34,6 +35,7 @@ export default function Input({
   type,
   value: controlledValue,
   error,
+  showErrorText = true, 
   showPasswordToggle = false,
   timerSeconds = null,
   showButton = false,
@@ -203,7 +205,7 @@ export default function Input({
           </button>
         )}
       </div>
-      {error && (
+      {error && showErrorText && (
         <p className="body-b2-rg text-[var(--color-red-1)] mt-1">{error}</p>
       )}
     </div>

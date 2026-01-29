@@ -12,6 +12,7 @@ import repeat from '../../../assets/icons/repeat.svg';
 import xIcon from '../../../assets/icons/x.svg';
 import logo from '../../../assets/logos/logo.svg';
 import { useUserTabStore, type UserTabType } from '../../../stores/tabStore';
+import useAuthStore from '../../../stores/useAuthStore';
 
 type UserType = 'customer' | 'seller';
 
@@ -19,7 +20,10 @@ export default function Header() {
   const navigate = useNavigate();
   // 탭으로 페이지 전환하기
   const { setActiveTab } = useUserTabStore();
-    const handleTabClick = (tab: UserTabType) => {
+  // Zustand 스토어에서 로그인 상태 구독
+  const { accessToken } = useAuthStore();
+  
+  const handleTabClick = (tab: UserTabType) => {
     setActiveTab(tab);       // store에 activeTab 업데이트
     navigate('/normal-mypage'); // 페이지 이동
   }; 
@@ -98,10 +102,12 @@ export default function Header() {
 
   return (
     <header className="w-full flex flex-col">
-      <div className="body-b1-sb flex justify-end py-[0.75rem] pr-[2rem] gap-[2.75rem]">
-        <Link to="/signup" className='cursor-pointer' >회원가입</Link>
-        <Link to="/login/type" className='cursor-pointer' >로그인</Link>
-      </div>
+      {!accessToken && (
+        <div className="body-b1-sb flex justify-end py-[0.75rem] pr-[2rem] gap-[2.75rem]">
+          <Link to="/signup" className='cursor-pointer' >회원가입</Link>
+          <Link to="/login/type" className='cursor-pointer' >로그인</Link>
+        </div>
+      )}
       <div className="h-25 flex items-center  ml-[3.125rem] mr-[2rem] ">
         <Link to="/" className="w-[191px] h-[44.6px] mr-[2.19rem] ">
           <img
