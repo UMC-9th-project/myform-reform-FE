@@ -1,12 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import star from '../../../assets/icons/star.svg';
+import Profile from '../../../assets/icons/profile.svg';
 
 // 데이터 구조 정의
 interface ProfileData {
   level: number;
   nickname: string;
   rating: number;
-  profileImageUrl: string;
+  profileImageUrl?: string;
   tags: string[];
   description: string;
 }
@@ -15,10 +16,12 @@ const mockProfile: ProfileData = {
   level: 3,
   nickname: '침착한 대머리독수리',
   rating: 4.97,
-  profileImageUrl: '/api/placeholder/100/100',
+  //profileImageUrl: '/api/placeholder/100/100',
   tags: ['빠른', '친절한'],
   description: `- 2019년부터 리폼 공방 운영 시작 ✨\n- 6년차 스포츠 의류 리폼 전문 공방\n\n고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어 있던 옷에 새로운 가치와 트렌디한 디자인을 더하는 리폼을 선보이고 있어요. 1:1 맞춤 리폼 제작부터 완성 제품까지 모두 주문 가능합니다.`
 };
+
+const DEFAULT_PROFILE_IMAGE = Profile;
 
 const EditProfile = ({ mode }: { mode: 'edit' | 'view' }) => {
   const navigate = useNavigate();
@@ -27,11 +30,15 @@ const EditProfile = ({ mode }: { mode: 'edit' | 'view' }) => {
       <div className="flex gap-10">
         {/* 1. 프로필 이미지 */}
         <div className="flex-shrink-0">
-          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-200 border border-gray-100">
-            <img src={mockProfile.profileImageUrl} alt="Profile" className="w-full h-full object-cover" />
+          <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-200 border border-[var(--color-gray-30)]">
+            <img
+              src={mockProfile.profileImageUrl || DEFAULT_PROFILE_IMAGE}
+              alt="Profile"
+              className={`w-full h-full object-cover transition-transform duration-200 
+                ${!mockProfile.profileImageUrl ? "scale-140" : ""}`}
+            />
           </div>
         </div>
-
         {/* 2. 우측 콘텐츠 */}
         <div className="flex-1">
           <div className="flex justify-between items-start mb-6">

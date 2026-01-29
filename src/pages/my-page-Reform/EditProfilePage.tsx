@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import NicknameModal from '../../components/domain/mypage/NicknameModal';
 import Button from '../../components/common/Button/button1';
-
+import Profile from '../../assets/icons/profile.svg';
 
 const EditProfilePage = () => {
     const MAX_NICKNAME_LENGTH = 10;
@@ -10,9 +10,9 @@ const EditProfilePage = () => {
     const [description, setDescription] = useState(`- 2019년부터 리폼 공방 운영 시작 ✨\n- 6년차 스포츠 의류 리폼 전문 공방\n\n고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어 있던 옷에 새로운 가치와 트렌디한 디자인을 더하는 리폼을 선보이고 있어요. 1:1 맞춤 리폼 제작부터 완성 제품까지 모두 주문 가능합니다.`);
     const [keywords, setKeywords] = useState<string[]>([]);
     const [inputKeyword, setInputKeyword] = useState('');
-
-
+    const DEFAULT_PROFILE_IMAGE = Profile;
     const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
+    const [profileImage, setProfileImage] = useState<string | null>(null);
 
     const handleDeleteKeyword = (tag: string) => {
         setKeywords(keywords.filter(k => k !== tag));
@@ -22,15 +22,19 @@ const EditProfilePage = () => {
     return (
         <div className="w-full min-h-screen bg-white py-16">
             <div className="max-w-[75rem] mx-auto px-12 flex gap-20 items-start">
-                
                 {/* [왼쪽 영역] 프로필 이미지 - sticky 적용 */}
                 <div className="w-[12.5rem] flex-shrink-0">
                     <div className="sticky top-10">
                         <div className="w-48 h-48 rounded-full overflow-hidden border border-[var(--color-gray-50)]">
-                            <img 
-                                src="https://picsum.photos/seed/user/300/300" 
-                                alt="Profile" 
-                                className="w-full h-full object-cover" 
+                            <img
+                                src={profileImage || DEFAULT_PROFILE_IMAGE}
+                                alt="Profile"
+                                className={`object-cover w-full h-full ${
+                                !profileImage ? "scale-140" : ""
+                                }`}
+                                onError={(e) => {
+                                e.currentTarget.src = DEFAULT_PROFILE_IMAGE;
+                                }}
                             />
                         </div>
                         <label className="absolute bottom-2 right-2 w-10 h-10 bg-[#5A616A] rounded-full flex items-center justify-center border-2 border-white cursor-pointer hover:bg-gray-600 transition-colors">
@@ -38,7 +42,19 @@ const EditProfilePage = () => {
                                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                                 <circle cx="12" cy="13" r="4" />
                             </svg>
-                            <input type="file" className="hidden" title="사진 첨부"/>
+                            <input
+                                type="file"
+                                className='hidden'
+                                accept="image/*"
+                                title="사진 첨부"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                        const imageUrl = URL.createObjectURL(file);
+                                        setProfileImage(imageUrl);
+                                    }
+                                }}
+                            />
                         </label>
                     </div>
                 </div>
@@ -77,7 +93,7 @@ const EditProfilePage = () => {
                                 placeholder='프로필에 노출될 소개글을 작성해주세요.'
                                 className="w-full text-[var(--color-gray-50)] body-b1-rg leading-relaxed outline-none resize-none bg-transparent"
                             />
-                            <div className="absolute -bottom-0 -right-16 text-sm text-[var(--color--gray-60)] font-light">
+                            <div className="absolute -bottom-0 -right-20 text-sm text-[var(--color--gray-60)]">
                                 {description.length}/{MAX_DESCRIPTION_LENGTH}자
                             </div>
                         </div>
@@ -119,7 +135,7 @@ const EditProfilePage = () => {
                                         </span>
                                     ))}
                                 </div>
-                                <span className="absolute right-28 -translate-y-[3.2rem] text-sm text-[var(--color--gray-60)] font-light">{keywords.length}/3개</span>
+                                <span className="absolute right-28 -translate-y-[1.5rem] text-sm text-[var(--color--gray-60)]">{keywords.length}/3개</span>
                             </div>
                             <p className="body-b1-rg text-[var(--color-gray-50)]">
                                 Tip) 본인이 주로 제작하는 상품 유형, 디자인 스타일 등을 작성해주세요!
