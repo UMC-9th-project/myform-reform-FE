@@ -31,7 +31,7 @@ const Login = () => {
           </button>
     
           <div className="body-b1-rg flex py-[1.8125rem] px-[1.875rem] gap-[1.8125rem] text-[var(--color-gray-60)]">
-            <p>이미 내폼리폼 회원이신가요?</p>
+            <p>아직 내폼리폼 회원이 아니신가요?</p>
             <Link
               to="/signup"
               className="text-[var(--color-mint-1)] underline cursor-pointer hover:scale-95 transition-all duration-300"

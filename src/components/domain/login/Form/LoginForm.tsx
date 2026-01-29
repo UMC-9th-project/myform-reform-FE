@@ -1,15 +1,14 @@
 import { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
 import Input from '../../../common/Input/Input';
 import Button from '../../../common/Button/button1';
 import Checkbox from '../../../common/Checkbox/Checkbox';
-
+import { useLogin } from '../../../../hooks/domain/auth/useLogin';
 
 export default function LoginForm() {
-//   const navigate = useNavigate();
+  const { login, isLoading, error: loginApiError } = useLogin();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loginError, setLoginError] = useState<string | null>(null);
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
  
   const validateForm = () => {
@@ -18,16 +17,10 @@ export default function LoginForm() {
 
   const handleEmailChange = (value: string) => {
     setEmail(value);
-    if (loginError) {
-      setLoginError(null);
-    }
   };
 
   const handlePasswordChange = (value: string) => {
     setPassword(value);
-    if (loginError) {
-      setLoginError(null);
-    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -35,6 +28,12 @@ export default function LoginForm() {
     if (!validateForm()) {
       return;
     }
+
+    login({
+      email,
+      password,
+      role: 'user',
+    });
   };
 
   const isFormValid = () => {
@@ -50,7 +49,8 @@ export default function LoginForm() {
           required
           placeholder="이메일을 입력해주세요."
           value={email}
-          error={loginError}
+          error={loginApiError}
+          showErrorText={false}
           onChange={handleEmailChange}
         />
 
@@ -60,7 +60,8 @@ export default function LoginForm() {
           required
           placeholder="비밀번호를 입력해주세요."
           value={password}
-          error={loginError}
+          error={loginApiError}
+          showErrorText={false}
           showPasswordToggle
           onChange={handlePasswordChange}
         />
@@ -75,18 +76,18 @@ export default function LoginForm() {
           label="로그인 유지"
           className="gap-[0.5rem]"
         />
-        <button
+        {/* <button
           type="button"
           className="body-b2-rg text-[var(--color-black)] cursor-pointer hover:underline"
         >
           아이디/비밀번호 찾기
-        </button>
+        </button> */}
       </div>
 
       <Button
         type="submit"
         variant={isFormValid() ? 'primary' : 'disabled'}
-        disabled={!isFormValid}
+        disabled={!isFormValid() || isLoading}
         className="w-full h-[4.625rem] mt-[2.4375rem] flex items-center justify-center"
       >
         로그인
