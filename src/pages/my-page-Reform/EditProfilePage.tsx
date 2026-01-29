@@ -93,7 +93,7 @@ const EditProfilePage = () => {
                                 placeholder='프로필에 노출될 소개글을 작성해주세요.'
                                 className="w-full text-[var(--color-gray-50)] body-b1-rg leading-relaxed outline-none resize-none bg-transparent"
                             />
-                            <div className="absolute -bottom-0 -right-16 text-sm text-[var(--color--gray-60)] font-light">
+                            <div className="absolute -bottom-0 -right-20 text-sm text-[var(--color--gray-60)]">
                                 {description.length}/{MAX_DESCRIPTION_LENGTH}자
                             </div>
                         </div>
@@ -135,7 +135,7 @@ const EditProfilePage = () => {
                                         </span>
                                     ))}
                                 </div>
-                                <span className="absolute right-28 -translate-y-[3.2rem] text-sm text-[var(--color--gray-60)] font-light">{keywords.length}/3개</span>
+                                <span className="absolute right-28 -translate-y-[1.5rem] text-sm text-[var(--color--gray-60)]">{keywords.length}/3개</span>
                             </div>
                             <p className="body-b1-rg text-[var(--color-gray-50)]">
                                 Tip) 본인이 주로 제작하는 상품 유형, 디자인 스타일 등을 작성해주세요!
