@@ -28,6 +28,7 @@ export default function HeaderNav() {
                 : location.pathname === item.path;
           return (
             <button
+              type="button"
               key={index}
               onClick={() => handleNavClick(item.path)}
               className={`body-b0-bd pb-7 px-[0.625rem] transition-colors cursor-pointer ${
