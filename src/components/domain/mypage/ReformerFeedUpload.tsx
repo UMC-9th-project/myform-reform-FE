@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'; // 1. useRef 추가
-import ImageSource from '../../../assets/mypage/image_tmp.svg';
-import FolderPlusSource from '../../../assets/mypage/folderPlus_tmp.svg';
+import ImageSource from '../../../assets/mypage/image.svg';
+import FolderPlusSource from '../../../assets/mypage/folderPlus.svg';
 
 interface UploadModalProps {
   onClose: () => void;
