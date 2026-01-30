@@ -1,4 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import Layout from './components/layout/PageLayout';
 import Home from './pages/Home/Home';
 import Cart from './pages/cart/Cart';
@@ -48,9 +49,21 @@ import ChatQuotationDetailPage from './pages/chat/ChatQuotationDetailPage';
 import ChatQuotationFormPage from './pages/chat/ChatQuotationFormPage';
 import ChatRequestFormPage from './pages/chat/ChatRequestFormPage';
 
+import LandingPage from './pages/LandingPage';
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 function App() {
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       <Route
         element={
           <Layout
@@ -128,6 +141,20 @@ function App() {
       </Route>
 
       <Route
+      element={
+        <Layout
+          showHeader={false}
+          showNavbar={false}
+          showFooter={true}
+          footerVariant="dark"
+        />
+      }
+      >
+       <Route path="/landing" element={<LandingPage />} />
+
+      </Route>
+      
+      <Route
         element={
           <Layout
             showHeader={false}
@@ -136,6 +163,7 @@ function App() {
           />
         }
       >
+
         {/* 회원가입 페이지 */}
         <Route path='/signup' element={<SignupPage />} />
         <Route path="/signup/type" element={<SignupTypeSelection />} />
@@ -170,6 +198,7 @@ function App() {
       {/* 404 처리 */}
       <Route path="*" element={<div>Not Found</div>} />
     </Routes>
+    </>
   );
 }
 
