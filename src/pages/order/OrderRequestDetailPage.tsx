@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
-import Breadcrumb from '../../components/common/Breadcrumb/Breadcrumb';
+import Breadcrumb from '../../components/common/breadcrumb_temp/Breadcrumb';
 import shareIcon from '../../assets/icons/share.svg';
 import { ImageCarousel } from '../../components/common/product/Image';
 import Button from '../../components/common/Button/button1';

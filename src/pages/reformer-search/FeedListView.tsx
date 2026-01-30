@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import Breadcrumb from '../../components/common/Breadcrumb/Breadcrumb';
+import Breadcrumb from '../../components/common/breadcrumb_temp/Breadcrumb';
 import ReformFeedCard from '../../components/domain/reformer-search/ReformFeedCard';
 
 // 더미 데이터 생성 함수
