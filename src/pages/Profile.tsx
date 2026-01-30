@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import BaseProfileTabs from '../components/domain/mypage/BaseProfileTabs';
 import EditProfile from '../components/domain/mypage/EditProfile';
-import { useProfileModeStore } from '../stores/ProfileModeStore';
+import { useProfileModeStore } from '../stores/profileModeStore_tmp';
 //임시 interface 정의
 /*
 interface ProfileData {
