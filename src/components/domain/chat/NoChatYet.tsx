@@ -1,5 +1,5 @@
 import Image from '../../../assets/chat/Image.svg';
-import NoChatYet from '../../../assets/chat/NoChatYet.svg'
+import NoChatYet from '../../../assets/chat/noChatYet_tmp.svg'
 
 const EmptyChatRoom = () => {
   return (
