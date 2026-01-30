@@ -4,7 +4,7 @@ import Breadcrumb from '../../../components/common/breadcrumb/Breadcrumb';
 import shareIcon from '../../../assets/icons/share.svg';
 import { ImageCarousel } from '../../../components/common/product/Image';
 import Button from '../../../components/common/button/button1';
-import LikeButton from '../../../components/common/LikeButton/LikeButton';
+import LikeButton from '../../../components/common/likebutton_tmp/LikeButton';
 
 interface RequestDetail {
   id: string;

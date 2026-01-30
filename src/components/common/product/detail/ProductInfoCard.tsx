@@ -1,7 +1,7 @@
 import shareIcon from '../../../../assets/icons/share.svg';
 import starIcon from '../../../../assets/icons/star.svg';
 import Button from '../../button/button1';
-import LikeButton from '../../LikeButton/LikeButton';
+import LikeButton from '../../likebutton_tmp/LikeButton';
 import profile from '../../../domain/market/images/profile.png';
 
 interface ReformerInfo {

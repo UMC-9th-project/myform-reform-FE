@@ -1,4 +1,4 @@
-import LikeButton from '../../common/LikeButton/LikeButton';
+import LikeButton from '../../common/likebutton_tmp/LikeButton';
 import type { WishlistCustomItem } from '../../../types/domain/wishlist/wishlist';
 interface WishlistCustomItemCardProps {
   item: WishlistCustomItem;
