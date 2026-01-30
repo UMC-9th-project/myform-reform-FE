@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import ReformerSearchEngine from '../../components/domain/reformer-search/ReformerSearchEngine';
 import ReformerSearchResultSkeleton from '../../components/domain/reformer-search/ReformerSearchResultSkeleton';
 import ReformerSearchResultCard from '../../components/domain/reformer-search/ReformerSearchResultCard';
-import Pagination from '../../components/common/Pagination/Pagination';
+import Pagination from '../../components/common/pagination_tmp/Pagination';
 import ReformerSearchResultEmpty from '../../components/domain/reformer-search/ReformerSearchResultEmpty';
 
 type MockReformerSearchResult = {

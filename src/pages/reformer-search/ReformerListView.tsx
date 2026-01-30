@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import Select from '../../components/common/dropdown/SortDropdown';
 import ReformerProfileCard from '../../components/domain/reformer-search/ReformerProfileCard';
-import Pagination from '../../components/common/Pagination/Pagination';
+import Pagination from '../../components/common/pagination_tmp/Pagination';
 
 // 더미 데이터 (132명 시뮬레이션)
 const generateMockReformers = () => {
