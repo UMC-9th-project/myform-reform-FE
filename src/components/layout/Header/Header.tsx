@@ -13,6 +13,7 @@ import xIcon from '../../../assets/icons/x.svg';
 import logo from '../../../assets/logos/logo.svg';
 import { useUserTabStore, type UserTabType } from '../../../stores/tabStore';
 import useAuthStore from '../../../stores/useAuthStore';
+import { useLogout } from '../../../hooks/domain/auth/useLogout';
 
 type UserType = 'customer' | 'seller';
 
@@ -22,6 +23,8 @@ export default function Header() {
   const { setActiveTab } = useUserTabStore();
   // Zustand 스토어에서 로그인 상태 구독
   const { accessToken } = useAuthStore();
+  // 로그아웃 훅
+  const { logout } = useLogout();
   
   const handleTabClick = (tab: UserTabType) => {
     setActiveTab(tab);       // store에 activeTab 업데이트
@@ -258,7 +261,10 @@ export default function Header() {
                     </button>
                   </div>
                 </div>
-                <button className="w-full py-[0.9375rem] text-center body-b1-sb text-[var(--color-black)] bg-[var(--color-mint-5)] rounded-b-[1.875rem] cursor-pointer">
+                <button 
+                  onClick={logout}
+                  className="w-full py-[0.9375rem] text-center body-b1-sb text-[var(--color-black)] bg-[var(--color-mint-5)] rounded-b-[1.875rem] cursor-pointer"
+                >
                   로그아웃
                 </button>
               </div>
@@ -314,7 +320,10 @@ export default function Header() {
                     </button>
                   </div>
                 </div>
-                <button className="w-full py-[0.9375rem] text-center body-b1-sb text-[var(--color-black)] bg-[var(--color-mint-5)] rounded-b-[1.875rem] cursor-pointer">
+                <button 
+                  onClick={logout}
+                  className="w-full py-[0.9375rem] text-center body-b1-sb text-[var(--color-black)] bg-[var(--color-mint-5)] rounded-b-[1.875rem] cursor-pointer"
+                >
                   로그아웃
                 </button>
               </div>

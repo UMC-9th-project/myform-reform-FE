@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import Input from '../../../common/Input/Input';
 import Button from '../../../common/Button/button1';
 import Checkbox from '../../../common/Checkbox/Checkbox';
 import { useLogin } from '../../../../hooks/domain/auth/useLogin';
 
 export default function LoginForm() {
+  const location = useLocation();
   const { login, isLoading, error: loginApiError } = useLogin();
   
   const [email, setEmail] = useState('');
@@ -29,10 +31,12 @@ export default function LoginForm() {
       return;
     }
 
+    const role = location.pathname.includes('reformer') ? 'reformer' : 'user';
+
     login({
       email,
       password,
-      role: 'user',
+      role,
     });
   };
 
