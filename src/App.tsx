@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/PageLayout';
-import Home from './pages/Home/Home';
+import Home from './pages/home/Home';
 import Cart from './pages/cart/Cart';
 import Market from './pages/market/Market';
 import MarketProductDetailPage from './pages/market/MarketProductDetailPage';
@@ -31,15 +31,15 @@ import ReformerOrderEstimateCreatePage from './pages/order/reformer/ReformerOrde
 import ReformerOrderSuggestionListPage from './pages/order/reformer/ReformerOrderSuggestionListPage';
 import ReformerOrderSuggestionDetailPage from './pages/order/reformer/ReformerOrderSuggestionDetailPage';
 
-import SignupPage from './pages/Signup/SignupPage';
-import SignupTypeSelection from './pages/Signup/SignupTypeSelection';
-import SignupFormPage from './pages/Signup/SignupFormPage';
-import SignupComplete from './pages/Signup/SignupComplete';
-import ReformerRegistration from './pages/Signup/reformer/ReformerRegistration';
-import ReformerRegistrationComplete from './pages/Signup/reformer/ReformerRegistrationComplete';
+import SignupPage from './pages/signup/SignupPage';
+import SignupTypeSelection from './pages/signup/SignupTypeSelection';
+import SignupFormPage from './pages/signup/SignupFormPage';
+import SignupComplete from './pages/signup/SignupComplete';
+import ReformerRegistration from './pages/signup/reformer/ReformerRegistration';
+import ReformerRegistrationComplete from './pages/signup/reformer/ReformerRegistrationComplete';
 
  {/* 로그인 페이지 */}
-import Login from './pages/Login/Login';
+import Login from './pages/login/Login';
 
 import ChatPage from './pages/chat/ChatPage';
 import ChatQuotationDetailPage from './pages/chat/ChatQuotationDetailPage';
