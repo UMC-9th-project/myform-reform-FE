@@ -5,8 +5,10 @@ import { type OptionGroup } from '../../components/domain/mypage/Option5';
 import DescriptionEditor from '../../components/domain/mypage/DescriptionEditor';
 import Button from '../../components/common/button/Button1';
 import { uploadImage, uploadImages } from '../../api/upload';
-import { createSale } from '../../api/profile/sale';
+import { createOrder, createSale } from '../../api/profile/sale';
 import type { SaleOption } from '../../types/domain/mypage/sale';
+import type { CreateOrderRequest } from '../../types/domain/mypage/order';
+import { useNavigate } from 'react-router-dom';
 
 type ImageType = {
   file: File;
@@ -18,7 +20,7 @@ type CreatePageProps = {
 };
 
 const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
-  
+  const navigate = useNavigate();
   // --- 상태 관리 (Step 1 이미지용) ---
   const [images, setImages] = useState<ImageType[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -38,7 +40,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
   '악세서리': ['헤어 악세서리', '폰케이스', '키링'],
   '홈·리빙': ['패브릭 소품', '쿠션·방석'],
   '기타': []
-};
+  };
 
   const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
   const optionGroupsIdRef = useRef(1);
@@ -94,56 +96,82 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
     };
 
     const handleSubmit = async () => {
-      try {
-        const token = localStorage.getItem('accessToken');
-        console.log('현재 localStorage accessToken:', token);
-        const files = images.map(img => img.file);
-        let imageUrls: string[] = [];
+  try {
+    const token = localStorage.getItem('accessToken');
+    console.log('현재 localStorage accessToken:', token);
 
-        if (files.length === 1) {
-          const res = await uploadImage(files[0]);
-          imageUrls = [res.success.url]; // 단일 업로드는 문자열 하나로 배열 생성
-        } else if (files.length > 1) {
-          const res = await uploadImages(files);
-          imageUrls = res.success.url; // 다중 업로드는 이미 string[]
-        }
+    // 이미지 업로드
+    const files = images.map(img => img.file);
+    let imageUrls: string[] = [];
 
-        const saleOptions: SaleOption[] = optionGroups.map(
-          (group, groupIndex) => ({
-            title: group.name,
-            sortOrder: groupIndex,
-            content: group.subOptions.map((sub, subIndex) => ({
-              comment: sub.name,
-              price: Number(sub.price.replace(/,/g, '')),
-              quantity: Number(sub.quantity),
-              sortOrder: subIndex,
-            })),
-          })
-        );
+    if (files.length === 1) {
+      const res = await uploadImage(files[0]);
+      imageUrls = [res.success.url];
+    } else if (files.length > 1) {
+      const res = await uploadImages(files);
+      imageUrls = res.success.url;
+    }
 
-        const payload = {
-          title,
-          content: description,
-          price: Number(price.replace(/,/g, '')),
-          delivery: Number(shippingFee.replace(/,/g, '')),
-          option: saleOptions,
-          category: {
-            major: category,
-            sub: subCategory,
-          },
-          imageUrls,
-        };
+    let result;
 
-        const result = await createSale(payload);
+    if (type === 'sale') {
+      // --- 판매글 payload ---
+      const saleOptions: SaleOption[] = optionGroups.map(
+        (group, groupIndex) => ({
+          title: group.name,
+          sortOrder: groupIndex,
+          content: group.subOptions.map((sub, subIndex) => ({
+            comment: sub.name,
+            price: Number(sub.price.replace(/,/g, '')),
+            quantity: Number(sub.quantity),
+            sortOrder: subIndex,
+          })),
+        })
+      );
 
-        alert('판매글 등록 완료!');
-        console.log('등록 결과:', result);
-      } catch (error) {
-        console.error(error);
-        alert('판매글 등록 실패');
-      }
-    };
+      const payload = {
+        title,
+        content: description,
+        price: Number(price.replace(/,/g, '')),
+        delivery: Number(shippingFee.replace(/,/g, '')),
+        option: saleOptions,
+        category: {
+          major: category,
+          sub: subCategory,
+        },
+        imageUrls,
+      };
 
+      result = await createSale(payload);
+
+    } else {
+      // --- 주문제작 payload ---
+      const payload: CreateOrderRequest = {
+        title,
+        content: description,
+        price: Number(price.replace(/,/g, '')),
+        delivery: Number(shippingFee.replace(/,/g, '')),
+        expected_working: Number(duration),
+        category: {
+          major: category,
+          sub: subCategory,
+        },
+        imageUrls,
+      };
+
+      result = await createOrder(payload);
+    }
+
+    // 공통 성공 처리
+    alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 등록 완료!`);
+    console.log('등록 결과:', result);
+    navigate('/reformer-mypage'); 
+
+  } catch (error) {
+    console.error(error);
+    alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 등록 실패`);
+  }
+};
 
 
   return (
@@ -455,8 +483,6 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
             >
             등록하기
         </Button>
-
-
       </div>
     </div>
   );
