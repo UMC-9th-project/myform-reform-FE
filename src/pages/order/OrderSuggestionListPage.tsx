@@ -4,7 +4,7 @@ import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import SuggestionCard from '../../components/domain/order/Suggestion';
 import Pagination from '../../components/common/Pagination/Pagination';
 import OrderCategoryFilter from '../../components/domain/order/OrderCategoryFilter';
-import Select from '../../components/common/dropdown_tmp/SortDropdown';
+import Select from '../../components/common/dropdown/SortDropdown';
 
 // 더미 데이터 (132개 시뮬레이션)
 const generateMockSuggestions = () => {
