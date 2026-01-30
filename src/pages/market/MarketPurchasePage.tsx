@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Input from '../../components/domain/purchase/Input';
-import Button2 from '../../components/common/Button/button2';
+import Button2 from '../../components/common/button/Button2';
 
 const mockProduct = {
   id: 1,

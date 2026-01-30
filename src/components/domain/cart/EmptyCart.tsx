@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import Button from '../../../components/common/Button/button1';
+import Button from '../../common/button/Button1';
 import rightIcon from '../../../assets/icons/right.svg';
 
 const EmptyCart = () => {

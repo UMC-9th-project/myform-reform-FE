@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Breadcrumb from '../../../components/common/Breadcrumb/Breadcrumb';
+import Breadcrumb from '../../../components/common/breadcrumb/Breadcrumb';
 import RequestCard from '../../../components/domain/order/Request';
-import Pagination from '../../../components/common/Pagination/Pagination';
+import Pagination from '../../../components/common/pagination/Pagination';
 import OrderCategoryFilter from '../../../components/domain/order/OrderCategoryFilter';
 
 // 더미 데이터 (132개 시뮬레이션)

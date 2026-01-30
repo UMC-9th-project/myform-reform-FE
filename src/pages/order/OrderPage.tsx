@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
-import Breadcrumb from '../../components/common/Breadcrumb/Breadcrumb';
+import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import RequestCard from '../../components/domain/order/Request';
 import SuggestionCard from '../../components/domain/order/Suggestion';
-import Button from '../../components/common/Button/button1';
-import pencilIcon from '../../assets/icons/PencilLine.svg';
+import Button from '../../components/common/button/Button1';
+import pencilIcon from '../../assets/icons/pencilLine.svg';
 
 const OrderPage = () => {
   const navigate = useNavigate();

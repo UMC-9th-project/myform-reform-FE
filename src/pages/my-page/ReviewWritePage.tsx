@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useUserTabStore } from '../../stores/tabStore';
-import Button from '../../components/common/Button/button1';
+import Button from '../../components/common/button/Button1';
 import starYellow from '../../assets/icons/star.svg';
 import starGray from '../../assets/icons/emptyStar.svg';
 

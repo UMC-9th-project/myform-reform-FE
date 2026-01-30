@@ -1,4 +1,4 @@
-import SignupForm from '../../components/domain/signup/Form/SignupForm';
+import SignupForm from '../../components/domain/signup/form/SignupForm';
 
 import logo from '../../assets/logos/logo.svg';
 

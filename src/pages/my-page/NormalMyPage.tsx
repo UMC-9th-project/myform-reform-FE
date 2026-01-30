@@ -1,10 +1,10 @@
 import MyPageTab from '../../components/domain/mypage/MyPageTab';
 import { useUserTabStore, type UserTabType } from '../../stores/tabStore';
-import MyInfoPage from '../../components/domain/mypage/NormalMyPage/MyInfoPage';
-import MyReformRequest from '../../components/domain/mypage/NormalMyPage/MyReformRequest';
-import UserOrderDetail from '../../components/domain/mypage/NormalMyPage/UserOrderDetail';
-import ReviewList from '../../components/domain/mypage/NormalMyPage/ReviewList';
-import BuyList from '../../components/domain/mypage/NormalMyPage/BuyList';
+import MyInfoPage from '../../components/domain/mypage/normal_mypage/MyInfoPage';
+import MyReformRequest from '../../components/domain/mypage/normal_mypage/MyReformRequest';
+import UserOrderDetail from '../../components/domain/mypage/normal_mypage/UserOrderDetail';
+import ReviewList from '../../components/domain/mypage/normal_mypage/ReviewList';
+import BuyList from '../../components/domain/mypage/normal_mypage/BuyList';
 
 
 const USER_TABS: readonly UserTabType[] = [

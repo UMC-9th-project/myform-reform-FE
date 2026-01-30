@@ -1,6 +1,6 @@
 
 import profile from '../../../domain/market/images/profile.png';
-import Button from '../../Button/button1';
+import Button from '../../button/Button1';
 import starIcon from '../../../../assets/icons/star.svg';
 import ProfileTextAccordion from '../ProfileTextAccordion';
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Input from '../../../common/Input/Input';
-import Button from '../../../common/Button/button1';
+import Input from '../../../common/input/Input';
+import Button from '../../../common/button/Button1';
 import AgreementSection from '../AgreementSection';
 import {
   emailSchema,

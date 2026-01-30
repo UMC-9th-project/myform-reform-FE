@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import searchIcon from '../../layout/Header/icons/search.svg';
+import searchIcon from '../../layout/header/icons/search.svg';
 
 interface ReformerSearchEngineProps {
   placeholder?: string;

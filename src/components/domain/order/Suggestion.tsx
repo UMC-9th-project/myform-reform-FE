@@ -1,5 +1,5 @@
 import star from '../market/icons/star.svg';
-import LikeButton from '../../common/LikeButton/LikeButton';
+import LikeButton from '../../common/likebutton/LikeButton';
 
 interface SuggestionCardProps {
   imgSrc?: string;

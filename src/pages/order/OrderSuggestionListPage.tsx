@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Breadcrumb from '../../components/common/Breadcrumb/Breadcrumb';
+import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import SuggestionCard from '../../components/domain/order/Suggestion';
-import Pagination from '../../components/common/Pagination/Pagination';
+import Pagination from '../../components/common/pagination/Pagination';
 import OrderCategoryFilter from '../../components/domain/order/OrderCategoryFilter';
-import Select from '../../components/common/Dropdown/SortDropdown';
+import Select from '../../components/common/dropdown/SortDropdown';
 
 // 더미 데이터 (132개 시뮬레이션)
 const generateMockSuggestions = () => {

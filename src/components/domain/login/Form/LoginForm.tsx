@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import Input from '../../../common/Input/Input';
-import Button from '../../../common/Button/button1';
-import Checkbox from '../../../common/Checkbox/Checkbox';
+import Input from '../../../common/input/Input';
+import Button from '../../../common/button/Button1';
+import Checkbox from '../../../common/checkbox/Checkbox';
 import { useLogin } from '../../../../hooks/domain/auth/useLogin';
 
 export default function LoginForm() {
