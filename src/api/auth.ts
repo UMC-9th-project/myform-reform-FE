@@ -6,7 +6,7 @@ export const loginUser = async (
   data: LoginRequest
 ): Promise<LoginResponse> => {
   const response = await api.post<LoginResponse>(
-    '/api/v1/auth/login/local',  
+    '/auth/login/local',  
     data
   );
   return response.data;
