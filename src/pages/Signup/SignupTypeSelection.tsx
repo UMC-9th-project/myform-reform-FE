@@ -1,4 +1,4 @@
-import UserTypeSelector from '../../components/domain/signup/UserTypeSelector/UserTypeSelector';
+import UserTypeSelector from '../../components/domain/signup/usertype_selector/UserTypeSelector';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import logo2 from '../../assets/logos/logo2.svg';
