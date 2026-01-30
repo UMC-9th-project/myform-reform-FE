@@ -7,9 +7,9 @@ import ProductTabMenu from '../../../components/common/product/detail/ProductTab
 import ReformerProfileDetailCard from '../../../components/common/product/detail/ReformerProfileDetailCard';
 import ProductReviewSection from '../../../components/common/product/detail/ProductReviewSection';
 import Button from '../../../components/common/button/Button1';
-import ex4 from '../../../components/common/product/eximage_tmp/ex4.jpg';
-import ex5 from '../../../components/common/product/eximage_tmp/ex5.jpg';
-import ex6 from '../../../components/common/product/eximage_tmp/ex6.jpg';
+import ex4 from '../../../components/common/product/eximage/ex4.jpg';
+import ex5 from '../../../components/common/product/eximage/ex5.jpg';
+import ex6 from '../../../components/common/product/eximage/ex6.jpg';
 
 interface SuggestionDetail {
   id: string;
