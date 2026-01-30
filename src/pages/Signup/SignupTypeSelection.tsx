@@ -2,8 +2,8 @@ import UserTypeSelector from '../../components/domain/signup/usertype_selector/U
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import logo2 from '../../assets/logos/logo2.svg';
-import customer from '../../components/domain/signup/UserTypeSelector/image/customer-icon.png';
-import reformer from '../../components/domain/signup/UserTypeSelector/image/reformer-icon.png';
+import customer from '../../components/domain/signup/usertype_selector/image/customer-icon.png';
+import reformer from '../../components/domain/signup/usertype_selector/image/reformer-icon.png';
 
 const SignupTypeSelection = () => {
   const navigate = useNavigate();
