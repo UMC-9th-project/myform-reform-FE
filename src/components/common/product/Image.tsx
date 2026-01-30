@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import LeftIcon from '../../../assets/icons/left.svg?react';
 import RightIcon from '../../../assets/icons/right.svg?react';
-import e1 from './exImage/e1.jpg';
-import e2 from './exImage/e2.jpg';
-import e3 from './exImage/e3.jpg';
+import e1 from './eximage_tmp/e1.jpg';
+import e2 from './eximage_tmp/e2.jpg';
+import e3 from './eximage_tmp/e3.jpg';
 
 interface ImageSlot {
   id: string;
