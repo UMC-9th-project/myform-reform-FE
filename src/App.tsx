@@ -31,15 +31,15 @@ import ReformerOrderEstimateCreatePage from './pages/order/reformer/ReformerOrde
 import ReformerOrderSuggestionListPage from './pages/order/reformer/ReformerOrderSuggestionListPage';
 import ReformerOrderSuggestionDetailPage from './pages/order/reformer/ReformerOrderSuggestionDetailPage';
 
-import SignupPage from './pages/signup_tmp/SignupPage';
-import SignupTypeSelection from './pages/signup_tmp/SignupTypeSelection';
-import SignupFormPage from './pages/signup_tmp/SignupFormPage';
-import SignupComplete from './pages/signup_tmp/SignupComplete';
-import ReformerRegistration from './pages/signup_tmp/reformer/ReformerRegistration';
-import ReformerRegistrationComplete from './pages/signup_tmp/reformer/ReformerRegistrationComplete';
+import SignupPage from './pages/signup/SignupPage';
+import SignupTypeSelection from './pages/signup/SignupTypeSelection';
+import SignupFormPage from './pages/signup/SignupFormPage';
+import SignupComplete from './pages/signup/SignupComplete';
+import ReformerRegistration from './pages/signup/reformer/ReformerRegistration';
+import ReformerRegistrationComplete from './pages/signup/reformer/ReformerRegistrationComplete';
 
  {/* 로그인 페이지 */}
-import Login from './pages/login_tmp/Login';
+import Login from './pages/login/Login';
 
 import ChatPage from './pages/chat/ChatPage';
 import ChatQuotationDetailPage from './pages/chat/ChatQuotationDetailPage';

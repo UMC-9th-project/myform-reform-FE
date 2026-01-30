@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/common/button/button1';
 import rightIcon from '../../assets/icons/right.svg';
 
-import signupcomplete from '../Signup/images/signupcomplete.png';
+import signupcomplete from '../signup/images/signupcomplete.png';
 
 const SignupComplete = () => {
   const navigate = useNavigate();
