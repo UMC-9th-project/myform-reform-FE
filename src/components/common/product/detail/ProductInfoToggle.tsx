@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import UpIcon from '../../../../assets/icons/up.svg?react';
 import DownIcon from '../../../../assets/icons/down.svg?react';
-import Button from '../../button/button1_tmp';
+import Button from '../../button/Button1';
 
 interface ProductInfoToggleProps {
   defaultExpanded?: boolean;

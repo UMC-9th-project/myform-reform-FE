@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Button from '../../components/common/button/button1';
+import Button from '../../components/common/button/Button1';
 import Calendar from '../../components/common/editor/Calendar';
 import CategorySelect from '../../components/common/editor/CategorySelect';
 import calendarIcon from '../../assets/icons/calendar.svg';

@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import RequestCard from '../../components/domain/order/Request';
 import SuggestionCard from '../../components/domain/order/Suggestion';
-import Button from '../../components/common/button/button1';
+import Button from '../../components/common/button/Button1';
 import pencilIcon from '../../assets/icons/pencilLine.svg';
 
 const OrderPage = () => {

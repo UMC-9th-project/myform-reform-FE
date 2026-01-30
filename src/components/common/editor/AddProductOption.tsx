@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import GripVerticalIcon from '../../../assets/icons/gripvertical.svg?react';
 import PlusIcon from '../../../assets/icons/mintPlus.svg?react';
-import Button from '../button/button1_tmp';
+import Button from '../button/Button1';
 
 interface SubOption {
   id: string;
