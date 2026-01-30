@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Button from '../../../components/common/button/button1';
+import Button from '../../../components/common/button/button1_tmp';
 import pinkXIcon from '../../../assets/icons/pinkX.svg';
 import uploadIcon from '../../../assets/icons/upload.svg';
 import mailIcon from '../../../assets/icons/mail.svg';

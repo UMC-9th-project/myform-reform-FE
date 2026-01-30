@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Input from '../../../common/input/Input';
-import Button from '../../../common/button/button1';
+import Button from '../../../common/button/button1_tmp';
 import Checkbox from '../../../common/checkbox/Checkbox';
 import { useLogin } from '../../../../hooks/domain/auth/useLogin';
 

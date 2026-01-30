@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Camera } from 'lucide-react';
-import Button from '../../../common/button/button2';
+import Button from '../../../common/button/button2_temp';
 import NicknameModal from '../NicknameModal';
 import DaumPostcode from 'react-daum-postcode';
 
