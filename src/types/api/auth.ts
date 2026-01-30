@@ -16,3 +16,16 @@ export interface LoginResponse {
     accessToken: string;
   } | null;
 }
+
+// 로그아웃 응답 타입
+export interface LogoutResponse {
+  resultType: 'SUCCESS' | 'ERROR';
+  error: null | {
+    code: string;
+    message: string;
+  };
+  success: {
+    statusCode: number;
+    message: string;
+  } | null;
+}
