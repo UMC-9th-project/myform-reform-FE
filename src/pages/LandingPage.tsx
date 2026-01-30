@@ -156,7 +156,6 @@ const LandingPage = () => {
           background: 'linear-gradient(to bottom, rgba(5, 34, 27, 1) 60% , rgba(5, 212, 205, 1))',
         }}
       >
-        {/* 배경 데코: 종이비행기 (컨텐츠 뒤) */}
         <img
           src={paper}
           alt=""
@@ -227,7 +226,6 @@ const LandingPage = () => {
             {FIFTH_SECTION_TABS.map((tab) =>
               activeTab === tab.id ? (
                 <div key={tab.id} className="flex gap-16 items-center">
-                  {/* 왼쪽: 텍스트 콘텐츠 */}
                   <div className="flex-1 flex flex-col gap-13">
                     <h3 className="heading-h2-bd ">{tab.title}</h3>
                     <p className="body-b0-rg text-[var(--color-gray-60)] leading-relaxed">
@@ -242,7 +240,6 @@ const LandingPage = () => {
                       <img src={rightIcon} alt="right" className="w-10 h-10 brightness-0 invert pb-1" />
                     </button>
                   </div>
-                  {/* 오른쪽: 일러스트레이션 영역 */}
                   <div className="flex-1 relative min-h-[400px] bg-[var(--color-gray-10)] rounded-lg flex items-center justify-center p-8">
                     {tab.image && (
                       <img
@@ -275,8 +272,6 @@ const LandingPage = () => {
           className="pointer-events-none absolute z-0 w-[538px] h-[527px] opacity-30 brightness-0 invert"
           style={{ top: '-11.35px', right: '-20px', transform: 'rotate(6.91deg)' }}
         />
-
-        {/* 컨텐츠: 배경 위에 올라오도록 */}
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen gap-10">
             <div className="heading-h4-sb text-[var(--color-gray-70)] text-center">
                 <p>다양한 굿즈부터 나만의 유니폼 리폼까지</p>
