@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/button/button1';
-import Calendar from '../../components/common/Editor/Calendar';
-import CategorySelect from '../../components/common/Editor/CategorySelect';
+import Calendar from '../../components/common/editor/Calendar';
+import CategorySelect from '../../components/common/editor/CategorySelect';
 import calendarIcon from '../../assets/icons/calendar.svg';
 import pinkXIcon from '../../assets/icons/pinkX.svg';
 import uploadIcon from '../../assets/icons/upload.svg';
