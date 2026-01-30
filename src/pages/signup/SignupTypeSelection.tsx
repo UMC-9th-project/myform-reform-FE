@@ -10,9 +10,9 @@ const SignupTypeSelection = () => {
   const location = useLocation();
   const isLoginMode = location.pathname === '/login/type';
 
-  const handleTypeSelect = (userType: 'customer' | 'reformer') => {
+  const handleTypeSelect = (userType: 'user' | 'reformer') => {
     if (isLoginMode) {
-      navigate('/login');
+      navigate(userType === 'user' ?  '/login' : '/login/reformer');
     } else {
       navigate(`/signup/${userType}-form`);
     }
@@ -35,7 +35,7 @@ const SignupTypeSelection = () => {
           title="일반 모드로 활용하기"
           description="필요한 상품을 구매하고 리폼 요청 및 맞춤 견적을 받아요."
           alt="customer"
-          onClick={() => handleTypeSelect('customer')}
+          onClick={() => handleTypeSelect('user')}
         />
 
         <UserTypeSelector

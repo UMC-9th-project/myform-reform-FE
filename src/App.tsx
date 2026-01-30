@@ -146,6 +146,7 @@ function App() {
 
         {/* 로그인 페이지 */}
         <Route path="/login" element={<Login />} />
+        <Route path="/login/reformer" element={<Login />} />
         <Route path="/login/type" element={<SignupTypeSelection />} />
       </Route>
 
