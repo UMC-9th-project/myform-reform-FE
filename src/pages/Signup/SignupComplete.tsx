@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import Button from '../../components/common/Button/button1';
+import Button from '../../components/common/button_tmp/button1';
 import rightIcon from '../../assets/icons/right.svg';
 
 import signupcomplete from '../Signup/images/signupcomplete.png';

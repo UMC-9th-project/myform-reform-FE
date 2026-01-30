@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import Button from '../../../common/Button/button1';
+import Button from '../../../common/button_tmp/button1';
 import successIcon from '../Modal/icons/successIcon.svg';
 import cancelIcon from '../Modal/icons/cancelIcon.svg';
 

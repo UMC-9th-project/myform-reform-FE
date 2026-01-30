@@ -1,6 +1,6 @@
 import shareIcon from '../../../../assets/icons/share.svg';
 import starIcon from '../../../../assets/icons/star.svg';
-import Button from '../../Button/button1';
+import Button from '../../button_tmp/button1';
 import LikeButton from '../../LikeButton/LikeButton';
 import profile from '../../../domain/market/images/profile.png';
 
