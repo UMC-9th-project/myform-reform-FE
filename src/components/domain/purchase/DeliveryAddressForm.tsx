@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Input from './Input';
-import Button2 from '../../common/button_tmp/button2';
+import Button2 from '../../common/button/button2';
 
 const DeliveryAddressForm = () => {
   const [activeTab, setActiveTab] = useState<'existing' | 'new'>('existing');

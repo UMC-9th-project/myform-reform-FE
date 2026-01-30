@@ -8,7 +8,7 @@ import Highlight from '@tiptap/extension-highlight';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
-import Button from '../../common/button_tmp/button1';
+import Button from '../../common/button/button1';
 
 
 type DescriptionEditorProps = {

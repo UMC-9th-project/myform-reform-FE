@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import shareIcon from '../../assets/icons/share.svg';
 import { ImageCarousel } from '../../components/common/product/Image';
-import Button from '../../components/common/button_tmp/button1';
+import Button from '../../components/common/button/button1';
 import ReformerSearchCard from '../../components/domain/reformer-search/ReformerProfileCard';
 import LeftIcon from '../../assets/icons/left.svg?react';
 import RightIcon from '../../assets/icons/right.svg?react';

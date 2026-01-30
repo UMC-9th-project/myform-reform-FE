@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import Button1 from '../../components/common/button_tmp/button1';
+import Button1 from '../../components/common/button/button1';
 
 import logo2 from '../../assets/logos/logo2.svg';
 import kakao from '../../assets/signup/kakao.svg';

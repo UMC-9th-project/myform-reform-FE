@@ -6,7 +6,7 @@ import ProductInfoCard from '../../../components/common/product/detail/ProductIn
 import ProductTabMenu from '../../../components/common/product/detail/ProductTabMenu';
 import ReformerProfileDetailCard from '../../../components/common/product/detail/ReformerProfileDetailCard';
 import ProductReviewSection from '../../../components/common/product/detail/ProductReviewSection';
-import Button from '../../../components/common/button_tmp/button1';
+import Button from '../../../components/common/button/button1';
 import ex4 from '../../../components/common/product/exImage/ex4.jpg';
 import ex5 from '../../../components/common/product/exImage/ex5.jpg';
 import ex6 from '../../../components/common/product/exImage/ex6.jpg';

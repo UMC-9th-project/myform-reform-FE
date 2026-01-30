@@ -1,4 +1,4 @@
-import Button from '../../common/button_tmp/button1';
+import Button from '../../common/button/button1';
 import type { PaymentSummary } from '../../../types/domain/cart/cart';
 
 interface PaymentSummaryProps {

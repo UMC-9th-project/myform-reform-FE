@@ -3,7 +3,7 @@ import { X, Plus } from 'lucide-react';
 import Option5 from '../../components/domain/mypage/Option5';
 import { type OptionGroup } from '../../components/domain/mypage/Option5';
 import DescriptionEditor from '../../components/domain/mypage/DescriptionEditor';
-import Button from '../../components/common/button_tmp/button1';
+import Button from '../../components/common/button/button1';
 
 type ImageType = {
   file: File;

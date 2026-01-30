@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import logo2 from '../../../assets/logos/logo2.svg';
 import plus from '../../../assets/icons/plus.svg';
 import share from '../../../assets/icons/share.svg';
-import Button from '../../../components/common/button_tmp/button1';
+import Button from '../../../components/common/button/button1';
 import ProgressIndicator from '../../../components/common/ProgressIndicator/ProgressIndicator';
 import Checkbox from '../../../components/common/Checkbox/Checkbox';
 

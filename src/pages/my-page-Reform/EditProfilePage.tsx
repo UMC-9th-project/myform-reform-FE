@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import NicknameModal from '../../components/domain/mypage/NicknameModal';
-import Button from '../../components/common/button_tmp/button1';
+import Button from '../../components/common/button/button1';
 import Profile from '../../assets/icons/profile.svg';
 
 const EditProfilePage = () => {
