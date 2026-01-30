@@ -1,6 +1,6 @@
 import Review from './review/Review';
 import ReviewFilter from './review/ReviewFilter';
-import Pagination from '../../pagination_tmp/Pagination';
+import Pagination from '../../pagination/Pagination';
 import PhotoReviewGallery from './review/PhotoReviewGallery';
 import starIcon from '../../../../assets/icons/star.svg';
 

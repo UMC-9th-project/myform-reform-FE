@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import SuggestionCard from '../../components/domain/order/Suggestion';
-import Pagination from '../../components/common/pagination_tmp/Pagination';
+import Pagination from '../../components/common/pagination/Pagination';
 import OrderCategoryFilter from '../../components/domain/order/OrderCategoryFilter';
 import Select from '../../components/common/dropdown/SortDropdown';
 
