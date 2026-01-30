@@ -9,7 +9,7 @@ import chatImg from '../assets/landing/chatImg.svg';
 import list from '../assets/landing/list.svg';
 import paper from '../assets/landing/paper.svg';
 import list2 from '../assets/landing/list2.svg';
-import orderRequest from '../assets/landing/Request.svg';
+import orderRequest from '../assets/landing/request.svg';
 import market from '../assets/landing/market.svg';
 import findReform from '../assets/landing/reformerFind.svg';
 import { useNavigate } from 'react-router-dom';
