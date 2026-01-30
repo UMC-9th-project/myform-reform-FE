@@ -4,6 +4,9 @@ import Option5 from '../../components/domain/mypage/Option5';
 import { type OptionGroup } from '../../components/domain/mypage/Option5';
 import DescriptionEditor from '../../components/domain/mypage/DescriptionEditor';
 import Button from '../../components/common/button/Button1';
+import { uploadImage, uploadImages } from '../../api/upload';
+import { createSale } from '../../api/profile/sale';
+import type { SaleOption } from '../../types/domain/mypage/sale';
 
 type ImageType = {
   file: File;
@@ -89,6 +92,59 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
     const removeImage = (index: number) => {
       setImages(prev => prev.filter((_, i) => i !== index));
     };
+
+    const handleSubmit = async () => {
+      try {
+        const token = localStorage.getItem('accessToken');
+        console.log('현재 localStorage accessToken:', token);
+        const files = images.map(img => img.file);
+        let imageUrls: string[] = [];
+
+        if (files.length === 1) {
+          const res = await uploadImage(files[0]);
+          imageUrls = [res.success.url]; // 단일 업로드는 문자열 하나로 배열 생성
+        } else if (files.length > 1) {
+          const res = await uploadImages(files);
+          imageUrls = res.success.url; // 다중 업로드는 이미 string[]
+        }
+
+        const saleOptions: SaleOption[] = optionGroups.map(
+          (group, groupIndex) => ({
+            title: group.name,
+            sortOrder: groupIndex,
+            content: group.subOptions.map((sub, subIndex) => ({
+              comment: sub.name,
+              price: Number(sub.price.replace(/,/g, '')),
+              quantity: Number(sub.quantity),
+              sortOrder: subIndex,
+            })),
+          })
+        );
+
+        const payload = {
+          title,
+          content: description,
+          price: Number(price.replace(/,/g, '')),
+          delivery: Number(shippingFee.replace(/,/g, '')),
+          option: saleOptions,
+          category: {
+            major: category,
+            sub: subCategory,
+          },
+          imageUrls,
+        };
+
+        const result = await createSale(payload);
+
+        alert('판매글 등록 완료!');
+        console.log('등록 결과:', result);
+      } catch (error) {
+        console.error(error);
+        alert('판매글 등록 실패');
+      }
+    };
+
+
 
   return (
     <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
@@ -395,6 +451,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
       <div className="flex justify-end">
         <Button
             variant={isButtonEnabled ? 'primary' : 'disabled'}
+            onClick={handleSubmit}
             >
             등록하기
         </Button>
