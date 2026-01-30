@@ -1,4 +1,4 @@
-import LikeButton from '../../common/likebutton_tmp/LikeButton';
+import LikeButton from '../../common/likebutton/LikeButton';
 import starIcon from '../../../assets/icons/star.svg';
 import type { WishlistItem } from '../../../types/domain/wishlist/wishlist';
 
