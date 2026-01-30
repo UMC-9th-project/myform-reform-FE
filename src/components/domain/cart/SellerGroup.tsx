@@ -1,4 +1,4 @@
-import Checkbox from '../../../components/common/Checkbox/Checkbox';
+import Checkbox from '../../common/checkbox_tmp/Checkbox';
 import type { CartProduct, CartSeller } from '../../../types/domain/cart/cart';
 import CartItem from './CartItem';
 import truckIcon from '../../../assets/icons/truck.svg';

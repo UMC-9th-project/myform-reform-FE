@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Input from '../../../common/Input/Input';
 import Button from '../../../common/button/button1';
-import Checkbox from '../../../common/Checkbox/Checkbox';
+import Checkbox from '../../../common/checkbox_tmp/Checkbox';
 import { useLogin } from '../../../../hooks/domain/auth/useLogin';
 
 export default function LoginForm() {

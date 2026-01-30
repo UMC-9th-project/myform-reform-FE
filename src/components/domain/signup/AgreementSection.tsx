@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import Checkbox from '../../common/Checkbox/Checkbox';
-import AgreementTermsModal from './Modal/AgreementTermsModal';
+import Checkbox from '../../common/checkbox_tmp/Checkbox';
+import AgreementTermsModal from './modal/AgreementTermsModal';
 import {
   SERVICE_TERMS_CONTENT,
   PRIVACY_TERMS_CONTENT,

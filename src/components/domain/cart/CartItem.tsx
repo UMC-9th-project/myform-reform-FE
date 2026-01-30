@@ -1,4 +1,4 @@
-import Checkbox from '../../../components/common/Checkbox/Checkbox';
+import Checkbox from '../../common/checkbox_tmp/Checkbox';
 import OptionQuantity from '../../common/product/option/option-quantity-button/OptionQuantity';
 import type { CartProduct } from '../../../types/domain/cart/cart';
 import xIcon from '../../../assets/icons/x.svg';

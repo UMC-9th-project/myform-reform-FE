@@ -1,4 +1,4 @@
-import Checkbox from '../../../components/common/Checkbox/Checkbox';
+import Checkbox from '../../common/checkbox_tmp/Checkbox';
 import Button from '../../common/button/button1';
 
 interface CartHeaderProps {
