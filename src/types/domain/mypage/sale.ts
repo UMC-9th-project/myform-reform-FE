@@ -1,3 +1,13 @@
+export interface CreateSaleRequest {
+  title: string;
+  content: string;
+  price: number;
+  delivery: number;
+  option: SaleOption[];
+  category: SaleCategory;
+  imageUrls: string[];
+}
+
 export interface SaleOptionItem {
   comment: string;
   price: number;

@@ -1,13 +1,7 @@
 import { api } from '../axios';
-import type { CreateSaleRequest, CreateSaleResponse } from '../../types/domain/mypage/sale';
+import type { CreateSaleRequest } from '../../types/domain/mypage/sale';
 
-export const createSale = async (
-  payload: CreateSaleRequest
-): Promise<CreateSaleResponse> => {
-  const { data } = await api.post<CreateSaleResponse>(
-    '/profile/add/item',
-    payload
-  );
-
-  return data;
+export const createSale = async (payload: CreateSaleRequest) => {
+  const { data } = await api.post('/profile/add/item', payload);
+  return data.success; // string
 };
