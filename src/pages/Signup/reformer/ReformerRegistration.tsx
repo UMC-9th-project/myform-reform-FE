@@ -5,7 +5,7 @@ import plus from '../../../assets/icons/plus.svg';
 import share from '../../../assets/icons/share.svg';
 import Button from '../../../components/common/button/button1';
 import ProgressIndicator from '../../../components/common/ProgressIndicator/ProgressIndicator';
-import Checkbox from '../../../components/common/checkbox_tmp/Checkbox';
+import Checkbox from '../../../components/common/checkbox/Checkbox';
 
 type ImageType = {
   file: File;
