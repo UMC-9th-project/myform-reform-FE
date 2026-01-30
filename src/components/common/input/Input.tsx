@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
-import eyeIcon from './icons/Eye.svg';
-import eyeOffIcon from './icons/EyeOff.svg';
+import eyeIcon from './icons/eye_tmp.svg';
+import eyeOffIcon from './icons/eyeOff_tmp.svg';
 type InputType = 'email' | 'password' | 'text' | 'tel';
 type InputVariant = 'login' | 'signup';
 
