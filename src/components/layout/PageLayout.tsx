@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
-import Header from './header_tmp/Header';
-import HeaderNav from './header_tmp/HeaderNav';
+import Header from './header/Header';
+import HeaderNav from './header/HeaderNav';
 import Footer from './footer/Footer';
 
 interface LayoutProps {
