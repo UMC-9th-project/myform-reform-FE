@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Input from '../../../common/Input/Input';
+import Input from '../../../common/input_tmp/Input';
 import Button from '../../../common/button/button1';
 import AgreementSection from '../AgreementSection';
 import {
