@@ -2,6 +2,9 @@ import { useState } from 'react';
 import NicknameModal from '../../components/domain/mypage/NicknameModal';
 import Button from '../../components/common/button/Button1';
 import Profile from '../../assets/icons/profile.svg';
+import { uploadImage } from '../../api/upload';
+import { updaterReformerProfile} from '../../api/profile/user';
+import type { UpdateUserProfileRequest } from '../../types/domain/mypage/reformerUser';
 
 const EditProfilePage = () => {
     const MAX_NICKNAME_LENGTH = 10;
@@ -13,11 +16,47 @@ const EditProfilePage = () => {
     const DEFAULT_PROFILE_IMAGE = Profile;
     const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
     const [profileImage, setProfileImage] = useState<string | null>(null);
+    const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+    const [isNicknameVerified, setIsNicknameVerified] = useState(true);
+
 
     const handleDeleteKeyword = (tag: string) => {
         setKeywords(keywords.filter(k => k !== tag));
     };
 
+    const handleSaveProfile = async () => {
+        if (!isNicknameVerified) {
+            alert('닉네임 중복 확인을 해주세요.');
+            return;
+        }
+        try {
+
+            // 이미지 파일이 선택되어 있으면 /upload API 호출
+            if (profileImageFile) {
+              await uploadImage(profileImageFile); // 업로드
+              
+            }
+
+            const payload: UpdateUserProfileRequest = {
+                nickname,
+                bio: description,
+                keywords,
+            };
+
+            const res = await updaterReformerProfile(payload);
+
+            if (res.resultType === 'SUCCESS') {
+                
+            alert('프로필이 수정되었습니다!');
+            console.log('수정된 정보:', res.success);
+            } else {
+            alert('프로필 수정 실패: ' + res.error);
+            }
+        } catch (error) {
+            console.error(error);
+            alert('프로필 수정 중 오류가 발생했습니다.');
+        }
+        };
 
     return (
         <div className="w-full min-h-screen bg-white py-16">
@@ -52,6 +91,7 @@ const EditProfilePage = () => {
                                     if (file) {
                                         const imageUrl = URL.createObjectURL(file);
                                         setProfileImage(imageUrl);
+                                        setProfileImageFile(file);
                                     }
                                 }}
                             />
@@ -68,7 +108,7 @@ const EditProfilePage = () => {
                             <input 
                                 type="text" 
                                 value={nickname}
-                                onChange={(e) => setNickname(e.target.value)}
+                                readOnly
                                 maxLength={MAX_NICKNAME_LENGTH}
                                 className="w-full body-b0-rg outline-none bg-transparent"
                                 title="닉네임 입력"
@@ -149,7 +189,7 @@ const EditProfilePage = () => {
                     size="big"
                     variant="primary"
                     className="w-64"
-                    onClick={() => {
+                    onClick={() => {handleSaveProfile();
                         // 저장 로직
                     }}
                 >
@@ -162,8 +202,9 @@ const EditProfilePage = () => {
                 isOpen={isNicknameModalOpen}
                 currentNickname={nickname} 
                 onClose={() => setIsNicknameModalOpen(false)} 
-                onSave={(newNickname: string) => {
-                    setNickname(newNickname);
+                onSave={(verfiedNickname: string) => {
+                    setNickname(verfiedNickname);
+                    setIsNicknameVerified(true);
                     setIsNicknameModalOpen(false);
                 }}
             />
