@@ -55,9 +55,6 @@ const MyReformRequest: React.FC = () => {
               <h3 className="body-b0-sb text-black line-clamp-2 min-h-[2.5rem]">{item.title}</h3>
               <div className="heading-h4-bd text-black">{item.price}</div>
               <div className="pt-1">
-                <span className="inline-block bg-[var(--color-gray-30)] text-body-b5-sb text-[var(--color-gray-50)] px-2 py-0.5 rounded">
-                  {item.nickname}
-                </span>
               </div>
             </div>
           </div>
