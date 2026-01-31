@@ -1,67 +1,63 @@
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import NicknameModal from '../../components/domain/mypage/NicknameModal';
 import Button from '../../components/common/button/Button1';
 import Profile from '../../assets/icons/profile.svg';
 import { uploadImage } from '../../api/upload';
 import { updaterReformerProfile} from '../../api/profile/user';
 import type { UpdateUserProfileRequest } from '../../types/domain/mypage/reformerUser';
+import { useNavigate } from 'react-router-dom';
 
 const EditProfilePage = () => {
     const MAX_NICKNAME_LENGTH = 10;
-    const [nickname, setNickname] = useState('침착한 대머리 독수리');
     const MAX_DESCRIPTION_LENGTH = 200;
+    const DEFAULT_PROFILE_IMAGE = Profile;
+
+    const queryClient = useQueryClient();
+
+    const [nickname, setNickname] = useState('침착한 대머리 독수리');
     const [description, setDescription] = useState(`- 2019년부터 리폼 공방 운영 시작 ✨\n- 6년차 스포츠 의류 리폼 전문 공방\n\n고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어 있던 옷에 새로운 가치와 트렌디한 디자인을 더하는 리폼을 선보이고 있어요. 1:1 맞춤 리폼 제작부터 완성 제품까지 모두 주문 가능합니다.`);
+
     const [keywords, setKeywords] = useState<string[]>([]);
     const [inputKeyword, setInputKeyword] = useState('');
-    const DEFAULT_PROFILE_IMAGE = Profile;
     const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
     const [profileImage, setProfileImage] = useState<string | null>(null);
     const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
     const [isNicknameVerified, setIsNicknameVerified] = useState(true);
 
+    const navigate = useNavigate();
 
     const handleDeleteKeyword = (tag: string) => {
         setKeywords(keywords.filter(k => k !== tag));
     };
 
-    const handleSaveProfile = async () => {
-        if (!isNicknameVerified) {
-            alert('닉네임 중복 확인을 해주세요.');
-            return;
-        }
+      const mutation = useMutation({
+        mutationFn: async (payload: UpdateUserProfileRequest) => {
+        let uploadedImageUrl = payload.profileImageUrl;
 
-        try {
-            let uploadedImageUrl: string | undefined;
-
-            if (profileImageFile) {
+        if (profileImageFile) {
             const uploadRes = await uploadImage(profileImageFile);
-
             if (uploadRes.resultType === 'SUCCESS') {
-                uploadedImageUrl = uploadRes.success.url;
+            uploadedImageUrl = uploadRes.success.url;
             }
-            }
-
-            const payload: UpdateUserProfileRequest = {
-            nickname,
-            bio: description,
-            keywords,
-            profileImageUrl: uploadedImageUrl ?? '',
-            };
-
-
-            const res = await updaterReformerProfile(payload);
-
-            if (res.resultType === 'SUCCESS') {
-            alert('프로필이 수정되었습니다!');
-            console.log('수정된 정보:', res.success);
-            } else {
-            alert('프로필 수정 실패');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('프로필 수정 중 오류가 발생했습니다.');
         }
-        };
+
+        return updaterReformerProfile({ ...payload, profileImageUrl: uploadedImageUrl ?? '' });
+        },
+        onSuccess: (res) => {
+        if (res.resultType === 'SUCCESS') {
+            queryClient.invalidateQueries({ queryKey: ['myUserInfo'] });
+            alert('프로필이 수정되었습니다!');
+            navigate('/reformer-mypage')
+
+        } else {
+            alert('프로필 수정 실패');
+        }
+        },
+        onError: () => {
+        alert('프로필 수정 중 오류가 발생했습니다.');
+        },
+    });
 
 
     return (
@@ -195,8 +191,18 @@ const EditProfilePage = () => {
                     size="big"
                     variant="primary"
                     className="w-64"
-                    onClick={() => {handleSaveProfile();
-                        // 저장 로직
+                    onClick={() => {
+                        if (!isNicknameVerified) {
+                            alert('닉네임 중복 확인을 해주세요.');
+                            return;
+                        }
+
+                        mutation.mutate({
+                            nickname,
+                            bio: description,
+                            keywords,
+                            profileImageUrl: profileImage ?? '',
+                        })
                     }}
                 >
                     수정하기

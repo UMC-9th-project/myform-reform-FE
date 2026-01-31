@@ -24,7 +24,7 @@ const MyPageTabs = <T extends string>({
       {/* 1. 상단 프로필 섹션 */}
       <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[var(--color-line-gray-40)] w-full">
         {/* 프로필 이미지 (회색 처리) */}
-        <div className="w-12 h-12 rounded-full border border-[var(--color-gray-30)] flex-shrink-0">
+        <div className="w-12 h-12 rounded-full border border-[var(--color-gray-30)] flex-shrink-0 overflow-hidden">
           <img
             src={profileImageUrl || DEFAULT_PROFILE_IMAGE}
             alt="Profile"

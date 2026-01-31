@@ -4,8 +4,8 @@ import BaseProfileTabs from '../../components/domain/mypage/BaseProfileTabs';
 import OrderDetail from '../../components/domain/mypage/OrderDetail';
 import OrderList from '../../components/domain/mypage/OrderList';
 import { useSellerTabStore, type SellerTabType } from '../../stores/tabStore';
+import { useQuery } from '@tanstack/react-query';
 import { getMyUserInfo } from '../../api/profile/user';
-import { useEffect, useState } from 'react';
 
 const SELLER_TABS: readonly SellerTabType[] = [
   '프로필 관리',
@@ -17,25 +17,11 @@ const ReformerMyPage = () => {
 
   // EditProfileCard가 표시되는 탭인지 확인
   const showEditProfileCard = activeTab === '프로필 관리';
-  const [nickname, setNickname] = useState('');
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      try {
-        const res = await getMyUserInfo();
-
-        if (res.resultType === 'SUCCESS' && res.success) {
-          setNickname(res.success.nickname);
-          setProfileImageUrl(res.success.profileImageUrl);
-        }
-      } catch (e) {
-        console.error('유저 정보 조회 실패', e);
-      }
-    };
-
-    fetchUserInfo();
-  }, []);
+  const { data: userInfo } = useQuery({
+    queryKey: ['myUserInfo'],
+    queryFn: getMyUserInfo,
+  });
 
 
   return (
@@ -47,8 +33,8 @@ const ReformerMyPage = () => {
             tabs={SELLER_TABS}
             activeTab={activeTab}
             onChangeTab={setActiveTab}
-            nickname={nickname}
-            profileImageUrl={profileImageUrl}
+            nickname={userInfo?.success?.nickname ?? '닉네임'}
+            profileImageUrl={userInfo?.success?.profileImageUrl ?? null}
           />
         </aside>
 
