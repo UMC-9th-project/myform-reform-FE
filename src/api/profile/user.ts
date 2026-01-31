@@ -1,6 +1,6 @@
 // api/user.ts
 import { api } from '../axios';
-import type { UpdateUserProfileRequest, UpdateUserProfileResponse } from '../../types/domain/mypage/reformerUser';
+import type { GetMyReformerInfoResponse, UpdateUserProfileRequest, UpdateUserProfileResponse } from '../../types/domain/mypage/reformerUser';
 import type { CheckNicknameResponse } from '../../types/domain/mypage/nickname';
 import type { GetMyUserInfoResponse } from '../../types/domain/mypage/reformerUser';
 export const updaterReformerProfile = async (
@@ -45,3 +45,10 @@ export const getMyUserInfo = async (): Promise<GetMyUserInfoResponse> => {
   );
   return res.data;
 };
+
+export const getMyReformerInfo = async (): Promise<GetMyReformerInfoResponse> => {
+  const res = await api.get<GetMyReformerInfoResponse>(
+    '/users/me'
+  );
+  return res.data;
+}

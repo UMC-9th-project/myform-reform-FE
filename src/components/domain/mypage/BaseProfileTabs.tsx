@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import MyPageUpload from './ReformerFeedUpload';
 import MyReviewGrid from './MyReviewGrid';
 import star from '../../../assets/icons/star.svg';
+import { useQuery } from '@tanstack/react-query';
+import { getMyReformerInfo } from '../../../api/profile/user';
+import type { GetMyReformerInfoResponse } from '../../../types/domain/mypage/reformerUser';
 
 export type ProfileTabType = '피드' | '판매 상품' | '후기';
 export type ProfileMode = 'view' | 'edit';
@@ -12,17 +15,6 @@ export type SaleSubTabType = '마켓 판매' | '주문 제작';
 interface BaseProfileTabsProps {
   mode?: ProfileMode;
 }
-
-/*const FEED_ITEMS = [
-  { id: 1, type: 'normal', img: 'https://picsum.photos/seed/1/300/400' },
-  { id: 2, type: 'normal', img: 'https://picsum.photos/seed/2/300/400' },
-  { id: 3, type: 'multi', img: 'https://picsum.photos/seed/3/300/400' },
-  { id: 4, type: 'multi', img: 'https://picsum.photos/seed/4/300/400' },
-  { id: 5, type: 'normal', img: 'https://picsum.photos/seed/5/300/400' },
-  { id: 6, type: 'multi', img: 'https://picsum.photos/seed/6/300/400' },
-  { id: 7, type: 'normal', img: 'https://picsum.photos/seed/7/300/400' },
-  { id: 8, type: 'normal', img: 'https://picsum.photos/seed/8/300/400' },
-]; */
 
 const SALE_ITEMS = [
   {
@@ -67,23 +59,29 @@ const SALE_ITEMS = [
   },
 ];
 
-
-
 const BaseProfileTabs = ({ mode = 'view' } : BaseProfileTabsProps) => {
   const [activeSaleSubTab, setActiveSaleSubTab] = useState<SaleSubTabType>('마켓 판매');
   const [activeTab, setActiveTab] = useState<'피드' | '판매 상품' | '후기'>('피드');
   const [showModal, setShowModal] = useState(false);
   const [feedItems, setFeedItems] = useState<{ id: number; files: File[] }[]>([]);
+  const navigate = useNavigate();
 
+  const { data: reformerInfo, isLoading, isError } = useQuery<GetMyReformerInfoResponse, Error>({
+  queryKey: ['myReformerInfo'],
+  queryFn: getMyReformerInfo,
+});
 
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading reformer info.</div>;
 
+  const profileData = reformerInfo?.success;
+  const saleCount = profileData?.totalSales ?? 0;
+  const reviewCount = profileData?.reviewCount ?? 0;
   const tabs: { name: ProfileTabType; count: number | null }[] = [
     { name: '피드', count: null },
-    { name: '판매 상품', count: 4 },
-    { name: '후기', count: 271 },
+    { name: '판매 상품', count: saleCount },
+    { name: '후기', count: reviewCount },
   ];
-
-  const navigate = useNavigate();
 
   return (
     <div className="w-full min-h-screen bg-white">

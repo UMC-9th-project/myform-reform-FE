@@ -9,11 +9,6 @@ export const loginUser = async (
     '/auth/login/local',  
     data
   );
-
-  const loginData = response.data;
-  if (loginData.resultType === 'SUCCESS' && loginData.success?.accessToken) {
-    localStorage.setItem('accessToken', loginData.success.accessToken);
-  }
   return response.data;
 };
 

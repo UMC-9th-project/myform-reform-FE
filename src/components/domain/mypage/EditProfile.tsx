@@ -1,30 +1,47 @@
 import { useNavigate } from 'react-router-dom';
 import star from '../../../assets/icons/star.svg';
+import EmptyStar from '../../../assets/icons/emptyStar.svg';
 import Profile from '../../../assets/icons/profile.svg';
+import { useQuery } from '@tanstack/react-query';
+import { getMyReformerInfo } from '../../../api/profile/user';
 
 // 데이터 구조 정의
 interface ProfileData {
-  level: number;
   nickname: string;
-  rating: number;
   profileImageUrl?: string;
-  tags: string[];
-  description: string;
+  averageRating: number;
+  keywords: string[];
+  bio: string;
 }
-
-const mockProfile: ProfileData = {
-  level: 3,
-  nickname: '침착한 대머리독수리',
-  rating: 4.97,
-  //profileImageUrl: '/api/placeholder/100/100',
-  tags: ['빠른', '친절한'],
-  description: `- 2019년부터 리폼 공방 운영 시작 ✨\n- 6년차 스포츠 의류 리폼 전문 공방\n\n고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어 있던 옷에 새로운 가치와 트렌디한 디자인을 더하는 리폼을 선보이고 있어요. 1:1 맞춤 리폼 제작부터 완성 제품까지 모두 주문 가능합니다.`
-};
 
 const DEFAULT_PROFILE_IMAGE = Profile;
 
 const EditProfile = ({ mode }: { mode: 'edit' | 'view' }) => {
   const navigate = useNavigate();
+
+  const { data, isLoading, isError } = useQuery<ProfileData | null, Error>({
+  queryKey: ['myProfile'], // queryKey는 반드시 여기
+  queryFn: async () => {
+    const res = await getMyReformerInfo();
+    if (res.resultType === 'SUCCESS' && res.success) {
+      return {
+        nickname: res.success.nickname,
+        profileImageUrl: res.success.profileImageUrl || '',
+        averageRating: res.success.averageRating,
+        keywords: res.success.keywords,
+        bio: res.success.bio,
+      };
+    }
+    return null;
+  },
+  retry: 1,
+});
+
+
+
+  if (isLoading) return <div>Loading...</div>;
+  if (isError || !data) return <div>Error loading profile data.</div>;
+
   return (
     <div className="w-full bg-white p-10 rounded-xl font-sans">
       <div className="flex gap-10">
@@ -32,10 +49,10 @@ const EditProfile = ({ mode }: { mode: 'edit' | 'view' }) => {
         <div className="flex-shrink-0">
           <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden bg-gray-200 border border-[var(--color-gray-30)]">
             <img
-              src={mockProfile.profileImageUrl || DEFAULT_PROFILE_IMAGE}
+              src={data?.profileImageUrl || DEFAULT_PROFILE_IMAGE}
               alt="Profile"
               className={`w-full h-full object-cover transition-transform duration-200 
-                ${!mockProfile.profileImageUrl ? "scale-140" : ""}`}
+                ${!data?.profileImageUrl ? "scale-140" : ""}`}
             />
           </div>
         </div>
@@ -43,13 +60,23 @@ const EditProfile = ({ mode }: { mode: 'edit' | 'view' }) => {
         <div className="flex-1">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-black mt-1">{mockProfile.nickname}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-black mt-1">{data.nickname}</h1>
               <div className="flex items-center gap-1 mt-3">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <span key={i} className={`text-xl ${i <= Math.floor(mockProfile.rating) ? 'text-yellow-400' : 'text-gray-200'}`}><img src={star} alt="별" /></span>
-                ))}
-                <span className="ml-1 font-bold text-gray-800">{mockProfile.rating}</span>
-              </div>
+              {Array.from({ length: 5 }).map((_, i) => {
+                // i는 0부터 시작, rating이 3.7이면 0,1,2번째는 채워진 별, 3,4번째는 빈 별
+                const filled = i < Math.round(data.averageRating); 
+                return (
+                  <img
+                    key={i}
+                    src={filled ? star : EmptyStar}
+                    alt={filled ? '별' : '빈 별'}
+                    className="w-5 h-5"
+                  />
+                );
+              })}
+              <span className="ml-1 font-bold text-gray-800">{data.averageRating}</span>
+            </div>
+
             </div>
 
             {/* 아이콘 대신 들어가는 프로필 수정 버튼 */}
@@ -92,7 +119,7 @@ const EditProfile = ({ mode }: { mode: 'edit' | 'view' }) => {
           </div>
 
           <div className="flex gap-3 mb-8">
-            {mockProfile.tags.map((tag, idx) => (
+            {data?.keywords.map((tag, idx) => (
               <span key={idx} className="px-5 py-2 border border-[var(--color-mint-0)] rounded-full text-black text-sm font-medium flex items-center">
                 <span className="body-b1-rg mr-1 color-black">#</span> {tag}
               </span>
@@ -102,7 +129,7 @@ const EditProfile = ({ mode }: { mode: 'edit' | 'view' }) => {
           <hr className="border-gray-100 mb-8" />
 
           <div className="body-b1-rg whitespace-pre-line text-base md:text-lg">
-            {mockProfile.description}
+            {data?.bio}
           </div>
         </div>
       </div>

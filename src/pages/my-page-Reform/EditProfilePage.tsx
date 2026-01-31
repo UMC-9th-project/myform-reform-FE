@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState, useRef } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import NicknameModal from '../../components/domain/mypage/NicknameModal';
 import Button from '../../components/common/button/Button1';
 import Profile from '../../assets/icons/profile.svg';
@@ -7,6 +7,8 @@ import { uploadImage } from '../../api/upload';
 import { updaterReformerProfile} from '../../api/profile/user';
 import type { UpdateUserProfileRequest } from '../../types/domain/mypage/reformerUser';
 import { useNavigate } from 'react-router-dom';
+import { getMyReformerInfo } from '../../api/profile/user';
+import type { GetMyReformerInfoResponse } from '../../types/domain/mypage/reformerUser';
 
 const EditProfilePage = () => {
     const MAX_NICKNAME_LENGTH = 10;
@@ -14,18 +16,35 @@ const EditProfilePage = () => {
     const DEFAULT_PROFILE_IMAGE = Profile;
 
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
+    const isInitializedRef = useRef(false);
 
-    const [nickname, setNickname] = useState('침착한 대머리 독수리');
-    const [description, setDescription] = useState(`- 2019년부터 리폼 공방 운영 시작 ✨\n- 6년차 스포츠 의류 리폼 전문 공방\n\n고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어 있던 옷에 새로운 가치와 트렌디한 디자인을 더하는 리폼을 선보이고 있어요. 1:1 맞춤 리폼 제작부터 완성 제품까지 모두 주문 가능합니다.`);
+    const { data: reformerInfo } = useQuery<GetMyReformerInfoResponse, Error>({
+        queryKey: ['myReformerInfo'],
+        queryFn: getMyReformerInfo,
+    });
 
+    const profile = reformerInfo?.success;
+
+
+    const [nickname, setNickname] = useState('');
+    const [description, setDescription] = useState('');
     const [keywords, setKeywords] = useState<string[]>([]);
+    const [profileImage, setProfileImage] = useState<string | null>(DEFAULT_PROFILE_IMAGE);
     const [inputKeyword, setInputKeyword] = useState('');
     const [isNicknameModalOpen, setIsNicknameModalOpen] = useState(false);
-    const [profileImage, setProfileImage] = useState<string | null>(null);
     const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
     const [isNicknameVerified, setIsNicknameVerified] = useState(true);
 
-    const navigate = useNavigate();
+    useEffect(() => {
+        if (profile && !isInitializedRef.current) {
+            setNickname(profile.nickname || '');
+            setDescription(profile.bio || '');
+            setKeywords(profile.keywords || []);
+            setProfileImage(profile.profileImageUrl || DEFAULT_PROFILE_IMAGE);
+            isInitializedRef.current = true;
+        }
+    }, [profile, DEFAULT_PROFILE_IMAGE])
 
     const handleDeleteKeyword = (tag: string) => {
         setKeywords(keywords.filter(k => k !== tag));
