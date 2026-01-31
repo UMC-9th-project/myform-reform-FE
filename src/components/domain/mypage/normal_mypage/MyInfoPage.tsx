@@ -130,15 +130,30 @@ const MyInfoPage = () => {
             </div>
 
             {/* --- 배송지 등록 --- */}
-            <div className="flex py-10 border-b border-[var(--color-line-gray-40)]">
-              <span className="w-32 body-b0-sb text-[var(--color-gray-60)] pt-2">
+            <div className="flex py-5 border-b border-[var(--color-line-gray-40)]">
+              <span className="w-32 body-b0-sb text-[var(--color-gray-60)]">
                 배송지 등록
               </span>
 
               <div className="flex-grow max-w-2xl space-y-6">
+                {/* 휴대폰 번호 */}
+                <div>
+                  <label className="block body-b0-sb mb-2">
+                    배송지명 <span className="text-[var(--color-red-1)]">*</span>
+                  </label>
+                  <div className="grid grid-cols-[1fr_160px] gap-3">
+                    <input
+                      type="text"
+                      className="bg-[var(--color-gray-20)] p-4 outline-none"
+                      placeholder="배송지명을 입력해주세요."
+                    />
+                    <div />
+                  </div>
+                </div>
+
                 {/* 받으시는 분 */}
                 <div>
-                  <label className="block body-b0-sb mb-2 pt-2">
+                  <label className="block body-b0-sb mb-2">
                     받으시는 분 <span className="text-[var(--color-red-1)]">*</span>
                   </label>
                   <div className="grid grid-cols-[1fr_160px] gap-3">

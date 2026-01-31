@@ -1,4 +1,6 @@
 import MyPageTab from '../../components/domain/mypage/MyPageTab';
+import { useQuery } from '@tanstack/react-query';
+import { getMyUserInfo } from '../../api/profile/user';
 import { useUserTabStore, type UserTabType } from '../../stores/tabStore';
 import MyInfoPage from '../../components/domain/mypage/normal_mypage/MyInfoPage';
 import MyReformRequest from '../../components/domain/mypage/normal_mypage/MyReformRequest';
@@ -17,16 +19,22 @@ const USER_TABS: readonly UserTabType[] = [
 const NormalMyPage = () => {
   const { activeTab, setActiveTab, selectedOrderId } = useUserTabStore();
 
+  const { data: userInfo } = useQuery({
+    queryKey: ['myUserInfo'],
+    queryFn: getMyUserInfo,
+  })
+
   return (
     <div className="w-full min-h-screen bg-white p-6">
       <div className="max-w-8xl mx-auto px-0 py-0 flex gap-3 items-stretch">
         {/* 왼쪽: 사이드바 */}
         <aside className="w-64 flex-shrink-0 px-5">
-          <MyPageTab
+          <MyPageTab<UserTabType>
             tabs={USER_TABS}
             activeTab={activeTab}
             onChangeTab={setActiveTab}
-            displayName="침착한 대머리독수리"
+            nickname={userInfo?.success?.nickname ?? '닉네임'}
+            profileImageUrl={userInfo?.success?.profileImageUrl ?? null}
           />
         </aside>
 
