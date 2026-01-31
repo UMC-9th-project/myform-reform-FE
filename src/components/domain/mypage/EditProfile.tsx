@@ -119,7 +119,7 @@ const EditProfile = ({ mode }: { mode: 'edit' | 'view' }) => {
           </div>
 
           <div className="flex gap-3 mb-8">
-            {data?.keywords.map((tag, idx) => (
+            {(data?.keywords || []).map((tag, idx) => (
               <span key={idx} className="px-5 py-2 border border-[var(--color-mint-0)] rounded-full text-black text-sm font-medium flex items-center">
                 <span className="body-b1-rg mr-1 color-black">#</span> {tag}
               </span>
