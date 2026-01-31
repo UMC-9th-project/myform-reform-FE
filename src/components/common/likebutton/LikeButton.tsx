@@ -50,9 +50,10 @@ const LikeButton = ({
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       disabled={readOnly}
-      className={`w-12 h-12 flex items-center justify-center ${readOnly ? '' : 'hover:scale-110 transition-transform'} ${className}`}
+      className={`w-12 h-12 flex items-center justify-center ${readOnly ? 'cursor-default' : 'cursor-pointer hover:scale-110 transition-transform'} ${className}`}
       aria-label={displayLiked ? '좋아요 취소' : '좋아요'}
     >
       <img
