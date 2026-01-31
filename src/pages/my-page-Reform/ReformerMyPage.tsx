@@ -4,6 +4,8 @@ import BaseProfileTabs from '../../components/domain/mypage/BaseProfileTabs';
 import OrderDetail from '../../components/domain/mypage/OrderDetail';
 import OrderList from '../../components/domain/mypage/OrderList';
 import { useSellerTabStore, type SellerTabType } from '../../stores/tabStore';
+import { getMyUserInfo } from '../../api/profile/user';
+import { useEffect, useState } from 'react';
 
 const SELLER_TABS: readonly SellerTabType[] = [
   '프로필 관리',
@@ -15,17 +17,38 @@ const ReformerMyPage = () => {
 
   // EditProfileCard가 표시되는 탭인지 확인
   const showEditProfileCard = activeTab === '프로필 관리';
+  const [nickname, setNickname] = useState('');
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const res = await getMyUserInfo();
+
+        if (res.resultType === 'SUCCESS' && res.success) {
+          setNickname(res.success.nickname);
+          setProfileImageUrl(res.success.profileImageUrl);
+        }
+      } catch (e) {
+        console.error('유저 정보 조회 실패', e);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
+
 
   return (
     <div className="w-full min-h-screen bg-white p-6">
       <div className="max-w-8xl mx-auto px-0 py-0 flex gap-3">
         {/* 왼쪽: 사이드바 */}
         <aside className="w-64 flex-shrink-0 px-5">
-          <MyPageTab
+          <MyPageTab<SellerTabType>
             tabs={SELLER_TABS}
             activeTab={activeTab}
             onChangeTab={setActiveTab}
-            displayName="침착한 대머리독수리"
+            nickname={nickname}
+            profileImageUrl={profileImageUrl}
           />
         </aside>
 

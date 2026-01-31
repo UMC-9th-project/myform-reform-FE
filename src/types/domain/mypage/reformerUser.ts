@@ -8,7 +8,7 @@ export interface UserProfile {
 
 // 요청 바디
 export interface UpdateUserProfileRequest {
-  profileImage?: string; // 이미지 파일
+  profileImageUrl?: string; // 이미지 파일
   nickname: string;
   bio: string;
   keywords: string[];
@@ -19,4 +19,22 @@ export interface UpdateUserProfileResponse {
   resultType: 'SUCCESS' | 'FAIL';
   error: string | null;
   success: UserProfile | null;
+}
+
+export interface GetMyUserInfoResponse {
+  resultType: 'SUCCESS' | 'FAIL';
+  error: {
+    data: string;
+    reason: string;
+    errorCode: string;
+  } | null;
+  success: {
+    userId: string;
+    role: string;
+    email: string;
+    name: string;
+    nickname: string;
+    phone: string;
+    profileImageUrl: string | null;
+  } | null;
 }

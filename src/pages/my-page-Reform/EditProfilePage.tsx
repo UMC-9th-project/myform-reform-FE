@@ -29,34 +29,40 @@ const EditProfilePage = () => {
             alert('닉네임 중복 확인을 해주세요.');
             return;
         }
-        try {
 
-            // 이미지 파일이 선택되어 있으면 /upload API 호출
+        try {
+            let uploadedImageUrl: string | undefined;
+
             if (profileImageFile) {
-              await uploadImage(profileImageFile); // 업로드
-              
+            const uploadRes = await uploadImage(profileImageFile);
+
+            if (uploadRes.resultType === 'SUCCESS') {
+                uploadedImageUrl = uploadRes.success.url;
+            }
             }
 
             const payload: UpdateUserProfileRequest = {
-                nickname,
-                bio: description,
-                keywords,
+            nickname,
+            bio: description,
+            keywords,
+            profileImageUrl: uploadedImageUrl ?? '',
             };
+
 
             const res = await updaterReformerProfile(payload);
 
             if (res.resultType === 'SUCCESS') {
-                
             alert('프로필이 수정되었습니다!');
             console.log('수정된 정보:', res.success);
             } else {
-            alert('프로필 수정 실패: ' + res.error);
+            alert('프로필 수정 실패');
             }
         } catch (error) {
             console.error(error);
             alert('프로필 수정 중 오류가 발생했습니다.');
         }
         };
+
 
     return (
         <div className="w-full min-h-screen bg-white py-16">

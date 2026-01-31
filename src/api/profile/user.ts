@@ -2,7 +2,7 @@
 import { api } from '../axios';
 import type { UpdateUserProfileRequest, UpdateUserProfileResponse } from '../../types/domain/mypage/reformerUser';
 import type { CheckNicknameResponse } from '../../types/domain/mypage/nickname';
-
+import type { GetMyUserInfoResponse } from '../../types/domain/mypage/reformerUser';
 export const updaterReformerProfile = async (
   data: UpdateUserProfileRequest
 ): Promise<UpdateUserProfileResponse> => {
@@ -12,7 +12,7 @@ export const updaterReformerProfile = async (
       nickname: data.nickname,
       bio: data.bio,
       keywords: data.keywords,
-      profileImageUrl: data.profileImage, // 업로드 후 받은 URL
+      profileImageUrl: data.profileImageUrl, // 업로드 후 받은 URL
     },
     {
       headers: {
@@ -39,3 +39,9 @@ export const checkNicknameDuplicate = async (
   return res.data;
 };
 
+export const getMyUserInfo = async (): Promise<GetMyUserInfoResponse> => {
+  const res = await api.get<GetMyUserInfoResponse>(
+    '/users/me'
+  );
+  return res.data;
+};

@@ -4,18 +4,19 @@ interface MyPageTabsProps<T extends string> {
   tabs: readonly T[];
   activeTab: T;
   onChangeTab: (tab: T) => void;
-  displayName: string;
-  profileImageUrl?: string | null;
+  nickname: string;
+  profileImageUrl: string | null;
 }
 
 const MyPageTabs = <T extends string>({
   tabs,
   activeTab,
   onChangeTab,
-  displayName,
   profileImageUrl,
+  nickname,
 }: MyPageTabsProps<T>) => {
   const DEFAULT_PROFILE_IMAGE = Profile;
+  const displayNickname = nickname || '닉네임 없음';
   
   return (
     <div className="w-[15rem] flex flex-col items-start">
@@ -33,7 +34,7 @@ const MyPageTabs = <T extends string>({
           />
         </div>
         {/* 유저 닉네임 */}
-        <span className="body-b1-sb text-black">{displayName}</span>
+        <span className="body-b1-sb text-black">{displayNickname}</span>
       </div>
 
       {/* 2. 탭 리스트 섹션 */}
