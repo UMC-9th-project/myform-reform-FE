@@ -147,7 +147,7 @@ export default function Search() {
               )}
               {activeTab === 'request' && (
                 <div
-                  className="px-40 grid gap-x-10 gap-y-30 w-full mt-10"
+                  className="px-40 grid gap-x-10 gap-y-34 w-full mt-10"
                   style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}
                 >
                   {requestItems.map((item) => (
@@ -163,7 +163,7 @@ export default function Search() {
               )}
               {activeTab === 'proposal' && (
                 <div
-                  className="px-40 grid gap-x-10 gap-y-30 w-full mt-10"
+                  className="px-40 grid gap-x-10 gap-y-20 w-full mt-10"
                   style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}
                 >
                   {suggestionItems.map((item) => (
