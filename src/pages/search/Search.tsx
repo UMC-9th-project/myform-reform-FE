@@ -60,6 +60,7 @@ export default function Search() {
   const requestItems = Array.from({ length: 12 }, (_, i) => ({
     ...requestItemBase,
     key: i + 1,
+    id: i + 1,
   }));
 
   // TODO: 주문제작 제안 탭 실제 API 연동 시 교체
@@ -74,6 +75,7 @@ export default function Search() {
   const suggestionItems = Array.from({ length: 15 }, (_, i) => ({
     ...suggestionItemBase,
     key: i + 1,
+    id: i + 1,
   }));
 
   return (
@@ -151,6 +153,7 @@ export default function Search() {
                   {requestItems.map((item) => (
                     <RequestCard
                       key={item.key}
+                      id={item.id}
                       imgSrc={item.imgSrc}
                       title={item.title}
                       priceRange={item.priceRange}
@@ -166,6 +169,7 @@ export default function Search() {
                   {suggestionItems.map((item) => (
                     <SuggestionCard
                       key={item.key}
+                      id={item.id}
                       imgSrc={item.imgSrc}
                       title={item.title}
                       price={item.price}
