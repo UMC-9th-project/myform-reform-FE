@@ -1,5 +1,8 @@
+import { Link } from 'react-router-dom';
 import LikeButton from '../likebutton/LikeButton';
 import starIcon from '../../../assets/icons/star.svg';
+
+export type SuggestionDetailVariant = 'order' | 'reformer';
 
 interface SuggestionCardProps {
   imgSrc?: string;
@@ -9,7 +12,18 @@ interface SuggestionCardProps {
   reviewCountText?: string;
   nickname?: string;
   className?: string;
+  /** 상세 페이지로 이동 시 사용할 id (variant와 함께 사용) */
+  id?: number | string;
+  /** 상세 경로 구분: order → /order/suggestions/:id, reformer → /reformer/order/suggestions/:id */
+  variant?: SuggestionDetailVariant;
+  /** 클릭 시 이동할 상세 페이지 경로 (직접 지정 시 id/variant 대신 사용) */
+  to?: string;
 }
+
+const SUGGESTION_DETAIL_PATH: Record<SuggestionDetailVariant, string> = {
+  order: '/order/suggestions',
+  reformer: '/reformer/order/suggestions',
+};
 
 export default function SuggestionCard({
   imgSrc = '/wsh1.jpg',
@@ -19,9 +33,16 @@ export default function SuggestionCard({
   reviewCountText = '(271)',
   nickname = '침착한 대머리독수리',
   className = '',
+  id,
+  variant = 'order',
+  to,
 }: SuggestionCardProps) {
-  return (
-    <div className={`bg-white rounded-[0.625rem] overflow-visible cursor-pointer ${className}`}>
+  const detailTo =
+    id != null ? `${SUGGESTION_DETAIL_PATH[variant]}/${id}` : undefined;
+  const linkTo = to ?? detailTo;
+
+  const content = (
+    <div className={`bg-white rounded-[0.625rem] overflow-visible ${linkTo ? 'cursor-pointer' : ''} ${className}`}>
       {/* 상품 이미지 - MarketCard와 동일 */}
       <div
         className="relative w-full bg-[var(--color-gray-20)] rounded-t-[0.625rem] overflow-hidden"
@@ -32,9 +53,11 @@ export default function SuggestionCard({
           alt={title}
           className="w-full h-full object-cover rounded-[1.25rem]"
         />
-        <div className="absolute bottom-[0.75rem] right-[0.75rem]">
-          <LikeButton />
-        </div>
+        {variant !== 'reformer' && (
+          <div className="absolute bottom-[0.75rem] right-[0.75rem] z-10">
+            <LikeButton />
+          </div>
+        )}
       </div>
 
       {/* 상품 정보 - MarketCard와 동일 간격 */}
@@ -62,4 +85,9 @@ export default function SuggestionCard({
       </div>
     </div>
   );
+
+  if (linkTo) {
+    return <Link to={linkTo} className="block w-full">{content}</Link>;
+  }
+  return content;
 }

@@ -1,5 +1,8 @@
+import { Link } from 'react-router-dom';
 import LikeButton from '../likebutton/LikeButton';
 import starIcon from '../../../assets/icons/star.svg';
+
+const MARKET_DETAIL_PATH = '/market/product';
 
 export interface MarketCardItem {
   id: number;
@@ -15,6 +18,8 @@ interface MarketCardProps {
   item: MarketCardItem;
   initialLiked?: boolean;
   onLikeClick?: (id: number, isLiked: boolean) => void;
+  /** 클릭 시 이동할 상세 페이지 경로 (미지정 시 /market/product/:id 사용) */
+  to?: string;
 }
 
 const formatPrice = (price: number) => {
@@ -25,12 +30,15 @@ const MarketCard = ({
   item,
   initialLiked = false,
   onLikeClick,
+  to,
 }: MarketCardProps) => {
   const handleLikeClick = (isLiked: boolean) => {
     onLikeClick?.(item.id, isLiked);
   };
 
-  return (
+  const linkTo = to ?? `${MARKET_DETAIL_PATH}/${item.id}`;
+
+  const content = (
     <div className="bg-white rounded-[0.625rem] overflow-visible cursor-pointer">
       {/* 상품 이미지 */}
       <div
@@ -77,6 +85,8 @@ const MarketCard = ({
       </div>
     </div>
   );
+
+  return <Link to={linkTo} className="block w-full">{content}</Link>;
 };
 
 export default MarketCard;
