@@ -50,7 +50,20 @@ const MarketCard = ({
           alt={item.title}
           className="w-full h-full object-cover rounded-[1.25rem]"
         />
-        <div className="absolute bottom-[0.75rem] right-[0.75rem]">
+        <div
+          className="absolute bottom-[0.75rem] right-[0.75rem]"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          }}
+          role="presentation"
+        >
           <LikeButton
             initialLiked={initialLiked}
             onClick={handleLikeClick}

@@ -54,7 +54,20 @@ export default function SuggestionCard({
           className="w-full h-full object-cover rounded-[1.25rem]"
         />
         {variant !== 'reformer' && (
-          <div className="absolute bottom-[0.75rem] right-[0.75rem] z-10">
+          <div
+            className="absolute bottom-[0.75rem] right-[0.75rem] z-10"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            }}
+            role="presentation"
+          >
             <LikeButton />
           </div>
         )}

@@ -30,6 +30,7 @@ const LikeButton = ({
 
   const handleClick = (e: React.MouseEvent) => {
     if (readOnly) return;
+    e.preventDefault();
     e.stopPropagation();
     const newLikedState = !isLiked;
     setIsLiked(newLikedState);
