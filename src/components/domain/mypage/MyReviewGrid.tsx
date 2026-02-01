@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import starYellow from '../../../assets/icons/star.svg';
 import starGray from '../../../assets/icons/emptyStar.svg';
+import MoreVertical from '../../../assets/icons/morevertical.svg';
+import trash from '../../../assets/icons/trash.svg';
 
 interface ReviewItem {
   id: number;
@@ -12,6 +14,11 @@ interface ReviewItem {
   productImg: string;
   productName: string;
   productPrice: number;
+}
+
+interface ReviewItemProps {
+  isEditable?: boolean;
+  maxWidth?: '4xl' | '6xl';
 }
 
 /* ===== 더미 데이터 ===== */
@@ -102,10 +109,33 @@ const REVIEW_ITEMS: ReviewItem[]= [
 
 
 /* ===== 컴포넌트 ===== */
-const MyReviewGrid: React.FC = () => {
+const MyReviewGrid: React.FC<ReviewItemProps> = ({ isEditable = false, maxWidth = '4xl' }) => {
+  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      menuRef.current &&
+      !menuRef.current.contains(event.target as Node)
+    ) {
+      setOpenMenuId(null);
+    }
+  };
+
+  if (openMenuId !== null) {
+    document.addEventListener('mousedown', handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, [openMenuId]);
+
+
   return (
-    <div className="bg-transparent py-10">
-      <div className="max-w-4xl mx-auto">
+    <div className="bg-transparent">
+      <div className={`mx-auto ${maxWidth === '4xl' ? 'max-w-4xl' : 'max-w-6xl'}`}>
         {/* 무조건 2열 masonry */}
         <div className="columns-2 gap-4 space-y-4">
           {REVIEW_ITEMS.map((item) => (
@@ -116,27 +146,72 @@ const MyReviewGrid: React.FC = () => {
                          shadow-sm hover:shadow-md transition-all"
             >
               {/* 유저 정보 */}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300" />
-                <div className="flex-1 min-w-0">
-                  <div className="body-b1-sb text-black truncate">
-                    {item.author}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[0.68rem] text-[var(--color-gray-40)]">
-                    <span className="flex gap-1">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <img
-                          key={index}
-                          src={index < item.rating ? starYellow : starGray}
-                          alt="별"
-                          className="w-4 h-4"
-                        />
-                      ))}
-                    </span>
-                    <span className='body-b3-rg text-[var(--color-gray-50)]'>{item.date}</span>
+              <div className="flex items-start justify-between mb-4">
+                {/* 왼쪽: 유저 정보 */}
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300" />
+                  <div className="min-w-0">
+                    <div className="body-b1-sb text-black truncate">
+                      {item.author}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[0.68rem] text-[var(--color-gray-40)]">
+                      <span className="flex gap-1">
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <img
+                            key={index}
+                            src={index < item.rating ? starYellow : starGray}
+                            alt="별"
+                            className="w-4 h-4"
+                          />
+                        ))}
+                      </span>
+                      <span className="body-b3-rg text-[var(--color-gray-50)]">
+                        {item.date}
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                {/* 오른쪽: 더보기 버튼 */}
+                {isEditable && (
+                  <div className="relative">
+                    <button
+                      onClick={() =>
+                        setOpenMenuId(openMenuId === item.id ? null : item.id)
+                      }
+                      className="p-1"
+                    >
+                      <img
+                        src={MoreVertical}
+                        alt="더보기"
+                        className="w-7 h-7"
+                      />
+                    </button>
+
+                    {/* 드롭다운 메뉴 */}
+                    {openMenuId === item.id && (
+                      <div
+                        ref={menuRef}
+                        className="absolute right-0 mt-2 p-1 w-40 rounded-[1.385rem]
+                                  
+                                  bg-white shadow-[0px_4px_10.7px_0px_#00000038] overflow-hidden z-10
+                                  space-y-1"
+                      >
+                        <button
+                          className="w-full px-4 py-2 text-left body-b1-rg flex gap-2 items-center"
+                          onClick={() => {
+                            setOpenMenuId(null);
+                          }}
+                        > <img src={trash} alt="삭제하기" className='w-8' />
+                          <span>삭제하기</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
               </div>
+
 
               {/* 리뷰 텍스트 */}
               <p className="body-b1-rg text-black leading-relaxed mb-4">

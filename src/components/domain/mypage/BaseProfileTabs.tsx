@@ -261,7 +261,9 @@ const BaseProfileTabs = ({ mode = 'view' } : BaseProfileTabsProps) => {
 
           {/* ===== 후기 ===== */}
           {activeTab === '후기' && (
-            <MyReviewGrid />
+            <div className="pt-10">
+              <MyReviewGrid />
+            </div>
           )}
     </div>
   );

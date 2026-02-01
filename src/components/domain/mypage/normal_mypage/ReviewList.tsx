@@ -34,7 +34,7 @@ const ReviewList = () => {
   ];
 
   return (
-    <div className="w-full min-h-screen pt-0 p-4">
+    <div className="w-full min-h-screen pt-0 pl-0 p-0">
       {/* ===== 상단 탭 ===== */}
       <div className="flex gap-2 mb-6">
         <button
@@ -79,7 +79,7 @@ const ReviewList = () => {
       )}
 
       {/* ===== 내 후기 ===== */}
-      {activeTab === 'written' && <MyReviewGrid />}
+      {activeTab === 'written' && <MyReviewGrid isEditable={true} maxWidth='6xl' />}
     </div>
   );
 };

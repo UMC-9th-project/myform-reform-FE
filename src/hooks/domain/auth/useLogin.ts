@@ -26,6 +26,7 @@ export const useLogin = (): UseLoginReturn => {
         if (data.success.accessToken) {
          
           setAccessToken(data.success.accessToken, userRole);
+          localStorage.setItem('accessToken', data.success.accessToken);
         }
      
         navigate('/');
