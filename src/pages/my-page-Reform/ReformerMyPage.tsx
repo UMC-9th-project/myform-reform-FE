@@ -5,7 +5,7 @@ import OrderDetail from '../../components/domain/mypage/OrderDetail';
 import OrderList from '../../components/domain/mypage/OrderList';
 import { useSellerTabStore, type SellerTabType } from '../../stores/tabStore';
 import { useQuery } from '@tanstack/react-query';
-import { getMyUserInfo } from '../../api/profile/user';
+import { getMyReformerInfo } from '../../api/profile/user';
 
 const SELLER_TABS: readonly SellerTabType[] = [
   '프로필 관리',
@@ -18,10 +18,11 @@ const ReformerMyPage = () => {
   // EditProfileCard가 표시되는 탭인지 확인
   const showEditProfileCard = activeTab === '프로필 관리';
 
-  const { data: userInfo } = useQuery({
+  const { data: reformerInfo } = useQuery({
     queryKey: ['myUserInfo'],
-    queryFn: getMyUserInfo,
+    queryFn: getMyReformerInfo,
   });
+
 
 
   return (
@@ -33,8 +34,8 @@ const ReformerMyPage = () => {
             tabs={SELLER_TABS}
             activeTab={activeTab}
             onChangeTab={setActiveTab}
-            nickname={userInfo?.success?.nickname ?? '닉네임'}
-            profileImageUrl={userInfo?.success?.profileImageUrl ?? null}
+            nickname={reformerInfo?.success?.nickname ?? '닉네임'}
+            profileImageUrl={reformerInfo?.success?.profileImageUrl ?? null}
           />
         </aside>
 
@@ -48,15 +49,20 @@ const ReformerMyPage = () => {
           )}
 
           {/* 탭별 컨텐츠 */}
-          {activeTab === '프로필 관리' && <EditProfile mode={'edit'} />}
+          {activeTab === '프로필 관리' && reformerInfo?.success && (
+            <EditProfile mode="edit" data={reformerInfo.success} />
+          )}
+
           {activeTab === '판매 관리' &&
-            (selectedOrderId ? <OrderDetail /> : <OrderList onClickDetail={setSelectedOrderId} />)}
-          {/* 다른 탭들 추가 */}
+              (selectedOrderId ? <OrderDetail /> : <OrderList onClickDetail={setSelectedOrderId} />)}
         </main>
       </div>
 
       {/* EditProfileCard는 showEditProfileCard일 때만 */}
-      {showEditProfileCard && <BaseProfileTabs mode="edit" />}
+      {showEditProfileCard && reformerInfo?.success && (
+        <BaseProfileTabs mode="edit" ownerId={reformerInfo.success.reformerId} />
+      )}
+
     </div>
   );
 };

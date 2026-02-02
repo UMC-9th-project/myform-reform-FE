@@ -6,7 +6,7 @@ import Profile from '../../../assets/icons/profile.svg';
 // 데이터 구조 정의
 export interface ProfileData {
   nickname: string;
-  profileImageUrl?: string;
+  profileImageUrl?: string | null;
   averageRating: number;
   keywords: string[];
   bio: string;

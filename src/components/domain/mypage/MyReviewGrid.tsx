@@ -4,8 +4,8 @@ import starGray from '../../../assets/icons/emptyStar.svg';
 import MoreVertical from '../../../assets/icons/morevertical.svg';
 import trash from '../../../assets/icons/trash.svg';
 
-interface ReviewItem {
-  id: number;
+export interface ReviewItem {
+  id: string;
   author: string;
   rating: number;
   date: string;
@@ -16,109 +16,20 @@ interface ReviewItem {
   productPrice: number;
 }
 
-interface ReviewItemProps {
+interface MyReviewGridProps {
+  reviews: ReviewItem[];
   isEditable?: boolean;
   maxWidth?: '4xl' | '6xl';
 }
 
-/* ===== 더미 데이터 ===== */
-const REVIEW_ITEMS: ReviewItem[]= [
-  {
-    id: 1,
-    author: "열정적인 직관러",
-    rating: 5,
-    date: "2024년 03월 20일",
-    productName: "이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.",
-    productImg: "https://picsum.photos/seed/p1/100/100",
-    content: "정말 만족스러워요! 마감 처리도 깔끔하고 배송도 생각보다 빨랐습니다. 다음에 원정 유니폼도 맡길게요.",
-    productPrice: 75000,
-    img: [
-      "https://picsum.photos/seed/r1a/200/200",
-      "https://picsum.photos/seed/r1b/200/200",
-      "https://picsum.photos/seed/r1c/200/200",
-    ],
-  },
-  {
-    id: 2,
-    author: "KBO팬123",
-    rating: 4,
-    date: "2024년 03월 18일",
-    productName: "롯데 자이언츠 유니폼 리폼 상품",
-    productImg: "https://picsum.photos/seed/p2/100/100",
-    productPrice: 68000,
-    content: "디자인이 예쁘게 잘 나왔어요. 사이즈 상담이 조금 늦었지만 결과물 만족!",
-    
-    img: [], // 이미지 없는 리뷰
-  },
-  {
-    id: 3,
-    author: "유니폼수집가",
-    rating: 5,
-    date: "2024년 03월 15일",
-    productName: "메시 아르헨티나 국대 리폼",
-    productImg: "https://picsum.photos/seed/p3/100/100",
-    productPrice: 75000,
-    content: "와… 진짜 새 옷 같아요. 리폼 퀄리티 최고!",
-    img: ["https://picsum.photos/seed/r3/200/200"], // 이미지 1개
-  },
-  {
-    id: 4,
-    author: "야구광팬",
-    rating: 3,
-    date: "2024년 03월 12일",
-    productName: "LG 트윈스 유니폼 리폼",
-    productImg: "https://picsum.photos/seed/p4/100/100",
-    productPrice: 7000,
-    content: "괜찮아요. 배송은 빠르지만 마감이 조금 아쉬워요.",
-    img: ["https://picsum.photos/seed/r4a/200/200", "https://picsum.photos/seed/r4b/200/200"], // 이미지 2개
-  },
-  {
-    id: 5,
-    author: "소심한팬",
-    rating: 4,
-    date: "2024년 03월 10일",
-    productName: "삼성 라이온즈 유니폼 리폼",
-    productImg: "https://picsum.photos/seed/p5/100/100",
-    productPrice: 80000,
-    content: "", // 글 없는 리뷰
-    img: ["https://picsum.photos/seed/r5a/200/200"], // 사진만 있음
-  },
-  {
-    id: 6,
-    author: "열혈서포터",
-    rating: 5,
-    date: "2024년 03월 08일",
-    productName: "두산 베어스 유니폼 리폼",
-    productImg: "https://picsum.photos/seed/p6/100/100",
-    productPrice: 72000,
-    content: "역시 최고예요! 리폼 퀄리티가 기대 이상입니다.", // 글만 있는 리뷰
-    img: [],
-  },
-  {
-    id: 7,
-    author: "야구소년",
-    rating: 2,
-    date: "2024년 03월 05일",
-    productName: "KIA 타이거즈 유니폼 리폼",
-    productImg: "https://picsum.photos/seed/p7/100/100",
-    productPrice: 68000,
-    content: "생각보다 별로였어요. 사진 참고하고 주문했는데 색감이 달라서 아쉬워요.",
-    img: ["https://picsum.photos/seed/r7a/200/200", "https://picsum.photos/seed/r7b/200/200", "https://picsum.photos/seed/r7c/200/200"], // 이미지 3개
-  },
-];
-
-
 /* ===== 컴포넌트 ===== */
-const MyReviewGrid: React.FC<ReviewItemProps> = ({ isEditable = false, maxWidth = '4xl' }) => {
-  const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+const MyReviewGrid: React.FC<MyReviewGridProps> = ({ reviews, isEditable = false, maxWidth = '4xl' }) => {
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
   const handleClickOutside = (event: MouseEvent) => {
-    if (
-      menuRef.current &&
-      !menuRef.current.contains(event.target as Node)
-    ) {
+    if ( menuRef.current && !menuRef.current.contains(event.target as Node)) {
       setOpenMenuId(null);
     }
   };
@@ -138,7 +49,7 @@ const MyReviewGrid: React.FC<ReviewItemProps> = ({ isEditable = false, maxWidth 
       <div className={`mx-auto ${maxWidth === '4xl' ? 'max-w-4xl' : 'max-w-6xl'}`}>
         {/* 무조건 2열 masonry */}
         <div className="columns-2 gap-4 space-y-4">
-          {REVIEW_ITEMS.map((item) => (
+          {reviews.map((item) => (
             <div
               key={item.id}
               className="break-inside-avoid bg-white rounded-[0.625rem] p-5

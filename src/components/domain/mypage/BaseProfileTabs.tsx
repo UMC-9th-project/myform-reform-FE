@@ -12,6 +12,9 @@ import type { GetProfileResponse } from '../../../types/domain/profile/profile';
 import type { GetProfileSalesResponse } from '../../../types/domain/profile/sales';
 import type { GetProfileProposalsResponse } from '../../../types/domain/profile/proposal';
 import heart from '../../../assets/icons/heart.svg';
+import { getProfileReviews } from '../../../api/profile/review';
+import type { GetProfileReviewsResponse } from '../../../types/domain/profile/review';
+import type { ReviewItem } from '../../../components/domain/mypage/MyReviewGrid';
 
 export type ProfileTabType = '피드' | '판매 상품' | '후기';
 export type ProfileMode = 'view' | 'edit';
@@ -50,11 +53,33 @@ const BaseProfileTabs = ({ mode = 'view', ownerId }: BaseProfileTabsProps) => {
     enabled: activeTab === '판매 상품' && activeSaleSubTab === '주문 제작' && !!ownerId,
   });
 
+
+  const reviewQuery = useQuery<GetProfileReviewsResponse, Error>({
+    queryKey: ['profileReviews', ownerId],
+    queryFn: () => getProfileReviews({ ownerId, limit: 15 }),
+    enabled: !!ownerId && activeTab === '후기',
+  });
+
+  const reviews: ReviewItem[] =
+  reviewQuery.data?.success.reviews.map((r) => ({
+    id: r.reviewId,                   // API에서 reviewId -> MyReviewGrid id
+    author: r.userNickname,           // userNickname -> author
+    rating: r.star,                   // star -> rating
+    date: r.createdAt,                // createdAt -> date
+    content: r.content,
+    img: r.photos,                     // photos -> img
+    productImg: r.productPhoto,       // productPhoto -> productImg
+    productName: r.productTitle,      // productTitle -> productName
+    productPrice: r.productPrice,     // productPrice 그대로
+  })) ?? [];
+
+
   // ───────── 로딩 / 에러 처리 ─────────
   if (profileQuery.isLoading) return <div>Loading...</div>;
   if (profileQuery.isError || !profileQuery.data?.success)
     return <div>Error loading profile.</div>;
 
+  
   const profileData = profileQuery.data.success;
   const saleCount = profileData.totalSaleCount ?? 0;
   const reviewCount = profileData.reviewCount ?? 0;
@@ -279,9 +304,16 @@ const BaseProfileTabs = ({ mode = 'view', ownerId }: BaseProfileTabsProps) => {
           {/* ===== 후기 ===== */}
           {activeTab === '후기' && (
             <div className="pt-10">
-              <MyReviewGrid />
+              {reviews.length === 0 ? (
+                <div className="flex items-center justify-center h-[18.75rem] pb-24 body-b1-rg">
+                  아직 작성된 리뷰가 없습니다.
+                </div>
+              ) : (
+                <MyReviewGrid reviews={reviews} isEditable={mode === 'edit'} />
+              )}
             </div>
           )}
+
     </div>
   );
 };
