@@ -1,4 +1,4 @@
-import type { CreateAddressRequest, GetAddressesResponse } from '../../types/domain/mypage/address';
+import type { CreateAddressRequest, DeleteAddressResponse, GetAddressesResponse } from '../../types/domain/mypage/address';
 import { api } from '../axios';
 
 export const getAddresses = async (
@@ -14,5 +14,11 @@ export const getAddresses = async (
 
 export const createAddress = async (payload: CreateAddressRequest): Promise<GetAddressesResponse> => {
   const { data } = await api.post<GetAddressesResponse>('/addresses', payload);
+  return data;
+};
+
+export const deleteAddress = async (addressId: string): Promise<DeleteAddressResponse> => {
+  const { data } = await api.delete<DeleteAddressResponse>(`/addresses/${addressId}`, {
+  });
   return data;
 };

@@ -9,8 +9,8 @@ import { type GetMyUserInfoResponse } from '../../../../types/domain/mypage/refo
 import profile from '../../../../assets/icons/bigProfile.svg';
 import { updateMyUserInfo, type UpdateMyUserInfoRequest, type UpdateMyUserInfoResponse } from '../../../../api/mypage/normuser';
 import { uploadImage } from '../../../../api/upload';
-import { createAddress, getAddresses } from '../../../../api/mypage/address';
-import type { CreateAddressRequest, GetAddressesResponse } from '../../../../types/domain/mypage/address';
+import { createAddress, deleteAddress, getAddresses } from '../../../../api/mypage/address';
+import type { CreateAddressRequest, DeleteAddressResponse, GetAddressesResponse } from '../../../../types/domain/mypage/address';
 
 type AddressData = {
   zonecode: string;
@@ -74,6 +74,21 @@ const MyInfoPage = () => {
     },
     onError: (err: Error) => {
       alert('배송지 등록 실패: ' + err.message);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (addressId: string) => deleteAddress(addressId),
+    onSuccess: (res: DeleteAddressResponse) => {
+      if (res.resultType === 'SUCCESS') {
+        alert('주소 삭제 완료');
+        queryClient.invalidateQueries({queryKey: ['addresses']}); // 목록 갱신
+      } else {
+        alert(`삭제 실패: ${res.error?.reason}`);
+      }
+    },
+    onError: () => {
+      alert('삭제 중 오류가 발생했습니다.');
     },
   });
 
@@ -457,7 +472,11 @@ const MyInfoPage = () => {
                         </p>
                         <button
                           className="absolute top-4 right-6 text-[var(--color-gray-50)] body-b3-sb"
-                          onClick={() => alert(`삭제: ${addr.addressId}`)}
+                          onClick={() => {
+                            if (window.confirm('정말 이 주소를 삭제하시겠습니까?')) {
+                              deleteMutation.mutate(addr.addressId); // 그냥 호출만
+                            }
+                          }}
                         >
                           삭제
                         </button>

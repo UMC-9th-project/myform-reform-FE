@@ -29,3 +29,13 @@ export interface CreateAddressRequest {
   recipient: string;
   phone: string;
 }
+
+export interface DeleteAddressResponse {
+  resultType: string; 
+  error: {
+    data: string;
+    reason: string;
+    errorCode: string;
+  } | null;
+  success: string | null; 
+}
