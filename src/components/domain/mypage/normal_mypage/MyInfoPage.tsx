@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Camera } from 'lucide-react';
 import Button from '../../../common/button/Button2';
 import NicknameModal from '../NicknameModal';
 import DaumPostcode from 'react-daum-postcode';
+import { useQuery } from '@tanstack/react-query';
+import { getMyUserInfo } from '../../../../api/profile/user';
+import { type GetMyUserInfoResponse } from '../../../../types/domain/mypage/reformerUser';
+import profile from '../../../../assets/icons/bigProfile.svg';
 
 type AddressData = {
   zonecode: string;
@@ -15,6 +19,7 @@ type EditField = null | 'nickname' | 'phone' | 'email' | 'address';
 
 const MyInfoPage = () => {
   const [showNicknameModal, setShowNicknameModal] = useState(false);
+  const [name, setName] = useState('유저 닉네임');
   const [nickname, setNickname] = useState('심심한 리본');
   const [phone, setPhone] = useState('010-1111-0000');
   const [email, setEmail] = useState('example@gmail.com');
@@ -22,6 +27,13 @@ const MyInfoPage = () => {
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const DEFAULT_PROFILE_IMAGE = profile;
+
+  const { data: userInfo, isLoading } = useQuery<GetMyUserInfoResponse, Error>({
+    queryKey: ['myUserInfo'],
+    queryFn: getMyUserInfo,
+  });
+
 
 
   const [address, setAddress] = useState({
@@ -41,7 +53,9 @@ const MyInfoPage = () => {
   };
 
   const maskPhone = (phone: string) => {
-    return phone.replace(/(\d{3})-(\d{4})-(\d{4})/, '$1-****-$3');
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length !== 11) return phone;
+    return `${digits.slice(0,3)}-****-${digits.slice(7)}`;
   };
 
   const handleComplete = (data: AddressData) => {
@@ -54,6 +68,23 @@ const MyInfoPage = () => {
     setIsPostcodeOpen(false);
   };
 
+  useEffect(() => {
+    if (userInfo?.success) {
+      const profile = userInfo.success;
+      setName(profile.name || '');
+      setNickname(profile.nickname || '');
+      setPhone(profile.phone || '');
+      setEmail(profile.email || '');
+      setProfileImage(profile.profileImageUrl || null);
+    }
+  }, [userInfo]);
+
+  if (isLoading) {
+    return <div className="text-center py-20">로딩 중...</div>;
+  }
+
+
+
   return (
     <>
       <div className="max-w-6xl mx-auto pb-10 pt-5 bg-white">
@@ -61,9 +92,9 @@ const MyInfoPage = () => {
           
           {/* 프로필 이미지 (유지) */}
           <div className="flex-shrink-0">
-            <div className="relative w-32 h-32">
+            <div className="relative w-32 h-32 rounded-full">
               <img
-                src={profileImage || 'https://via.placeholder.com/150'}
+                src={profileImage || DEFAULT_PROFILE_IMAGE}
                 alt="Profile"
                 className="w-full h-full rounded-full object-cover"
               />
@@ -96,7 +127,7 @@ const MyInfoPage = () => {
             {/* 성명 (유지) */}
             <div className="flex items-center py-6 border-b border-[var(--color-line-gray-40)]">
               <span className="w-32 body-b0-sb text-[var(--color-gray-60)]">성명</span>
-              <span className="body-b0-sb">{maskName('홍길동')}</span>
+              <span className="body-b0-sb">{maskName(name)}</span>
             </div>
 
             {/* 닉네임 (유지) */}
