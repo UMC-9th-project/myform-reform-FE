@@ -9,6 +9,8 @@ import { type GetMyUserInfoResponse } from '../../../../types/domain/mypage/refo
 import profile from '../../../../assets/icons/bigProfile.svg';
 import { updateMyUserInfo, type UpdateMyUserInfoRequest, type UpdateMyUserInfoResponse } from '../../../../api/mypage/normuser';
 import { uploadImage } from '../../../../api/upload';
+import { getAddresses } from '../../../../api/mypage/address';
+
 
 type AddressData = {
   zonecode: string;
@@ -38,6 +40,12 @@ const MyInfoPage = () => {
     queryKey: ['myUserInfo'],
     queryFn: getMyUserInfo,
   });
+
+  const { data: addressData, isLoading: isAddressLoading, } = useQuery({
+  queryKey: ['addresses', 1, 15], // 배열 그대로 가능
+  queryFn: () => getAddresses(1, 15, 'asc'), // 꼭 함수로!
+});
+
 
   const [address, setAddress] = useState({
     recipient: '',
@@ -88,7 +96,7 @@ const MyInfoPage = () => {
   const mutation = useMutation<UpdateMyUserInfoResponse, Error, UpdateMyUserInfoRequest>({
     mutationFn: (data) => updateMyUserInfo(data),
     onSuccess: (res) => {
-      alert('프로필 업데이트 성공!');
+      alert('프로필 업데이트 성공!' + res);
       queryClient.invalidateQueries({ queryKey: ['myUserInfo']}); // 최신 정보 갱신
       setEditField(null);
     },
@@ -363,7 +371,6 @@ const MyInfoPage = () => {
               </div>
             </div>
 
-
             {/* --- 배송지 관리 섹션 --- */}
             <div className="flex py-10">
               <span className="w-32 body-b0-sb text-[var(--color-gray-60)] pt-2">
@@ -372,44 +379,39 @@ const MyInfoPage = () => {
               
               <div className="flex-grow max-w-2xl space-y-6">
                 <div className="space-y-4">
-                  {/* 배송지 카드 1 */}
-                  <div className="border border-[var(--color-line-gray-40)] rounded-lg px-6 py-4 relative">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="px-2 py-0.5 bg-[var(--color-mint-6)]
-                                      text-[var(--color-mint-1)] body-b4-sb rounded-[0.3rem]">
-                        기본 배송지
-                      </span>
-                      <span className="body-b1-md">홍길동 (집)</span>
-                    </div>
-                    <p className="body-b1-rg text-[var(--color-gray-60)] mb-1">
-                      010-0000-0000
-                    </p>
-                    <p className="body-b1-rg text-[var(--color-gray-60)]">
-                      (04310) 서울 용산구 청파로 47길 100 명신관 301호
-                    </p>
-                    <button className="absolute top-4 right-6 text-[var(--color-gray-50)] body-b3-sb">
-                      삭제
-                    </button>
-                  </div>
-
-                  {/* 배송지 카드 2 */}
-                  <div className="border border-[var(--color-line-gray-40)] rounded-lg px-6 py-4 relative">
-                    <span className="body-b1-md mb-3 block">홍길동 (학교)</span>
-                    <p className="body-b1-rg text-[var(--color-gray-60)] mb-1">
-                      010-0000-0000
-                    </p>
-                    <p className="body-b1-rg text-[var(--color-gray-60)]">
-                      (04310) 서울 용산구 청파로 47길 100 명신관 301호
-                    </p>
-                    <button className="absolute top-4 right-6 text-[var(--color-gray-50)] body-b3-sb">
-                      삭제
-                    </button>
-                  </div>
+                  {isAddressLoading ? (
+                    <p>로딩 중...</p>
+                  ) : addressData?.success && addressData.success.length > 0 ? (
+                    addressData.success.map((addr) => (
+                      <div key={addr.addressId} className="border border-[var(--color-line-gray-40)] rounded-lg px-6 py-4 relative">
+                        {addr.isDefault && (
+                          <span className="px-2 py-0.5 bg-[var(--color-mint-6)] text-[var(--color-mint-1)] body-b4-sb rounded-[0.3rem]">
+                            기본 배송지
+                          </span>
+                        )}
+                        <span className="body-b1-md mb-3 block">
+                          {addr.recipient} ({addr.addressName})
+                        </span>
+                        <p className="body-b1-rg text-[var(--color-gray-60)] mb-1">
+                          {addr.phone}
+                        </p>
+                        <p className="body-b1-rg text-[var(--color-gray-60)]">
+                          ({addr.postalCode}) {addr.address} {addr.addressDetail}
+                        </p>
+                        <button
+                          className="absolute top-4 right-6 text-[var(--color-gray-50)] body-b3-sb"
+                          onClick={() => alert(`삭제: ${addr.addressId}`)}
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <p>등록된 배송지가 없습니다.</p>
+                  )}
                 </div>
               </div>
             </div>
-
-
           </div>
         </div>
       </div>
