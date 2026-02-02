@@ -3,10 +3,12 @@ import { Camera } from 'lucide-react';
 import Button from '../../../common/button/Button2';
 import NicknameModal from '../NicknameModal';
 import DaumPostcode from 'react-daum-postcode';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getMyUserInfo } from '../../../../api/profile/user';
 import { type GetMyUserInfoResponse } from '../../../../types/domain/mypage/reformerUser';
 import profile from '../../../../assets/icons/bigProfile.svg';
+import { updateMyUserInfo, type UpdateMyUserInfoRequest, type UpdateMyUserInfoResponse } from '../../../../api/mypage/normuser';
+import { uploadImage } from '../../../../api/upload';
 
 type AddressData = {
   zonecode: string;
@@ -18,6 +20,8 @@ type AddressData = {
 type EditField = null | 'nickname' | 'phone' | 'email' | 'address';
 
 const MyInfoPage = () => {
+  const queryClient = useQueryClient();
+
   const [showNicknameModal, setShowNicknameModal] = useState(false);
   const [name, setName] = useState('유저 닉네임');
   const [nickname, setNickname] = useState('심심한 리본');
@@ -26,6 +30,7 @@ const MyInfoPage = () => {
   const [editField, setEditField] = useState<EditField>(null);
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
 
+
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const DEFAULT_PROFILE_IMAGE = profile;
 
@@ -33,8 +38,6 @@ const MyInfoPage = () => {
     queryKey: ['myUserInfo'],
     queryFn: getMyUserInfo,
   });
-
-
 
   const [address, setAddress] = useState({
     recipient: '',
@@ -79,11 +82,36 @@ const MyInfoPage = () => {
     }
   }, [userInfo]);
 
+  // =======================
+  // 사용자 정보 수정 mutation
+  // =======================
+  const mutation = useMutation<UpdateMyUserInfoResponse, Error, UpdateMyUserInfoRequest>({
+    mutationFn: (data) => updateMyUserInfo(data),
+    onSuccess: (res) => {
+      alert('프로필 업데이트 성공!');
+      queryClient.invalidateQueries({ queryKey: ['myUserInfo']}); // 최신 정보 갱신
+      setEditField(null);
+    },
+    onError: (err) => {
+      alert('프로필 업데이트 실패: ' + err.message);
+    }
+  });
+
+
+
+  const handleSaveField = (field: EditField | 'profileImageUrl', value?: string) => {
+    const payload: UpdateMyUserInfoRequest = {};
+    if (field === 'nickname') payload.nickname = nickname;
+    if (field === 'phone') payload.phone = phone;
+    if (field === 'email') payload.email = email;
+    if (field === 'profileImageUrl' && value) payload.profileImageUrl = value;
+
+    mutation.mutate(payload);
+  };
+
   if (isLoading) {
     return <div className="text-center py-20">로딩 중...</div>;
   }
-
-
 
   return (
     <>
@@ -110,11 +138,21 @@ const MyInfoPage = () => {
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0];
-                    if (file) {
-                      const url = URL.createObjectURL(file);
-                      setProfileImage(url);
+                    if (!file) return;
+
+                    const previewUrl = URL.createObjectURL(file);
+                    setProfileImage(previewUrl);
+
+                    try {
+                      const res = await uploadImage(file);
+                      const uploadedUrl = res.success?.url;
+                      if (!uploadedUrl) throw new Error('이미지 URL을 가져올 수 없습니다.');
+
+                      handleSaveField('profileImageUrl', uploadedUrl);
+                    } catch (err) {
+                      alert('이미지 업로드 실패: ' + (err as Error).message);
                     }
                   }}
                 />
@@ -154,9 +192,18 @@ const MyInfoPage = () => {
                   <span className="body-b0-sb">{maskPhone(phone)}</span>
                 )}
               </div>
-              <Button className="!px-12 !py-3 mr-20" onClick={() => setEditField(editField === 'phone' ? null : 'phone')}>
+              <Button
+                className="!px-12 !py-3 mr-20"
+                onClick={() => {
+                  if (editField === 'phone') {
+                    handleSaveField('phone');
+                  }
+                  setEditField(editField === 'phone' ? null : 'phone');
+                }}
+              >
                 변경하기
               </Button>
+
             </div>
 
             {/* 이메일 (유지) */}
@@ -174,9 +221,18 @@ const MyInfoPage = () => {
                   <span className="body-b0-sb">{email}</span>
                 )}
               </div>
-              <Button className="!px-12 !py-3 mr-20" onClick={() => setEditField(editField === 'email' ? null : 'email')}>
+              <Button
+                className="!px-12 !py-3 mr-20"
+                onClick={() => {
+                  if (editField === 'email') {
+                    handleSaveField('email');
+                  }
+                  setEditField(editField === 'email' ? null : 'email');
+                }}
+              >
                 변경하기
               </Button>
+
             </div>
 
             {/* --- 배송지 등록 --- */}
@@ -364,7 +420,15 @@ const MyInfoPage = () => {
           isOpen={showNicknameModal}
           currentNickname={nickname}
           onClose={() => setShowNicknameModal(false)}
-          onSave={(newNickname) => setNickname(newNickname)}
+          onSave={async (newNickname) => {
+            try {
+              await mutation.mutateAsync({ nickname: newNickname });
+              setNickname(newNickname);
+              setShowNicknameModal(false);
+            } catch (err) {
+              alert('닉네임 저장 실패: ' + (err as Error).message);
+            }
+          }}
         />
       )}
       {isPostcodeOpen && (
