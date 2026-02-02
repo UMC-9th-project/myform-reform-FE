@@ -11,7 +11,7 @@ interface ApiOrderItem {
   orderId: string;          // 주문 번호
   targetId: string;         // 상품 또는 리폼 제안 ID
   type: 'ITEM' | 'REFORM';  // ITEM = 마켓판매, REFORM = 주문제작
-  status: 'PENDING' | 'PROCESSING' | 'SHIPPED'; // 진행 상태
+  status: 'PENDING' | 'PROCESSING' | 'SHIPPED'; 
   price: number;
   deliveryFee: number;
   userName: string;         // 구매자/요청자
@@ -33,17 +33,33 @@ const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [orders, setOrders] = useState<ApiOrderItem[]>([]);
 
+  const formatUTC = (iso: string) => {
+    const [datePart, timePart] = iso.split('T');       // ["2026-01-16", "06:28:47.190Z"]
+    const [year, month, day] = datePart.split('-');   // ["2026", "01", "16"]
+    const [hour, minute, second] = timePart.split(':'); 
+    const sec = second.split('.')[0];                 // "47"만 가져오기
+
+    return `${year}. ${month}. ${day}. ${hour}:${minute}:${sec}`;
+  }
+
+
   const statusOptions = ['전체', '결제 완료', '상품준비 중', '발송 완료'];
 
-  // --- API 호출 ---
-  useEffect(() => {
-  // 탭에 따라 API에 전달할 type
-  const type = activeOrderTab === 'product' ? 'ITEM' : 'REFORM';
+    useEffect(() => {
+    const type = activeOrderTab === 'product' ? 'ITEM' : 'REFORM';
 
-  getOrders({ type })
-    .then(res => setOrders(res))
-    .catch(err => console.error('주문 조회 실패', err));
-}, [activeOrderTab]); // activeOrderTab이 바뀌면 재호출
+    getOrders({ type })
+      .then(res => {
+        // 탭별 type 추가
+        const mapped = res.map(item => ({
+          ...item,
+          type: type as 'ITEM' | 'REFORM',
+          status: item.status as ApiOrderItem['status'], 
+        }));
+        setOrders(mapped);
+      })
+      .catch(err => console.error('주문 조회 실패', err));
+  }, [activeOrderTab]);
 
 
   // 상세보기 클릭
@@ -152,9 +168,14 @@ const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail 
                       <span className="body-b0-rg text-[var(--color-gray-50)]">{activeOrderTab === 'product' ? '구매자' : '요청자'}</span>
                       <span className="body-b0-rg text-black">{order.userName}</span>
                       <span className="body-b0-rg text-[var(--color-gray-50)]">결제 일시</span>
-                      <span className="body-b0-rg text-[#4B5563]">{order.createdAt}</span>
-                      <span className='body-b0-rg text-[var(--color-gray-50)]'>진행 상태</span>
-                      <span className='body-b0-rg text-[var(--color-mint-1)]'>{statusMap[order.status]}</span>
+                      <span className="body-b0-rg text-[#4B5563]">{formatUTC(order.createdAt)}</span>
+                      {activeOrderTab === 'product' && (
+                        <>
+                          <span className='body-b0-rg text-[var(--color-gray-50)]'>진행 상태</span>
+                          <span className='body-b0-rg text-[var(--color-mint-1)]'>{statusMap[order.status]}</span>
+                        </>
+                      )}
+
                     </div>
                   </div>
                 </div>
