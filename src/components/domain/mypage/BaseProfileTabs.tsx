@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import lotpictures from '../../../assets/mypage/lotpictures.svg';
 import { useNavigate } from 'react-router-dom';
 import MyPageUpload from './ReformerFeedUpload';
 import MyReviewGrid from './MyReviewGrid';
 import star from '../../../assets/icons/star.svg';
 import { useQuery } from '@tanstack/react-query';
-import { getMyReformerInfo } from '../../../api/profile/user';
-import type { GetMyReformerInfoResponse } from '../../../types/domain/mypage/reformerUser';
+import { getProfile } from '../../../api/profile/user';
+import { getProfileSales } from '../../../api/profile/sale';
+import { getProfileProposal } from '../../../api/profile/proposal';
+import type { GetProfileResponse } from '../../../types/domain/profile/profile';
+import type { GetProfileSalesResponse } from '../../../types/domain/profile/sales';
+import type { GetProfileProposalsResponse } from '../../../types/domain/profile/proposal';
 
 export type ProfileTabType = '피드' | '판매 상품' | '후기';
 export type ProfileMode = 'view' | 'edit';
@@ -14,74 +18,65 @@ export type SaleSubTabType = '마켓 판매' | '주문 제작';
 
 interface BaseProfileTabsProps {
   mode?: ProfileMode;
+  ownerId: string;
 }
 
-const SALE_ITEMS = [
-  {
-    id: 1,
-    subType: '마켓 판매',
-    title: "이제는 유니폼도 색다르게!\n한화·롯데 등 야구단 유니폼 리폼해드립니...",
-    price: "75,000원",
-    rating: 4.9,
-    reviews: 271,
-    nickname: "침착한 대머리독수리",
-    img: "https://picsum.photos/seed/p1/400/400",
-  },
-  {
-    id: 2,
-    subType: '마켓 판매',
-    title: "이제는 유니폼도 색다르게!\n한화·롯데 등 야구단 유니폼 리폼해드립니...",
-    price: "75,000원",
-    rating: 4.9,
-    reviews: 271,
-    nickname: "침착한 대머리독수리",
-    img: "https://picsum.photos/seed/p2/400/400",
-  },
-  {
-    id: 3,
-    subType: '주문 제작',
-    title: "이제는 유니폼도 색다르게!\n한화·롯데 등 야구단 유니폼 리폼해드립니...",
-    price: "75,000원",
-    rating: 4.9,
-    reviews: 271,
-    nickname: "침착한 대머리독수리",
-    img: "https://picsum.photos/seed/p3/400/400",
-  },
-  {
-    id: 4,
-    subType:'마켓 판매',
-    title: "메시(MESSI) 아르헨티나 국대 유니폼 리폼 상품",
-    price: "75,000원",
-    rating: 4.9,
-    reviews: 271,
-    nickname: "침착한 대머리독수리",
-    img: "https://picsum.photos/seed/p4/400/400",
-  },
-];
-
-const BaseProfileTabs = ({ mode = 'view' } : BaseProfileTabsProps) => {
+const BaseProfileTabs = ({ mode = 'view', ownerId }: BaseProfileTabsProps) => {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<ProfileTabType>('피드');
   const [activeSaleSubTab, setActiveSaleSubTab] = useState<SaleSubTabType>('마켓 판매');
-  const [activeTab, setActiveTab] = useState<'피드' | '판매 상품' | '후기'>('피드');
   const [showModal, setShowModal] = useState(false);
   const [feedItems, setFeedItems] = useState<{ id: number; files: File[] }[]>([]);
-  const navigate = useNavigate();
 
-  const { data: reformerInfo, isLoading, isError } = useQuery<GetMyReformerInfoResponse, Error>({
-  queryKey: ['myReformerInfo'],
-  queryFn: getMyReformerInfo,
-});
+  // ───────── 디버깅: ownerId 확인 ─────────
+  useEffect(() => {
+    console.log('OwnerId:', ownerId);
+    // UUID 형식 체크 (간단)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(ownerId)) {
+      console.warn('⚠️ ownerId가 올바른 UUID 형식이 아닙니다!');
+    }
+  }, [ownerId]);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading reformer info.</div>;
+  // ───────── 프로필 정보 ─────────
+  const profileQuery = useQuery<GetProfileResponse, Error>({
+    queryKey: ['profile', ownerId],
+    queryFn: () => getProfile(ownerId),
+    enabled: !!ownerId,
+  });
 
-  const profileData = reformerInfo?.success;
-  const saleCount = profileData?.totalSales ?? 0;
-  const reviewCount = profileData?.reviewCount ?? 0;
+  // ───────── 판매 상품 목록 ─────────
+  const salesQuery = useQuery<GetProfileSalesResponse, Error>({
+    queryKey: ['profileSales', ownerId],
+    queryFn: () => getProfileSales({ ownerId, limit: 15 }),
+    enabled: activeTab === '판매 상품' && !!ownerId,
+  });
+
+  const proposalQuery = useQuery<GetProfileProposalsResponse, Error>({
+    queryKey: ['profileProposals', ownerId],
+    queryFn: () => getProfileProposal({ ownerId, limit: 15 }),
+    enabled: activeTab === '판매 상품' && activeSaleSubTab === '주문 제작' && !!ownerId,
+  });
+
+  // ───────── 로딩 / 에러 처리 ─────────
+  if (profileQuery.isLoading) return <div>Loading...</div>;
+  if (profileQuery.isError || !profileQuery.data?.success)
+    return <div>Error loading profile.</div>;
+
+  const profileData = profileQuery.data.success;
+  const saleCount = profileData.totalSaleCount ?? 0;
+  const reviewCount = profileData.reviewCount ?? 0;
+
   const tabs: { name: ProfileTabType; count: number | null }[] = [
     { name: '피드', count: null },
     { name: '판매 상품', count: saleCount },
     { name: '후기', count: reviewCount },
   ];
+
+  const saleItems =
+    activeSaleSubTab === '마켓 판매'
+      ? salesQuery.data?.success?.items ?? []
+      : proposalQuery.data?.success?.proposals ?? [];
 
   return (
     <div className="w-full min-h-screen bg-white">
@@ -203,11 +198,12 @@ const BaseProfileTabs = ({ mode = 'view' } : BaseProfileTabsProps) => {
 
             {/* ───────── 상품 리스트 ───────── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10">
-              {SALE_ITEMS.filter(item => item.subType === activeSaleSubTab).map((item) => (
-                <div key={item.id} className="flex flex-col group cursor-pointer">
+              {saleItems.map((item) => (
+                <div 
+                  key={'itemId' in item ? item.itemId : item.proposalId} className="flex flex-col group cursor-pointer">
                   <div className="relative aspect-square mb-3 overflow-hidden rounded-[1.25rem] bg-white">
                     <img
-                      src={item.img}
+                      src={item.photo ?? '/images/default.png'}
                       alt={item.title}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
@@ -218,12 +214,12 @@ const BaseProfileTabs = ({ mode = 'view' } : BaseProfileTabsProps) => {
                     <div className="heading-h4-bd text-black">{item.price}</div>
                     <div className="flex items-center">
                       <span className="text-[#FFCF41] text-[1.125rem] mr-1 relative -translate-y-[0.125rem]"><img src={star} alt="별" /></span>
-                      <span className="body-b3-rg text-black">{item.rating}</span>
-                      <span className="ml-1 text-[var(--color-gray-50)]">({item.reviews})</span>
+                      <span className="body-b3-rg text-black">{item.avgStar}</span>
+                      <span className="ml-1 text-[var(--color-gray-50)]">({item.reviewCount})</span>
                     </div>
                     <div className="pt-1">
                       <span className="inline-block bg-[var(--color-gray-30)] text-body-b5-sb text-[var(--color-gray-50)] px-2 py-0.5 rounded">
-                        {item.nickname}
+                        {item.sellerName}
                       </span>
                     </div>
                   </div>

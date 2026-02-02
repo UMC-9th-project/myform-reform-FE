@@ -3,6 +3,8 @@ import { api } from '../axios';
 import type { GetMyReformerInfoResponse, UpdateUserProfileRequest, UpdateUserProfileResponse } from '../../types/domain/mypage/reformerUser';
 import type { CheckNicknameResponse } from '../../types/domain/mypage/nickname';
 import type { GetMyUserInfoResponse } from '../../types/domain/mypage/reformerUser';
+import type { GetProfileResponse } from '../../types/domain/profile/profile';
+
 export const updaterReformerProfile = async (
   data: UpdateUserProfileRequest
 ): Promise<UpdateUserProfileResponse> => {
@@ -52,3 +54,10 @@ export const getMyReformerInfo = async (): Promise<GetMyReformerInfoResponse> =>
   );
   return res.data;
 }
+
+export const getProfile = async (
+  ownerId: string
+): Promise<GetProfileResponse> => {
+  const res = await api.get(`/profile/${ownerId}`);
+  return res.data;
+};

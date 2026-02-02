@@ -2,11 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import star from '../../../assets/icons/star.svg';
 import EmptyStar from '../../../assets/icons/emptyStar.svg';
 import Profile from '../../../assets/icons/profile.svg';
-import { useQuery } from '@tanstack/react-query';
-import { getMyReformerInfo } from '../../../api/profile/user';
 
 // 데이터 구조 정의
-interface ProfileData {
+export interface ProfileData {
   nickname: string;
   profileImageUrl?: string;
   averageRating: number;
@@ -14,33 +12,19 @@ interface ProfileData {
   bio: string;
 }
 
+interface EditProfileProps {
+  mode: 'edit' | 'view';
+  data: ProfileData;
+}
+
 const DEFAULT_PROFILE_IMAGE = Profile;
 
-const EditProfile = ({ mode }: { mode: 'edit' | 'view' }) => {
+const EditProfile = ({ mode, data }: EditProfileProps) => {
   const navigate = useNavigate();
+  if (!data) {
+    return <div>프로필 정보를 불러오지 못했습니다.</div>;
+  }
 
-  const { data, isLoading, isError } = useQuery<ProfileData | null, Error>({
-  queryKey: ['myProfile'], // queryKey는 반드시 여기
-  queryFn: async () => {
-    const res = await getMyReformerInfo();
-    if (res.resultType === 'SUCCESS' && res.success) {
-      return {
-        nickname: res.success.nickname,
-        profileImageUrl: res.success.profileImageUrl || '',
-        averageRating: res.success.averageRating,
-        keywords: res.success.keywords,
-        bio: res.success.bio,
-      };
-    }
-    return null;
-  },
-  retry: 1,
-});
-
-
-
-  if (isLoading) return <div>Loading...</div>;
-  if (isError || !data) return <div>Error loading profile data.</div>;
 
   return (
     <div className="w-full bg-white p-10 rounded-xl font-sans">
@@ -60,11 +44,11 @@ const EditProfile = ({ mode }: { mode: 'edit' | 'view' }) => {
         <div className="flex-1">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-black mt-1">{data.nickname}</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-black mt-1">{data?.nickname ?? '닉네임'}</h1>
               <div className="flex items-center gap-1 mt-3">
               {Array.from({ length: 5 }).map((_, i) => {
                 // i는 0부터 시작, rating이 3.7이면 0,1,2번째는 채워진 별, 3,4번째는 빈 별
-                const filled = i < Math.round(data.averageRating); 
+                const filled = i < Math.round(data?.averageRating ?? 0); 
                 return (
                   <img
                     key={i}

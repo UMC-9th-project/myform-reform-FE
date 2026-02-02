@@ -25,7 +25,7 @@ export interface GetMyReformerInfoResponse {
   resultType: 'SUCCESS' | 'FAIL';
   error: { data: string; reason: string; errorCode: string } | null;
   success: {
-    userId: string;
+    reformerId: string;
     role: string;
     email: string;
     name: string;
