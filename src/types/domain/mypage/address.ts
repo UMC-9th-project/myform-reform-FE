@@ -19,3 +19,13 @@ export interface GetAddressesResponse {
   } | null;
   success: AddressItem[] | null;
 }
+
+export interface CreateAddressRequest {
+  postalCode: string;
+  address: string;
+  addressDetail: string;
+  isDefault: boolean;
+  addressName: string;
+  recipient: string;
+  phone: string;
+}

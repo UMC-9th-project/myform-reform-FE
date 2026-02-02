@@ -9,8 +9,8 @@ import { type GetMyUserInfoResponse } from '../../../../types/domain/mypage/refo
 import profile from '../../../../assets/icons/bigProfile.svg';
 import { updateMyUserInfo, type UpdateMyUserInfoRequest, type UpdateMyUserInfoResponse } from '../../../../api/mypage/normuser';
 import { uploadImage } from '../../../../api/upload';
-import { getAddresses } from '../../../../api/mypage/address';
-
+import { createAddress, getAddresses } from '../../../../api/mypage/address';
+import type { CreateAddressRequest, GetAddressesResponse } from '../../../../types/domain/mypage/address';
 
 type AddressData = {
   zonecode: string;
@@ -42,18 +42,42 @@ const MyInfoPage = () => {
   });
 
   const { data: addressData, isLoading: isAddressLoading, } = useQuery({
-  queryKey: ['addresses', 1, 15], // 배열 그대로 가능
-  queryFn: () => getAddresses(1, 15, 'asc'), // 꼭 함수로!
-});
+    queryKey: ['addresses', 1, 15], // 배열 그대로 가능
+    queryFn: () => getAddresses(1, 15, 'asc'), // 꼭 함수로!
+  });
 
 
-  const [address, setAddress] = useState({
+  const [newAddress, setNewAddress] = useState({
+    addressName: '',
     recipient: '',
     phone: '',
-    zip: '04310',
-    addr1: '서울 용산구 청파로47길 100',
-    addr2: '명신관 302호',
+    postalCode: '',
+    address: '',
+    addressDetail: '',
+    isDefault: false,
   });
+
+  const addressMutation = useMutation<GetAddressesResponse, Error, CreateAddressRequest>({
+    mutationFn: (payload: CreateAddressRequest) => createAddress(payload),
+    onSuccess: () => {
+      alert('배송지 등록 성공!');
+      queryClient.invalidateQueries({ queryKey: ['addresses', 1, 15] });
+      setNewAddress({
+        addressName: '',
+        recipient: '',
+        phone: '',
+        postalCode: '',
+        address: '',
+        addressDetail: '',
+        isDefault: false,
+      });
+    },
+    onError: (err: Error) => {
+      alert('배송지 등록 실패: ' + err.message);
+    },
+  });
+
+
 
   /* 마스킹 함수 */
   const maskName = (name: string) => {
@@ -70,10 +94,11 @@ const MyInfoPage = () => {
   };
 
   const handleComplete = (data: AddressData) => {
-    setAddress((prev) => ({
+    console.log('DaumPostcode data:', data);
+    setNewAddress((prev) => ({
       ...prev,
-      zip: data.zonecode,
-      addr1: data.roadAddress || data.address,
+      postalCode: data.zonecode,
+      address: data.roadAddress || data.address,
     }));
 
     setIsPostcodeOpen(false);
@@ -258,6 +283,8 @@ const MyInfoPage = () => {
                   <div className="grid grid-cols-[1fr_160px] gap-3">
                     <input
                       type="text"
+                      value = {newAddress.addressName}
+                      onChange={(e) => setNewAddress((prev) => ({...prev, addressName: e.target.value}))}
                       className="bg-[var(--color-gray-20)] p-4 outline-none"
                       placeholder="배송지명을 입력해주세요."
                     />
@@ -273,6 +300,8 @@ const MyInfoPage = () => {
                   <div className="grid grid-cols-[1fr_160px] gap-3">
                     <input
                       type="text"
+                      value={newAddress.recipient}
+                      onChange={(e) => setNewAddress((prev) => ({ ...prev, recipient: e.target.value}))}
                       className="bg-[var(--color-gray-20)] p-4 outline-none"
                       placeholder="이름을 입력해주세요."
                     />
@@ -288,6 +317,8 @@ const MyInfoPage = () => {
                   <div className="grid grid-cols-[1fr_160px] gap-3">
                     <input
                       type="text"
+                      value={newAddress.phone}
+                      onChange={(e) => setNewAddress((prev) => ({ ...prev, phone: e.target.value}))}
                       className="bg-[var(--color-gray-20)] p-4 outline-none"
                       placeholder="번호를 입력해주세요."
                     />
@@ -306,7 +337,7 @@ const MyInfoPage = () => {
                     <div className="grid grid-cols-[1fr_160px] gap-3">
                       <input
                         type="text"
-                        value={address.zip}
+                        value={newAddress.postalCode}
                         readOnly
                         className="bg-[var(--color-gray-20)] p-4 outline-none"
                         placeholder="우편번호"
@@ -322,7 +353,7 @@ const MyInfoPage = () => {
                     <div className="grid grid-cols-[1fr_160px] gap-3">
                       <input
                         type="text"
-                        value={address.addr1}
+                        value={newAddress.address}
                         readOnly
                         className="bg-[var(--color-gray-20)] p-4 outline-none"
                         placeholder="주소"
@@ -334,6 +365,8 @@ const MyInfoPage = () => {
                     <div className="grid grid-cols-[1fr_160px] gap-3">
                       <input
                         type="text"
+                        value={newAddress.addressDetail}
+                        onChange={(e) => setNewAddress((prev) => ({ ...prev, addressDetail: e.target.value }))}
                         className="bg-[var(--color-gray-20)] p-4 outline-none"
                         placeholder="상세주소"
                       />
@@ -348,6 +381,8 @@ const MyInfoPage = () => {
                     type="checkbox"
                     id="default-addr"
                     className="w-5 h-5 accent-[var(--color-mint-1)]"
+                    checked={newAddress.isDefault}
+                    onChange={(e) => setNewAddress((prev) => ({ ...prev, isDefault: e.target.checked }))}
                   />
                   <label
                     htmlFor="default-addr"
@@ -362,9 +397,28 @@ const MyInfoPage = () => {
                   <button
                     className="py-4 border border-[var(--color-mint-1)]
                               text-[var(--color-mint-1)] body-b0-bd rounded-[0.625rem]"
+                    onClick={() => {
+                      // 필수 입력값 체크
+                      if (!newAddress.addressName || !newAddress.recipient || !newAddress.phone || !newAddress.postalCode || !newAddress.address) {
+                        alert('모든 필수 항목을 입력해주세요.');
+                        return;
+                      }
+
+                      addressMutation.mutate({
+                        addressName: newAddress.addressName,
+                        recipient: newAddress.recipient,
+                        phone: newAddress.phone,
+                        postalCode: newAddress.postalCode,
+                        address: newAddress.address,
+                        addressDetail: newAddress.addressDetail,
+                        isDefault: newAddress.isDefault,
+                      });
+
+                    }}
                   >
                     배송지 등록하기
                   </button>
+
                   <div />
                 </div>
 
@@ -384,14 +438,17 @@ const MyInfoPage = () => {
                   ) : addressData?.success && addressData.success.length > 0 ? (
                     addressData.success.map((addr) => (
                       <div key={addr.addressId} className="border border-[var(--color-line-gray-40)] rounded-lg px-6 py-4 relative">
-                        {addr.isDefault && (
-                          <span className="px-2 py-0.5 bg-[var(--color-mint-6)] text-[var(--color-mint-1)] body-b4-sb rounded-[0.3rem]">
-                            기본 배송지
+                        <div className="flex items-center gap-2 mb-3">
+                          {addr.isDefault && (
+                            <span className="px-2 py-0.5 bg-[var(--color-mint-6)] text-[var(--color-mint-1)] body-b4-sb rounded-[0.3rem]">
+                              기본 배송지
+                            </span>
+                          )}
+                          <span className="body-b1-md">
+                            {addr.recipient} ({addr.addressName})
                           </span>
-                        )}
-                        <span className="body-b1-md mb-3 block">
-                          {addr.recipient} ({addr.addressName})
-                        </span>
+                        </div>
+
                         <p className="body-b1-rg text-[var(--color-gray-60)] mb-1">
                           {addr.phone}
                         </p>
@@ -437,9 +494,13 @@ const MyInfoPage = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white p-6 rounded-lg w-[720px] max-w-[90vw] h-[520px] flex flex-col">
             <DaumPostcode
-              onComplete={handleComplete}
+              onComplete={(data) => {
+                console.log('DaumPostcode 선택됨:', data); // 여기 찍히는지 확인
+                handleComplete(data);
+              }}
               autoClose
             />
+
             <button
               className="mt-4 text-sm text-gray-500"
               onClick={() => setIsPostcodeOpen(false)}
