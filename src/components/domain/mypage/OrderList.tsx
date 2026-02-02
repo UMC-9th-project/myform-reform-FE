@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getOrders } from '../../../api/profile/sale'; // API 호출 함수 임포트
+import { useNavigate } from 'react-router-dom';
 
 interface OrderListProps {
   mode?: 'reformer' | 'normal';
@@ -32,6 +33,7 @@ const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail 
   const [filterStatus, setFilterStatus] = useState<string>('전체');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [orders, setOrders] = useState<ApiOrderItem[]>([]);
+  const navigate = useNavigate();
 
   const formatUTC = (iso: string) => {
     const [datePart, timePart] = iso.split('T');       // ["2026-01-16", "06:28:47.190Z"]
@@ -63,9 +65,15 @@ const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail 
 
 
   // 상세보기 클릭
-  const handleDetailClick = (id: string) => {
-    if (onClickDetail) onClickDetail(id);
-  }
+  const handleButtonClick = (order: ApiOrderItem) => {
+    if (activeOrderTab === 'product') {
+      // 마켓 판매 → 상세보기
+      if (onClickDetail) onClickDetail(order.orderId);
+    } else {
+      navigate(`/chat/reformer/1`);
+    }
+  };
+
 
   // --- 필터링 ---
   const filteredOrders = orders.filter(order => {
@@ -150,9 +158,14 @@ const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail 
             <div key={order.orderId} className="bg-white border border-[var(--color-line-gray-40)] rounded-[1.25rem] p-5">
               <div className="flex justify-between items-center mb-4 text-[var(--color-gray-50)] body-b1-rg">
                 <span>주문번호 {order.orderId}</span>
-                <button className="flex items-center gap-3 hover:text-black cursor-pointer" onClick={() => handleDetailClick(order.orderId)}>
-                  상세보기<span>❯</span>
+                <button
+                  className="flex items-center gap-3 hover:text-black cursor-pointer"
+                  onClick={() => handleButtonClick(order)}
+                >
+                  {activeOrderTab === 'product' ? '상세보기' : '채팅 바로가기'}
+                  <span>❯</span>
                 </button>
+
               </div>
 
               <div className="flex justify-between items-end gap-4">
