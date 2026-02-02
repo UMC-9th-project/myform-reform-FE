@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import lotpictures from '../../../assets/mypage/lotpictures.svg';
 import { useNavigate } from 'react-router-dom';
 import MyPageUpload from './ReformerFeedUpload';
@@ -11,6 +11,7 @@ import { getProfileProposal } from '../../../api/profile/proposal';
 import type { GetProfileResponse } from '../../../types/domain/profile/profile';
 import type { GetProfileSalesResponse } from '../../../types/domain/profile/sales';
 import type { GetProfileProposalsResponse } from '../../../types/domain/profile/proposal';
+import heart from '../../../assets/icons/heart.svg';
 
 export type ProfileTabType = '피드' | '판매 상품' | '후기';
 export type ProfileMode = 'view' | 'edit';
@@ -27,16 +28,7 @@ const BaseProfileTabs = ({ mode = 'view', ownerId }: BaseProfileTabsProps) => {
   const [activeSaleSubTab, setActiveSaleSubTab] = useState<SaleSubTabType>('마켓 판매');
   const [showModal, setShowModal] = useState(false);
   const [feedItems, setFeedItems] = useState<{ id: number; files: File[] }[]>([]);
-
-  // ───────── 디버깅: ownerId 확인 ─────────
-  useEffect(() => {
-    console.log('OwnerId:', ownerId);
-    // UUID 형식 체크 (간단)
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(ownerId)) {
-      console.warn('⚠️ ownerId가 올바른 UUID 형식이 아닙니다!');
-    }
-  }, [ownerId]);
+  
 
   // ───────── 프로필 정보 ─────────
   const profileQuery = useQuery<GetProfileResponse, Error>({
@@ -207,15 +199,44 @@ const BaseProfileTabs = ({ mode = 'view', ownerId }: BaseProfileTabsProps) => {
                       alt={item.title}
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
+
+                    {/* isWished에 따라 다른 하트 표시 */}
+                    <div className="absolute bottom-2 right-2 w-10 h-10">
+                      {item.isWished ? (
+                        // SVG 하트
+                        <svg
+                          width="40"
+                          height="40"
+                          viewBox="0 0 40 40"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M34.4543 22.4866L20.0173 37.332L5.58038 22.4866C4.62813 21.5245 3.87805 20.3682 3.37739 19.0903C2.87673 17.8125 2.63632 16.4408 2.67131 15.0618C2.70629 13.6827 3.01592 12.3261 3.58068 11.0774C4.14544 9.82872 4.95311 8.71494 5.95283 7.80624C6.95254 6.89754 8.12264 6.2136 9.38945 5.79748C10.6563 5.38136 11.9923 5.24208 13.3135 5.38841C14.6347 5.53474 15.9124 5.96351 17.0662 6.64772C18.2199 7.33193 19.2248 8.25676 20.0173 9.36397C20.8134 8.2648 21.8193 7.34805 22.9723 6.6711C24.1253 5.99415 25.4004 5.57157 26.7179 5.42982C28.0354 5.28806 29.3669 5.43017 30.629 5.84726C31.8912 6.26435 33.0569 6.94744 34.0531 7.85378C35.0493 8.76011 35.8546 9.87018 36.4185 11.1145C36.9825 12.3588 37.2931 13.7106 37.3307 15.0853C37.3684 16.46 37.1324 17.8279 36.6374 19.1035C36.1425 20.3791 35.3993 21.5349 34.4543 22.4986"
+                            fill="#F66F6F"
+                          />
+                          <path
+                            d="M34.4543 22.4866L20.0173 37.332L5.58038 22.4866C4.62813 21.5245 3.87805 20.3682 3.37739 19.0903C2.87673 17.8125 2.63632 16.4408 2.67131 15.0618C2.70629 13.6827 3.01592 12.3261 3.58068 11.0774C4.14544 9.82872 4.95311 8.71494 5.95283 7.80624C6.95254 6.89754 8.12264 6.2136 9.38945 5.79748C10.6563 5.38136 11.9923 5.24208 13.3135 5.38841C14.6347 5.53474 15.9124 5.96351 17.0662 6.64772C18.2199 7.33193 19.2248 8.25676 20.0173 9.36397C20.8134 8.2648 21.8193 7.34805 22.9723 6.6711C24.1253 5.99415 25.4004 5.57157 26.7179 5.42982C28.0354 5.28806 29.3669 5.43017 30.629 5.84726C31.8912 6.26435 33.0569 6.94744 34.0531 7.85378C35.0493 8.76011 35.8546 9.87018 36.4185 11.1145C36.9825 12.3588 37.2931 13.7106 37.3307 15.0853C37.3684 16.46 37.1324 17.8279 36.6374 19.1035C36.1425 20.3791 35.3993 21.5349 34.4543 22.4986"
+                            stroke="white"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      ) : (
+                        // false면 heart 이미지
+                        <img src={heart} alt="heart" className="w-full h-full" />
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-1">
                     <h3 className="body-b0-sb text-black line-clamp-2 min-h-[2.5rem]">{item.title}</h3>
-                    <div className="heading-h4-bd text-black">{item.price}</div>
+                    <div className="heading-h4-bd text-black">{item.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원</div>
                     <div className="flex items-center">
                       <span className="text-[#FFCF41] text-[1.125rem] mr-1 relative -translate-y-[0.125rem]"><img src={star} alt="별" /></span>
-                      <span className="body-b3-rg text-black">{item.avgStar}</span>
-                      <span className="ml-1 text-[var(--color-gray-50)]">({item.reviewCount})</span>
+                      <span className="body-b3-rg text-black">{item.avgStar ?? '별점이 없습니다'}</span>
+                      <span className="ml-1 text-[var(--color-gray-50)]">({item.reviewCount ?? 0})</span>
                     </div>
                     <div className="pt-1">
                       <span className="inline-block bg-[var(--color-gray-30)] text-body-b5-sb text-[var(--color-gray-50)] px-2 py-0.5 rounded">
