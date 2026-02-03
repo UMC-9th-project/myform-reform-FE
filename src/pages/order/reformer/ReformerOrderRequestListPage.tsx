@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../../components/common/breadcrumb/Breadcrumb';
-import RequestCard from '../../../components/domain/order/Request';
+import RequestCard, { type RequestDetailVariant } from '../../../components/common/card/RequestCard';
 import Pagination from '../../../components/common/pagination/Pagination';
 import OrderCategoryFilter from '../../../components/domain/order/OrderCategoryFilter';
+
+/** 리폼러 모드: 카드 상세 링크가 /reformer/order/requests/:id */
+const CARD_VARIANT: RequestDetailVariant = 'reformer';
 
 // 더미 데이터 (132개 시뮬레이션)
 const generateMockRequests = () => {
@@ -24,7 +26,6 @@ const ITEMS_PER_PAGE = 15; // 3열 x 5행
 const TOTAL_PAGES = Math.ceil(MOCK_REQUESTS.length / ITEMS_PER_PAGE);
 
 const ReformerOrderRequestListPage = () => {
-  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<{
     categoryTitle: string;
@@ -95,18 +96,15 @@ const ReformerOrderRequestListPage = () => {
             <div className="mb-12">
               <div className="grid grid-cols-3 gap-[1.875rem]">
                 {displayedRequests.map((request) => (
-                  <div
+                  <RequestCard
                     key={request.id}
-                    onClick={() => navigate(`/reformer/order/requests/${request.id}`)}
-                    className="cursor-pointer"
-                  >
-                    <RequestCard
-                      imgSrc={request.img}
-                      title={request.name}
-                      priceRange={request.price}
-                      className="pb-[5.875rem] w-full"
-                    />
-                  </div>
+                    id={request.id}
+                    variant={CARD_VARIANT}
+                    imgSrc={request.img}
+                    title={request.name}
+                    priceRange={request.price}
+                    className="pb-[5.875rem] w-full"
+                  />
                 ))}
               </div>
             </div>

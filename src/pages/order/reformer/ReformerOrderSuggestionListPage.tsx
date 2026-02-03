@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../../components/common/breadcrumb/Breadcrumb';
-import SuggestionCard from '../../../components/domain/order/Suggestion';
+import SuggestionCard, { type SuggestionDetailVariant } from '../../../components/common/card/SuggestionCard';
 import Pagination from '../../../components/common/pagination/Pagination';
 import OrderCategoryFilter from '../../../components/domain/order/OrderCategoryFilter';
 import Select from '../../../components/common/dropdown/SortDropdown';
+
+/** 리폼러 모드: 카드 상세 링크·이미지 하트가 리폼러용으로 동작 */
+const CARD_VARIANT: SuggestionDetailVariant = 'reformer';
 
 // 더미 데이터 (132개 시뮬레이션)
 const generateMockSuggestions = () => {
@@ -28,7 +30,6 @@ const ITEMS_PER_PAGE = 15; // 3열 x 5행
 const TOTAL_PAGES = Math.ceil(MOCK_SUGGESTIONS.length / ITEMS_PER_PAGE);
 
 const ReformerOrderSuggestionListPage = () => {
-  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<{
     categoryTitle: string;
@@ -108,21 +109,18 @@ const ReformerOrderSuggestionListPage = () => {
             <div className="mb-12">
               <div className="grid grid-cols-3 gap-[1.875rem]">
                 {displayedSuggestions.map((suggestion) => (
-                  <div
+                  <SuggestionCard
                     key={suggestion.id}
-                    onClick={() => navigate(`/reformer/order/suggestions/${suggestion.id}`)}
-                    className="cursor-pointer"
-                  >
-                    <SuggestionCard
-                      imgSrc={suggestion.img}
-                      title={suggestion.name}
-                      price={suggestion.price}
-                      rating={suggestion.review}
-                      reviewCountText={`(${suggestion.reviewCount})`}
-                      nickname={suggestion.nickname}
-                      className="pb-[5.875rem] w-full"
-                    />
-                  </div>
+                    id={suggestion.id}
+                    variant={CARD_VARIANT}
+                    imgSrc={suggestion.img}
+                    title={suggestion.name}
+                    price={suggestion.price}
+                    rating={suggestion.review}
+                    reviewCountText={`(${suggestion.reviewCount})`}
+                    nickname={suggestion.nickname}
+                    className="pb-[5.875rem] w-full"
+                  />
                 ))}
               </div>
             </div>
