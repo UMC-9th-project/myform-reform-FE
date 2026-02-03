@@ -16,6 +16,8 @@ import { getProfileReviews } from '../../../api/profile/review';
 import type { GetProfileReviewsResponse } from '../../../types/domain/profile/review';
 import type { ReviewItem } from '../../../components/domain/mypage/MyReviewGrid';
 import { useFeedList } from '../../../hooks/domain/profile/useFeedList';
+import { useCreateFeed } from '../../../hooks/domain/profile/useCreateFeed';
+import { uploadImages } from '../../../api/upload';
 
 export type ProfileTabType = '피드' | '판매 상품' | '후기';
 export type ProfileMode = 'view' | 'edit';
@@ -34,9 +36,22 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false }: BasePro
   const [showModal, setShowModal] = useState(false);
   const { data: feedData, fetchNextPage, hasNextPage, isFetchingNextPage } = useFeedList(ownerId);
   const feeds = feedData?.pages.flatMap(page => page.success?.feeds ?? []) ?? [];
+  const { mutate: createFeedMutate } = useCreateFeed(ownerId);
+  
+  const handleFileSelected = async (files: File[]) => {
+    try {
+      const uploadRes = await uploadImages(files);
 
-  const handleFileSelected = (files: File[]) => {
-    console.log('선택된 파일들:', files);
+      const imageUrls = uploadRes.success.url; // ← 서버 스펙 맞게 조정
+
+      createFeedMutate({
+        imageUrls,
+        isPinned: false,
+      });
+
+    } catch (e) {
+      alert('피드 업로드 실패' + e);
+    }
   };
 
   const handleClose = () => {

@@ -1,5 +1,5 @@
 import { api } from '../axios';
-import type { FeedListResponse } from '../../types/domain/profile/feed';
+import type { FeedListResponse, CreateFeedRequest, CreateFeedResponse } from '../../types/domain/profile/feed';
 
 interface GetFeedListParams {
   ownerId: string;
@@ -20,5 +20,14 @@ export const getFeedList = async ({
     },
   });
 
+  return data;
+};
+
+export const createFeed = async (
+  body: CreateFeedRequest): Promise<CreateFeedResponse> => {
+  const { data } = await api.post<CreateFeedResponse>(
+    '/profile/feed',
+    body
+  );
   return data;
 };
