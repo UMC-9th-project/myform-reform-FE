@@ -7,39 +7,28 @@ import profile from '../../../assets/icons/profile.svg';
 import search from '../header/icons/search.svg';
 import mintsearch from '../header/icons/mintsearch.svg';
 import bgsearch from '../header/icons/bg-search.svg';
-import grayrepeat from '../header/icons/grayrepeat.svg';
-import repeat from '../../../assets/icons/repeat.svg';
 import xIcon from '../../../assets/icons/x.svg';
 import logo from '../../../assets/logos/logo.svg';
-import { useUserTabStore, type UserTabType } from '../../../stores/tabStore';
+import { useSellerTabStore, useUserTabStore, type UserTabType } from '../../../stores/tabStore';
 import useAuthStore from '../../../stores/useAuthStore';
 import { useLogout } from '../../../hooks/domain/auth/useLogout';
 
-type UserType = 'customer' | 'seller';
-
 export default function Header() {
   const navigate = useNavigate();
-  // 탭으로 페이지 전환하기
-  const { setActiveTab } = useUserTabStore();
-  // Zustand 스토어에서 로그인 상태 구독
-  const { accessToken } = useAuthStore();
-  // 로그아웃 훅
-  const { logout } = useLogout();
-  
-  const handleTabClick = (tab: UserTabType) => {
-    setActiveTab(tab);       // store에 activeTab 업데이트
-    navigate('/normal-mypage'); // 페이지 이동
-  }; 
+  const { setActiveTab: setSellerActiveTab } = useSellerTabStore();
+  const { setActiveTab: setUserActiveTab } = useUserTabStore();
 
-  const [userType, setUserType] = useState<UserType>('seller');
+  const { accessToken, role } = useAuthStore(); // role 기준으로 드롭다운 분기
+  const { logout } = useLogout();
+
   const [searchValue, setSearchValue] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isReformerModeHovered, setIsReformerModeHovered] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([
     '야구 유니폼 리폼',
     '한화 유니폼',
   ]);
+
   const searchRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
@@ -53,42 +42,19 @@ export default function Header() {
     '크롭티',
   ];
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(event.target as Node)
-      ) {
-        setIsSearchOpen(false);
-      }
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(event.target as Node)
-      ) {
-        setIsProfileOpen(false);
-      }
-    };
-
-    if (isSearchOpen || isProfileOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isSearchOpen, isProfileOpen]);
-
-  const handleSearchClick = () => {
-    setIsSearchOpen(true);
+  const handleTabClick = (tab: UserTabType) => {
+    setUserActiveTab(tab);          // Zustand로 탭 상태 업데이트
+    navigate('/normal-mypage');     // 일반 유저 마이페이지 이동
+    setIsProfileOpen(false);        // 드롭다운 닫기
   };
 
-  const handleDeleteRecent = (index: number) => {
+
+  const handleSearchClick = () => setIsSearchOpen(true);
+
+  const handleDeleteRecent = (index: number) =>
     setRecentSearches(recentSearches.filter((_, i) => i !== index));
-  };
 
-  const handleDeleteAll = () => {
-    setRecentSearches([]);
-  };
+  const handleDeleteAll = () => setRecentSearches([]);
 
   const handleRecommendedClick = (term: string) => {
     setSearchValue(term);
@@ -97,28 +63,40 @@ export default function Header() {
     }
   };
 
-  const handleModeSwitch = () => {
-    setUserType(userType === 'seller' ? 'customer' : 'seller');
-    setIsProfileOpen(false);
-    navigate('/');
-  };
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsSearchOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+    if (isSearchOpen || isProfileOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isSearchOpen, isProfileOpen]);
 
   return (
     <header className="w-full flex flex-col">
       {!accessToken && (
         <div className="body-b1-sb flex justify-end py-[0.75rem] pr-[2rem] gap-[2.75rem]">
-          <Link to="/signup" className='cursor-pointer' >회원가입</Link>
-          <Link to="/login/type" className='cursor-pointer' >로그인</Link>
+          <Link to="/signup" className="cursor-pointer">회원가입</Link>
+          <Link to="/login/type" className="cursor-pointer">로그인</Link>
         </div>
       )}
-      <div className="h-25 flex items-center  ml-[3.125rem] mr-[2rem] ">
-        <Link to="/" className="w-[191px] h-[44.6px] mr-[2.19rem] ">
+
+      <div className="h-25 flex items-center ml-[3.125rem] mr-[2rem]">
+        <Link to="/" className="w-[191px] h-[44.6px] mr-[2.19rem]">
           <img
             src={logo}
             alt="logo"
             className="w-full h-full object-contain cursor-pointer"
           />
         </Link>
+
+        {/* 검색 */}
         <div className="relative w-[571px]" ref={searchRef}>
           <input
             type="text"
@@ -127,9 +105,9 @@ export default function Header() {
             onClick={handleSearchClick}
             onFocus={handleSearchClick}
             placeholder="어떤 리폼 스타일을 찾으세요?"
-            className="body-b1-rg w-full py-[0.875rem] pl-[1.5rem] pr-[3rem] rounded-[6.25rem] border border-[var(--color-mint-1)]   text-[var(--color-black)] placeholder:text-[var(--color-gray-40)] focus:outline-none focus:border-[var(--color-mint-1)] transition-colors"
+            className="body-b1-rg w-full py-[0.875rem] pl-[1.5rem] pr-[3rem] rounded-[6.25rem] border border-[var(--color-mint-1)] text-[var(--color-black)] placeholder:text-[var(--color-gray-40)] focus:outline-none focus:border-[var(--color-mint-1)] transition-colors"
           />
-          <div className="absolute right-[1.5rem] top-1/2 -translate-y-1/2 cursor-pointer ">
+          <div className="absolute right-[1.5rem] top-1/2 -translate-y-1/2 cursor-pointer">
             <img src={search} alt="search" className="w-6.5 h-6.5" />
           </div>
 
@@ -138,9 +116,7 @@ export default function Header() {
               {recentSearches.length > 0 && (
                 <div className="py-[1.125rem] px-[1.5625rem]">
                   <div className="flex items-center justify-between mb-[1.0625rem]">
-                    <h3 className="body-b4-sb text-[var(--color-gray-60)]">
-                      최근 검색어
-                    </h3>
+                    <h3 className="body-b4-sb text-[var(--color-gray-60)]">최근 검색어</h3>
                     <button
                       onClick={handleDeleteAll}
                       className="body-b3-rg text-[var(--color-gray-50)]"
@@ -148,13 +124,9 @@ export default function Header() {
                       전체 삭제
                     </button>
                   </div>
-
                   <div className="space-y-3">
                     {recentSearches.map((term, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between py-2 "
-                      >
+                      <div key={index} className="flex items-center justify-between py-2">
                         <div className="flex items-center gap-3 flex-1">
                           <img src={bgsearch} alt="bgsearch" />
                           <span className="body-b2-rg text-[var(--color-gray-60)] hover:text-[var(--color-black)] cursor-pointer">
@@ -174,24 +146,16 @@ export default function Header() {
               )}
 
               <div className="py-[1.125rem] px-[1.5625rem]">
-                <h3 className="body-b4-sb text-[var(--color-gray-60)] mb-[1.0625rem]">
-                  추천 검색어
-                </h3>
+                <h3 className="body-b4-sb text-[var(--color-gray-60)] mb-[1.0625rem]">추천 검색어</h3>
                 <div className="grid grid-cols-4 gap-[0.4375rem]">
                   {recommendedSearches.map((term, index) => (
                     <button
                       key={index}
                       onClick={() => handleRecommendedClick(term)}
-                      className="flex items-center gap-2  p-[0.4375rem_0.9375rem_0.4375rem_0.6875rem]  rounded-[6.25rem] border border-[var(--color-gray-30)] bg-[var(--color-gray-20)] hover:bg-[var(--color-gray-30)] transition-colors text-left"
+                      className="flex items-center gap-2 p-[0.4375rem_0.9375rem_0.4375rem_0.6875rem] rounded-[6.25rem] border border-[var(--color-gray-30)] bg-[var(--color-gray-20)] hover:bg-[var(--color-gray-30)] transition-colors text-left"
                     >
-                      <img
-                        src={mintsearch}
-                        alt="mintsearch"
-                        className="w-4 h-4 text-[var(--color-mint-1)]"
-                      />
-                      <span className="body-b3-rg text-[var(--color-gray-60)]">
-                        {term}
-                      </span>
+                      <img src={mintsearch} alt="mintsearch" className="w-4 h-4 text-[var(--color-mint-1)]" />
+                      <span className="body-b3-rg text-[var(--color-gray-60)]">{term}</span>
                     </button>
                   ))}
                 </div>
@@ -199,6 +163,8 @@ export default function Header() {
             </div>
           )}
         </div>
+
+        {/* 아이콘 및 프로필 */}
         <div className="flex items-center gap-[1.625rem] ml-auto">
           <button className="cursor-pointer">
             <img src={bell} alt="bell" />
@@ -209,6 +175,7 @@ export default function Header() {
           <Link to="/cart" className="cursor-pointer">
             <img src={shoppingCart} alt="shopping cart" />
           </Link>
+
           <div className="relative" ref={profileRef}>
             <button
               className="cursor-pointer"
@@ -217,117 +184,68 @@ export default function Header() {
               <img src={profile} alt="profile" />
             </button>
 
-            {isProfileOpen && userType === 'seller' && (
+            {/* 리폼러 유저 드롭다운 */}
+            {isProfileOpen && role === 'reformer' && (
               <div className="absolute top-full right-0 bg-white rounded-[1.875rem] shadow-[0_3px_10.7px_0_rgba(0,0,0,0.22)] z-50 w-[270px]">
                 <div className="pt-[0.875rem] px-[1rem]">
                   <div className="py-[0.625rem] px-[1.25rem]">
-                    <div className="body-b0-bd text-[var(--color-black)]">
-                      침착한 대머리독수리 님
-                    </div>
+                    <div className="body-b0-bd text-[var(--color-black)]">침착한 대머리독수리 님</div>
                   </div>
-
-                  <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]"></div>
-
+                  <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]" />
                   <div className="px-[1.25rem]">
                     <button
                       onClick={() => {
-                        navigate('/reformer-mypage');
-                        setIsProfileOpen(false);
-                      }}
-                      className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer"
+                        setSellerActiveTab('프로필 관리'); 
+                        navigate('/reformer-mypage'); setIsProfileOpen(false); }}
+                      className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
                     >
                       프로필 관리
                     </button>
-
-                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer">
+                    <button
+                      onClick={() => {
+                        setSellerActiveTab('판매 관리'); // 탭 상태 업데이트
+                        navigate('/reformer-mypage'); // 해당 페이지로 이동
+                        setIsProfileOpen(false); // 드롭다운 닫기
+                      }}
+                      className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
+                    >
                       판매 관리
                     </button>
                   </div>
-
-                  <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]"></div>
-
-                  <div className="p-[1.25rem]">
-                    <button
-                      className="w-full text-left gap-[0.625rem] body-b1-md text-[var(--color-gray-50)] hover:text-[var(--color-black)] flex items-center cursor-pointer"
-                      onMouseEnter={() => setIsReformerModeHovered(true)}
-                      onMouseLeave={() => setIsReformerModeHovered(false)}
-                      onClick={handleModeSwitch}
-                    >
-                      <img
-                        src={isReformerModeHovered ? repeat : grayrepeat}
-                        alt="repeat"
-                      />
-                      일반 모드 전환
-                    </button>
-                  </div>
                 </div>
-                <button 
+                <button
                   onClick={logout}
-                  className="w-full py-[0.9375rem] text-center body-b1-sb text-[var(--color-black)] bg-[var(--color-mint-5)] rounded-b-[1.875rem] cursor-pointer"
+                  className="w-full py-[0.9375rem] body-b1-sb bg-[var(--color-mint-5)] rounded-b-[1.875rem]"
                 >
                   로그아웃
                 </button>
               </div>
             )}
 
-            {isProfileOpen && userType === 'customer' && (
+            {/* 일반 유저 드롭다운 */}
+            {isProfileOpen && role === 'user' && (
               <div className="absolute top-full right-0 bg-white rounded-[1.875rem] shadow-[0_3px_10.7px_0_rgba(0,0,0,0.22)] z-50 w-[270px]">
                 <div className="pt-[0.875rem] px-[1rem]">
                   <div className="py-[0.625rem] px-[1.25rem]">
-                    <div className="body-b0-bd text-[var(--color-black)]">
-                      침착한 대머리독수리 님
-                    </div>
+                    <div className="body-b0-bd text-[var(--color-black)]">침착한 대머리독수리 님</div>
                   </div>
-
-                  <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]"></div>
-
+                  <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]" />
                   <div className="px-[1.25rem]">
-                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer"
-                      onClick={() => handleTabClick('내 정보')}>
-                      내 정보
-                    </button>
-
-                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer"
-                      onClick={() => handleTabClick('내가 작성한 글')}>
-                      내가 작성한 글
-                    </button>
-
-                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer"
-                      onClick={() => handleTabClick('구매 이력')}>
-                      구매 이력
-                    </button>
-
-                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer"
-                      onClick={() => handleTabClick('나의 후기')}>
-                      나의 후기
-                    </button>
-                  </div>
-
-                  <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]"></div>
-
-                  <div className="p-[1.25rem]">
-                    <button
-                      className="w-full text-left gap-[0.625rem] body-b1-md text-[var(--color-gray-50)] hover:text-[var(--color-black)] flex items-center cursor-pointer"
-                      onMouseEnter={() => setIsReformerModeHovered(true)}
-                      onMouseLeave={() => setIsReformerModeHovered(false)}
-                      onClick={handleModeSwitch}
-                    >
-                      <img
-                        src={isReformerModeHovered ? repeat : grayrepeat}
-                        alt="repeat"
-                      />
-                      리폼러 모드 전환
-                    </button>
+                    <button onClick={() => handleTabClick('내 정보')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">내 정보</button>
+                    <button onClick={() => handleTabClick('내가 작성한 글')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">내가 작성한 글</button>
+                    <button onClick={() => handleTabClick('구매 이력')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">구매 이력</button>
+                    <button onClick={() => handleTabClick('나의 후기')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">나의 후기</button>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={logout}
-                  className="w-full py-[0.9375rem] text-center body-b1-sb text-[var(--color-black)] bg-[var(--color-mint-5)] rounded-b-[1.875rem] cursor-pointer"
+                  className="w-full py-[0.9375rem] body-b1-sb bg-[var(--color-mint-5)] rounded-b-[1.875rem]"
                 >
                   로그아웃
                 </button>
               </div>
             )}
+
           </div>
         </div>
       </div>
