@@ -2,6 +2,15 @@ import { useEffect, useState } from 'react';
 import { useSellerTabStore } from '../../../stores/tabStore';
 import { getOrderById } from '../../../api/mypage/sale';
 
+interface DeliveryAddress {
+  postalCode: string | null;
+  address: string | null;
+  addressDetail: string | null;
+  recipientName: string | null;
+  phone: string | null;
+  addressName: string | null;
+}
+
 interface OrderDetailType {
   orderNo: string;
   id: number;
@@ -10,9 +19,11 @@ interface OrderDetailType {
   price: number;
   option: string;
   paymentDate: string;
+
   buyer: string;
   phone: string;
-  address: string;
+
+  deliveryAddress: DeliveryAddress;
   status: '결제 완료' | '상품준비 중' | '발송 완료';
   trackingNumber: string;
 }
@@ -32,6 +43,16 @@ const OrderDetail = () => {
 
   // 드롭다운 옵션 목록
   const statusOptions: OrderDetailType['status'][] = ['결제 완료', '상품준비 중', '발송 완료'];
+
+  const fullAddress = [
+    order?.deliveryAddress.address,
+    order?.deliveryAddress.addressDetail,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    + (order?.deliveryAddress.postalCode
+        ? ` (${order.deliveryAddress.postalCode})`
+        : '');
 
 
     useEffect(() => {
@@ -55,7 +76,14 @@ const OrderDetail = () => {
             paymentDate: data.createdAt.split('.')[0].replace('T', ' '), // YYYY-MM-DD HH:MM:SS
             buyer: data.userName,
             phone: data.phone,
-            address: data.address,
+            deliveryAddress: {
+              postalCode: data.delivery_address.postal_code,
+              address: data.delivery_address.address,
+              addressDetail: data.delivery_address.address_detail,
+              recipientName: data.delivery_address.recipient_name,
+              phone: data.delivery_address.phone,
+              addressName: data.delivery_address.address_name,
+            },
             status: statusMap[data.status] || '결제 완료',
             trackingNumber: data.billNumber || '',
           });
@@ -132,7 +160,7 @@ const OrderDetail = () => {
 
               <span className="body-b0-rg text-[var(--color-gray-50)]">배송정보</span>
               <span className="text-black leading-relaxed body-b0-rg">
-                {order.address}
+                {fullAddress || '배송지 정보 없음'}
               </span>
             </div>
 
@@ -159,7 +187,7 @@ const OrderDetail = () => {
 
                   {/* 드롭다운 메뉴 (라디오 버튼 스타일) */}
                   {isDropdownOpen && (
-                    <div className="absolute top-full mt-2 w-[8.8rem] bg-white rounded-[1.25rem] p-4 z-50 shadow-[1px_3px_11.7px_0px_#00000026]">
+                    <div className="absolute top-full mt-2 w-[10rem] bg-white rounded-[1.25rem] p-4 z-50 shadow-[1px_3px_11.7px_0px_#00000026]">
                       <ul className="flex flex-col gap-4">
                         {statusOptions.map((option) => (
                           <li 
