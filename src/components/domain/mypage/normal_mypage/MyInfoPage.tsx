@@ -21,6 +21,9 @@ const MyInfoPage = () => {
   const [editField, setEditField] = useState<EditField>(null);
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
 
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+
   const [address, setAddress] = useState({
     recipient: '',
     phone: '',
@@ -51,8 +54,6 @@ const MyInfoPage = () => {
     setIsPostcodeOpen(false);
   };
 
-
-
   return (
     <>
       <div className="max-w-6xl mx-auto pb-10 pt-5 bg-white">
@@ -62,13 +63,31 @@ const MyInfoPage = () => {
           <div className="flex-shrink-0">
             <div className="relative w-32 h-32">
               <img
-                src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=200&auto=format&fit=crop"
+                src={profileImage || 'https://via.placeholder.com/150'}
                 alt="Profile"
                 className="w-full h-full rounded-full object-cover"
               />
-              <button className="absolute bottom-0 right-0 bg-slate-500 p-2 rounded-full text-white" title="사진 추가">
+
+              {/* label을 클릭하면 input 열림 */}
+              <label
+                className="absolute bottom-0 right-0 bg-slate-500 p-2 rounded-full text-white cursor-pointer flex items-center justify-center"
+                title="사진 추가"
+              >
                 <Camera size={18} />
-              </button>
+                <input
+                  title="프로필 이미지 업로드"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const url = URL.createObjectURL(file);
+                      setProfileImage(url);
+                    }
+                  }}
+                />
+              </label>
             </div>
           </div>
 
@@ -130,15 +149,30 @@ const MyInfoPage = () => {
             </div>
 
             {/* --- 배송지 등록 --- */}
-            <div className="flex py-10 border-b border-[var(--color-line-gray-40)]">
-              <span className="w-32 body-b0-sb text-[var(--color-gray-60)] pt-2">
+            <div className="flex py-5 border-b border-[var(--color-line-gray-40)]">
+              <span className="w-32 body-b0-sb text-[var(--color-gray-60)]">
                 배송지 등록
               </span>
 
               <div className="flex-grow max-w-2xl space-y-6">
+                {/* 휴대폰 번호 */}
+                <div>
+                  <label className="block body-b0-sb mb-2">
+                    배송지명 <span className="text-[var(--color-red-1)]">*</span>
+                  </label>
+                  <div className="grid grid-cols-[1fr_160px] gap-3">
+                    <input
+                      type="text"
+                      className="bg-[var(--color-gray-20)] p-4 outline-none"
+                      placeholder="배송지명을 입력해주세요."
+                    />
+                    <div />
+                  </div>
+                </div>
+
                 {/* 받으시는 분 */}
                 <div>
-                  <label className="block body-b0-sb mb-2 pt-2">
+                  <label className="block body-b0-sb mb-2">
                     받으시는 분 <span className="text-[var(--color-red-1)]">*</span>
                   </label>
                   <div className="grid grid-cols-[1fr_160px] gap-3">
@@ -258,7 +292,7 @@ const MyInfoPage = () => {
                                       text-[var(--color-mint-1)] body-b4-sb rounded-[0.3rem]">
                         기본 배송지
                       </span>
-                      <span className="body-b1-md">홍길동</span>
+                      <span className="body-b1-md">홍길동 (집)</span>
                     </div>
                     <p className="body-b1-rg text-[var(--color-gray-60)] mb-1">
                       010-0000-0000
@@ -273,7 +307,7 @@ const MyInfoPage = () => {
 
                   {/* 배송지 카드 2 */}
                   <div className="border border-[var(--color-line-gray-40)] rounded-lg px-6 py-4 relative">
-                    <span className="body-b1-md mb-3 block">홍길동</span>
+                    <span className="body-b1-md mb-3 block">홍길동 (학교)</span>
                     <p className="body-b1-rg text-[var(--color-gray-60)] mb-1">
                       010-0000-0000
                     </p>

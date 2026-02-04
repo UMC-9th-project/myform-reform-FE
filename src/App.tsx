@@ -93,7 +93,7 @@ function App() {
         <Route path="/reformer/order/suggestions/:id" element={<ReformerOrderSuggestionDetailPage />} />
 
          {/* 프로필 페이지 */}
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:ownerId" element={<Profile />} />
 
          {/* 찜 페이지 */}
         <Route path="/wishlist" element={<Wishlist />} />

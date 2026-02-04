@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { checkNicknameDuplicate } from '../../../api/profile/user';
 
 interface NicknameModalProps {
   currentNickname: string;
@@ -27,28 +28,40 @@ const NicknameModal: React.FC<NicknameModalProps> = ({ isOpen, onClose, currentN
 
   if (!isOpen) return null;
 
-  const handleCheckDuplicate = () => {
-    // 현재 닉네임과 똑같다면 굳이 중복체크를 할 필요가 없는 경우 처리
-    if (inputValue === currentNickname) {
-      setStatus('success');
-      return;
-    }
+  const handleCheckDuplicate = async () => {
+  // 현재 닉네임이면 통과
+  if (inputValue === currentNickname) {
+    setStatus('success');
+    return;
+  }
 
-    if (inputValue.length < 2 || inputValue.length > 10) {
-      setStatus('error');
-      setErrorMsg('닉네임은 2자 이상, 10자 이하로 입력해주세요.');
-      return;
-    }
-    
-    // 중복 체크 로직 (Mock)
-    if (inputValue === "불가능한 닉네임") {
-      setStatus('error');
-      setErrorMsg('사용할 수 없는 닉네임입니다.');
+  if (inputValue.length < 2 || inputValue.length > 10) {
+    setStatus('error');
+    setErrorMsg('닉네임은 2자 이상, 10자 이하로 입력해주세요.');
+    return;
+  }
+
+  try {
+    const res = await checkNicknameDuplicate(inputValue);
+
+    if (res.resultType === 'SUCCESS' && res.success) {
+      if (res.success.isAvailable) {
+        setStatus('success');
+        setErrorMsg('');
+      } else {
+        setStatus('error');
+        setErrorMsg(res.success.message); // "이미 사용 중인 닉네임입니다"
+      }
     } else {
-      setStatus('success');
-      setErrorMsg('');
+      setStatus('error');
+      setErrorMsg(res.error ?? '닉네임 확인에 실패했습니다.');
     }
-  };
+  } catch (e) {
+    setStatus('error');
+    setErrorMsg('서버와 통신 중 오류가 발생했습니다.' + (e as Error).message);
+  }
+};
+
 
   const handleSubmit = () => {
     if (status === 'success') {

@@ -95,7 +95,7 @@ const OrderDetail = () => {
         </section>
 
         {/* --- 섹션 2: 주문자 정보 --- */}
-        <section>
+        <section className='px-2'>
           <h3 className="body-b0-md text-black mb-2">주문자 정보</h3>
           <div className="w-full h-[1px] bg-[var(--color-line-gray-40)] mb-6" />
 
@@ -171,16 +171,32 @@ const OrderDetail = () => {
               {isDropdownOpen && <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />}
 
 
-              {/* 운송장 번호 등록 */}
-              <div className="flex justify-between items-center text-[15px]">
-                <span className="body-b0-rg text-[var(--color-gray-50)]">운송장 번호 등록</span>
-                <input 
-                  type="text"
-                  value={order.trackingNumber}
-                  onChange={(e) => setOrder({ ...order, trackingNumber: e.target.value})}
-                  className="w-[20rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[14px]"
-                  title="운송장 번호 입력"
-                />
+              <div className="space-y-2">
+                {/* 운송장 번호 입력 줄 */}
+                <div className="flex justify-between items-center text-[15px]">
+                  <span className="body-b0-rg text-[var(--color-gray-50)]">
+                    운송장 번호
+                  </span>
+                  <input
+                    type="text"
+                    value={order.trackingNumber}
+                    onChange={(e) =>
+                      setOrder({ ...order, trackingNumber: e.target.value })
+                    }
+                    className="w-[22rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[14px]"
+                    title="운송장 번호 입력"
+                  />
+                </div>
+
+                {/* 하단 오른쪽 수정 / 삭제 */}
+                <div className="flex justify-end gap-3 text-[13px]">
+                  <button className="text-[var(--color-gray-50)] body-b2-rg">
+                    수정
+                  </button>
+                  <button className="text-[var(--color-gray-50)] body-b2-rg">
+                    삭제
+                  </button>
+                </div>
               </div>
             </div>
           </div>
