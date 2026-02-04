@@ -91,3 +91,13 @@ export interface SmsVerifyResponse {
     message: string;
   } | null;
 }
+
+// 리폼러 회원가입 요청 타입 (multipart/form-data)
+export interface ReformerSignupRequest {
+  data: SignupRequest; // JSON 문자열로 직렬화될 데이터
+  portfolioPhotos: File[]; // 포트폴리오 이미지 파일 배열
+  description: string; // 리폼러 소개
+  businessNumber?: string;
+}
+
+

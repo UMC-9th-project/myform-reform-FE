@@ -1,56 +1,60 @@
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { signupUser } from '../../../api/auth';
-import type { SignupRequest } from '../../../types/api/auth';
+import { useNavigate } from 'react-router-dom';
+import { signupReformer } from '../../../api/auth';
+import type { ReformerSignupRequest, SignupRequest } from '../../../types/api/auth';
 import useAuthStore from '../../../stores/useAuthStore';
 
-interface UseSignupReturn {
-  signup: (data: SignupRequest) => void;
+interface UseReformerSignupReturn {
+  signup: (data: {
+    signupData: SignupRequest;
+    portfolioPhotos: File[];
+    description: string;
+    businessNumber: string;
+  }) => void;
   isLoading: boolean;
   error: string | null;
 }
 
-export const useSignup = (): UseSignupReturn => {
+export const useReformerSignup = (): UseReformerSignupReturn => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { setAccessToken } = useAuthStore();
 
-  // 현재 경로가 리폼러 회원가입인지 확인
-  const isReformerSignup = location.pathname.includes('reformer-form');
-
   const { mutate: signupMutation, isPending: isLoading, error: mutationError } = useMutation({
-    mutationFn: signupUser,
-    onSuccess: (data, variables) => {
+    mutationFn: (data: {
+      signupData: SignupRequest;
+      portfolioPhotos: File[];
+      description: string;
+      businessNumber?: string;
+    }) => {
+      const requestData: ReformerSignupRequest = {
+        data: data.signupData,
+        portfolioPhotos: data.portfolioPhotos,
+        description: data.description,
+        ...(data.businessNumber ? { businessNumber: data.businessNumber } : {}),
+      };
+      return signupReformer(requestData);
+    },
+    onSuccess: (data) => {
       if (data.resultType === 'SUCCESS' && data.success) {
         // 회원가입 성공 시 accessToken 저장
         if (data.success.accessToken) {
-          setAccessToken(data.success.accessToken, 'user');
+          setAccessToken(data.success.accessToken, 'reformer');
         }
-        // 일반 사용자 회원가입 완료 페이지로 이동
-        navigate('/signup/complete', {
-          state: {
-            nickname: variables.nickname,
-          },
-        });
+        // 리폼러 회원가입 완료 페이지로 이동
+        navigate('/signup/reformer-complete');
       }
     },
     onError: (err) => {
-      console.error('회원가입 실패:', err);
+      console.error('리폼러 회원가입 실패:', err);
     },
   });
 
-  const signup = (data: SignupRequest) => {
-    // 리폼러 회원가입인 경우 API 호출하지 않고 바로 다음 페이지로 이동
-    if (isReformerSignup) {
-      navigate('/signup/reformer-registration', {
-        state: {
-          signupData: data, // 전체 회원가입 정보 전달
-        },
-      });
-      return;
-    }
-    
-    // 일반 사용자 회원가입인 경우 API 호출
+  const signup = (data: {
+    signupData: SignupRequest;
+    portfolioPhotos: File[];
+    description: string;
+    businessNumber?: string;
+  }) => {
     signupMutation(data);
   };
 
@@ -86,7 +90,7 @@ export const useSignup = (): UseSignupReturn => {
         // 기타 에러
         return axiosError.response?.data?.error?.message ||
                axiosError.response?.data?.message ||
-               '회원가입에 실패했습니다. 다시 시도해주세요.';
+               '리폼러 회원가입에 실패했습니다. 다시 시도해주세요.';
       })()
     : null;
 
