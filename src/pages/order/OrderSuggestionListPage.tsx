@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
-import SuggestionCard from '../../components/domain/order/Suggestion';
+import SuggestionCard from '../../components/common/card/SuggestionCard';
 import Pagination from '../../components/common/pagination/Pagination';
 import OrderCategoryFilter from '../../components/domain/order/OrderCategoryFilter';
 import Select from '../../components/common/dropdown/SortDropdown';
@@ -28,7 +27,6 @@ const ITEMS_PER_PAGE = 15; // 3열 x 5행
 const TOTAL_PAGES = Math.ceil(MOCK_SUGGESTIONS.length / ITEMS_PER_PAGE);
 
 const OrderSuggestionListPage = () => {
-  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<{
     categoryTitle: string;
@@ -108,21 +106,17 @@ const OrderSuggestionListPage = () => {
             <div className="mb-12">
               <div className="grid grid-cols-3 gap-[1.875rem]">
                 {displayedSuggestions.map((suggestion) => (
-                  <div
+                  <SuggestionCard
                     key={suggestion.id}
-                    onClick={() => navigate(`/order/suggestions/${suggestion.id}`)}
-                    className="cursor-pointer"
-                  >
-                    <SuggestionCard
-                      imgSrc={suggestion.img}
-                      title={suggestion.name}
-                      price={suggestion.price}
-                      rating={suggestion.review}
-                      reviewCountText={`(${suggestion.reviewCount})`}
-                      nickname={suggestion.nickname}
-                      className="pb-[5.875rem] w-full"
-                    />
-                  </div>
+                    id={suggestion.id}
+                    imgSrc={suggestion.img}
+                    title={suggestion.name}
+                    price={suggestion.price}
+                    rating={suggestion.review}
+                    reviewCountText={`(${suggestion.reviewCount})`}
+                    nickname={suggestion.nickname}
+                    className="pb-[5.875rem] w-full"
+                  />
                 ))}
               </div>
             </div>

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
-import RequestCard from '../../components/domain/order/Request';
-import SuggestionCard from '../../components/domain/order/Suggestion';
+import RequestCard from '../../components/common/card/RequestCard';
+import SuggestionCard from '../../components/common/card/SuggestionCard';
 import Button from '../../components/common/button/Button1';
 import pencilIcon from '../../assets/icons/pencilLine.svg';
 
@@ -111,13 +111,13 @@ const OrderPage = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-[1.875rem]">
             {newRequests.map((item) => (
-              <div key={item.id}>
-                <RequestCard
-                  imgSrc={item.img}
-                  title={item.name}
-                  priceRange={item.price}
-                />
-              </div>
+              <RequestCard
+                key={item.id}
+                id={item.id}
+                imgSrc={item.img}
+                title={item.name}
+                priceRange={item.price}
+              />
             ))}
           </div>
         </section>
@@ -137,6 +137,7 @@ const OrderPage = () => {
             {reformerOrders.map((item) => (
               <SuggestionCard
                 key={item.id}
+                id={item.id}
                 imgSrc={item.img}
                 title={item.name}
                 price={item.price}
