@@ -16,6 +16,9 @@ import { getProfileReviews } from '../../../api/profile/review';
 import type { GetProfileReviewsResponse } from '../../../types/domain/profile/review';
 import type { ReviewItem } from '../../../components/domain/mypage/MyReviewGrid';
 import { useFeedList } from '../../../hooks/domain/profile/useFeedList';
+import { useCreateFeed } from '../../../hooks/domain/profile/useCreateFeed';
+import { uploadImages } from '../../../api/upload';
+import ImageViewerModal from './ImageViewModal';
 
 export type ProfileTabType = '피드' | '판매 상품' | '후기';
 export type ProfileMode = 'view' | 'edit';
@@ -34,9 +37,27 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false }: BasePro
   const [showModal, setShowModal] = useState(false);
   const { data: feedData, fetchNextPage, hasNextPage, isFetchingNextPage } = useFeedList(ownerId);
   const feeds = feedData?.pages.flatMap(page => page.success?.feeds ?? []) ?? [];
+  const { mutate: createFeedMutate } = useCreateFeed(ownerId);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
 
-  const handleFileSelected = (files: File[]) => {
-    console.log('선택된 파일들:', files);
+  const [selectedFeedImages, setSelectedFeedImages] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  
+  const handleFileSelected = async (files: File[]) => {
+    try {
+      const uploadRes = await uploadImages(files);
+
+      const imageUrls = uploadRes.success.url; // ← 서버 스펙 맞게 조정
+
+      createFeedMutate({
+        imageUrls,
+        isPinned: false,
+      });
+
+    } catch (e) {
+      alert('피드 업로드 실패' + e);
+    }
   };
 
   const handleClose = () => {
@@ -152,6 +173,11 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false }: BasePro
                       src={feed.images[0]}
                       alt="feed"
                       className="w-full h-full object-cover"
+                      onClick={() => {
+                        setSelectedFeedImages(feed.images);
+                        setCurrentIndex(0);
+                        setIsViewerOpen(true);
+                      }}
                     />
 
                     {feed.images.length > 1 && (
@@ -162,6 +188,15 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false }: BasePro
                   </div>
                 ))}
 
+                {isViewerOpen && selectedFeedImages.length > 0 && (
+                  <ImageViewerModal
+                    images={selectedFeedImages}
+                    currentIndex={currentIndex}
+                    setCurrentIndex={setCurrentIndex}
+                    onClose={() => setIsViewerOpen(false)}
+
+                  />
+                )}
                 {hasNextPage && (
                   <div className="flex justify-center mt-10">
                     <button

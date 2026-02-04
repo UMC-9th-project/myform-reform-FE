@@ -18,3 +18,20 @@ export interface FeedListResponse {
   error: unknown | null;
   success: FeedListSuccess | null;
 }
+
+// 피드 등록 요청
+export interface CreateFeedRequest {
+  imageUrls: string[];
+  isPinned?: boolean;
+}
+
+// 피드 등록 응답
+export interface CreateFeedResponse {
+  resultType: 'SUCCESS' | 'FAIL';
+  error: null | {
+    reason: string;
+  };
+  success: {
+    feedId: string;
+  };
+}
