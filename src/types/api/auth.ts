@@ -54,3 +54,40 @@ export interface SignupResponse {
     accessToken: string;
   } | null;
 }
+
+// SMS 전송 요청 타입
+export interface SmsSendRequest {
+  phoneNumber: string;
+}
+
+// SMS 전송 응답 타입
+export interface SmsSendResponse {
+  resultType: 'SUCCESS' | 'ERROR';
+  error: null | {
+    code: string;
+    message: string;
+  };
+  success: {
+    statusCode: number;
+    message: string;
+  } | null;
+}
+
+// SMS 인증코드 검증 요청 타입
+export interface SmsVerifyRequest {
+  phoneNumber: string;
+  code: string;
+}
+
+// SMS 인증코드 검증 응답 타입
+export interface SmsVerifyResponse {
+  resultType: 'SUCCESS' | 'ERROR';
+  error: null | {
+    code: string;
+    message: string;
+  };
+  success: {
+    statusCode: number;
+    message: string;
+  } | null;
+}

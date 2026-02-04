@@ -1,5 +1,5 @@
 import { api } from './axios';
-import type { SignupRequest, SignupResponse, LoginRequest, LoginResponse, LogoutResponse } from '../types/api/auth';
+import type { SignupRequest, SignupResponse, LoginRequest, LoginResponse, LogoutResponse, SmsSendRequest, SmsSendResponse, SmsVerifyRequest, SmsVerifyResponse } from '../types/api/auth';
 
 
 export const signupUser = async (
@@ -11,6 +11,8 @@ export const signupUser = async (
   );
   return response.data;
 };
+
+
 
 
 export const loginUser = async (
@@ -25,5 +27,27 @@ export const loginUser = async (
 
 export const logoutUser = async (): Promise<LogoutResponse> => {
   const response = await api.post<LogoutResponse>('/auth/logout');
+  return response.data;
+};
+
+// SMS 인증코드 전송 API
+export const sendSmsVerification = async (
+  data: SmsSendRequest
+): Promise<SmsSendResponse> => {
+  const response = await api.post<SmsSendResponse>(
+    '/auth/sms/send',
+    data
+  );
+  return response.data;
+};
+
+// SMS 인증코드 검증 API
+export const verifySmsCode = async (
+  data: SmsVerifyRequest
+): Promise<SmsVerifyResponse> => {
+  const response = await api.post<SmsVerifyResponse>(
+    '/auth/sms/verify',
+    data
+  );
   return response.data;
 };

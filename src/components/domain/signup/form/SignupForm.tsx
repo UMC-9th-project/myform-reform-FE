@@ -41,7 +41,12 @@ export default function SignupForm() {
   const {
     phoneTimerActive,
     phoneTimeLeft,
-    startTimer: startPhoneTimer,
+    sendSms,
+    verifyCode,
+    resetTimer: resetPhoneTimer,
+    isLoading: isPhoneLoading,
+    isVerifying: isPhoneVerifying,
+    error: phoneApiError,
   } = usePhoneVerification(180);
 
   const {
@@ -130,12 +135,13 @@ export default function SignupForm() {
       setShowVerificationCode(false);
       setVerificationCode('');
       setVerificationCodeError(null);
+      resetPhoneTimer();
     }
   };
 
   const handlePhoneVerificationRequest = () => {
-    if (!phoneError && phone) {
-      startPhoneTimer();
+    if (!phoneError && phone.trim()) {
+      sendSms(phone);
       setShowVerificationCode(true);
       setVerificationCode('');
       setVerificationCodeError(null);
@@ -154,8 +160,15 @@ export default function SignupForm() {
       setVerificationCodeError('정확한 인증코드를 입력해주세요.');
       return;
     }
-    // TODO: 인증코드 검증 API 호출
-    setVerificationCodeError(null);
+    if (!phone.trim()) {
+      setVerificationCodeError('전화번호를 먼저 입력해주세요.');
+      return;
+    }
+    verifyCode(phone, verificationCode, () => {
+      // 인증 성공 시 인증코드 입력 필드 숨기기
+      setShowVerificationCode(false);
+      setVerificationCodeError(null);
+    });
   };
 
   const handleNicknameDuplicateCheck = () => {
@@ -282,11 +295,10 @@ export default function SignupForm() {
           required
           placeholder="-를 제외한 숫자만 입력해주세요."
           value={phone}
-          error={phoneError}
-          timerSeconds={phoneTimerActive ? phoneTimeLeft : null}
+          error={phoneError || phoneApiError}
           showButton
           buttonText="인증요청"
-          buttonDisabled={!phone.trim() || !!phoneError}
+          buttonDisabled={!phone.trim() || !!phoneError || isPhoneLoading}
           onButtonClick={handlePhoneVerificationRequest}
           onChange={handlePhoneChange}
         />
@@ -299,11 +311,11 @@ export default function SignupForm() {
             required
             placeholder="인증코드를 입력해주세요."
             value={verificationCode}
-            error={verificationCodeError}
+            error={verificationCodeError || phoneApiError}
             timerSeconds={phoneTimerActive ? phoneTimeLeft : null}
             showButton
             buttonText="확인"
-            buttonDisabled={!verificationCode.trim() || !!verificationCodeError}
+            buttonDisabled={!verificationCode.trim() || !!verificationCodeError || isPhoneVerifying}
             onButtonClick={handleVerificationCodeConfirm}
             onChange={handleVerificationCodeChange}
           />
