@@ -15,6 +15,7 @@ import heart from '../../../assets/icons/heart.svg';
 import { getProfileReviews } from '../../../api/profile/review';
 import type { GetProfileReviewsResponse } from '../../../types/domain/profile/review';
 import type { ReviewItem } from '../../../components/domain/mypage/MyReviewGrid';
+import { useFeedList } from '../../../hooks/domain/profile/useFeedList';
 
 export type ProfileTabType = '피드' | '판매 상품' | '후기';
 export type ProfileMode = 'view' | 'edit';
@@ -23,16 +24,27 @@ export type SaleSubTabType = '마켓 판매' | '주문 제작';
 interface BaseProfileTabsProps {
   mode?: ProfileMode;
   ownerId: string;
+  isEditable?: boolean;
 }
 
-const BaseProfileTabs = ({ mode = 'view', ownerId }: BaseProfileTabsProps) => {
+const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false }: BaseProfileTabsProps) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<ProfileTabType>('피드');
   const [activeSaleSubTab, setActiveSaleSubTab] = useState<SaleSubTabType>('마켓 판매');
   const [showModal, setShowModal] = useState(false);
-  const [feedItems, setFeedItems] = useState<{ id: number; files: File[] }[]>([]);
-  
+  const { data: feedData, fetchNextPage, hasNextPage, isFetchingNextPage } = useFeedList(ownerId);
+  const feeds = feedData?.pages.flatMap(page => page.success?.feeds ?? []) ?? [];
 
+  const handleFileSelected = (files: File[]) => {
+    console.log('선택된 파일들:', files);
+  };
+
+  const handleClose = () => {
+    setShowModal(false);
+  };
+
+
+  
   // ───────── 프로필 정보 ─────────
   const profileQuery = useQuery<GetProfileResponse, Error>({
     queryKey: ['profile', ownerId],
@@ -125,34 +137,45 @@ const BaseProfileTabs = ({ mode = 'view', ownerId }: BaseProfileTabsProps) => {
         <>
         <div className="w-full bg-transparent py-10 relative">
           <div className="max-w-[68.75rem] mx-auto px-10">
-            {feedItems.length === 0 ? (
+            {feeds.length === 0 ? (
               <div className="flex items-center justify-center h-[18.75rem] pb-24 body-b1-rg">
                 아직 등록된 게시글이 없습니다.
               </div>
-              ) : (
+            ) : (
               <div className="grid grid-cols-4 gap-[0.125rem]">
-                {feedItems.map((item) => (
+                {feeds.map((feed) => (
                   <div
-                    key={item.id}
+                    key={feed.feedId}
                     className="relative aspect-[3/4] bg-white overflow-hidden"
                   >
                     <img
-                      src={URL.createObjectURL(item.files[0])}
+                      src={feed.images[0]}
                       alt="feed"
                       className="w-full h-full object-cover"
                     />
 
-                    <div>
-                      {item.files.length > 1 && (
-                        <div className='absolute top-2 right-2 dropw-shadow-md'>
-                          <img src={lotpictures} alt="multi" className='w-8 h-8' />
-                        </div>
-                      )}
-                    </div>
+                    {feed.images.length > 1 && (
+                      <div className="absolute top-2 right-2">
+                        <img src={lotpictures} alt="multi" className="w-8 h-8" />
+                      </div>
+                    )}
                   </div>
                 ))}
+
+                {hasNextPage && (
+                  <div className="flex justify-center mt-10">
+                    <button
+                      onClick={() => fetchNextPage()}
+                      disabled={isFetchingNextPage}
+                      className="px-6 py-2 border rounded"
+                    >
+                      {isFetchingNextPage ? '불러오는 중...' : '더 보기'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
+
             { mode === 'edit' && (
               <button 
                 className="absolute top-10 right-2 md:right-4 w-14 h-14 bg-white border border-[var(--color-mint-1)] rounded-full flex items-center justify-center shadow-lg hover:bg-teal-50 transition-all z-10"
@@ -181,11 +204,9 @@ const BaseProfileTabs = ({ mode = 'view', ownerId }: BaseProfileTabsProps) => {
 
               {/* 업로드 컴포넌트 */}
               <MyPageUpload 
-                onClose={() => setShowModal(false)}
-                onFileSelected={(files) => {
-                  const newItem = {id: Date.now(), files};
-                  setFeedItems(prev => [newItem, ...prev]);
-                }} />
+                onClose={handleClose}
+                onFileSelected={handleFileSelected}
+                 />
            </div>
           </div>
         )}
@@ -309,7 +330,7 @@ const BaseProfileTabs = ({ mode = 'view', ownerId }: BaseProfileTabsProps) => {
                   아직 작성된 리뷰가 없습니다.
                 </div>
               ) : (
-                <MyReviewGrid reviews={reviews} isEditable={mode === 'edit'} />
+                <MyReviewGrid reviews={reviews} isEditable={isEditable} />
               )}
             </div>
           )}

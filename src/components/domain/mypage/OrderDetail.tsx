@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSellerTabStore } from '../../../stores/tabStore';
+import { getOrderById } from '../../../api/mypage/sale';
 
 interface OrderDetailType {
   orderNo: string;
@@ -16,33 +17,54 @@ interface OrderDetailType {
   trackingNumber: string;
 }
 
+const statusMap: Record<string, OrderDetailType['status']> = {
+  PENDING: '결제 완료',
+  PROCESSING: '상품준비 중',
+  SHIPPED: '발송 완료'
+};
 
 
 const OrderDetail = () => {
-  const { setSelectedOrderId } = useSellerTabStore();
-
-  // 가상 데이터
-  const initialData: OrderDetailType = {
-    id: 1,
-    orderNo: '0000000000',
-    productTitle: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
-    productImage: 'https://via.placeholder.com/160x150',
-    price: 75000,
-    option: '옵션 1',
-    paymentDate: '2025. 10. 14. 23:45:23',
-    buyer: '홍길동',
-    phone: '010-0000-0000',
-    address: '서울 용산구 청파로47길 100 명신관 302호 (04310)',
-    status: '결제 완료',
-    trackingNumber: '',
-  };
-  const [order, setOrder] = useState<OrderDetailType>(initialData);
-  
-  // 드롭다운 열림/닫힘 상태 추가
+  const { selectedOrderId, setSelectedOrderId } = useSellerTabStore();
+  const [order, setOrder] = useState<OrderDetailType | null>(null);
+   // 드롭다운 열림/닫힘 상태 추가
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // 드롭다운 옵션 목록
   const statusOptions: OrderDetailType['status'][] = ['결제 완료', '상품준비 중', '발송 완료'];
+
+
+    useEffect(() => {
+
+      if (!selectedOrderId) return;
+
+      getOrderById(selectedOrderId)
+        .then(res => {
+          const data = res.success;
+          if (!data) { 
+            return;
+          }
+
+          setOrder({
+            orderNo: data.orderId,
+            id: data.targetId,
+            productTitle: data.title,
+            productImage: data.thumbnail || '',
+            price: data.price,
+            option: data.option,
+            paymentDate: data.createdAt.split('.')[0].replace('T', ' '), // YYYY-MM-DD HH:MM:SS
+            buyer: data.userName,
+            phone: data.phone,
+            address: data.address,
+            status: statusMap[data.status] || '결제 완료',
+            trackingNumber: data.billNumber || '',
+          });
+        })
+        .catch(err => console.error('주문 상세 조회 실패', err));
+    }, [selectedOrderId]);
+
+  if (!order) return <div className="text-center py-20">로딩 중...</div>;
+  
 
   return (
     <div className="w-100% mx-auto p-0 bg-transparent">
