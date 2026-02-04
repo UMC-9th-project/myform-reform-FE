@@ -1,5 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSellerTabStore } from '../../../stores/tabStore';
+import { getOrderById } from '../../../api/mypage/sale';
+
+interface DeliveryAddress {
+  postalCode: string | null;
+  address: string | null;
+  addressDetail: string | null;
+  recipientName: string | null;
+  phone: string | null;
+  addressName: string | null;
+}
 
 interface OrderDetailType {
   orderNo: string;
@@ -9,40 +19,80 @@ interface OrderDetailType {
   price: number;
   option: string;
   paymentDate: string;
+
   buyer: string;
   phone: string;
-  address: string;
+
+  deliveryAddress: DeliveryAddress;
   status: '결제 완료' | '상품준비 중' | '발송 완료';
   trackingNumber: string;
 }
 
+const statusMap: Record<string, OrderDetailType['status']> = {
+  PENDING: '결제 완료',
+  PROCESSING: '상품준비 중',
+  SHIPPED: '발송 완료'
+};
 
 
 const OrderDetail = () => {
-  const { setSelectedOrderId } = useSellerTabStore();
-
-  // 가상 데이터
-  const initialData: OrderDetailType = {
-    id: 1,
-    orderNo: '0000000000',
-    productTitle: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
-    productImage: 'https://via.placeholder.com/160x150',
-    price: 75000,
-    option: '옵션 1',
-    paymentDate: '2025. 10. 14. 23:45:23',
-    buyer: '홍길동',
-    phone: '010-0000-0000',
-    address: '서울 용산구 청파로47길 100 명신관 302호 (04310)',
-    status: '결제 완료',
-    trackingNumber: '',
-  };
-  const [order, setOrder] = useState<OrderDetailType>(initialData);
-  
-  // 드롭다운 열림/닫힘 상태 추가
+  const { selectedOrderId, setSelectedOrderId } = useSellerTabStore();
+  const [order, setOrder] = useState<OrderDetailType | null>(null);
+   // 드롭다운 열림/닫힘 상태 추가
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   // 드롭다운 옵션 목록
   const statusOptions: OrderDetailType['status'][] = ['결제 완료', '상품준비 중', '발송 완료'];
+
+  const fullAddress = [
+    order?.deliveryAddress.address,
+    order?.deliveryAddress.addressDetail,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    + (order?.deliveryAddress.postalCode
+        ? ` (${order.deliveryAddress.postalCode})`
+        : '');
+
+
+    useEffect(() => {
+
+      if (!selectedOrderId) return;
+
+      getOrderById(selectedOrderId)
+        .then(res => {
+          const data = res.success;
+          if (!data) { 
+            return;
+          }
+
+          setOrder({
+            orderNo: data.orderId,
+            id: data.targetId,
+            productTitle: data.title,
+            productImage: data.thumbnail || '',
+            price: data.price,
+            option: data.option,
+            paymentDate: data.createdAt.split('.')[0].replace('T', ' '), // YYYY-MM-DD HH:MM:SS
+            buyer: data.userName,
+            phone: data.phone,
+            deliveryAddress: {
+              postalCode: data.delivery_address.postal_code,
+              address: data.delivery_address.address,
+              addressDetail: data.delivery_address.address_detail,
+              recipientName: data.delivery_address.recipient_name,
+              phone: data.delivery_address.phone,
+              addressName: data.delivery_address.address_name,
+            },
+            status: statusMap[data.status] || '결제 완료',
+            trackingNumber: data.billNumber || '',
+          });
+        })
+        .catch(err => console.error('주문 상세 조회 실패', err));
+    }, [selectedOrderId]);
+
+  if (!order) return <div className="text-center py-20">로딩 중...</div>;
+  
 
   return (
     <div className="w-100% mx-auto p-0 bg-transparent">
@@ -95,7 +145,7 @@ const OrderDetail = () => {
         </section>
 
         {/* --- 섹션 2: 주문자 정보 --- */}
-        <section>
+        <section className='px-2'>
           <h3 className="body-b0-md text-black mb-2">주문자 정보</h3>
           <div className="w-full h-[1px] bg-[var(--color-line-gray-40)] mb-6" />
 
@@ -110,7 +160,7 @@ const OrderDetail = () => {
 
               <span className="body-b0-rg text-[var(--color-gray-50)]">배송정보</span>
               <span className="text-black leading-relaxed body-b0-rg">
-                {order.address}
+                {fullAddress || '배송지 정보 없음'}
               </span>
             </div>
 
@@ -137,7 +187,7 @@ const OrderDetail = () => {
 
                   {/* 드롭다운 메뉴 (라디오 버튼 스타일) */}
                   {isDropdownOpen && (
-                    <div className="absolute top-full mt-2 w-[8.8rem] bg-white rounded-[1.25rem] p-4 z-50 shadow-[1px_3px_11.7px_0px_#00000026]">
+                    <div className="absolute top-full mt-2 w-[10rem] bg-white rounded-[1.25rem] p-4 z-50 shadow-[1px_3px_11.7px_0px_#00000026]">
                       <ul className="flex flex-col gap-4">
                         {statusOptions.map((option) => (
                           <li 
@@ -171,16 +221,32 @@ const OrderDetail = () => {
               {isDropdownOpen && <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />}
 
 
-              {/* 운송장 번호 등록 */}
-              <div className="flex justify-between items-center text-[15px]">
-                <span className="body-b0-rg text-[var(--color-gray-50)]">운송장 번호 등록</span>
-                <input 
-                  type="text"
-                  value={order.trackingNumber}
-                  onChange={(e) => setOrder({ ...order, trackingNumber: e.target.value})}
-                  className="w-[20rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[14px]"
-                  title="운송장 번호 입력"
-                />
+              <div className="space-y-2">
+                {/* 운송장 번호 입력 줄 */}
+                <div className="flex justify-between items-center text-[15px]">
+                  <span className="body-b0-rg text-[var(--color-gray-50)]">
+                    운송장 번호
+                  </span>
+                  <input
+                    type="text"
+                    value={order.trackingNumber}
+                    onChange={(e) =>
+                      setOrder({ ...order, trackingNumber: e.target.value })
+                    }
+                    className="w-[22rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[14px]"
+                    title="운송장 번호 입력"
+                  />
+                </div>
+
+                {/* 하단 오른쪽 수정 / 삭제 */}
+                <div className="flex justify-end gap-3 text-[13px]">
+                  <button className="text-[var(--color-gray-50)] body-b2-rg">
+                    수정
+                  </button>
+                  <button className="text-[var(--color-gray-50)] body-b2-rg">
+                    삭제
+                  </button>
+                </div>
               </div>
             </div>
           </div>

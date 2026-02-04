@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import bell from '../../../assets/icons/bell.svg';
 import heart from '../../../assets/icons/heart.svg';
 import shoppingCart from '../../../assets/icons/shoppingCart.svg';
@@ -19,6 +19,8 @@ type UserType = 'customer' | 'seller';
 
 export default function Header() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
   // 탭으로 페이지 전환하기
   const { setActiveTab } = useUserTabStore();
   // Zustand 스토어에서 로그인 상태 구독
@@ -27,8 +29,8 @@ export default function Header() {
   const { logout } = useLogout();
   
   const handleTabClick = (tab: UserTabType) => {
-    setActiveTab(tab);       // store에 activeTab 업데이트
-    navigate('/normal-mypage'); // 페이지 이동
+    setActiveTab(tab);       
+    navigate('/normal-mypage'); 
   }; 
 
   const [userType, setUserType] = useState<UserType>('seller');
@@ -52,6 +54,13 @@ export default function Header() {
     '축구 리폼',
     '크롭티',
   ];
+
+  // 검색 페이지에서 비었을 때만 URL q 표시, 나머지는 searchValue (지우고 다시 쳐도 입력 반영)
+  const urlQ = searchParams.get('q');
+  const displaySearchValue =
+    location.pathname === '/search' && searchValue === ''
+      ? decodeURIComponent(urlQ ?? '')
+      : searchValue;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -82,6 +91,40 @@ export default function Header() {
     setIsSearchOpen(true);
   };
 
+  const addToRecentSearches = (term: string) => {
+    const trimmed = term.trim();
+    if (!trimmed) return;
+    setRecentSearches((prev) => {
+      const without = prev.filter((t) => t !== trimmed);
+      return [trimmed, ...without].slice(0, 5);
+    });
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchValue(value);
+    // 한글 등 IME 조합 중에는 이동하지 않음 (엔터로만 검색)
+    if ((e.nativeEvent as InputEvent).isComposing) return;
+    if (location.pathname === '/search') {
+      navigate(`/search?q=${encodeURIComponent(value)}`, { replace: true });
+    } else if (value.trim()) {
+      addToRecentSearches(value);
+      navigate(`/search?q=${encodeURIComponent(value.trim())}`);
+      setIsSearchOpen(false);
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const value = e.currentTarget.value.trim();
+    setIsSearchOpen(false);
+    if (value) {
+      addToRecentSearches(value);
+      navigate(`/search?q=${encodeURIComponent(value)}`);
+    }
+  };
+
   const handleDeleteRecent = (index: number) => {
     setRecentSearches(recentSearches.filter((_, i) => i !== index));
   };
@@ -95,6 +138,8 @@ export default function Header() {
     if (!recentSearches.includes(term)) {
       setRecentSearches([term, ...recentSearches].slice(0, 5));
     }
+    navigate(`/search?q=${encodeURIComponent(term)}`);
+    setIsSearchOpen(false);
   };
 
   const handleModeSwitch = () => {
@@ -122,8 +167,9 @@ export default function Header() {
         <div className="relative w-[571px]" ref={searchRef}>
           <input
             type="text"
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            value={displaySearchValue}
+            onChange={handleSearchInputChange}
+            onKeyDown={handleSearchKeyDown}
             onClick={handleSearchClick}
             onFocus={handleSearchClick}
             placeholder="어떤 리폼 스타일을 찾으세요?"

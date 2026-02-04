@@ -18,6 +18,7 @@ import ReformerSearch from './pages/reformer-search/ReformerSearch';
 import ReformerSearchResults from './pages/reformer-search/ReformerSearchResults';
 import ReformerListView from './pages/reformer-search/ReformerListView';
 import FeedListView from './pages/reformer-search/FeedListView';
+import Search from './pages/search/Search';
 import ReviewWritePage from './pages/my-page/ReviewWritePage';
 import OrderPage from './pages/order/OrderPage';
 import OrderRequestListPage from './pages/order/OrderRequestListPage';
@@ -92,7 +93,7 @@ function App() {
         <Route path="/reformer/order/suggestions/:id" element={<ReformerOrderSuggestionDetailPage />} />
 
          {/* 프로필 페이지 */}
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:ownerId" element={<Profile />} />
 
          {/* 찜 페이지 */}
         <Route path="/wishlist" element={<Wishlist />} />
@@ -104,6 +105,9 @@ function App() {
         <Route path="/market/product/:id/purchase" element={<MarketPurchasePage />} />
         <Route path="/market/product/:id/purchase/complete" element={<MarketPurchaseCompletePage />} />
         
+
+        {/* 검색 페이지 */}
+        <Route path="/search" element={<Search />} />
 
         {/* 리폼러 찾기 페이지 */}
         <Route path="/reformer-search" element={<ReformerSearch />} />

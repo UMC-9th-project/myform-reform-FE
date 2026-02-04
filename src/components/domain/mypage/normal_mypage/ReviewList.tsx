@@ -3,6 +3,7 @@ import MyReviewGrid from '../MyReviewGrid';
 import { useUserTabStore } from '../../../../stores/tabStore';
 import { useNavigate } from 'react-router-dom';
 import MyReviewCard, {type ProductOrder} from './MyReviewCard';
+import type { ReviewItem } from '../MyReviewGrid';
 type ReviewTab = 'writable' | 'written';
 
 const ReviewList = () => {
@@ -33,8 +34,32 @@ const ReviewList = () => {
     },
   ];
 
+  const dummyReviews: ReviewItem[] = [
+  {
+    id: '1',
+    author: '홍길동',
+    date: '2026-02-02',
+    productImg: 'https://via.placeholder.com/150',
+    productName: '제품 A',
+    productPrice: 25000,
+    rating: 5,
+    content: '정말 만족스러워요!',
+  },
+  {
+    id: '2',
+    author: '김철수',
+    date: '2026-02-01',
+    productImg: 'https://via.placeholder.com/150',
+    productName: '제품 B',
+    productPrice: 18000,
+    rating: 4,
+    content: '괜찮아요.',
+  },
+];
+
+
   return (
-    <div className="w-full min-h-screen pt-0 p-4">
+    <div className="w-full min-h-screen pt-0 pl-0 p-0">
       {/* ===== 상단 탭 ===== */}
       <div className="flex gap-2 mb-6">
         <button
@@ -79,7 +104,7 @@ const ReviewList = () => {
       )}
 
       {/* ===== 내 후기 ===== */}
-      {activeTab === 'written' && <MyReviewGrid />}
+      {activeTab === 'written' && <MyReviewGrid isEditable={true} maxWidth='6xl' reviews={dummyReviews} />}
     </div>
   );
 };
