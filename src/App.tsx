@@ -165,7 +165,7 @@ function App() {
         {/* 회원가입 페이지 */}
         <Route path='/signup' element={<SignupPage />} />
         <Route path="/signup/type" element={<SignupTypeSelection />} />
-        <Route path="/signup/customer-form" element={<SignupFormPage />} />
+        <Route path="/signup/user-form" element={<SignupFormPage />} />
         <Route path="/signup/reformer-form" element={<SignupFormPage />} />
         <Route path="/signup/reformer-registration" element={<ReformerRegistration />} />
         <Route path="/signup/reformer-complete" element={<ReformerRegistrationComplete />} />

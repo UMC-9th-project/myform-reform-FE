@@ -20,6 +20,8 @@ export default function SignupForm() {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [nickname, setNickname] = useState('');
   const [phone, setPhone] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [showVerificationCode, setShowVerificationCode] = useState(false);
 
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -28,6 +30,7 @@ export default function SignupForm() {
   >(null);
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [verificationCodeError, setVerificationCodeError] = useState<string | null>(null);
 
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeAge, setAgreeAge] = useState(false);
@@ -47,6 +50,7 @@ export default function SignupForm() {
     verifyNickname,
     resetVerification: resetNicknameVerification,
     setDuplicateError: setNicknameDuplicateError,
+    isLoading: isNicknameLoading,
   } = useNicknameDuplicate();
 
   const validateForm = () => {
@@ -121,17 +125,42 @@ export default function SignupForm() {
   const handlePhoneChange = (value: string) => {
     setPhone(value);
     validateField(value, phoneSchema, setPhoneError, false);
+    // 전화번호 변경 시 인증코드 입력 필드 숨기기
+    if (showVerificationCode) {
+      setShowVerificationCode(false);
+      setVerificationCode('');
+      setVerificationCodeError(null);
+    }
   };
 
   const handlePhoneVerificationRequest = () => {
     if (!phoneError && phone) {
       startPhoneTimer();
+      setShowVerificationCode(true);
+      setVerificationCode('');
+      setVerificationCodeError(null);
     }
+  };
+
+  const handleVerificationCodeChange = (value: string) => {
+    setVerificationCode(value);
+    if (value.trim()) {
+      setVerificationCodeError(null);
+    }
+  };
+
+  const handleVerificationCodeConfirm = () => {
+    if (!verificationCode.trim()) {
+      setVerificationCodeError('정확한 인증코드를 입력해주세요.');
+      return;
+    }
+    // TODO: 인증코드 검증 API 호출
+    setVerificationCodeError(null);
   };
 
   const handleNicknameDuplicateCheck = () => {
     if (!nicknameError && nickname.trim()) {
-      verifyNickname();
+      verifyNickname(nickname);
     }
   };
 
@@ -241,6 +270,7 @@ export default function SignupForm() {
           }
           showButton
           buttonText="중복확인"
+          buttonDisabled={!nickname || nickname.trim().length === 0 || isNicknameLoading}
           onButtonClick={handleNicknameDuplicateCheck}
           onChange={handleNicknameChange}
         />
@@ -256,9 +286,28 @@ export default function SignupForm() {
           timerSeconds={phoneTimerActive ? phoneTimeLeft : null}
           showButton
           buttonText="인증요청"
+          buttonDisabled={!phone.trim() || !!phoneError}
           onButtonClick={handlePhoneVerificationRequest}
           onChange={handlePhoneChange}
         />
+
+        {showVerificationCode && (
+          <Input
+            type="text"
+            variant="signup"
+            label="인증코드"
+            required
+            placeholder="인증코드를 입력해주세요."
+            value={verificationCode}
+            error={verificationCodeError}
+            timerSeconds={phoneTimerActive ? phoneTimeLeft : null}
+            showButton
+            buttonText="확인"
+            buttonDisabled={!verificationCode.trim() || !!verificationCodeError}
+            onButtonClick={handleVerificationCodeConfirm}
+            onChange={handleVerificationCodeChange}
+          />
+        )}
       </div>
 
       <AgreementSection
