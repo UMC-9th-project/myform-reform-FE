@@ -1,4 +1,4 @@
-import Gallery from '../../../assets/chat/gallery_tmp.svg';
+import Gallery from '../../../assets/chat/gallery.svg';
 
 const EmptyChatRoom = () => {
   return (
