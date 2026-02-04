@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Gallery from '../../../assets/chat/Gallery.svg'
+import Gallery from '../../../assets/chat/gallery_tmp.svg'
 import QuotationCard from './QuotationCard';
 import PaymentCard from './PaymentCard';
 import PaymentModal, { type PaymentRequestData } from './PaymentModal';
