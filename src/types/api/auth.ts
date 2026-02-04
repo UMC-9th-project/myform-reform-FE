@@ -37,7 +37,7 @@ export interface SignupRequest {
   nickname: string;
   phoneNumber: string;
   registration_type: 'LOCAL';
-  oauthId: string;
+  oauthId?: string; // 로컬 회원가입 시 선택적
   password: string;
   over14YearsOld: boolean;
   termsOfService: boolean;

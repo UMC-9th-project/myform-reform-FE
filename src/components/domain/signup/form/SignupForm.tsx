@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Input from '../../../common/input/Input';
 import Button from '../../../common/button/Button1';
 import AgreementSection from '../AgreementSection';
 import {
+  nameSchema,
   emailSchema,
   passwordSchema,
   nicknameSchema,
@@ -12,9 +12,10 @@ import {
 import { validateField } from '../../../../utils/domain/formValidation';
 import { usePhoneVerification } from '../../../../hooks/domain/signup/usePhoneVerification';
 import { useNicknameDuplicate } from '../../../../hooks/domain/signup/useNicknameDuplicate';
+import { useSignup } from '../../../../hooks/domain/signup/useSignup';
 
 export default function SignupForm() {
-  const navigate = useNavigate();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
@@ -23,6 +24,7 @@ export default function SignupForm() {
   const [verificationCode, setVerificationCode] = useState('');
   const [showVerificationCode, setShowVerificationCode] = useState(false);
 
+  const [nameError, setNameError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordConfirmError, setPasswordConfirmError] = useState<
@@ -58,10 +60,20 @@ export default function SignupForm() {
     isLoading: isNicknameLoading,
   } = useNicknameDuplicate();
 
+  const {
+    signup,
+    isLoading: isSignupLoading,
+    error: signupError,
+  } = useSignup();
+
   const validateForm = () => {
     let isValid = true;
 
     // 각 필드 검증 (필수 필드는 required: true)
+    if (!validateField(name, nameSchema, setNameError, true)) {
+      isValid = false;
+    }
+
     if (!validateField(email, emailSchema, setEmailError, true)) {
       isValid = false;
     }
@@ -92,6 +104,11 @@ export default function SignupForm() {
     }
 
     return isValid;
+  };
+
+  const handleNameChange = (value: string) => {
+    setName(value);
+    validateField(value, nameSchema, setNameError, false);
   };
 
   const handleEmailChange = (value: string) => {
@@ -213,16 +230,30 @@ export default function SignupForm() {
     if (!agreeAge || !agreeServiceTerms) {
       return;
     }
-    navigate('/signup/complete', { state: { nickname } });
+
+    // 회원가입 API 호출
+    signup({
+      name,
+      email,
+      nickname,
+      phoneNumber: phone,
+      registration_type: 'LOCAL',
+      password,
+      over14YearsOld: agreeAge,
+      termsOfService: agreeServiceTerms,
+      privacyPolicy: agreePrivacy,
+    });
   };
 
   const isFormValid =
+    !nameError &&
     !emailError &&
     !passwordError &&
     !passwordConfirmError &&
     !nicknameError &&
     !phoneError &&
     isNicknameVerified &&
+    name &&
     email &&
     password &&
     passwordConfirm &&
@@ -234,6 +265,8 @@ export default function SignupForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-[3.5rem] w-full">
       <div className="flex flex-col gap-[2.5rem]">
+       
+
         <Input
           type="email"
           variant="signup"
@@ -268,7 +301,16 @@ export default function SignupForm() {
             onChange={handlePasswordConfirmChange}
           />
         </div>
-
+        <Input
+          type="text"
+          variant="signup"
+          label="이름"
+          required
+          placeholder="이름을 입력해주세요."
+          value={name}
+          error={nameError}
+          onChange={handleNameChange}
+        />
         <Input
           type="text"
           variant="signup"
@@ -333,10 +375,13 @@ export default function SignupForm() {
         onAgreePrivacy={handleAgreePrivacy}
       />
 
+      {signupError && (
+        <div className="text-red-500 text-sm">{signupError}</div>
+      )}
       <Button
         type="submit"
-        variant={isFormValid ? 'primary' : 'disabled'}
-        disabled={!isFormValid}
+        variant={isFormValid && !isSignupLoading ? 'primary' : 'disabled'}
+        disabled={!isFormValid || isSignupLoading}
         className="w-full h-[4.625rem] flex items-center justify-center"
       >
         가입 완료

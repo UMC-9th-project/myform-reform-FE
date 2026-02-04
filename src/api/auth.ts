@@ -2,11 +2,12 @@ import { api } from './axios';
 import type { SignupRequest, SignupResponse, LoginRequest, LoginResponse, LogoutResponse, SmsSendRequest, SmsSendResponse, SmsVerifyRequest, SmsVerifyResponse } from '../types/api/auth';
 
 
+// 일반 사용자 회원가입 API
 export const signupUser = async (
   data: SignupRequest
 ): Promise<SignupResponse> => {
   const response = await api.post<SignupResponse>(
-    '/auth/signup/local',
+    '/auth/signup/user',
     data
   );
   return response.data;
