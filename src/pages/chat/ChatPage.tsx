@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ChatListTab from '../../components/domain/chat/ChatListTab';
 import ChatRoom from '../../components/domain/chat/ChatRoom';
 import EmptyChatRoom from '../../components/domain/chat/EmptyChatRoom';
+import NoChatYet from '../../components/domain/chat/NoChatYet';
 
 type Role = 'USER' | 'REFORMER';
 
@@ -13,10 +15,9 @@ const ChatPage = ({ role }: ChatPageProps) => {
   const { chatId } = useParams<{ chatId?: string }>();
   const navigate = useNavigate();
 
-  // 선택된 채팅 ID (없으면 null)
-  const selectedChatId = chatId ? Number(chatId) : null;
+  const [hasChats, setHasChats] = useState(true); // 채팅방 존재 여부
 
-  // URL 경로 기본값 설정
+  const selectedChatId = chatId ?? null;
   const basePath = role === 'USER' ? 'normal' : 'reformer';
 
   return (
@@ -27,18 +28,20 @@ const ChatPage = ({ role }: ChatPageProps) => {
         <ChatListTab
           selectedChat={selectedChatId}
           setSelectedChat={(id) => navigate(`/chat/${basePath}/${id}`)}
+          onChatsLoaded={(chatCount) => setHasChats(chatCount > 0)}
         />
       </div>
 
       {/* 왼쪽 채팅방 컨테이너 */}
       <div className="flex-1 mr-0 m-10 flex flex-col min-w-0 bg-white overflow-hidden">
-        {selectedChatId === null ? (
+        {!hasChats ? (
+          <NoChatYet />
+        ) : selectedChatId === null ? (
           <EmptyChatRoom />
         ) : (
           <ChatRoom chatId={selectedChatId} myRole={role} />
         )}
       </div>
-
     </div>
   );
 };

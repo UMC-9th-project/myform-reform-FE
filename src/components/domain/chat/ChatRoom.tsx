@@ -10,12 +10,12 @@ import EstimateArrivalCard from './EstimateArriveCard';
 import { useNavigate } from 'react-router-dom';
 
 interface ChatRoomProps {
-  chatId: number;
+  chatId: string;
   myRole: 'REFORMER' | 'USER';
 }
 
 // mock 데이터
-const mockMessages: Record<number, Message[]> = {
+const mockMessages: Record<string, Message[]> = {
   1: [
     { id: 1, text: "1번 채팅방 첫 메시지입니다.", senderRole: 'USER', time: '오후 08:30', type: 'text', isRead: false },
     { id: 2, text: "1번 채팅방 두 번째 메시지입니다.", senderRole: 'REFORMER', time: '오후 08:35', type: 'text', isRead: true },

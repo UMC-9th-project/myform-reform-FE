@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 interface QuotationCardProps {
   type: 'sent' | 'received';
   id?: number;
-  chatId?: number;
+  chatId?: string;
   myRole?: 'REFORMER' | 'USER';
   msgType?: 'quotation' | 'require';
 }
