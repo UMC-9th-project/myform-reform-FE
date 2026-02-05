@@ -1,4 +1,4 @@
-import type { WishlistMenuType } from '../../../types/domain/wishlist/wishlist';
+import type { WishlistMenuType } from '@/types/api/wishlist/wishlist';
 
 interface WishlistSidebarProps {
   activeMenu: WishlistMenuType;

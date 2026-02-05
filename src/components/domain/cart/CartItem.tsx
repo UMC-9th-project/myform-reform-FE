@@ -1,6 +1,6 @@
 import Checkbox from '../../common/checkbox/Checkbox';
 import OptionQuantity from '../../common/product/option/option-quantity-button/OptionQuantity';
-import type { CartProduct } from '../../../types/domain/cart/cart';
+import type { CartProduct } from '@/types/api/cart/cart';
 import xIcon from '../../../assets/icons/x.svg';
 
 interface CartItemProps {
