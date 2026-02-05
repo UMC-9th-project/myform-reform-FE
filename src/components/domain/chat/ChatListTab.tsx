@@ -99,8 +99,7 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
                 setSelectedChat({
                   chatRoomId: chat.chatRoomId,
                   roomType: chat.roomType as 'FEED' | 'PROPOSAL' | 'REQUEST',
-                  image: chat.image,
-                  title: chat.title,
+                
                 })
               }
             >
