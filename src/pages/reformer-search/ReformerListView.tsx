@@ -1,31 +1,8 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import Select from '../../components/common/dropdown/SortDropdown';
 import ReformerProfileCard from '../../components/domain/reformer-search/ReformerProfileCard';
-import Pagination from '../../components/common/pagination/Pagination';
-
-// 더미 데이터 (132명 시뮬레이션)
-const generateMockReformers = () => {
-  const reformers = [];
-  for (let i = 1; i <= 132; i++) {
-    reformers.push({
-      id: i,
-      name: `침착한 대머리독수리 ${i}`,
-      rating: 4.9,
-      reviewCount: 271,
-      transactionCount: 415,
-      description:
-        '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어있던 옷에 새로운 가치와...',
-      tags: ['#빠른', '#친절한'],
-    });
-  }
-  return reformers;
-};
-
-const MOCK_REFORMERS = generateMockReformers();
-const ITEMS_PER_PAGE = 15;
-const TOTAL_PAGES = Math.ceil(MOCK_REFORMERS.length / ITEMS_PER_PAGE);
+import { useReformerListView } from '../../hooks/domain/reformer-search/useReformerListView';
 
 const SORT_OPTIONS = [
   { value: 'alphabetical', label: '가나다순' },
@@ -35,17 +12,16 @@ const SORT_OPTIONS = [
 
 const ReformerListView = () => {
   const navigate = useNavigate();
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState('alphabetical');
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const displayedReformers = MOCK_REFORMERS.slice(startIndex, endIndex);
+  const {
+    sortBy,
+    setSortBy,
+    reformers,
+    totalCount,
+    isLoading,
+    isError,
+    isFetchingNextPage,
+    observerTargetRef,
+  } = useReformerListView();
 
   const breadcrumbItems = [
     { label: '홈', path: '/' },
@@ -73,37 +49,54 @@ const ReformerListView = () => {
           {/* 총 리폼러 수 및 정렬 */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <p className="body-b1-rg text-[var(--color-black)]">
-              총 {MOCK_REFORMERS.length}명의 리폼러
+              총 {totalCount}명의 리폼러
             </p>
 
             <Select
               options={SORT_OPTIONS}
               value={sortBy}
-              onChange={setSortBy}
+              onChange={(value) => setSortBy(value as typeof sortBy)}
             />
           </div>
         </div>
 
         {/* 리폼러 그리드 */}
         <div className="px-0 md:px-[110px] mb-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-[1.875rem]">
-            {displayedReformers.map((reformer) => (
-              <ReformerProfileCard
-                key={reformer.id}
-                name={reformer.name}
-                rating={reformer.rating}
-                reviewCount={reformer.reviewCount}
-                transactionCount={reformer.transactionCount}
-                description={reformer.description}
-                tags={reformer.tags}
-                onClick={() => navigate('/profile')}
-              />
-            ))}
+          {isError ? (
+            <div className="py-16 text-center body-b2-rg text-[var(--color-gray-60)]">
+              리폼러 목록을 불러오지 못했습니다.
+            </div>
+          ) : isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-[1.875rem]">
+              {Array.from({ length: 9 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="bg-[var(--color-gray-30)] rounded-[1.25rem] animate-pulse"
+                  style={{ minHeight: '250px' }}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-[1.875rem]">
+              {reformers.map((reformer) => (
+                <ReformerProfileCard
+                  key={reformer.owner_id}
+                  reformer={reformer}
+                  onClick={() => navigate('/profile')}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* 무한 스크롤 감지 영역 */}
+          <div ref={observerTargetRef} className="h-20 flex items-center justify-center">
+            {isFetchingNextPage && (
+              <div className="text-[var(--color-gray-50)] body-b2-rg">
+                로딩 중...
+              </div>
+            )}
           </div>
         </div>
-
-        {/* 페이지네이션 */}
-        <Pagination totalPages={TOTAL_PAGES} onPageChange={handlePageChange} />
       </div>
     </div>
   );

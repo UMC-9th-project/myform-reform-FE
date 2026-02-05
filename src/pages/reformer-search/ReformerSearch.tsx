@@ -1,77 +1,19 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import ReformerSearchEngine from '../../components/domain/reformer-search/ReformerSearchEngine';
 import ReformerList from '../../components/domain/reformer-search/ReformerList';
 import ReformFeed from '../../components/domain/reformer-search/ReformFeed';
 import ReformerSearchResultSkeleton from '../../components/domain/reformer-search/ReformerSearchResultSkeleton';
-
-// 더미 데이터
-const MOCK_REFORMERS = [
-  {
-    id: 1,
-    name: '침착한 대머리독수리',
-    rating: 4.9,
-    reviewCount: 271,
-    transactionCount: 415,
-    description:
-      '- 2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-    tags: ['#빠른', '#친절한'],
-  },
-  {
-    id: 2,
-    name: '침착한 대머리독수리',
-    rating: 4.9,
-    reviewCount: 271,
-    transactionCount: 415,
-    description:
-      '- 2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-    tags: ['#빠른', '#친절한'],
-  },
-  {
-    id: 3,
-    name: '침착한 대머리독수리',
-    rating: 4.9,
-    reviewCount: 271,
-    transactionCount: 415,
-    description:
-      '- 2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-    tags: ['#빠른', '#친절한'],
-  },
-];
-
-// 더미 이미지 데이터 (내 리폼 취향 탐색해보기)
-const MOCK_PREFERENCE_IMAGES = [
-  {
-    id: 1,
-    image: '/wsh1.jpg',
-  },
-  {
-    id: 2,
-    image: '/wsh2.jpg',
-  },
-  {
-    id: 3,
-    image: '/wsh3.jpg',
-  },
-  {
-    id: 4,
-    image: '/wsh4.jpg',
-  },
-];
+import { useReformerSearchHome } from '../../hooks/domain/reformer-search/useReformerSearchHome';
 
 const ReformerSearch = () => {
-  const navigate = useNavigate();
-  const [searchInput, setSearchInput] = useState('');
-
-  const handleSearch = (query: string) => {
-    if (query.trim()) {
-      navigate(`/reformer-search/results?q=${encodeURIComponent(query.trim())}`);
-    }
-  };
-
-  const handleInputChange = (value: string) => {
-    setSearchInput(value);
-  };
+  const {
+    isTyping,
+    handleSearch,
+    handleInputChange,
+    reformerPreviewItems,
+    isReformerListLoading,
+    preferenceFeeds,
+    navigate,
+  } = useReformerSearchHome();
  
   return (
     <div className="bg-white pb-[7.4375rem]">
@@ -85,27 +27,53 @@ const ReformerSearch = () => {
         <ReformerSearchEngine 
           onSearch={handleSearch} 
           onInputChange={handleInputChange}
-          showBlur={!searchInput.trim()}
+          showBlur={!isTyping}
         />
 
         {/* 검색어 입력 중 스켈레톤 표시 */}
-        {searchInput.trim() && (
+        {isTyping && (
           <div className="mb-[2.5rem]">
-            <ReformerSearchResultSkeleton count={8} />
+            <ReformerSearchResultSkeleton />
           </div>
         )}
 
         {/* 전체 리폼러 한눈에 보기 */}
-        {!searchInput.trim() && (
+        {!isTyping && (
           <>
-            <ReformerList 
-              items={MOCK_REFORMERS}
-              onMoreClick={() => navigate('/reformer-search/all')}
-            />
+            {isReformerListLoading ? (
+              <section className="pt-8 md:pt-[4.375rem] pb-12 md:pb-[6.25rem] px-4 md:px-[110px]">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 md:pb-[1.875rem] gap-4">
+                  <h2 className="heading-h4-bd text-[var(--color-black)]">
+                    전체 리폼러 한눈에 보기 👀
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/reformer-search/all')}
+                    className="body-b1-rg text-[var(--color-gray-60)] hover:text-[var(--color-black)] transition-colors flex items-center gap-[0.5rem] cursor-pointer"
+                  >
+                    더보기
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-[1.875rem]">
+                  {Array.from({ length: 3 }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className="bg-[var(--color-gray-30)] rounded-[1.25rem] animate-pulse"
+                      style={{ minHeight: '250px' }}
+                    />
+                  ))}
+                </div>
+              </section>
+            ) : (
+              <ReformerList
+                items={reformerPreviewItems}
+                onMoreClick={() => navigate('/reformer-search/all')}
+              />
+            )}
 
             {/* 내 리폼 취향 탐색해보기 */}
             <ReformFeed 
-              images={MOCK_PREFERENCE_IMAGES}
+              feeds={preferenceFeeds}
               onMoreClick={() => navigate('/reformer-search/feed')}
             />
           </>
