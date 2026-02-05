@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { getReformerSearch } from '@/api/reformer';
+import { getReformerSearch } from '@/api/reformer.ts';
 import { useInfiniteScrollObserver } from '../../useInfiniteScrollObserver';
 
 export function useReformerSearchResults() {

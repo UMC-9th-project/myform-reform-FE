@@ -14,9 +14,6 @@ export const signupUser = async (
 };
 
 
-import type { LoginRequest, LoginResponse, LogoutResponse } from '@/types/api/auth';
-
-
 export const loginUser = async (
   data: LoginRequest
 ): Promise<LoginResponse> => {
