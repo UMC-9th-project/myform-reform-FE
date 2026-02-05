@@ -384,12 +384,16 @@ const OrderRequestDetailPage = () => {
                 {recommendedReformers.map((reformer) => (
                   <div key={reformer.id} className="flex-shrink-0 w-[23.75rem]">
                     <ReformerSearchCard
-                      name={reformer.name}
-                      rating={reformer.rating}
-                      reviewCount={reformer.reviewCount}
-                      transactionCount={reformer.transactionCount}
-                      description={reformer.description}
-                      tags={reformer.tags}
+                      reformer={{
+                        owner_id: reformer.id,
+                        nickname: reformer.name,
+                        keywords: reformer.tags,
+                        bio: reformer.description,
+                        profile_photo: reformer.profileImg,
+                        avg_star: reformer.rating,
+                        review_count: reformer.reviewCount,
+                        trade_count: reformer.transactionCount,
+                      }}
                     />
                   </div>
                 ))}

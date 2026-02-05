@@ -1,7 +1,7 @@
 import CartContent from '../../components/domain/cart/CartContent';
 import EmptyCart from '../../components/domain/cart/EmptyCart';
 import { useCart } from '../../hooks/domain/cart/useCart';
-import type { CartProduct, CartSeller } from '../../types/domain/cart/cart';
+import type { CartProduct, CartSeller } from '@/types/api/cart/cart';
 
 const INITIAL_SELLERS: CartSeller[] = [
   {

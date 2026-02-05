@@ -1,54 +1,21 @@
-import { useState, useEffect, useRef } from 'react';
 import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import ReformFeedCard from '../../components/domain/reformer-search/ReformFeedCard';
-
-// 더미 데이터 생성 함수
-const generateMockFeedImage = (id: number) => ({
-  id,
-  image: `/wsh${((id - 1) % 4) + 1}.jpg`,
-});
-
-const ITEMS_PER_PAGE = 20; // 한 번에 로드할 아이템 수
+import { useReformerFeedListView } from '../../hooks/domain/reformer-search/useReformerFeedListView';
 
 const FeedListView = () => {
-  const [displayedItems, setDisplayedItems] = useState<number>(ITEMS_PER_PAGE);
-  const [isLoading, setIsLoading] = useState(false);
-  const observerTarget = useRef<HTMLDivElement>(null);
+  const {
+    feeds,
+    isLoading,
+    isError,
+    isFetchingNextPage,
+    observerTargetRef,
+  } = useReformerFeedListView();
 
   const breadcrumbItems = [
     { label: '홈', path: '/' },
     { label: '리폼러 찾기', path: '/reformer-search' },
     { label: '피드 보기' },
   ];
-
-  // 무한 스크롤 로직
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
-          setIsLoading(true);
-          // 다음 데이터 로드 시뮬레이션 (API 호출 시뮬레이션)
-          setTimeout(() => {
-            setDisplayedItems((prev) => prev + ITEMS_PER_PAGE);
-            setIsLoading(false);
-          }, 500);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const target = observerTarget.current;
-    if (target) observer.observe(target);
-
-    return () => {
-      if (target) observer.unobserve(target);
-    };
-  }, [isLoading]);
-
-  // 표시할 아이템들 생성
-  const feedImages = Array.from({ length: displayedItems }, (_, i) =>
-    generateMockFeedImage(i + 1)
-  );
 
   return (
     <div className="bg-white pb-[7.4375rem]">
@@ -72,23 +39,38 @@ const FeedListView = () => {
 
         {/* 피드 그리드 */}
         <div className="px-0 md:px-[110px]">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-[0.875rem]">
-            {feedImages.map((item) => (
-              <ReformFeedCard
-                key={item.id}
-                id={item.id}
-                image={item.image}
-                onClick={() => {
-                  // 피드 상세 페이지로 이동 (추후 구현)
-                  console.log('피드 클릭:', item.id);
-                }}
-              />
-            ))}
-          </div>
+          {isError ? (
+            <div className="py-16 text-center body-b2-rg text-[var(--color-gray-60)]">
+              피드를 불러오지 못했습니다.
+            </div>
+          ) : isLoading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-[0.875rem]">
+              {Array.from({ length: 12 }).map((_, idx) => (
+                <div
+                  key={idx}
+                  className="w-full bg-[var(--color-gray-30)] animate-pulse"
+                  style={{ aspectRatio: '1/1.3' }}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-[0.875rem]">
+              {feeds.map((item) => (
+                <ReformFeedCard
+                  key={item.feed_id}
+                  feed={item}
+                  onClick={() => {
+                    // TODO: 피드 상세 페이지로 이동 (추후 구현)
+                    console.log('피드 클릭:', item.feed_id);
+                  }}
+                />
+              ))}
+            </div>
+          )}
 
           {/* 무한 스크롤 감지 영역 */}
-          <div ref={observerTarget} className="h-20 flex items-center justify-center">
-            {isLoading && (
+          <div ref={observerTargetRef} className="h-20 flex items-center justify-center">
+            {isFetchingNextPage && (
               <div className="text-[var(--color-gray-50)] body-b2-rg">
                 로딩 중...
               </div>
