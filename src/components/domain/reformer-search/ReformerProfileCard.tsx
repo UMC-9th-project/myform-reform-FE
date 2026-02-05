@@ -1,27 +1,23 @@
-import profile from '../market/images/profile.png';
 import starIcon from '../../../assets/icons/star.svg';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface ReformerSearchCardProps {
-  name: string;
-  rating: number;
-  reviewCount: number;
-  transactionCount: number;
-  description: string;
-  tags: string[];
-  onClick?: () => void;
-}
+import profileIcon from '../../../assets/icons/profile.svg';
+import type { ReformerProfileCardProps } from './types';
 
 const ReformerSearchCard = ({
-  name,
-  rating,
-  reviewCount,
-  transactionCount,
-  description,
-  tags,
+  reformer,
   onClick,
-}: ReformerSearchCardProps) => {
+}: ReformerProfileCardProps) => {
   const navigate = useNavigate();
+  const [isImageError, setIsImageError] = useState(false);
+  const shouldShowPlaceholder = !reformer.profile_photo || isImageError;
+  const formattedRating = Number.isFinite(reformer.avg_star)
+    ? reformer.avg_star.toFixed(1)
+    : '-';
+  const tags = (reformer.keywords ?? []).map((k) =>
+    k.startsWith('#') ? k : `#${k}`
+  );
+
   const handleClick = () => {
     if (onClick) return onClick();
     navigate('/profile');
@@ -38,13 +34,26 @@ const ReformerSearchCard = ({
     >
       {/* 프로필 이미지와 이름 */}
       <div className="flex items-center gap-2 md:gap-[0.75rem]">
-        <img
-          src={profile}
-          alt={name}
-          className="w-12 h-12 md:w-[5.75rem] md:h-[5.75rem] rounded-full object-cover border border-[rgba(0,0,0,0.15)] flex-shrink-0"
-        />
+        {shouldShowPlaceholder ? (
+          <div className="w-12 h-12 md:w-[5.75rem] md:h-[5.75rem] flex-shrink-0 overflow-hidden">
+            <img
+              src={profileIcon}
+              alt="default profile"
+              className="w-full h-full object-cover scale-[1.2]"
+            />
+          </div>
+        ) : (
+          <img
+            src={reformer.profile_photo}
+            alt={reformer.nickname}
+            className="w-12 h-12 md:w-[5.75rem] md:h-[5.75rem] rounded-full object-cover border border-[rgba(0,0,0,0.15)] flex-shrink-0"
+            onError={() => setIsImageError(true)}
+          />
+        )}
         <div className="flex flex-col gap-[0.25rem]">
-          <h3 className="body-b0-sb text-[var(--color-black)]">{name}</h3>
+          <h3 className="body-b0-sb text-[var(--color-black)]">
+            {reformer.nickname}
+          </h3>
           <div className="flex items-center gap-[0.375rem]">
             <img
               src={starIcon}
@@ -52,14 +61,16 @@ const ReformerSearchCard = ({
               className="w-[1.25rem] h-[1.25rem]"
             />
             <span className="body-b3-rg">
-              <span className="text-[var(--color-black)]">{rating}</span>{' '}
+              <span className="text-[var(--color-black)]">{formattedRating}</span>{' '}
               <span className="text-[var(--color-gray-50)]">
-                ({reviewCount})
+                ({reformer.review_count})
               </span>
             </span>
             <span className="body-b3-rg text-[var(--color-gray-50)]">·</span>
             <span className="body-b3-rg">
-              <span className="text-[var(--color-black)]">{transactionCount}</span>
+              <span className="text-[var(--color-black)]">
+                {reformer.trade_count}
+              </span>
               <span className="text-[var(--color-gray-50)]">회 거래</span>
             </span>
           </div>
@@ -68,7 +79,7 @@ const ReformerSearchCard = ({
 
       {/* 설명 */}
       <p className="body-b2-rg text-[var(--color-gray-50)] line-clamp-2">
-        {description}
+        {reformer.bio}
       </p>
 
       {/* 해시태그 */}

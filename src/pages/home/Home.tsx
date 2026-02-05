@@ -18,6 +18,15 @@ import service4 from '../../assets/home/service4.jpg';
 import 'swiper/css';
 import 'swiper/css/navigation';
 
+const BEST_REFORMER_CARD = {
+  nickname: '침착한 대머리독수리',
+  avg_star: 4.9,
+  review_count: 271,
+  trade_count: 415,
+  bio: '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
+  keywords: ['#빠른', '#친절한'],
+} as const;
+
 
 const productData = [
   {
@@ -165,43 +174,59 @@ const Home = () => {
             >
               <SwiperSlide>
                 <ReformerSearchCard
-                  name="침착한 대머리독수리"
-                  rating={4.9}
-                  reviewCount={271}
-                  transactionCount={415}
-                  description="- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움..."
-                  tags={['#빠른', '#친절한']}
+                  reformer={{
+                    owner_id: 'home-best-1',
+                    nickname: BEST_REFORMER_CARD.nickname,
+                    keywords: [...BEST_REFORMER_CARD.keywords],
+                    bio: BEST_REFORMER_CARD.bio,
+                    profile_photo: '',
+                    avg_star: BEST_REFORMER_CARD.avg_star,
+                    review_count: BEST_REFORMER_CARD.review_count,
+                    trade_count: BEST_REFORMER_CARD.trade_count,
+                  }}
                 />
               </SwiperSlide>
 
               <SwiperSlide>
                 <ReformerSearchCard
-                  name="침착한 대머리독수리"
-                  rating={4.9}
-                  reviewCount={271}
-                  transactionCount={415}
-                  description="- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움..."
-                  tags={['#빠른', '#친절한']}
+                  reformer={{
+                    owner_id: 'home-best-2',
+                    nickname: BEST_REFORMER_CARD.nickname,
+                    keywords: [...BEST_REFORMER_CARD.keywords],
+                    bio: BEST_REFORMER_CARD.bio,
+                    profile_photo: '',
+                    avg_star: BEST_REFORMER_CARD.avg_star,
+                    review_count: BEST_REFORMER_CARD.review_count,
+                    trade_count: BEST_REFORMER_CARD.trade_count,
+                  }}
                 />
               </SwiperSlide>
               <SwiperSlide>
                 <ReformerSearchCard
-                  name="침착한 대머리독수리"
-                  rating={4.9}
-                  reviewCount={271}
-                  transactionCount={415}
-                  description="- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움..."
-                  tags={['#빠른', '#친절한']}
+                  reformer={{
+                    owner_id: 'home-best-3',
+                    nickname: BEST_REFORMER_CARD.nickname,
+                    keywords: [...BEST_REFORMER_CARD.keywords],
+                    bio: BEST_REFORMER_CARD.bio,
+                    profile_photo: '',
+                    avg_star: BEST_REFORMER_CARD.avg_star,
+                    review_count: BEST_REFORMER_CARD.review_count,
+                    trade_count: BEST_REFORMER_CARD.trade_count,
+                  }}
                 />
               </SwiperSlide>
               <SwiperSlide>
                 <ReformerSearchCard
-                  name="침착한 대머리독수리"
-                  rating={4.9}
-                  reviewCount={271}
-                  transactionCount={415}
-                  description="- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움..."
-                  tags={['#빠른', '#친절한']}
+                  reformer={{
+                    owner_id: 'home-best-4',
+                    nickname: BEST_REFORMER_CARD.nickname,
+                    keywords: [...BEST_REFORMER_CARD.keywords],
+                    bio: BEST_REFORMER_CARD.bio,
+                    profile_photo: '',
+                    avg_star: BEST_REFORMER_CARD.avg_star,
+                    review_count: BEST_REFORMER_CARD.review_count,
+                    trade_count: BEST_REFORMER_CARD.trade_count,
+                  }}
                 />
               </SwiperSlide>
             </Swiper>

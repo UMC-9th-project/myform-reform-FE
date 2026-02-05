@@ -1,5 +1,5 @@
 import Checkbox from '../../common/checkbox/Checkbox';
-import type { CartProduct, CartSeller } from '../../../types/domain/cart/cart';
+import type { CartProduct, CartSeller } from '@/types/api/cart/cart';
 import CartItem from './CartItem';
 import truckIcon from '../../../assets/icons/truck.svg';
 import rightIcon from '../../../assets/icons/right.svg';

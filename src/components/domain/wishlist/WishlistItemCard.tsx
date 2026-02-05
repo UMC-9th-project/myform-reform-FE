@@ -1,6 +1,6 @@
 import LikeButton from '../../common/likebutton/LikeButton';
 import starIcon from '../../../assets/icons/star.svg';
-import type { WishlistItem } from '../../../types/domain/wishlist/wishlist';
+import type { WishlistItem } from '@/types/api/wishlist/wishlist';
 
 interface WishlistItemCardProps {
   item: WishlistItem;
