@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { getChatRooms, type ChatRoom, type ChatRoomFilter } from '../../../api/chat/chatApi';
 
+interface SelectedChat {
+  chatRoomId: string;
+  roomType: 'FEED' | 'PROPOSAL' | 'REQUEST';
+}
+
 interface ChatListTabProps {
-  selectedChat: string | null;
-  setSelectedChat: (id: string) => void;
+  selectedChat: SelectedChat | null;
+  setSelectedChat: (chat: SelectedChat) => void;
   onChatsLoaded?: (chatCount: number) => void;
 }
 
@@ -85,14 +90,22 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
       </div>
     ) : (
       <>
-        {chats.map(chat => (
-          <div
-            key={chat.chatRoomId}
-            className={`flex items-center p-4 cursor-pointer transition-colors ${
-              selectedChat === chat.chatRoomId ? 'bg-[var(--color-gray-20)]' : ''
-            }`}
-            onClick={() => setSelectedChat(chat.chatRoomId)}
-          >
+      
+          {chats.map((chat) => (
+            <div
+              key={chat.chatRoomId}
+              className={`flex items-center p-4 cursor-pointer transition-colors ${
+                selectedChat?.chatRoomId === chat.chatRoomId
+                  ? 'bg-[var(--color-gray-20)]'
+                  : ''
+              }`}
+              onClick={() =>
+                setSelectedChat({
+                  chatRoomId: chat.chatRoomId,
+                  roomType: chat.roomType as 'FEED' | 'PROPOSAL' | 'REQUEST',
+                })
+              }
+            >
             <img
               src={chat.image}
               alt="thumb"

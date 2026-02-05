@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 interface ChatRoomProps {
   chatId: string;
   myRole: 'REFORMER' | 'USER';
+  roomType: 'FEED' | 'PROPOSAL' | 'REQUEST';
 }
 
 // mock 데이터
@@ -59,7 +60,7 @@ const mockMessages: Record<string, Message[]> = {
 
 };
 
-const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
+const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -201,16 +202,20 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
         onSend={handlePaymentSend} 
       />
 
-      {/* 상단 상품 정보 */}
-      <div className="flex items-center p-4 border-b border-[var(--color-line-gray-40)]">
-        <div className="w-12 h-12 bg-gray-200 rounded-md overflow-hidden mr-3 flex items-center justify-center text-[10px] text-white">
-          IMAGE
+  
+      {/* 상단 상품 정보: PROPOSAL 또는 REQUEST일 때만 */}
+      {(roomType === 'PROPOSAL' || roomType === 'REQUEST') && (
+        <div className="flex items-center p-4 border-b border-[var(--color-line-gray-40)]">
+          <div className="w-12 h-12 bg-gray-200 rounded-md overflow-hidden mr-3 flex items-center justify-center text-[10px] text-white">
+            IMAGE
+          </div>
+          <div>
+            <h2 className="text-[14px] font-medium text-black">짐색 리폼 요청합니다.</h2>
+            <p className="text-[14px] font-bold text-black">30,000~50,000원</p>
+          </div>
         </div>
-        <div>
-          <h2 className="text-[14px] font-medium text-black">짐색 리폼 요청합니다.</h2>
-          <p className="text-[14px] font-bold text-black">30,000~50,000원</p>
-        </div>
-      </div>
+      )}
+
 
       {/* 채팅 내역 */}
       <div 
@@ -374,26 +379,28 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
               >
                 결제창 보내기
               </button>
-              {!messages.some((msg) => msg.type === 'quotation') && (
-                <button
-                  onClick={handleSendQuotationOrRequire}
-                  className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
-                >
-                  견적서 보내기
-                </button>
-              )}
+              {myRole === 'REFORMER' &&
+                roomType !== 'PROPOSAL' &&
+                  <button
+                    onClick={handleSendQuotationOrRequire}
+                    className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+                  >
+                    견적서 보내기
+                  </button>
+              }
             </>
           )}
 
           {/* USER 전용 버튼 */}
-          {myRole === 'USER' && !messages.some((msg) => msg.type === 'quotation') && (
-            <button
-              onClick={handleSendQuotationOrRequire}
-              className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
-            >
-              요청서 보내기
-            </button>
-          )}
+          {myRole === 'USER' &&
+            (roomType === 'FEED' || roomType === 'REQUEST') &&  
+              <button
+                onClick={handleSendQuotationOrRequire}
+                className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+              >
+                요청서 보내기
+              </button>
+          }
         </div>
 
         {/* 오른쪽 보내기 버튼 */}
