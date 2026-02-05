@@ -1,27 +1,21 @@
-import profile from '../market/images/profile.png';
 import starIcon from '../../../assets/icons/star.svg';
-
-interface ReformerSearchResultCardProps {
-  name: string;
-  rating: number;
-  reviewCount: number;
-  transactionCount: number;
-  description: string;
-  tags: string[];
-  onClick?: () => void;
-  isLast?: boolean;
-}
+import { useState } from 'react';
+import type { ReformerSearchResultCardProps } from './types';
 
 const ReformerSearchResultCard = ({
-  name,
-  rating,
-  reviewCount,
-  transactionCount,
-  description,
-  tags,
+  reformer,
   onClick,
   isLast = false,
 }: ReformerSearchResultCardProps) => {
+  const [isImageError, setIsImageError] = useState(false);
+  const shouldShowPlaceholder = !reformer.profile_photo || isImageError;
+  const formattedRating = Number.isFinite(reformer.avg_star)
+    ? reformer.avg_star.toFixed(1)
+    : '-';
+  const tags = (reformer.keywords ?? []).map((k) =>
+    k.startsWith('#') ? k : `#${k}`
+  );
+
   return (
     <div
       className={`bg-white py-4 flex gap-4 md:gap-[1.5rem] cursor-pointer w-full max-w-[719px] ${isLast ? '' : 'border-b border-[var(--color-gray-40)]'}`}
@@ -30,7 +24,9 @@ const ReformerSearchResultCard = ({
       {/* 왼쪽: 텍스트 정보 */}
       <div className="flex-1 flex flex-col gap-[0.475rem]">
         {/* 이름 */}
-        <h3 className="body-b0-sb text-[var(--color-black)]">{name}</h3>
+        <h3 className="body-b0-sb text-[var(--color-black)]">
+          {reformer.nickname}
+        </h3>
 
         {/* 별점과 거래 횟수 */}
         <div className="flex items-center gap-[0.375rem]">
@@ -40,14 +36,16 @@ const ReformerSearchResultCard = ({
             className="w-[1.25rem] h-[1.25rem]"
           />
           <span className="body-b3-rg">
-            <span className="text-[var(--color-black)]">{rating}</span>{' '}
+            <span className="text-[var(--color-black)]">{formattedRating}</span>{' '}
             <span className="text-[var(--color-gray-50)]">
-              ({reviewCount})
+              ({reformer.review_count})
             </span>
           </span>
           <span className="body-b3-rg text-[var(--color-gray-50)]">·</span>
           <span className="body-b3-rg">
-            <span className="text-[var(--color-black)]">{transactionCount}회 </span>
+            <span className="text-[var(--color-black)]">
+              {reformer.trade_count}회{' '}
+            </span>
             <span className="text-[var(--color-gray-50)]">거래</span>
           </span>
         </div>
@@ -66,17 +64,22 @@ const ReformerSearchResultCard = ({
 
         {/* 설명 */}
         <p className="pt-4 body-b2-rg text-[var(--color-gray-50)] line-clamp-3">
-          {description}
+          {reformer.bio}
         </p>
       </div>
 
       {/* 오른쪽: 프로필 이미지 */}
       <div className="flex-shrink-0">
-        <img
-          src={profile}
-          alt={name}
-          className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded-[10px] object-cover border border-[rgba(0,0,0,0.15)]"
-        />
+        {shouldShowPlaceholder ? (
+          <div className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded-[10px] border border-[var(--color-line-gray-40)] bg-[var(--color-gray-30)]" />
+        ) : (
+          <img
+            src={reformer.profile_photo}
+            alt={reformer.nickname}
+            className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] rounded-[10px] object-cover border border-[rgba(0,0,0,0.15)]"
+            onError={() => setIsImageError(true)}
+          />
+        )}
       </div>
     </div>
   );
