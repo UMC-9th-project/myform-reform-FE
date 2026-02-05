@@ -233,14 +233,37 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
             <button onClick={() => fileInputRef.current?.click()}><img src={Gallery} alt="gallery" className="w-7" /></button>
             <input type="file" title= "파일 첨부" ref={fileInputRef} className="hidden" multiple accept="image/*" />
             
-            {myRole === 'REFORMER' ? (
+            <div className="flex items-center gap-3">
+            {myRole === 'REFORMER' && (
               <>
-                <button onClick={() => setIsPaymentModalOpen(true)} className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full text-[12px] text-gray-500">결제창 보내기</button>
-                <button onClick={handleSendAction} className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full text-[12px] text-gray-500">견적서 보내기</button>
+                <button 
+                  onClick={() => setIsPaymentModalOpen(true)} 
+                  className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+                >
+                  결제창 보내기
+                </button>
+
+                {roomType !== 'PROPOSAL' && (
+                  <button 
+                    onClick={handleSendAction} 
+                    className="px-3 py-1 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+                  >
+                    견적서 보내기
+                  </button>
+                )}
               </>
-            ) : (
-              <button onClick={handleSendAction} className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full text-[12px] text-gray-500">요청서 보내기</button>
             )}
+            {myRole === 'USER' && roomType !== 'PROPOSAL' && (
+              <button 
+                onClick={handleSendAction} 
+                className="px-3 py-1 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+              >
+                요청서 보내기
+              </button>
+            )}
+          </div>
+
+
           </div>
           <button 
             onClick={handleSend}
