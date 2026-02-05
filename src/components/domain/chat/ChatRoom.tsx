@@ -110,12 +110,24 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
             <h2 className="text-[14px] font-medium text-black line-clamp-1">
               {roomInfo.targetPayload?.title ?? ''}
             </h2>
-            <p className="text-[14px] font-bold text-black">
-              {(roomInfo.targetPayload?.minBudget ?? 0).toLocaleString()}원 ~ {(roomInfo.targetPayload?.maxBudget ?? 0).toLocaleString()}원
-            </p>
+
+            {roomType === 'REQUEST' ? (
+              <p className="text-[14px] font-bold text-black">
+                {(roomInfo.targetPayload?.minBudget ?? 0).toLocaleString()}원 ~ {(roomInfo.targetPayload?.maxBudget ?? 0).toLocaleString()}원
+              </p>
+            ) : (
+              // PROPOSAL이면 마지막 proposal 메시지 찾아서 price 사용
+              <p className="text-[14px] font-bold text-black">
+                {(() => {
+                  const lastProposal = data?.allMessages.reverse().find(msg => msg.messageType === 'proposal');
+                  return (lastProposal?.payload.price ?? 0).toLocaleString() + '원';
+                })()}
+              </p>
+            )}
           </div>
         </div>
       )}
+
 
       {/* 채팅 메시지 영역 */}
       <div 
