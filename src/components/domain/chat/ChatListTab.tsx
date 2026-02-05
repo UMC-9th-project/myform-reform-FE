@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getChatRooms, type ChatRoom, type ChatRoomFilter } from '../../../api/chat/chatApi';
-
-interface SelectedChat {
-  chatRoomId: string;
-  roomType: 'FEED' | 'PROPOSAL' | 'REQUEST';
-}
+import type { SelectedChat } from '../../../types/domain/chat/chatMessages';
 
 interface ChatListTabProps {
   selectedChat: SelectedChat | null;
@@ -103,6 +99,8 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
                 setSelectedChat({
                   chatRoomId: chat.chatRoomId,
                   roomType: chat.roomType as 'FEED' | 'PROPOSAL' | 'REQUEST',
+                  image: chat.image,
+                  title: chat.title,
                 })
               }
             >

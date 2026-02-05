@@ -13,6 +13,8 @@ interface ChatRoomProps {
   chatId: string;
   myRole: 'REFORMER' | 'USER';
   roomType: 'FEED' | 'PROPOSAL' | 'REQUEST';
+  image: string;
+  title: string;
 }
 
 // mock 데이터
@@ -60,7 +62,7 @@ const mockMessages: Record<string, Message[]> = {
 
 };
 
-const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
+const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType, title, image }) => {
   
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -204,17 +206,21 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
 
   
       {/* 상단 상품 정보: PROPOSAL 또는 REQUEST일 때만 */}
-      {(roomType === 'PROPOSAL' || roomType === 'REQUEST') && (
-        <div className="flex items-center p-4 border-b border-[var(--color-line-gray-40)]">
-          <div className="w-12 h-12 bg-gray-200 rounded-md overflow-hidden mr-3 flex items-center justify-center text-[10px] text-white">
-            IMAGE
+        {(roomType === 'PROPOSAL' || roomType === 'REQUEST') && (
+          <div className="flex items-center p-4 border-b border-[var(--color-line-gray-40)]">
+            <img
+              src={image}
+              alt="상품 이미지"
+              className="w-12 h-12 rounded-md object-cover mr-3 bg-gray-200"
+            />
+            <div>
+              <h2 className="text-[14px] font-medium text-black">{title}</h2>
+              {/* 가격 있으면 */}
+              <p className="text-[14px] font-bold text-black">3,0000~5,0000원</p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-[14px] font-medium text-black">짐색 리폼 요청합니다.</h2>
-            <p className="text-[14px] font-bold text-black">30,000~50,000원</p>
-          </div>
-        </div>
-      )}
+        )}
+
 
 
       {/* 채팅 내역 */}

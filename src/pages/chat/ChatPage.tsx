@@ -46,6 +46,8 @@ const ChatPage = ({ role }: ChatPageProps) => {
             chatId={selectedChat.chatRoomId}
             roomType={selectedChat.roomType}
             myRole={role}
+            title={selectedChat.title}
+            image={selectedChat.image}
           />
         )}
       </div>
