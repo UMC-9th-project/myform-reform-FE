@@ -1,11 +1,13 @@
 import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import logo2 from '../../../assets/logos/logo2.svg';
 import plus from '../../../assets/icons/plus.svg';
 import share from '../../../assets/icons/share.svg';
 import Button from '../../../components/common/button/Button1';
 import ProgressIndicator from '../../../components/common/progress_indicator/ProgressIndicator';
 import Checkbox from '../../../components/common/checkbox/Checkbox';
+import { useReformerSignup } from '../../../hooks/domain/signup/useReformerSignup';
+import type { SignupRequest } from '../../../types/api/auth';
 
 type ImageType = {
   file: File;
@@ -14,12 +16,22 @@ type ImageType = {
 
 const ReformerRegistration = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
   const [images, setImages] = useState<ImageType[]>([]);
   const [introduction, setIntroduction] = useState('');
   const [businessNumber, setBusinessNumber] = useState('');
   const [agreementChecked, setAgreementChecked] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 회원가입 폼에서 전달받은 회원가입 정보
+  const signupData = (location.state as { signupData?: SignupRequest })?.signupData;
+
+  const {
+    signup,
+    isLoading: isRegistering,
+    error: registrationError,
+  } = useReformerSignup();
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -65,7 +77,23 @@ const ReformerRegistration = () => {
       alert('이용약관에 동의해주세요.');
       return;
     }
-    navigate('/signup/reformer-complete');
+
+    if (!signupData) {
+      alert('회원가입 정보가 없습니다. 다시 시도해주세요.');
+      navigate('/signup/reformer-form');
+      return;
+    }
+
+    // 이미지 파일 배열 추출
+    const imageFiles = images.map((img) => img.file);
+
+    // 리폼러 회원가입 API 호출 (회원가입 정보 + 포트폴리오 + 자기소개)
+    signup({
+      signupData,
+      portfolioPhotos: imageFiles, // 스펙에 맞게 필드명 변경
+      description: introduction.trim(), // 스펙에 맞게 필드명 변경
+      businessNumber: businessNumber.trim() || '',  
+    });
   };
 
   const isNextButtonEnabled = currentStep === 1 ? images.length > 0 : currentStep === 2 ? introduction.trim().length > 0 : true;
@@ -254,13 +282,17 @@ const ReformerRegistration = () => {
             </div>
           </div>
 
+          {registrationError && (
+            <div className="text-red-500 text-sm mb-4">{registrationError}</div>
+          )}
           <Button
-            variant="primary"
+            variant={isRegistering ? 'disabled' : 'primary'}
             size="big"
             onClick={handleSubmit}
+            disabled={isRegistering}
             className="w-[33.9375rem] h-[4.625rem]"
           >
-            제출하기
+            {isRegistering ? '제출 중...' : '제출하기'}
           </Button>
         </div>
       )}

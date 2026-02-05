@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+// 이름 스키마
+export const nameSchema = z
+  .string()
+  .min(1, '이름을 입력해주세요.')
+  .max(20, '이름은 20자 이내로 입력해주세요.');
+
 // 이메일 스키마
 export const emailSchema = z.string().email('유효하지 않은 이메일입니다.');
 

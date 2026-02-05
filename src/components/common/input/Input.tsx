@@ -19,6 +19,7 @@ interface InputProps {
   showButton?: boolean;
   buttonText?: string;
   onButtonClick?: () => void;
+  buttonDisabled?: boolean; 
   onChange?: (value: string) => void;
   onBlur?: () => void;
   onFocus?: () => void;
@@ -40,6 +41,8 @@ export default function Input({
   timerSeconds = null,
   showButton = false,
   buttonText,
+  onButtonClick,
+  buttonDisabled = false,
   onChange,
   onBlur,
   onFocus,
@@ -200,7 +203,16 @@ export default function Input({
           )}
         </div>
         {showButton && (
-          <button className="body-b1-rg bg-[var(--color-gray-30)] text-[var(--color-gray-50)] border border-[var(--color-line-gray-40)] rounded-[0.625rem] px-6 py-5  transition-colors duration-200 cursor-pointer">
+          <button
+            type="button"
+            onClick={onButtonClick}
+            disabled={buttonDisabled}
+            className={`body-b1-rg border rounded-[0.625rem] px-6 py-5 transition-colors duration-200 ${
+              buttonDisabled
+                ? 'bg-[var(--color-gray-30)] text-[var(--color-gray-50)] border-[var(--color-line-gray-40)] cursor-not-allowed opacity-50'
+                : 'bg-[var(--color-mint-6)] text-[var(--color-mint-1)] border-[var(--color-mint-1)] cursor-pointer hover:opacity-80 active:opacity-70'
+            }`}
+          >
             {buttonText}
           </button>
         )}
