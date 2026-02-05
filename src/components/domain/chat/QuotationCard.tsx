@@ -6,10 +6,10 @@ interface QuotationCardProps {
   id?: string;        // messageId 혹은 proposalId
   chatId?: string;
   myRole?: 'REFORMER' | 'USER';
-  // 백엔드 데이터 타입 추가
   price: number;      // 견적 금액
   delivery: number;   // 배송비
-  expectedWorking?: number; // 예상 작업 소요일 (선택사항)
+  expectedWorking?: number;
+  nickname: string;
 }
 
 const QuotationCard: React.FC<QuotationCardProps> = ({ 
@@ -18,7 +18,8 @@ const QuotationCard: React.FC<QuotationCardProps> = ({
   chatId, 
   price, 
   delivery, 
-  expectedWorking = 3 // 기본값 설정 
+  expectedWorking,
+  nickname// 기본값 설정 
 }) => {
   const navigate = useNavigate();
   const isSent = type === 'sent';
@@ -26,8 +27,8 @@ const QuotationCard: React.FC<QuotationCardProps> = ({
   const title = isSent ? '견적서 전송완료!' : '견적서 도착!';
   
   const description = isSent 
-    ? <>상대방에게<br /> 견적서가 성공적으로 전송되었습니다.</>
-    : <>리포머님이<br /> 요청글에 따른 견적서를 보내왔습니다.</>;
+    ? <>{nickname}님에게<br /> 견적서가 성공적으로 전송되었습니다.</>
+    : <>{nickname}님이<br /> 요청글에 따른 견적서를 보내왔습니다.</>;
     
   const btnText = isSent ? '보낸 견적서 자세히 보기' : '견적서 자세히 보기';
   const borderRadiusClass = isSent ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none';

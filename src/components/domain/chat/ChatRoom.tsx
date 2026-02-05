@@ -182,8 +182,10 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                     {msg.messageType === 'request' && (
                       <RequireCard 
                         type={isMine ? 'sent' : 'received'} 
-                        price={msg.payload.maxBudget} 
-                        title={msg.payload.title} 
+                        minBudget={msg.payload.minBudget}
+                        maxBudget={msg.payload.maxBudget}
+                        title={msg.payload.title}
+                        nickname={isMine ? roomInfo?.requester.nickname ?? '알 수 없음' : roomInfo?.owner.nickname ?? '알 수 없음'} 
                       />
                     )}
                     {msg.messageType === 'proposal' && (
@@ -191,6 +193,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                         type={isMine ? 'sent' : 'received'} 
                         price={msg.payload.price} 
                         delivery={msg.payload.delivery}
+                        nickname={isMine ? roomInfo?.requester.nickname ?? '사용자' : roomInfo?.owner.nickname ?? '리포머'}
                       />
                     )}
                     {(msg.messageType === 'text' || msg.messageType === 'image') && (
