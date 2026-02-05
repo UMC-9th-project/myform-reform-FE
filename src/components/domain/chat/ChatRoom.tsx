@@ -241,7 +241,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
               <>
                 <button 
                   onClick={() => setIsPaymentModalOpen(true)} 
-                  className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+                  className="px-3 py-1 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
                 >
                   결제창 보내기
                 </button>

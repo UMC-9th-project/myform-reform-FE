@@ -44,7 +44,7 @@ const RequireCard: React.FC<RequireCardProps> = ({ minBudget, maxBudget, title, 
 
           {/* 결제 버튼 */}
           <button 
-            className="w-full bg-black text-white py-3.5 rounded-xl body-b4-sb cursor-pointer"
+            className="w-full bg-black text-white py-2.5 rounded-xl body-b4-sb cursor-pointer"
             onClick={() => navigate('/chat/quotation/detail', {
               state: {
                 myRole: isSent ? 'USER' : 'REFORMER',
