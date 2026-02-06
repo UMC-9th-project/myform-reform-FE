@@ -12,7 +12,7 @@ import logo from '../../../assets/logos/logo.svg';
 import { useUserTabStore, type UserTabType } from '../../../stores/tabStore';
 import useAuthStore from '../../../stores/useAuthStore';
 import { useLogout } from '../../../hooks/domain/auth/useLogout';
-import NotificationPanel from './NotificationPanel';
+import NotificationPanel from '../../common/Modal/NotificationPanel';
 
 type UserType = 'customer' | 'seller';
 
