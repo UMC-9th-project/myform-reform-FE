@@ -9,6 +9,7 @@ import PaymentModal, { type PaymentRequestData } from './PaymentModal';
 import type { RoomType } from '@/types/api/chat/chatMessages';
 import { connectSocket, getSocket } from '@/utils/domain/socket';
 import useAuthStore from '@/stores/useAuthStore';
+import { uploadImages } from '@/api/upload';
 
 interface ChatRoomProps {
   chatId: string;
@@ -31,22 +32,91 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
    * 1. React Query 무한 스크롤 설정
    * ========================= */
   // select 제거
-const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useInfiniteQuery({
-  queryKey: ['chatMessages', chatId],
-  queryFn: ({ pageParam }) => getChatMessages(chatId, { cursor: pageParam as string }),
-  initialPageParam: null as string | null,
-  getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
-});
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useInfiniteQuery({
+    queryKey: ['chatMessages', chatId],
+    queryFn: ({ pageParam }) => getChatMessages(chatId, { cursor: pageParam as string }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
+  });
 
-// messages를 useMemo로 계산
-const messages = React.useMemo(() => {
-  if (!data) return [];
-  return data.pages
-    .flatMap(page => page.messages)
-    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-}, [data]);
+  // messages를 useMemo로 계산
+  const messages = React.useMemo(() => {
+    if (!data) return [];
+    return data.pages
+      .flatMap(page => page.messages)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }, [data]);
 
   const roomInfo = data?.pages[0]?.chatRoomInfo; 
+
+  const handleImageChange = async (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
+
+  try {
+    const fileArray = Array.from(files);
+
+    // 1️⃣ 서버 업로드
+      const uploadResult = await uploadImages(fileArray);
+      const imageUrls = uploadResult.success.url;
+
+      // 2️⃣ 이미지 메시지 전송
+      sendImageMessage(imageUrls);
+    } catch (err) {
+      console.error('이미지 업로드 실패', err);
+      alert('이미지 업로드에 실패했습니다.');
+    } finally {
+      // 같은 파일 다시 선택 가능하게 초기화
+      e.target.value = '';
+    }
+  };
+
+  const sendImageMessage = (imageUrls: string[]) => {
+  const socket = getSocket();
+  if (!socket || !socket.connected) {
+    console.error('소켓 연결 안 됨');
+    return;
+  }
+
+  // (선택) 낙관적 UI
+  const tempMessage = {
+    messageId: `temp-${Date.now()}`,
+    senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
+    senderId: 'me',
+    messageType: 'image',
+    payload: {
+      urls: imageUrls,
+    },
+    createdAt: new Date().toISOString(),
+  };
+
+  queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+    if (!oldData) return oldData;
+
+    const lastPageIndex = oldData.pages.length - 1;
+    const updatedPages = [...oldData.pages];
+
+    updatedPages[lastPageIndex] = {
+      ...updatedPages[lastPageIndex],
+      messages: [
+        ...updatedPages[lastPageIndex].messages,
+        tempMessage,
+      ],
+    };
+
+    return { ...oldData, pages: updatedPages };
+  });
+
+  // 3️⃣ 서버 전송
+  socket.emit('sendMessage', {
+    roomId: chatId,
+    contentType: 'image',
+    content: imageUrls,
+  });
+};
+
 
   /* =========================
    * 2. 스크롤 제어
@@ -373,20 +443,31 @@ const messages = React.useMemo(() => {
                             {msg.textContent}
                           </p>
                         )}
-                        {msg.messageType === 'image' && (
-                          <div className={`grid gap-1 ${
-                            msg.payload.urls.length > 1 ? 'grid-cols-2' : 'grid-cols-1'
-                          }`}>
-                            {msg.payload.urls.map((url: string, i: number) => (
-                              <img 
-                                key={i} 
-                                src={url} 
-                                alt="chat" 
-                                className="rounded-md w-full object-cover max-h-60" 
-                              />
+                        {msg.messageType === 'image' && msg.payload.urls && (
+                          <div
+                            className={`grid gap-1.5 ${
+                              msg.payload.urls.length === 1
+                                ? 'grid-cols-1 w-[240px]'
+                                : msg.payload.urls.length === 2
+                                ? 'grid-cols-2 w-[320px]'
+                                : 'grid-cols-3 w-[360px]'
+                            }`}
+                          >
+                            {msg.payload.urls.map((url, idx) => (
+                              <div
+                                key={idx}
+                                className="relative aspect-square w-full overflow-hidden border border-[var(--color-line-gray-40)] rounded-md"
+                              >
+                                <img
+                                  src={url}
+                                  alt={`sent-${idx}`}
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                />
+                              </div>
                             ))}
                           </div>
                         )}
+
                       </div>
                     )}
                   </div>
@@ -427,6 +508,7 @@ const messages = React.useMemo(() => {
               className="hidden" 
               multiple 
               accept="image/*" 
+              onChange={handleImageChange}
             />
             
             <div className="flex items-center gap-3">
