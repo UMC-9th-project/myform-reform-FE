@@ -87,26 +87,53 @@ const messages = React.useMemo(() => {
     };
 
     const handleNewMessage = (msg: any) => {
-      queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-        if (!oldData) return oldData;
+  // 기존: 메시지 목록 업데이트
+  queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+    if (!oldData) return oldData;
 
-        const lastPageIndex = oldData.pages.length - 1;
-        const updatedPages = [...oldData.pages];
-        updatedPages[lastPageIndex] = {
-          ...updatedPages[lastPageIndex],
-          messages: [...updatedPages[lastPageIndex].messages, msg],
-        };
-
-        return {
-          ...oldData,
-          pages: updatedPages,
-          allMessages: [...(oldData.allMessages || []), msg],
-        };
-      });
-
-
-      socket.emit('readChatRoom', { roomId: chatId });
+    const lastPageIndex = oldData.pages.length - 1;
+    const updatedPages = [...oldData.pages];
+    updatedPages[lastPageIndex] = {
+      ...updatedPages[lastPageIndex],
+      messages: [...updatedPages[lastPageIndex].messages, msg],
     };
+
+    return {
+      ...oldData,
+      pages: updatedPages,
+    };
+  });
+
+  const lastMessageText = msg.messageType === 'text' 
+    ? msg.textContent 
+    : msg.messageType === 'image' 
+    ? '사진' 
+    : msg.messageType === 'proposal'
+    ? '견적서'
+    : '요청서';
+
+  // 모든 필터의 쿼리 업데이트
+  [undefined, 'INQUIRY', 'ORDER', 'UNREAD', undefined].forEach(filterType => {
+    queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
+      if (!oldData?.data) return oldData;
+
+      return {
+        ...oldData,
+        data: oldData.data.map((room: any) => 
+          room.chatRoomId === chatId
+            ? {
+                ...room,
+                lastMessage: lastMessageText,
+                lastMessageAt: msg.createdAt,
+              }
+            : room
+        ),
+      };
+    });
+  });
+
+  socket.emit('readChatRoom', { roomId: chatId });
+};
 
     if (socket.connected) {
       handleConnect();
@@ -131,51 +158,70 @@ const messages = React.useMemo(() => {
    * 4. 핸들러 함수
    * ========================= */
     const handleSend = () => {
-      if (!inputText.trim()) return;
+  if (!inputText.trim()) return;
 
-      const socket = getSocket();
-      if (!socket || !socket.connected) {
-        console.error('소켓이 연결되지 않음');
-        return;
-      }
+  const socket = getSocket();
+  if (!socket || !socket.connected) {
+    console.error('소켓이 연결되지 않음');
+    return;
+  }
 
-      const tempMessage = {
-        messageId: `temp-${Date.now()}`, // 임시 ID
-        senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
-        senderId: 'me', // 임시
-        messageType: 'text',
-        textContent: inputText,
-        payload: null,
-        createdAt: new Date().toISOString(),
-      };
-
-      // 1️⃣ 낙관적 UI 적용: 바로 화면에 반영
-      queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-        if (!oldData) return oldData;
-
-        const lastPageIndex = oldData.pages.length - 1;
-        const updatedPages = [...oldData.pages];
-        updatedPages[lastPageIndex] = {
-          ...updatedPages[lastPageIndex],
-          messages: [...updatedPages[lastPageIndex].messages, tempMessage],
-        };
-
-        return {
-          ...oldData,
-          pages: updatedPages,
-        };
-      });
-
-      // 2️⃣ 서버로 전송
-      socket.emit('sendMessage', {
-        roomId: chatId,
-        contentType: 'text',
-        content: inputText,
-      });
-
-      // 3️⃣ 입력창 초기화
-      setInputText('');
+  const tempMessage = {
+    messageId: `temp-${Date.now()}`, // 임시 ID
+    senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
+    senderId: 'me', // 임시
+    messageType: 'text',
+    textContent: inputText,
+    payload: null,
+    createdAt: new Date().toISOString(),
   };
+
+  // 1️⃣ 채팅방 메시지 낙관적 UI
+  queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+    if (!oldData) return oldData;
+
+    const lastPageIndex = oldData.pages.length - 1;
+    const updatedPages = [...oldData.pages];
+    updatedPages[lastPageIndex] = {
+      ...updatedPages[lastPageIndex],
+      messages: [...updatedPages[lastPageIndex].messages, tempMessage],
+    };
+
+    return {
+      ...oldData,
+      pages: updatedPages,
+    };
+  });
+
+  // 2️⃣ 채팅 목록(Tab) 낙관적 UI 업데이트
+  queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
+    if (!oldData?.data) return oldData;
+
+    return {
+      ...oldData,
+      data: oldData.data.map((room: any) =>
+        room.chatRoomId === chatId
+          ? {
+              ...room,
+              lastMessage: inputText, // 내가 보낸 메시지 텍스트
+              lastMessageAt: tempMessage.createdAt,
+            }
+          : room
+      ),
+    };
+  });
+
+  // 3️⃣ 서버로 전송
+  socket.emit('sendMessage', {
+    roomId: chatId,
+    contentType: 'text',
+    content: inputText,
+  });
+
+  // 4️⃣ 입력창 초기화
+  setInputText('');
+};
+
 
 
   const handlePaymentSend = (paymentData: PaymentRequestData) => {
