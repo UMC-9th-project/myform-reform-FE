@@ -7,8 +7,6 @@ import profile from '../../../assets/icons/profile.svg';
 import search from '../header/icons/search.svg';
 import mintsearch from '../header/icons/mintsearch.svg';
 import bgsearch from '../header/icons/bg-search.svg';
-import grayrepeat from '../header/icons/grayrepeat.svg';
-import repeat from '../../../assets/icons/repeat.svg';
 import xIcon from '../../../assets/icons/x.svg';
 import logo from '../../../assets/logos/logo.svg';
 import { useUserTabStore, type UserTabType } from '../../../stores/tabStore';
@@ -33,11 +31,10 @@ export default function Header() {
     navigate('/normal-mypage'); 
   }; 
 
-  const [userType, setUserType] = useState<UserType>('seller');
+  const [userType] = useState<UserType>('seller');
   const [searchValue, setSearchValue] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isReformerModeHovered, setIsReformerModeHovered] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([
     '야구 유니폼 리폼',
     '한화 유니폼',
@@ -142,11 +139,6 @@ export default function Header() {
     setIsSearchOpen(false);
   };
 
-  const handleModeSwitch = () => {
-    setUserType(userType === 'seller' ? 'customer' : 'seller');
-    setIsProfileOpen(false);
-    navigate('/');
-  };
 
   return (
     <header className="w-full flex flex-col">
@@ -288,24 +280,12 @@ export default function Header() {
                     <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer">
                       판매 관리
                     </button>
-                  </div>
 
-                  <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]"></div>
-
-                  <div className="p-[1.25rem]">
-                    <button
-                      className="w-full text-left gap-[0.625rem] body-b1-md text-[var(--color-gray-50)] hover:text-[var(--color-black)] flex items-center cursor-pointer"
-                      onMouseEnter={() => setIsReformerModeHovered(true)}
-                      onMouseLeave={() => setIsReformerModeHovered(false)}
-                      onClick={handleModeSwitch}
-                    >
-                      <img
-                        src={isReformerModeHovered ? repeat : grayrepeat}
-                        alt="repeat"
-                      />
-                      일반 모드 전환
+                    <button className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)] cursor-pointer">
+                      수익 관리
                     </button>
                   </div>
+              
                 </div>
                 <button 
                   onClick={logout}
@@ -349,22 +329,7 @@ export default function Header() {
                     </button>
                   </div>
 
-                  <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]"></div>
-
-                  <div className="p-[1.25rem]">
-                    <button
-                      className="w-full text-left gap-[0.625rem] body-b1-md text-[var(--color-gray-50)] hover:text-[var(--color-black)] flex items-center cursor-pointer"
-                      onMouseEnter={() => setIsReformerModeHovered(true)}
-                      onMouseLeave={() => setIsReformerModeHovered(false)}
-                      onClick={handleModeSwitch}
-                    >
-                      <img
-                        src={isReformerModeHovered ? repeat : grayrepeat}
-                        alt="repeat"
-                      />
-                      리폼러 모드 전환
-                    </button>
-                  </div>
+                  
                 </div>
                 <button 
                   onClick={logout}
