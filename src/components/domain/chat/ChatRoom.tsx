@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useInfiniteQuery, useQueryClient} from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { getChatMessages } from '../../../api/chat/chatApi';
-import Gallery from '../../../assets/chat/gallery.svg';
+import { getChatMessages } from '@/api/chat/chatApi';
+import Gallery from '@/assets/chat/gallery.svg';
 import QuotationCard from './QuotationCard';
 import RequireCard from './RequireCard';
 import PaymentModal, { type PaymentRequestData } from './PaymentModal';
-import type { RoomType } from '../../../types/domain/chat/chatMessages';
-import { connectSocket, getSocket } from '../../../utils/domain/socket';
-import useAuthStore from '../../../stores/useAuthStore';
+import type { RoomType } from '@/types/api/chat/chatMessages';
+import { connectSocket, getSocket } from '@/utils/domain/socket';
+import useAuthStore from '@/stores/useAuthStore';
 
 interface ChatRoomProps {
   chatId: string;
@@ -189,7 +189,7 @@ const messages = React.useMemo(() => {
   });
 
 
-    /// 2️⃣ 채팅 목록(Tab) 낙관적 UI 업데이트 + 맨 위로
+    /// 채팅 목록(Tab) 낙관적 UI 업데이트 + 맨 위로
   queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
     if (!oldData?.data) return oldData;
 
@@ -209,14 +209,14 @@ const messages = React.useMemo(() => {
   });
 
 
-    // 3️⃣ 서버로 전송
+    // 서버로 전송
     socket.emit('sendMessage', {
       roomId: chatId,
       contentType: 'text',
       content: inputText,
     });
 
-    // 4️⃣ 입력창 초기화
+    // 입력창 초기화
     setInputText('');
   };
 

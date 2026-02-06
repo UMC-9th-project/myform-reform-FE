@@ -4,7 +4,7 @@ import ChatListTab from '../../components/domain/chat/ChatListTab';
 import ChatRoom from '../../components/domain/chat/ChatRoom';
 import EmptyChatRoom from '../../components/domain/chat/EmptyChatRoom';
 import NoChatYet from '../../components/domain/chat/NoChatYet';
-import type { SelectedChat } from '../../types/domain/chat/chatMessages';
+import type { SelectedChat } from '../../types/api/chat/chatMessages';
 
 type Role = 'USER' | 'REFORMER';
 

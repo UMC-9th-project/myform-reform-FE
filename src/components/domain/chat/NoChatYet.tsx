@@ -1,5 +1,5 @@
-import gallery from '../../../assets/chat/gallery.svg';
-import NoChatYet from '../../../assets/chat/noChatYet.svg'
+import gallery from '@/assets/chat/gallery.svg';
+import NoChatYet from '@/assets/chat/noChatYet.svg'
 
 const EmptyChatRoom = () => {
   return (

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getChatRooms,  type ChatRoomFilter } from '../../../api/chat/chatApi';
-import type { SelectedChat } from '../../../types/domain/chat/chatMessages';
+import { getChatRooms,  type ChatRoomFilter } from '@/api/chat/chatApi';
+import type { SelectedChat } from '@/types/api/chat/chatMessages';
 
 interface ChatListTabProps {
   selectedChat: SelectedChat | null;
