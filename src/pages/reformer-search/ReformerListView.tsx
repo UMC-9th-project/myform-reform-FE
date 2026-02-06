@@ -82,7 +82,7 @@ const ReformerListView = () => {
                 <ReformerProfileCard
                   key={reformer.owner_id}
                   reformer={reformer}
-                  onClick={() => navigate('/profile')}
+                  onClick={() => navigate(`/profile/${reformer.owner_id}`)}
                 />
               ))}
             </div>
