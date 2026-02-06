@@ -1,14 +1,6 @@
 import { useState } from 'react';
 import searchIcon from '../../layout/header/icons/search.svg';
-
-interface ReformerSearchEngineProps {
-  placeholder?: string;
-  onSearch?: (query: string) => void;
-  onInputChange?: (query: string) => void;
-  className?: string;
-  defaultValue?: string;
-  showBlur?: boolean;
-}
+import type { ReformerSearchEngineProps } from './types';
 
 const ReformerSearchEngine = ({
   placeholder = '원하는 리폼러를 검색해보세요.',

@@ -5,7 +5,7 @@ import type {
   CartProduct,
   CartSeller,
   PaymentSummary as PaymentSummaryType,
-} from '../../../types/domain/cart/cart';
+} from '@/types/api/cart/cart';
 
 interface CartContentProps {
   sellers: CartSeller[];

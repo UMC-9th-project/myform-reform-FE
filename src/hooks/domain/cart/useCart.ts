@@ -3,7 +3,7 @@ import type {
   CartProduct,
   CartSeller,
   PaymentSummary,
-} from '../../../types/domain/cart/cart';
+} from '@/types/api/cart/cart';
 
 interface UseCartProps {
   initialProducts: CartProduct[];
