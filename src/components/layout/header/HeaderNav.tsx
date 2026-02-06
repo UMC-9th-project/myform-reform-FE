@@ -1,8 +1,10 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import useAuthStore from '../../../stores/useAuthStore';
 
 export default function HeaderNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { role } = useAuthStore();
 
   const navItems = [
     { label: '홈', path: '/' }, //임시 경로
@@ -13,6 +15,11 @@ export default function HeaderNav() {
   ];
 
   const handleNavClick = (path: string) => {
+    // 리폼러 유저가 "주문제작" 탭 클릭 시 리폼러 주문제작 페이지로 이동
+    if (path === '/order' && role === 'reformer') {
+      navigate('/reformer/order');
+      return;
+    }
     navigate(path);
   };
 
