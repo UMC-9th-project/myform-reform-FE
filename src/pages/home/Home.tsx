@@ -53,17 +53,17 @@ const Home = () => {
             disableOnInteraction: false,
           }}
           loopPreventsSliding={false}
-          spaceBetween={-125}
-          slidesPerView={1.3}
+          spaceBetween={50}
+          slidesPerView={1.4}
           centeredSlides={true}
           className="w-full h-full"
         >
           {banners?.map((banner) => (
-            <SwiperSlide key={banner.id}>
+            <SwiperSlide key={banner.id} >
               <img
                 src={banner.image_url}
                 alt={`배너 ${banner.id}`}
-                className="w-full h-full object-cover"         
+                className="w-full h-full object-cover rounded-[1.25rem] transition-transform duration-300"         
               />
             </SwiperSlide>
           ))}
