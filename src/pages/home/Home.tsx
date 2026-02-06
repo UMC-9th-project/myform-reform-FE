@@ -8,6 +8,7 @@ import crownIcon from '../../assets/home/crown.svg';
 import swiperLeftIcon from '../../assets/home/swiperprev.svg';
 import swiperRightIcon from '../../assets/home/swipernext.svg';
 
+import { useHome } from '../../hooks/domain/home/useHome';
 
 import service1 from '../../assets/home/service1.jpg';
 import service2 from '../../assets/home/service2.jpg';
@@ -17,15 +18,6 @@ import service4 from '../../assets/home/service4.jpg';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
-
-const BEST_REFORMER_CARD = {
-  nickname: '침착한 대머리독수리',
-  avg_star: 4.9,
-  review_count: 271,
-  trade_count: 415,
-  bio: '- 2019년부터 리폼 공방 운영 시작 ✨ / - 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-  keywords: ['#빠른', '#친절한'],
-} as const;
 
 
 const productData = [
@@ -59,6 +51,9 @@ const productData = [
 ];
 
 const Home = () => {
+  const { data: homeData } = useHome();
+  const banners = homeData?.success?.home_data?.banners || [];
+  const bestReformers =  homeData?.success?.home_data?.best_reformers || [];
   return (
     <div>
       <div className="w-full h-[457px] mt-[3.25rem] home-swiper-container relative">
@@ -86,41 +81,11 @@ const Home = () => {
           centeredSlides={true}
           className="w-full h-full"
         >
-          <SwiperSlide>
-            <img
-              src="/Home/images/home1.jpg"
-              alt="image1"
-              className="h-full"
-            />
-          </SwiperSlide>
-          <SwiperSlide> 
-            <img
-              src="/Home/images/home2.jpg"
-              alt="image2"
-              className="h-full "
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <img
-              src="/Home/images/home3.jpg"
-              alt="image3"
-              className="h-full"
-            />
-          </SwiperSlide>
-          <SwiperSlide>
-            <img
-              src="/Home/images/home1.jpg"
-              alt="image1"
-              className="h-full"
-            />
-          </SwiperSlide>
-          <SwiperSlide> 
-            <img
-              src="/Home/images/home2.jpg"
-              alt="image2"
-              className="h-full "
-            />
-          </SwiperSlide>
+         {banners?.map((banner) => (
+            <SwiperSlide key={banner.id}>
+              <img src={banner.image_url} alt={banner.id} className="h-full" />
+            </SwiperSlide>
+          ))}
         </Swiper>
       </div>
 
@@ -172,63 +137,26 @@ const Home = () => {
               slidesPerView={3}
               className="w-300 h-full rounded-[0.625rem]"
             >
-              <SwiperSlide>
-                <ReformerSearchCard
-                  reformer={{
-                    owner_id: 'home-best-1',
-                    nickname: BEST_REFORMER_CARD.nickname,
-                    keywords: [...BEST_REFORMER_CARD.keywords],
-                    bio: BEST_REFORMER_CARD.bio,
-                    profile_photo: '',
-                    avg_star: BEST_REFORMER_CARD.avg_star,
-                    review_count: BEST_REFORMER_CARD.review_count,
-                    trade_count: BEST_REFORMER_CARD.trade_count,
-                  }}
-                />
-              </SwiperSlide>
+              {bestReformers?.map((reformer) => (
+                <SwiperSlide key={reformer.owner_id}>
+                  <ReformerSearchCard
+                    reformer={{
+                      owner_id: reformer.owner_id,
+                      nickname: reformer.nickname,
+                      profile_photo: reformer.profile_image || '',
+                      bio: reformer.bio || '',
+                      keywords: reformer.keywords || [],
+                      avg_star: reformer.avg_star,
+                      review_count: reformer.review_count,
+                      trade_count: reformer.trade_count,
+                    }}
+                  />
+                </SwiperSlide>
+              ))}
+               
+          
 
-              <SwiperSlide>
-                <ReformerSearchCard
-                  reformer={{
-                    owner_id: 'home-best-2',
-                    nickname: BEST_REFORMER_CARD.nickname,
-                    keywords: [...BEST_REFORMER_CARD.keywords],
-                    bio: BEST_REFORMER_CARD.bio,
-                    profile_photo: '',
-                    avg_star: BEST_REFORMER_CARD.avg_star,
-                    review_count: BEST_REFORMER_CARD.review_count,
-                    trade_count: BEST_REFORMER_CARD.trade_count,
-                  }}
-                />
-              </SwiperSlide>
-              <SwiperSlide>
-                <ReformerSearchCard
-                  reformer={{
-                    owner_id: 'home-best-3',
-                    nickname: BEST_REFORMER_CARD.nickname,
-                    keywords: [...BEST_REFORMER_CARD.keywords],
-                    bio: BEST_REFORMER_CARD.bio,
-                    profile_photo: '',
-                    avg_star: BEST_REFORMER_CARD.avg_star,
-                    review_count: BEST_REFORMER_CARD.review_count,
-                    trade_count: BEST_REFORMER_CARD.trade_count,
-                  }}
-                />
-              </SwiperSlide>
-              <SwiperSlide>
-                <ReformerSearchCard
-                  reformer={{
-                    owner_id: 'home-best-4',
-                    nickname: BEST_REFORMER_CARD.nickname,
-                    keywords: [...BEST_REFORMER_CARD.keywords],
-                    bio: BEST_REFORMER_CARD.bio,
-                    profile_photo: '',
-                    avg_star: BEST_REFORMER_CARD.avg_star,
-                    review_count: BEST_REFORMER_CARD.review_count,
-                    trade_count: BEST_REFORMER_CARD.trade_count,
-                  }}
-                />
-              </SwiperSlide>
+           
             </Swiper>
           </div>
 
