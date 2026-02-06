@@ -242,21 +242,30 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   };
 
   
-  queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-    if (!oldData) return oldData;
+    ///채팅 목록(Tab) 낙관적 UI 업데이트 (모든 필터)
+    [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach(filterType => {
+      queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
+        if (!oldData?.data) return oldData;
 
-    const lastPageIndex = oldData.pages.length - 1;
-    const updatedPages = [...oldData.pages];
-    updatedPages[lastPageIndex] = {
-      ...updatedPages[lastPageIndex],
-      messages: [...updatedPages[lastPageIndex].messages, tempMessage],
-    };
+        const updatedData = oldData.data.map((room: any) =>
+          room.chatRoomId === chatId
+            ? {
+                ...room,
+                lastMessage: inputText,
+                lastMessageAt: tempMessage.createdAt,
+              }
+            : room
+        );
 
-    return {
-      ...oldData,
-      pages: updatedPages,
-    };
-  });
+        const sortedData = [
+          updatedData.find((room: any) => room.chatRoomId === chatId)!,
+          ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
+        ];
+
+        return { ...oldData, data: sortedData };
+      });
+    });
+
 
 
     /// 채팅 목록(Tab) 낙관적 UI 업데이트 + 맨 위로
