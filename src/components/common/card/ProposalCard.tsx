@@ -14,15 +14,15 @@ interface ProposalCardProps {
   className?: string;
   /** 상세 페이지로 이동 시 사용할 id (variant와 함께 사용) */
   id?: number | string;
-  /** 상세 경로 구분: order → /order/suggestions/:id, reformer → /reformer/order/suggestions/:id */
+  /** 상세 경로 구분: order → /order/proposals/:id, reformer → /reformer/order/proposals/:id */
   variant?: ProposalDetailVariant;
   /** 클릭 시 이동할 상세 페이지 경로 (직접 지정 시 id/variant 대신 사용) */
   to?: string;
 }
 
 const PROPOSAL_DETAIL_PATH: Record<ProposalDetailVariant, string> = {
-  order: '/order/suggestions',
-  reformer: '/reformer/order/suggestions',
+  order: '/order/proposals',
+  reformer: '/reformer/order/proposals',
 };
 
 export default function ProposalCard({

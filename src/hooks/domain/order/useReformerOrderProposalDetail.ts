@@ -73,7 +73,7 @@ export const useReformerOrderProposalDetail = () => {
   };
 
   const handleEdit = () => {
-    if (id) navigate(`/reformer/order/suggestions/${id}/edit`);
+    if (id) navigate(`/reformer/order/proposals/${id}/edit`);
   };
 
   const handlePageChange = (page: number) => {

@@ -82,15 +82,15 @@ function App() {
         <Route path="/order" element={<OrderPage />} />
         <Route path="/order/requests" element={<OrderRequestListPage />} />
         <Route path="/order/requests/:id" element={<OrderRequestDetailPage />} />
-        <Route path="/order/suggestions" element={<OrderProposalListPage />} />
-        <Route path="/order/suggestions/:id" element={<OrderProposalDetailPage />} />
+        <Route path="/order/proposals" element={<OrderProposalListPage />} />
+        <Route path="/order/proposals/:id" element={<OrderProposalDetailPage />} />
 
          {/* 주문제작 페이지 (리폼러) */}
         <Route path="/reformer/order" element={<ReformerOrderPage />} />
         <Route path="/reformer/order/requests" element={<ReformerOrderRequestListPage />} />
         <Route path="/reformer/order/requests/:id" element={<ReformerOrderRequestDetailPage />} />
-        <Route path="/reformer/order/suggestions" element={<ReformerOrderProposalListPage />} />
-        <Route path="/reformer/order/suggestions/:id" element={<ReformerOrderProposalDetailPage />} />
+        <Route path="/reformer/order/proposals" element={<ReformerOrderProposalListPage />} />
+        <Route path="/reformer/order/proposals/:id" element={<ReformerOrderProposalDetailPage />} />
 
          {/* 프로필 페이지 */}
         <Route path="/profile/:ownerId" element={<Profile />} />

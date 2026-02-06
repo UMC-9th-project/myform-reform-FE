@@ -222,7 +222,7 @@ const OrderRequestDetailPage = () => {
 
   const handleCheckProposals = () => {
     // 받은 제안 확인하기 기능
-    navigate(`/order/requests/${id}/suggestions`);
+    navigate(`/order/requests/${id}/proposals`);
   };
 
   const handleCarouselScroll = () => {
