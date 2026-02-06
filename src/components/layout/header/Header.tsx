@@ -12,6 +12,7 @@ import logo from '../../../assets/logos/logo.svg';
 import { useUserTabStore, type UserTabType } from '../../../stores/tabStore';
 import useAuthStore from '../../../stores/useAuthStore';
 import { useLogout } from '../../../hooks/domain/auth/useLogout';
+import NotificationPanel from './NotificationPanel';
 
 type UserType = 'customer' | 'seller';
 
@@ -35,6 +36,7 @@ export default function Header() {
   const [searchValue, setSearchValue] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([
     '야구 유니폼 리폼',
     '한화 유니폼',
@@ -238,9 +240,18 @@ export default function Header() {
           )}
         </div>
         <div className="flex items-center gap-[1.625rem] ml-auto">
-          <button className="cursor-pointer">
-            <img src={bell} alt="bell" />
-          </button>
+          <div className="relative">
+            <button
+              className="cursor-pointer"
+              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+            >
+              <img src={bell} alt="bell" />
+            </button>
+            <NotificationPanel
+              isOpen={isNotificationOpen}
+              onClose={() => setIsNotificationOpen(false)}
+            />
+          </div>
           <Link to="/wishlist" className="cursor-pointer">
             <img src={heart} alt="heart" />
           </Link>
