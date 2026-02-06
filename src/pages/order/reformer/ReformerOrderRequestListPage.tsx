@@ -1,55 +1,30 @@
-import { useState } from 'react';
 import Breadcrumb from '../../../components/common/breadcrumb/Breadcrumb';
 import RequestCard, { type RequestDetailVariant } from '../../../components/common/card/RequestCard';
 import Pagination from '../../../components/common/pagination/Pagination';
 import OrderCategoryFilter from '../../../components/domain/order/OrderCategoryFilter';
+import { useReformerOrderRequestList } from '../../../hooks/domain/order/useReformerOrderRequestList';
 
 /** 리폼러 모드: 카드 상세 링크가 /reformer/order/requests/:id */
 const CARD_VARIANT: RequestDetailVariant = 'reformer';
 
-// 더미 데이터 (132개 시뮬레이션)
-const generateMockRequests = () => {
-  const requests = [];
-  for (let i = 1; i <= 132; i++) {
-    requests.push({
-      id: i,
-      img: '/crt1.jpg',
-      name: '예쁘게 짐색 리폼해주실분, 리폼 요청합니다.',
-      price: '30,000원~50,000원',
-    });
-  }
-  return requests;
-};
+function formatWon(value: number) {
+  return `${value.toLocaleString('ko-KR')}원`;
+}
 
-const MOCK_REQUESTS = generateMockRequests();
-const ITEMS_PER_PAGE = 15; // 3열 x 5행
-const TOTAL_PAGES = Math.ceil(MOCK_REQUESTS.length / ITEMS_PER_PAGE);
+function formatBudgetRange(minBudget: number, maxBudget: number) {
+  return `${formatWon(minBudget)}~${formatWon(maxBudget)}`;
+}
 
 const ReformerOrderRequestListPage = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState<{
-    categoryTitle: string;
-    itemLabel: string;
-  } | null>(null);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleCategoryChange = (
-    categoryIndex: number,
-    itemId: number,
-    categoryTitle: string,
-    itemLabel: string
-  ) => {
-    setSelectedCategory({ categoryTitle, itemLabel });
-    console.log('카테고리 변경:', categoryIndex, itemId, categoryTitle, itemLabel);
-  };
-
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const displayedRequests = MOCK_REQUESTS.slice(startIndex, endIndex);
+  const {
+    requests,
+    isLoading,
+    isError,
+    selectedCategory,
+    totalPages,
+    handlePageChange,
+    handleCategoryChange,
+  } = useReformerOrderRequestList();
 
   const breadcrumbItems = [
     { label: '홈', path: '/' },
@@ -60,8 +35,6 @@ const ReformerOrderRequestListPage = () => {
   return (
     <div className="bg-white pb-[7.4375rem]">
       <div className="px-4 md:px-[3.125rem] pt-8 md:pt-[3.125rem]">
-       
-
         {/* 메인 콘텐츠 영역 (사이드바 + 메인 콘텐츠) */}
         <div className="flex gap-[3.125rem] ">
           {/* 왼쪽 사이드바 - 카테고리 필터 */}
@@ -69,7 +42,7 @@ const ReformerOrderRequestListPage = () => {
 
           {/* 오른쪽 메인 콘텐츠 */}
           <div className="flex flex-col flex-1 max-w-full">
-             {/* 브레드크럼 */}
+            {/* 브레드크럼 */}
             <div className="body-b1-rg text-[var(--color-gray-60)] mb-4  ">
               <Breadcrumb items={breadcrumbItems} />
             </div>
@@ -84,7 +57,7 @@ const ReformerOrderRequestListPage = () => {
             <div className="mb-5 mt-3">
               <div className="flex flex-row items-start sm:items-center justify-between ">
                 <p className="body-b1-rg text-[var(--color-gray-60)]">
-                  총 {MOCK_REQUESTS.length}개의 제품
+                  총 {requests.length}개의 제품
                 </p>
                 <p className="body-b1-rg text-[var(--color-gray-60)]">
                   최신순
@@ -95,22 +68,41 @@ const ReformerOrderRequestListPage = () => {
             {/* 요청 카드 그리드 */}
             <div className="mb-12">
               <div className="grid grid-cols-3 gap-[1.875rem]">
-                {displayedRequests.map((request) => (
-                  <RequestCard
-                    key={request.id}
-                    id={request.id}
-                    variant={CARD_VARIANT}
-                    imgSrc={request.img}
-                    title={request.name}
-                    priceRange={request.price}
-                    className="pb-[5.875rem] w-full"
-                  />
-                ))}
+                {isLoading && (
+                  <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3">
+                    불러오는 중...
+                  </p>
+                )}
+                {isError && (
+                  <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3">
+                    요청서를 불러오지 못했어요. 잠시 후 다시 시도해주세요.
+                  </p>
+                )}
+                {!isLoading && !isError && requests.length === 0 && (
+                  <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3">
+                    요청서가 없어요.
+                  </p>
+                )}
+                {!isLoading &&
+                  !isError &&
+                  requests.map((request) => (
+                    <RequestCard
+                      key={request.reformRequestId}
+                      id={request.reformRequestId}
+                      variant={CARD_VARIANT}
+                      imgSrc={request.thumbnail}
+                      title={request.title}
+                      priceRange={formatBudgetRange(request.minBudget, request.maxBudget)}
+                      className="pb-[5.875rem] w-full"
+                    />
+                  ))}
               </div>
             </div>
 
             {/* 페이지네이션 */}
-            <Pagination totalPages={TOTAL_PAGES} onPageChange={handlePageChange} />
+            {totalPages > 1 && (
+              <Pagination totalPages={totalPages} onPageChange={handlePageChange} />
+            )}
           </div>
         </div>
       </div>
