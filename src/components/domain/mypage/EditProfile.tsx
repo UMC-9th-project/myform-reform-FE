@@ -1,7 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import star from '../../../assets/icons/star.svg';
 import EmptyStar from '../../../assets/icons/emptyStar.svg';
 import Profile from '../../../assets/icons/profile.svg';
+import { api } from '@/api/axios'
 
 // 데이터 구조 정의
 export interface ProfileData {
@@ -21,10 +22,29 @@ const DEFAULT_PROFILE_IMAGE = Profile;
 
 const EditProfile = ({ mode, data }: EditProfileProps) => {
   const navigate = useNavigate();
-  if (!data) {
-    return <div>프로필 정보를 불러오지 못했습니다.</div>;
-  }
+  const { ownerId } = useParams<{ ownerId: string }>();
 
+  if (!data) return <div>프로필 정보를 불러오지 못했습니다.</div>;
+
+   const handleStartChat = async () => {
+    if (!ownerId) {
+      alert('채팅을 시작할 수 없습니다. ID가 없습니다.');
+      return;
+    }
+
+    try {
+      const response = await api.post('/chat/rooms', {
+        dto: { id: ownerId, type: 'FEED' },
+      });
+
+      const chatRoomId = response.data.success?.id;
+      if (chatRoomId) navigate(`/chat/normal/${chatRoomId}`);
+      else alert('채팅방 생성 실패');
+    } catch (err) {
+      console.error(err);
+      alert('채팅방 생성 중 오류가 발생했습니다.');
+    }
+  };
 
   return (
     <div className="w-full bg-white p-10 rounded-xl font-sans">
@@ -66,12 +86,13 @@ const EditProfile = ({ mode, data }: EditProfileProps) => {
             {/* 아이콘 대신 들어가는 프로필 수정 버튼 */}
             {mode == 'edit' ? (
               <button className="px-7 py-5 bg-[var(--color-mint-0)] text-white font-bold rounded-lg hover:bg-[#71c2c2] transition-all shadow-sm"
-                onClick={() => navigate('/reformer-profile-edit')}>
+                onClick={() => navigate('/reformer-profile-edit')}
+              >
               프로필 수정
             </button>
             ) : (
             <div className="flex gap-4">
-              <button className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center border border-teal-500 rounded-full hover:bg-teal-50 transition-colors" title="채팅 아이콘">
+              <button className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center border border-teal-500 rounded-full hover:bg-teal-50 transition-colors" title="채팅 아이콘" onClick={handleStartChat}>
                 <svg
                     width="32"
                     height="28"
