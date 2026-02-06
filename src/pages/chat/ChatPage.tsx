@@ -1,7 +1,10 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ChatListTab from '../../components/domain/chat/ChatListTab';
 import ChatRoom from '../../components/domain/chat/ChatRoom';
 import EmptyChatRoom from '../../components/domain/chat/EmptyChatRoom';
+import NoChatYet from '../../components/domain/chat/NoChatYet';
+import type { SelectedChat } from '../../types/api/chat/chatMessages';
 
 type Role = 'USER' | 'REFORMER';
 
@@ -10,13 +13,11 @@ interface ChatPageProps {
 }
 
 const ChatPage = ({ role }: ChatPageProps) => {
-  const { chatId } = useParams<{ chatId?: string }>();
   const navigate = useNavigate();
 
-  // 선택된 채팅 ID (없으면 null)
-  const selectedChatId = chatId ? Number(chatId) : null;
+  const [hasChats, setHasChats] = useState(true);
+  const [selectedChat, setSelectedChat] = useState<SelectedChat | null>(null);
 
-  // URL 경로 기본값 설정
   const basePath = role === 'USER' ? 'normal' : 'reformer';
 
   return (
@@ -25,20 +26,29 @@ const ChatPage = ({ role }: ChatPageProps) => {
       {/* 오른쪽 채팅 목록 */}
       <div className="w-[24rem] ml-3 m-10 border-[var(--color-line-gray-40)] bg-white">
         <ChatListTab
-          selectedChat={selectedChatId}
-          setSelectedChat={(id) => navigate(`/chat/${basePath}/${id}`)}
+          selectedChat={selectedChat}
+          setSelectedChat={(chat) => {
+            setSelectedChat(chat);
+            navigate(`/chat/${basePath}/${chat.chatRoomId}`);
+          }}
+          onChatsLoaded={(chatCount) => setHasChats(chatCount > 0)}
         />
       </div>
 
-      {/* 왼쪽 채팅방 컨테이너 */}
-      <div className="flex-1 mr-0 m-10 flex flex-col min-w-0 bg-white overflow-hidden">
-        {selectedChatId === null ? (
+      {/* 왼쪽 채팅방 */}
+      <div className="flex-1 m-10 flex flex-col bg-white overflow-hidden">
+        {!hasChats ? (
+          <NoChatYet />
+        ) : !selectedChat ? (
           <EmptyChatRoom />
         ) : (
-          <ChatRoom chatId={selectedChatId} myRole={role} />
+          <ChatRoom
+            chatId={selectedChat.chatRoomId}
+            roomType={selectedChat.roomType}
+            myRole={role}
+          />
         )}
       </div>
-
     </div>
   );
 };

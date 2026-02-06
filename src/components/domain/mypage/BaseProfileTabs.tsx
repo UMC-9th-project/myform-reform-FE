@@ -19,6 +19,7 @@ import { useFeedList } from '../../../hooks/domain/profile/useFeedList';
 import { useCreateFeed } from '../../../hooks/domain/profile/useCreateFeed';
 import { uploadImages } from '../../../api/upload';
 import ImageViewerModal from './ImageViewModal';
+import mintPlus from '../../../assets/icons/mintPlus.svg';
 
 export type ProfileTabType = '피드' | '판매 상품' | '후기';
 export type ProfileMode = 'view' | 'edit';
@@ -217,11 +218,8 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false }: BasePro
                 title="피드 글쓰기"
                 onClick={() => setShowModal(true)}
                 >
-                <svg width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 27H6.57124L27 6.57124L21.4281 1L1 21.4288V27Z" stroke="#07BEB8" stroke-width="2" stroke-linejoin="round"/>
-                    <path d="M15.8555 6.57031L21.4267 12.1416" stroke="#07BEB8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 27.5H27.5" stroke="#07BEB8" stroke-width="2" stroke-linecap="round"/>
-                </svg>
+                <img src={mintPlus} alt="피드 글쓰기" />
+                
             </button>
             )}
             </div>

@@ -1,5 +1,5 @@
-import Image from '../../../assets/chat/Image.svg';
-import NoChatYet from '../../../assets/chat/noChatYet.svg'
+import gallery from '@/assets/chat/gallery.svg';
+import NoChatYet from '@/assets/chat/noChatYet.svg'
 
 const EmptyChatRoom = () => {
   return (
@@ -22,7 +22,7 @@ const EmptyChatRoom = () => {
         <div className="flex justify-between items-center mt-2">
           <div className="flex items-center gap-3 opacity-40">
             <button disabled>
-              <img src={Image} alt="갤러리" />
+              <img src={gallery} alt="갤러리" />
             </button>
             <button
               disabled

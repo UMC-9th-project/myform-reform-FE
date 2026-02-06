@@ -14,13 +14,7 @@ const dirname =
 
 export default defineConfig({
   plugins: [
-    react({
-      babel: {
-        plugins: [
-          ['@locator/babel-jsx/dist', { env: 'development' }],
-        ],
-      },
-    }),
+    react(),
     tailwindcss(),
     svgr(),
   ],

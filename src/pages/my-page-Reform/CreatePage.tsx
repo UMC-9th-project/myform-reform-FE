@@ -50,9 +50,6 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
   const [description, setDescription] = useState('');
 
 
-  const isStep5Filled = type === 'sale'
-  ? optionGroups.length > 0 // sale: 옵션 1개 이상
-  : duration.trim() !== '';  // order: 작업 기간 입력
 
   const isButtonEnabled = 
     images.length > 0 &&
@@ -61,7 +58,6 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
     description.trim() !== '<p></p>' &&
     price.trim() !== '' &&
     shippingFee.trim() !== '' &&
-    isStep5Filled &&   // 여기 바뀐 조건 반영
     category.trim() !== '';
 
 
@@ -173,7 +169,6 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
   }
 };
 
-
   return (
     <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
       <h1 className="heading-h2-bd pb-6 border-b mb-8 border-[black]"> {type === 'order' ? '주문제작 글 등록하기' : '판매글 등록하기'}</h1>
@@ -257,7 +252,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
               onChange={e => setTitle(e.target.value)} 
               className="placeholder:text-[var(--color-gray-50)] w-full border border-[var(--color-gray-60)] body-b1-rg p-5 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
-            <span className="absolute right-3 top-3 text-sm text-gray-400">0/40자</span>
+            <span className="absolute right-3 top-10 text-sm text-gray-400">0/40자</span>
           </div>
         </div>
       </section>
@@ -325,11 +320,11 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-6">
                 <div className="bg-white w-full max-w-5xl h-[80vh] p-6 rounded-lg overflow-auto">
                     <DescriptionEditor
-                        type={type}
-                        onSubmit={(html) => {
-                        setDescription(html); // Step3 상태 업데이트
-                        setShowEditor(false); // 에디터 닫기
-                    }}
+                      onSubmit={(html) => {
+                        setDescription(html);
+                        setShowEditor(false);
+                      }}
+                      onClose={() => setShowEditor(false)}
                     />
                 </div>
                 </div>
