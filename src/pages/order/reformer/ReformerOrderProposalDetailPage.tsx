@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { ImageCarousel } from '../../../components/common/product/Image';
 import ProductInfoToggle from '../../../components/common/product/detail/ProductInfoToggle';
 import ProductInfoCard from '../../../components/common/product/detail/ProductInfoCard';
@@ -70,6 +71,22 @@ const ReformerOrderProposalDetailPage = () => {
   } = useReformerOrderProposalDetail();
 
   const reviews = getMockReviews();
+  const infoSectionRef = useRef<HTMLDivElement>(null);
+  const reformerSectionRef = useRef<HTMLDivElement>(null);
+  const reviewSectionRef = useRef<HTMLDivElement>(null);
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId as 'info' | 'reformer' | 'review');
+    const refMap = {
+      info: infoSectionRef,
+      reformer: reformerSectionRef,
+      review: reviewSectionRef,
+    };
+    refMap[tabId as keyof typeof refMap]?.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  };
 
   if (!id) {
     return <div>제안을 찾을 수 없습니다.</div>;
@@ -137,26 +154,29 @@ const ReformerOrderProposalDetailPage = () => {
           </div>
         </div>
 
-        {/* 탭 메뉴 */}
-        <ProductTabMenu
-          tabs={[
-            { id: 'info', label: '상품 정보' },
-            { id: 'reformer', label: '리폼러 정보' },
-            { id: 'review', label: '상품 후기' },
-          ]}
-          activeTabId={activeTab}
-          onTabChange={(tabId) =>
-            setActiveTab(tabId as 'info' | 'reformer' | 'review')
-          }
-        />
+        {/* 탭 메뉴 - 스티키 고정, 좌우 여백 없이 밑줄 전체 */}
+        <div className="sticky top-0 z-10 bg-white -mx-4 md:-mx-27 pt-4 border-b border-[var(--color-gray-40)]">
+          <div className="px-4 md:px-27">
+            <ProductTabMenu
+              tabs={[
+                { id: 'info', label: '상품 정보' },
+                { id: 'reformer', label: '리폼러 정보' },
+                { id: 'review', label: '상품 후기' },
+              ]}
+              activeTabId={activeTab}
+              onTabChange={handleTabChange}
+              hideBorder
+            />
+          </div>
+        </div>
 
         {/* 상품 정보 */}
-        <div className="mb-16">
+        <div ref={infoSectionRef} data-tab="info" className="mb-16 scroll-mt-24">
           <ProductInfoToggle firstImage={ex4} additionalImages={[ex5, ex6]} />
         </div>
 
         {/* 리폼러 정보 */}
-        <div className="mb-16 flex justify-center">
+        <div ref={reformerSectionRef} className="mb-16 flex justify-center scroll-mt-24">
           <div className="max-w-[63.75rem] w-full">
             <ReformerProfileDetailCard
               name={ownerName}
@@ -170,6 +190,7 @@ const ReformerOrderProposalDetailPage = () => {
         </div>
 
         {/* 상품 후기 */}
+        <div ref={reviewSectionRef} className="scroll-mt-24">
         <ProductReviewSection
           rating={4.94}
           photoReviewCount={182}
@@ -181,6 +202,7 @@ const ReformerOrderProposalDetailPage = () => {
           onPageChange={handlePageChange}
           onMorePhotoReviewsClick={handleMorePhotoReviewsClick}
         />
+        </div>
       </div>
     </div>
   );

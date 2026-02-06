@@ -9,6 +9,8 @@ interface ProductTabMenuProps {
   activeTabId: string;
   onTabChange: (tabId: string) => void;
   className?: string;
+  /** true일 때 border-b 제거 (부모에서 전체 너비 밑줄 사용 시) */
+  hideBorder?: boolean;
 }
 
 const ProductTabMenu = ({
@@ -16,9 +18,10 @@ const ProductTabMenu = ({
   activeTabId,
   onTabChange,
   className = '',
+  hideBorder = false,
 }: ProductTabMenuProps) => {
   return (
-    <div className={`flex gap-40 border-b border-[var(--color-gray-40)] mb-20 ${className}`}>
+    <div className={`flex gap-40  ${!hideBorder ? 'border-b border-[var(--color-line-gray-40)]' : ''} ${className}`}>
       {tabs.map((tab) => (
         <button
           key={tab.id}
