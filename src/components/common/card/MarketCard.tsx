@@ -5,13 +5,14 @@ import starIcon from '../../../assets/icons/star.svg';
 const MARKET_DETAIL_PATH = '/market/product';
 
 export interface MarketCardItem {
-  id: number;
-  image: string;
+  item_id: string;
+  thumbnail: string;
   title: string;
   price: number;
-  rating: number;
-  reviewCount: number;
-  seller: string;
+  star: number;
+  review_count: number;
+  owner_nickname: string;
+  is_wished: boolean;
 }
 
 interface MarketCardProps {
@@ -33,10 +34,10 @@ const MarketCard = ({
   to,
 }: MarketCardProps) => {
   const handleLikeClick = (isLiked: boolean) => {
-    onLikeClick?.(item.id, isLiked);
+    onLikeClick?.( Number(item.item_id), isLiked);
   };
 
-  const linkTo = to ?? `${MARKET_DETAIL_PATH}/${item.id}`;
+  const linkTo = to ?? `${MARKET_DETAIL_PATH}/${item.item_id}`;
 
   const content = (
     <div className="bg-white rounded-[0.625rem] overflow-visible cursor-pointer">
@@ -46,7 +47,7 @@ const MarketCard = ({
         style={{ aspectRatio: '361/307' }}
       >
         <img
-          src={item.image}
+          src={item.thumbnail}
           alt={item.title}
           className="w-full h-full object-cover rounded-[1.25rem]"
         />
@@ -86,14 +87,14 @@ const MarketCard = ({
             className="w-[0.8125rem] h-[0.75rem]"
           />
           <span className="body-b3-rg">
-            <span className="text-[var(--color-black)]">{item.rating}</span>{' '}
+            <span className="text-[var(--color-black)]">{item.star}</span>{' '}
             <span className="text-[var(--color-gray-50)]">
-              ({item.reviewCount})
+              ({item.review_count})
             </span>
           </span>
         </div>
         <span className="mt-[0.875rem] inline-flex items-center body-b5-sb text-[var(--color-gray-50)] bg-[var(--color-gray-30)] rounded-[0.375rem] px-[0.3125rem] py-[0.125rem]">
-          {item.seller}
+          {item.owner_nickname}
         </span>
       </div>
     </div>
