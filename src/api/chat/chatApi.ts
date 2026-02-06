@@ -1,6 +1,6 @@
 // api/chat.ts
 import { api } from '../axios';
-import type { ChatMessage, ChatRoomInfo, ChatMessagesResponse } from '../../types/domain/chat/chatMessages';
+import type { ChatMessage, ChatRoomInfo, ChatMessagesResponse } from '@/types/api/chat/chatMessages';
 export type ChatRoomType = 'INQUIRY' | 'ORDER';
 export type ChatRoomFilter = ChatRoomType | 'UNREAD';
 
