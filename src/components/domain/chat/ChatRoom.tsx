@@ -68,91 +68,86 @@ const messages = React.useMemo(() => {
    * 3. WebSocket 연결
    * ========================= */
   useEffect(() => {
-    if (!accessToken) return;
+  if (!accessToken) return;
 
-    console.log('🔧 ChatRoom useEffect 실행');
+  const socket = connectSocket(accessToken);
+  if (!socket) return;
 
-    const socket = connectSocket(accessToken);
-    if (!socket) return;
+  let isJoined = false;
 
-    let isJoined = false;
+  const handleConnect = () => {
+    if (!isJoined) {
+      socket.emit('joinRoom', { roomId: chatId });
+      socket.emit('readChatRoom', { roomId: chatId });
+      isJoined = true;
+    }
+  };
 
-    const handleConnect = () => {
-      console.log('connect 이벤트 - 방 입장 시도');
-      if (!isJoined) {
-        socket.emit('joinRoom', { roomId: chatId });
-        socket.emit('readChatRoom', { roomId: chatId });
-        isJoined = true;
-      }
-    };
+  const handleNewMessage = (msg: any) => {
+    // 1️⃣ 메시지 목록 업데이트
+    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+      if (!oldData) return oldData;
 
-    const handleNewMessage = (msg: any) => {
-  // 기존: 메시지 목록 업데이트
-  queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-    if (!oldData) return oldData;
-
-    const lastPageIndex = oldData.pages.length - 1;
-    const updatedPages = [...oldData.pages];
-    updatedPages[lastPageIndex] = {
-      ...updatedPages[lastPageIndex],
-      messages: [...updatedPages[lastPageIndex].messages, msg],
-    };
-
-    return {
-      ...oldData,
-      pages: updatedPages,
-    };
-  });
-
-  const lastMessageText = msg.messageType === 'text' 
-    ? msg.textContent 
-    : msg.messageType === 'image' 
-    ? '사진' 
-    : msg.messageType === 'proposal'
-    ? '견적서'
-    : '요청서';
-
-  // 모든 필터의 쿼리 업데이트
-  [undefined, 'INQUIRY', 'ORDER', 'UNREAD', undefined].forEach(filterType => {
-    queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
-      if (!oldData?.data) return oldData;
+      const lastPageIndex = oldData.pages.length - 1;
+      const updatedPages = [...oldData.pages];
+      updatedPages[lastPageIndex] = {
+        ...updatedPages[lastPageIndex],
+        messages: [...updatedPages[lastPageIndex].messages, msg],
+      };
 
       return {
         ...oldData,
-        data: oldData.data.map((room: any) => 
-          room.chatRoomId === chatId
-            ? {
-                ...room,
-                lastMessage: lastMessageText,
-                lastMessageAt: msg.createdAt,
-              }
-            : room
-        ),
+        pages: updatedPages,
       };
     });
-  });
 
-  socket.emit('readChatRoom', { roomId: chatId });
-};
+    const lastMessageText =
+      msg.messageType === 'text'
+        ? msg.textContent
+        : msg.messageType === 'image'
+        ? '사진'
+        : msg.messageType === 'proposal'
+        ? '견적서'
+        : '요청서';
 
-    if (socket.connected) {
-      handleConnect();
-    }
+    // 2️⃣ 채팅방 목록 업데이트 + 맨 위로
+    [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach(filterType => {
+      queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
+        if (!oldData?.data) return oldData;
 
-    socket.on('connect', handleConnect);
-    socket.on('newMessage', handleNewMessage);
+        const updatedData = oldData.data.map((room: any) =>
+          room.chatRoomId === chatId
+            ? { ...room, lastMessage: lastMessageText, lastMessageAt: msg.createdAt }
+            : room
+        );
 
-    return () => {
-      console.log('cleanup 실행');
-      
-      if (isJoined) {
-        socket.emit('leaveRoom', { roomId: chatId });
-      }
-      
-      socket.off('connect', handleConnect);
-      socket.off('newMessage', handleNewMessage);
-    };
-  }, [accessToken, chatId, queryClient]);
+        const sortedData = [
+          updatedData.find((room: any) => room.chatRoomId === chatId)!,
+          ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
+        ];
+
+        return { ...oldData, data: sortedData };
+      });
+    });
+
+    // 3️⃣ 읽음 처리
+    const socket = getSocket();
+    socket?.emit('readChatRoom', { roomId: chatId });
+  };
+
+  // 소켓 이벤트 등록
+  if (socket.connected) handleConnect();
+  socket.on('connect', handleConnect);
+  socket.on('newMessage', handleNewMessage);
+
+  return () => {
+    if (isJoined) socket.emit('leaveRoom', { roomId: chatId });
+    socket.off('connect', handleConnect);
+    socket.off('newMessage', handleNewMessage);
+  };
+}, [accessToken, chatId, queryClient]);
+
+
 
   /* =========================
    * 4. 핸들러 함수
@@ -176,7 +171,7 @@ const messages = React.useMemo(() => {
     createdAt: new Date().toISOString(),
   };
 
-  // 1️⃣ 채팅방 메시지 낙관적 UI
+  
   queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
     if (!oldData) return oldData;
 
@@ -193,34 +188,37 @@ const messages = React.useMemo(() => {
     };
   });
 
-  // 2️⃣ 채팅 목록(Tab) 낙관적 UI 업데이트
+
+    /// 2️⃣ 채팅 목록(Tab) 낙관적 UI 업데이트 + 맨 위로
   queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
     if (!oldData?.data) return oldData;
 
-    return {
-      ...oldData,
-      data: oldData.data.map((room: any) =>
-        room.chatRoomId === chatId
-          ? {
-              ...room,
-              lastMessage: inputText, // 내가 보낸 메시지 텍스트
-              lastMessageAt: tempMessage.createdAt,
-            }
-          : room
-      ),
-    };
+    const updatedData = oldData.data.map((room: any) =>
+      room.chatRoomId === chatId
+        ? { ...room, lastMessage: inputText, lastMessageAt: tempMessage.createdAt }
+        : room
+    );
+
+    // 맨 위로 올리기
+    const sortedData = [
+      updatedData.find((room: any) => room.chatRoomId === chatId)!,
+      ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
+    ];
+
+    return { ...oldData, data: sortedData };
   });
 
-  // 3️⃣ 서버로 전송
-  socket.emit('sendMessage', {
-    roomId: chatId,
-    contentType: 'text',
-    content: inputText,
-  });
 
-  // 4️⃣ 입력창 초기화
-  setInputText('');
-};
+    // 3️⃣ 서버로 전송
+    socket.emit('sendMessage', {
+      roomId: chatId,
+      contentType: 'text',
+      content: inputText,
+    });
+
+    // 4️⃣ 입력창 초기화
+    setInputText('');
+  };
 
 
 
