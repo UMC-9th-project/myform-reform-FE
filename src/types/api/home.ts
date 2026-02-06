@@ -38,6 +38,7 @@ export interface HomeResponse {
         min_price: number;
         owner_id: string;
         owner_nickname: string;
+        is_wished: boolean;
       }>;
       best_reformers: Array<{
         owner_id: string;

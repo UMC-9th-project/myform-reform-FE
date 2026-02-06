@@ -24,12 +24,10 @@ import 'swiper/css/navigation';
 const Home = () => {
   const { data: homeData } = useHome();
 
-  
- 
   const banners = homeData?.success?.home_data?.banners ?? [];
   const bestReformers = homeData?.success?.home_data?.best_reformers ?? [];
   const trendingItems = homeData?.success?.home_data?.trending_items ?? [];
-  // const customOrders = homeDataContent.custom_orders ?? [];
+  const customOrders = homeData?.success?.home_data?.custom_orders ?? [];
   
 
   
@@ -64,16 +62,8 @@ const Home = () => {
             <SwiperSlide key={banner.id}>
               <img
                 src={banner.image_url}
-                alt="banner"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  console.error(`❌ 배너 이미지 로드 실패: ${banner.image_url}`);
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/Home/images/home2.jpg';
-                }}
-                onLoad={() => {
-                  console.log(`✅ 배너 이미지 로드 성공: ${banner.image_url}`);
-                }}
+                alt={`배너 ${banner.id}`}
+                className="w-full h-full object-cover"         
               />
             </SwiperSlide>
           ))}
@@ -97,6 +87,9 @@ const Home = () => {
         <div className='heading-h4-bd mt-[5rem]'>주문제작으로 나만의 스타일 완성! ✨</div>
         <div className='grid grid-cols-3 mt-[1.875rem] gap-[1.875rem] items-center'>
       
+        {customOrders.map((order) => (
+          <MarketCard key={order.proposal_id} item={order}  />
+        ))}
         </div>
       </div>
 
@@ -126,8 +119,9 @@ const Home = () => {
               slidesPerView={3}
               className="w-300 h-full rounded-[0.625rem]"
             >
+              
               {bestReformers?.map((reformer) => (
-                <SwiperSlide key={reformer.owner_id}>
+                <SwiperSlide key={reformer.owner_id} className='px-2 py-2'>
                   <ReformerSearchCard
                     reformer={{
                       owner_id: reformer.owner_id,
@@ -141,11 +135,7 @@ const Home = () => {
                     }}
                   />
                 </SwiperSlide>
-              ))}
-               
-          
-
-           
+              ))}       
             </Swiper>
           </div>
 

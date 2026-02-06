@@ -15,11 +15,24 @@ export interface MarketCardItem {
   is_wished: boolean;
 }
 
+export interface CustomOrderItem {
+  proposal_id: string;
+  thumbnail: string;
+  title: string;
+  min_price: number;
+  owner_nickname: string;
+  is_wished: boolean;
+}
+// 타입 가드 함수
+const isMarketCardItem = (item: MarketCardItem | CustomOrderItem): item is MarketCardItem => {
+  return 'item_id' in item;
+};
+
 interface MarketCardProps {
-  item: MarketCardItem;
+  item: MarketCardItem | CustomOrderItem;
   initialLiked?: boolean;
   onLikeClick?: (id: number, isLiked: boolean) => void;
-  /** 클릭 시 이동할 상세 페이지 경로 (미지정 시 /market/product/:id 사용) */
+  /** 클릭 시 이동할 상세 페이지 경로 (미지정 시 자동으로 결정) */
   to?: string;
 }
 
@@ -33,11 +46,22 @@ const MarketCard = ({
   onLikeClick,
   to,
 }: MarketCardProps) => {
+  const isMarketItem = isMarketCardItem(item);
+  const price = isMarketItem ? item.price : item.min_price;
+  const hasRating = isMarketItem && item.star !== undefined && item.review_count !== undefined;
+  const isWished = item.is_wished;
+
   const handleLikeClick = (isLiked: boolean) => {
-    onLikeClick?.( Number(item.item_id), isLiked);
+    if (isMarketItem) {
+      onLikeClick?.(Number(item.item_id), isLiked);
+    } else {
+      onLikeClick?.(Number(item.proposal_id), isLiked);
+    }
   };
 
-  const linkTo = to ?? `${MARKET_DETAIL_PATH}/${item.item_id}`;
+  const linkTo = to ?? (isMarketItem 
+    ? `${MARKET_DETAIL_PATH}/${item.item_id}`
+    : `/proposal/${item.proposal_id}`);
 
   const content = (
     <div className="bg-white rounded-[0.625rem] overflow-visible cursor-pointer">
@@ -66,7 +90,7 @@ const MarketCard = ({
           role="presentation"
         >
           <LikeButton
-            initialLiked={initialLiked}
+            initialLiked={initialLiked || isWished}
             onClick={handleLikeClick}
           />
         </div>
@@ -78,21 +102,25 @@ const MarketCard = ({
           {item.title}
         </h3>
         <p className="heading-h4-bd text-[var(--color-black)] mb-[0.125rem]">
-          {formatPrice(item.price)}원
+          {isMarketItem ?
+             `${formatPrice(price)}원`
+            : `${formatPrice(price)}원`}
         </p>
-        <div className="flex items-center gap-[0.375rem] mb-[0.525rem]">
-          <img
-            src={starIcon}
-            alt="별점"
-            className="w-[0.8125rem] h-[0.75rem]"
-          />
-          <span className="body-b3-rg">
-            <span className="text-[var(--color-black)]">{item.star}</span>{' '}
-            <span className="text-[var(--color-gray-50)]">
-              ({item.review_count})
+        {hasRating && (
+          <div className="flex items-center gap-[0.375rem] mb-[0.525rem]">
+            <img
+              src={starIcon}
+              alt="별점"
+              className="w-[0.8125rem] h-[0.75rem]"
+            />
+            <span className="body-b3-rg">
+              <span className="text-[var(--color-black)]">{item.star}</span>{' '}
+              <span className="text-[var(--color-gray-50)]">
+                ({item.review_count})
+              </span>
             </span>
-          </span>
-        </div>
+          </div>
+        )}
         <span className="mt-[0.875rem] inline-flex items-center body-b5-sb text-[var(--color-gray-50)] bg-[var(--color-gray-30)] rounded-[0.375rem] px-[0.3125rem] py-[0.125rem]">
           {item.owner_nickname}
         </span>
