@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import Breadcrumb from '../../../components/common/breadcrumb/Breadcrumb';
-import SuggestionCard, { type SuggestionDetailVariant } from '../../../components/common/card/SuggestionCard';
+import ProposalCard, {
+  type ProposalDetailVariant,
+} from '../../../components/common/card/ProposalCard';
 import Pagination from '../../../components/common/pagination/Pagination';
 import OrderCategoryFilter from '../../../components/domain/order/OrderCategoryFilter';
 import Select from '../../../components/common/dropdown/SortDropdown';
 
 /** 리폼러 모드: 카드 상세 링크·이미지 하트가 리폼러용으로 동작 */
-const CARD_VARIANT: SuggestionDetailVariant = 'reformer';
+const CARD_VARIANT: ProposalDetailVariant = 'reformer';
 
 // 더미 데이터 (132개 시뮬레이션)
-const generateMockSuggestions = () => {
-  const suggestions = [];
+const generateMockProposals = () => {
+  const proposals = [];
   for (let i = 1; i <= 132; i++) {
-    suggestions.push({
+    proposals.push({
       id: i,
       img: '/wsh1.jpg',
       name: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
@@ -22,14 +24,14 @@ const generateMockSuggestions = () => {
       nickname: '침착한 대머리독수리',
     });
   }
-  return suggestions;
+  return proposals;
 };
 
-const MOCK_SUGGESTIONS = generateMockSuggestions();
+const MOCK_PROPOSALS = generateMockProposals();
 const ITEMS_PER_PAGE = 15; // 3열 x 5행
-const TOTAL_PAGES = Math.ceil(MOCK_SUGGESTIONS.length / ITEMS_PER_PAGE);
+const TOTAL_PAGES = Math.ceil(MOCK_PROPOSALS.length / ITEMS_PER_PAGE);
 
-const ReformerOrderSuggestionListPage = () => {
+const ReformerOrderProposalListPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<{
     categoryTitle: string;
@@ -54,7 +56,7 @@ const ReformerOrderSuggestionListPage = () => {
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const displayedSuggestions = MOCK_SUGGESTIONS.slice(startIndex, endIndex);
+  const displayedProposals = MOCK_PROPOSALS.slice(startIndex, endIndex);
 
   const breadcrumbItems = [
     { label: '홈', path: '/' },
@@ -87,7 +89,7 @@ const ReformerOrderSuggestionListPage = () => {
             <div className="mb-5 mt-3">
               <div className="flex flex-row items-start sm:items-center justify-between ">
                 <p className="body-b1-rg text-[var(--color-gray-60)]">
-                  총 {MOCK_SUGGESTIONS.length}개의 제품
+                  총 {MOCK_PROPOSALS.length}개의 제품
                 </p>
                 <Select
                   options={[
@@ -108,17 +110,17 @@ const ReformerOrderSuggestionListPage = () => {
             {/* 제안 카드 그리드 */}
             <div className="mb-12">
               <div className="grid grid-cols-3 gap-[1.875rem]">
-                {displayedSuggestions.map((suggestion) => (
-                  <SuggestionCard
-                    key={suggestion.id}
-                    id={suggestion.id}
+                {displayedProposals.map((proposal) => (
+                  <ProposalCard
+                    key={proposal.id}
+                    id={proposal.id}
                     variant={CARD_VARIANT}
-                    imgSrc={suggestion.img}
-                    title={suggestion.name}
-                    price={suggestion.price}
-                    rating={suggestion.review}
-                    reviewCountText={`(${suggestion.reviewCount})`}
-                    nickname={suggestion.nickname}
+                    imgSrc={proposal.img}
+                    title={proposal.name}
+                    price={proposal.price}
+                    rating={proposal.review}
+                    reviewCountText={`(${proposal.reviewCount})`}
+                    nickname={proposal.nickname}
                     className="pb-[5.875rem] w-full"
                   />
                 ))}
@@ -134,4 +136,5 @@ const ReformerOrderSuggestionListPage = () => {
   );
 };
 
-export default ReformerOrderSuggestionListPage;
+export default ReformerOrderProposalListPage;
+

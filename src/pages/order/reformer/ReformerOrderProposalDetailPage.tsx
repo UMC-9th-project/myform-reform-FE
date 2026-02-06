@@ -11,7 +11,7 @@ import ex4 from '../../../components/common/product/eximage/ex4.jpg';
 import ex5 from '../../../components/common/product/eximage/ex5.jpg';
 import ex6 from '../../../components/common/product/eximage/ex6.jpg';
 
-interface SuggestionDetail {
+interface ProposalDetail {
   id: string;
   title: string;
   images: string[];
@@ -31,7 +31,7 @@ interface SuggestionDetail {
   rating: number;
   reviewCount: number;
   photoReviewCount: number;
-  type?: 'mySuggestion' | 'Suggestion';
+  type?: 'myProposal' | 'Proposal';
 }
 
 interface ReviewData {
@@ -45,8 +45,8 @@ interface ReviewData {
 }
 
 // 더미 데이터
-const getMockSuggestionDetail = (id: string): SuggestionDetail => {
-  const mockData: Record<string, SuggestionDetail> = {
+const getMockProposalDetail = (id: string): ProposalDetail => {
+  const mockData: Record<string, ProposalDetail> = {
     '1': {
       id: '1',
       title: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
@@ -67,7 +67,7 @@ const getMockSuggestionDetail = (id: string): SuggestionDetail => {
       rating: 4.94,
       reviewCount: 362,
       photoReviewCount: 182,
-      type: 'Suggestion',
+      type: 'Proposal',
     },
     '2': {
       id: '2',
@@ -89,7 +89,7 @@ const getMockSuggestionDetail = (id: string): SuggestionDetail => {
       rating: 4.94,
       reviewCount: 362,
       photoReviewCount: 182,
-      type: 'mySuggestion',
+      type: 'myProposal',
     },
   };
 
@@ -118,71 +118,40 @@ const getMockReviews = (): ReviewData[] => {
       date: '2025년 11월 15일',
       reviewText: '정말 만족스러운 리폼이었습니다. 빠른 배송과 깔끔한 마감이 인상적이에요!',
     },
-    {
-      id: '3',
-      userName: '따스한 봄날',
-      rating: 5,
-      date: '2025년 11월 12일',
-      image: '/wsh1.jpg',
-    },
-    {
-      id: '4',
-      userName: '달콤한 쓴맛',
-      rating: 4,
-      date: '2025년 11월 10일',
-    },
-    {
-      id: '5',
-      userName: '정장 입은 남자',
-      rating: 5,
-      date: '2025년 11월 8일',
-      reviewText: '퀄리티가 정말 좋아요. 다음에도 또 주문할 예정입니다.',
-    },
-    {
-      id: '6',
-      userName: '멋진 여자',
-      rating: 5,
-      date: '2025년 11월 5일',
-      reviewText: '빠른 배송과 친절한 서비스에 감사드립니다.',
-      image: '/wsh1.jpg',
-    },
-    {
-      id: '7',
-      userName: '행복한 하루',
-      rating: 4,
-      date: '2025년 11월 3일',
-      reviewText: '만족스러운 구매였습니다.',
-    },
-    {
-      id: '8',
-      userName: '즐거운 오후',
-      rating: 5,
-      date: '2025년 11월 1일',
-      image: '/wsh1.jpg',
-    },
   ];
 };
 
-const ReformerOrderSuggestionDetailPage = () => {
+const ReformerOrderProposalDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'info' | 'reformer' | 'review'>('info');
+  const [activeTab, setActiveTab] = useState<'info' | 'reformer' | 'review'>(
+    'info'
+  );
   const [sortBy, setSortBy] = useState<'latest' | 'high' | 'low'>('latest');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
 
-  const suggestionDetail = id ? getMockSuggestionDetail(id) : null;
+  const proposalDetail = id ? getMockProposalDetail(id) : null;
   const reviews = getMockReviews();
   const ITEMS_PER_PAGE = 5;
 
-  if (!id || !suggestionDetail) {
+  if (!id || !proposalDetail) {
     return <div>제안을 찾을 수 없습니다.</div>;
   }
 
-  const { title, images, price, shippingFee, estimatedPeriod, reformer, rating, photoReviewCount, type } =
-    suggestionDetail;
+  const {
+    title,
+    images,
+    price,
+    shippingFee,
+    estimatedPeriod,
+    reformer,
+    rating,
+    photoReviewCount,
+    type,
+  } = proposalDetail;
 
-  const isMySuggestion = type === 'mySuggestion';
+  const isMyProposal = type === 'myProposal';
 
   const handleShare = () => {};
 
@@ -207,8 +176,6 @@ const ReformerOrderSuggestionDetailPage = () => {
   return (
     <div className="bg-white">
       <div className="px-4 md:px-27 pt-15">
-
-
         {/* 메인 콘텐츠 영역 */}
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-[3.125rem] mb-16">
           {/* 왼쪽: 이미지 캐러셀 */}
@@ -229,7 +196,8 @@ const ReformerOrderSuggestionDetailPage = () => {
                 id: reformer.id,
                 name: reformer.name,
                 profileImg: reformer.profileImg,
-                description: '이제는 유니폼도 색다르게! 한화-롯데 등 야구단 유니폼 리폼해 드립니다.',
+                description:
+                  '이제는 유니폼도 색다르게! 한화-롯데 등 야구단 유니폼 리폼해 드립니다.',
               }}
               isLiked={isLiked}
               onLikeClick={handleLike}
@@ -238,7 +206,7 @@ const ReformerOrderSuggestionDetailPage = () => {
               showButtons={false}
             />
             {/* 글 수정하기 버튼 (내 제안글인 경우만) */}
-            {isMySuggestion && (
+            {isMyProposal && (
               <div className="mt-7">
                 <Button variant="white" onClick={handleEdit} className="w-full">
                   글 수정하기
@@ -256,16 +224,15 @@ const ReformerOrderSuggestionDetailPage = () => {
             { id: 'review', label: '상품 후기' },
           ]}
           activeTabId={activeTab}
-          onTabChange={(tabId) => setActiveTab(tabId as 'info' | 'reformer' | 'review')}
+          onTabChange={(tabId) =>
+            setActiveTab(tabId as 'info' | 'reformer' | 'review')
+          }
         />
 
         {/* 탭 콘텐츠 */}
         {activeTab === 'info' && (
           <div className="mb-16">
-            <ProductInfoToggle
-              firstImage={ex4}
-              additionalImages={[ex5, ex6]}
-            />
+            <ProductInfoToggle firstImage={ex4} additionalImages={[ex5, ex6]} />
           </div>
         )}
 
@@ -302,4 +269,5 @@ const ReformerOrderSuggestionDetailPage = () => {
   );
 };
 
-export default ReformerOrderSuggestionDetailPage;
+export default ReformerOrderProposalDetailPage;
+
