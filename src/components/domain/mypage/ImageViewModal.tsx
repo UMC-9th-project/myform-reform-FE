@@ -43,34 +43,46 @@ const ImageViewerModal = ({
           ✕
         </button>
 
-        {/* 이전 버튼 */}
+        {/* 이전 버튼 - 여러 장일 때만 표시 */}
+        {images.length > 1 && (
           <button
+            type="button"
             title="왼쪽 버튼"
-            onClick={() => {if (currentIndex > 0) setCurrentIndex(prev => prev -1);
+            onClick={(e) => {
+              e.stopPropagation();
+              if (currentIndex > 0) setCurrentIndex((prev) => prev - 1);
             }}
-            className="absolute left-3 bg-white rounded-full flex items-center justify-center text-3xl z-10 p-2"
+            className="absolute left-3 bg-white rounded-full flex items-center justify-center text-3xl z-10 p-2 hover:opacity-90"
           >
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M23 26L17 20L23 14" stroke="black" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M23 26L17 20L23 14" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
+        )}
 
         {/* 이미지 */}
         <img
           src={images[currentIndex]}
           alt="원본 이미지"
           className="w-full h-full object-contain"
+          draggable={false}
+          onClick={(e) => e.stopPropagation()}
         />
 
-        {/* 다음 버튼 */}
+        {/* 다음 버튼 - 여러 장일 때만 표시 */}
+        {images.length > 1 && (
           <button
+            type="button"
             title="오른쪽으로 이동"
-            onClick={() => {if (currentIndex < lastIndex) setCurrentIndex(prev => prev + 1);
+            onClick={(e) => {
+              e.stopPropagation();
+              if (currentIndex < lastIndex) setCurrentIndex((prev) => prev + 1);
             }}
-            className="absolute right-3 bg-white rounded-full flex items-center justify-center text-3xl z-10 p-2"
+            className="absolute right-3 bg-white rounded-full flex items-center justify-center text-3xl z-10 p-2 hover:opacity-90"
           >
             <img src={right} alt="오른쪽으로 넘기기" />
           </button>
+        )}
 
       </div>
     </div>

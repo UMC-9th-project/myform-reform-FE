@@ -1,200 +1,382 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Gallery from '../../../assets/chat/Gallery.svg'
-import QuotationCard from './QuotationCard';
-import PaymentCard from './PaymentCard';
-import PaymentModal, { type PaymentRequestData } from './PaymentModal';
-import { useChatStore, type Message } from '../../../stores/chatStore';
-import RequireCard from './RequireCard';
-import PayFinishCard from './PayFinishCard';
-import EstimateArrivalCard from './EstimateArriveCard';
+import { useInfiniteQuery, useQueryClient} from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { getChatMessages } from '@/api/chat/chatApi';
+import Gallery from '@/assets/chat/gallery.svg';
+import QuotationCard from './QuotationCard';
+import RequireCard from './RequireCard';
+import PaymentModal, { type PaymentRequestData } from './PaymentModal';
+import type { RoomType } from '@/types/api/chat/chatMessages';
+import { connectSocket, getSocket } from '@/utils/domain/socket';
+import useAuthStore from '@/stores/useAuthStore';
+import { uploadImages } from '@/api/upload';
 
 interface ChatRoomProps {
-  chatId: number;
+  chatId: string;
   myRole: 'REFORMER' | 'USER';
+  roomType: RoomType
 }
 
-// mock 데이터
-const mockMessages: Record<number, Message[]> = {
-  1: [
-    { id: 1, text: "1번 채팅방 첫 메시지입니다.", senderRole: 'USER', time: '오후 08:30', type: 'text', isRead: false },
-    { id: 2, text: "1번 채팅방 두 번째 메시지입니다.", senderRole: 'REFORMER', time: '오후 08:35', type: 'text', isRead: true },
-  ],
-  2: [
-    { id: 3, text: "2번 채팅방 첫 메시지입니다.", senderRole: 'USER', time: '오후 09:00', type:'text', isRead: false },
-    { id: 4, text: "2번 채팅방 두 번째 메시지입니다.", senderRole: 'REFORMER', time: '오후 09:05', type: 'text', isRead: false },
-  ],
-  3: [
-    { id: 5, type: 'quotation', senderRole: 'REFORMER', time: '오후 10:00', isRead: false },
-    {
-      id: 6,
-      type: 'estimateArrival',
-      senderRole: 'REFORMER',
-      time: '오후 10:01',
-      isRead: true,
-    },
-    {
-      id: 7,
-      type: 'payFinish',
-      senderRole: 'USER',
-      time: '오후 10:12',
-      isRead: true,
-
-      price: 46500,
-      orderNumber: 'ORD-20260122-0001',
-      paymentMethod: '카드 간편결제',
-      paymentDetail: '신한은행 / 0000-****-****-0000',
-      date: '2026.01.22 10:12',
-    },
-  ],
-  4: [
-    {
-      id: 8,
-      type: 'require',
-      price: 7500,
-      senderRole:'USER',
-      time: '오후 10:20'
-    }
-  ],
-
-};
-
-const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
-  
-  const [message, setMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const messages = useChatStore((state) => state.messages);
-  const sendMessage = useChatStore((state) => state.sendMessage);
-  const resetMessages = useChatStore((state) => state.resetMessages);
-
-  const MAX_IMAGES = 5;
-  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
+  const [inputText, setInputText] = useState('');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const queryClient = useQueryClient();
 
   const navigate = useNavigate();
 
+  const isRead = false; // 더미 데이터
+
+  /* =========================
+   * 1. React Query 무한 스크롤 설정
+   * ========================= */
+  // select 제거
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useInfiniteQuery({
+    queryKey: ['chatMessages', chatId],
+    queryFn: ({ pageParam }) => getChatMessages(chatId, { cursor: pageParam as string }),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.nextCursor : undefined,
+  });
+
+  // messages를 useMemo로 계산
+  const messages = React.useMemo(() => {
+    if (!data) return [];
+    return data.pages
+      .flatMap(page => page.messages)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }, [data]);
+
+  const roomInfo = data?.pages[0]?.chatRoomInfo; 
+
+  const handleImageChange = async (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
+
+  try {
+    const fileArray = Array.from(files);
+
+    // 1️⃣ 서버 업로드
+      const uploadResult = await uploadImages(fileArray);
+      const imageUrls = uploadResult.success.url;
+
+      // 2️⃣ 이미지 메시지 전송
+      sendImageMessage(imageUrls);
+    } catch (err) {
+      console.error('이미지 업로드 실패', err);
+      alert('이미지 업로드에 실패했습니다.');
+    } finally {
+      // 같은 파일 다시 선택 가능하게 초기화
+      e.target.value = '';
+    }
+  };
+
+  const handleReadStatus = (data: {
+    chatRoomId: string;
+    readerId: string;
+    lastReadMessageId: string;
+  }) => {
+    if (data.chatRoomId !== chatId) return;
+
+    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+      if (!oldData) return oldData;
+
+      const updatedPages = oldData.pages.map((page: any) => ({
+        ...page,
+        messages: page.messages.map((msg: any) => {
+          const isMine =
+            (myRole === 'REFORMER' && msg.senderType === 'OWNER') ||
+            (myRole === 'USER' && msg.senderType === 'USER');
+
+          if (
+            isMine &&
+            !String(msg.messageId).startsWith('temp-') &&
+            msg.messageId <= data.lastReadMessageId
+          ) {
+            return { ...msg, isRead: true };
+          }
+          return msg;
+        }),
+      }));
+
+      return { ...oldData, pages: updatedPages };
+    });
+  };
+
+  const sendImageMessage = (imageUrls: string[]) => {
+  const socket = getSocket();
+  if (!socket || !socket.connected) {
+    console.error('소켓 연결 안 됨');
+    return;
+  }
+
+  const tempMessage = {
+    messageId: `temp-${Date.now()}`,
+    senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
+    senderId: 'me',
+    messageType: 'image',
+    payload: {
+      urls: imageUrls,
+    },
+    createdAt: new Date().toISOString(),
+    isRead: false,
+  };
+
+  /** ✅ 1. 채팅 메시지 낙관적 UI */
+  queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+    if (!oldData) return oldData;
+
+    const lastPageIndex = oldData.pages.length - 1;
+    const updatedPages = [...oldData.pages];
+
+    updatedPages[lastPageIndex] = {
+      ...updatedPages[lastPageIndex],
+      messages: [
+        ...updatedPages[lastPageIndex].messages,
+        tempMessage,
+      ],
+    };
+
+    return { ...oldData, pages: updatedPages };
+  });
+
+  /** ✅ 2. 채팅 목록 낙관적 UI */
+  queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
+    if (!oldData?.data) return oldData;
+
+    const updatedData = oldData.data.map((room: any) =>
+      room.chatRoomId === chatId
+        ? {
+            ...room,
+            lastMessage: '사진',
+            lastMessageAt: tempMessage.createdAt,
+          }
+        : room
+    );
+
+    const sortedData = [
+      updatedData.find((room: any) => room.chatRoomId === chatId)!,
+      ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
+    ];
+
+    return { ...oldData, data: sortedData };
+  });
+
+  /** ✅ 3. 서버 전송 */
+  socket.emit('sendMessage', {
+    roomId: chatId,
+    contentType: 'image',
+    content: imageUrls,
+  });
+};
 
 
-  // 스크롤 아래로
+
+  /* =========================
+   * 2. 스크롤 제어
+   * ========================= */
   useEffect(() => {
-    if (messagesContainerRef.current) {
+    if (messagesContainerRef.current && !isFetchingNextPage) {
       messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages.length, isFetchingNextPage]);
 
-  // chatId 바뀔 때 초기 메시지 세팅
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop } = e.currentTarget;
+    if (scrollTop === 0 && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
+
+  /* =========================
+   * 3. WebSocket 연결
+   * ========================= */
   useEffect(() => {
-    resetMessages();
-    const initialMessages = mockMessages[chatId] || [];
-    initialMessages.forEach((msg) => sendMessage(msg));
-  }, [chatId, resetMessages, sendMessage]);
+  if (!accessToken) return;
 
-  // 결제 메시지 전송
-  const handlePaymentSend = (data: PaymentRequestData) => {
-    sendMessage({
-      id: Date.now(),
-      type: 'payment',
-      price: data.price,
-      delivery: data.delivery,
-      days: data.days,
-      senderRole: myRole,
-      time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true }),
-      isRead: false,
+  const socket = connectSocket(accessToken);
+  if (!socket) return;
+
+  let isJoined = false;
+
+  const handleConnect = () => {
+    if (!isJoined) {
+      socket.emit('joinRoom', { roomId: chatId });
+      socket.emit('readChatRoom', { roomId: chatId });
+      isJoined = true;
+    }
+  };
+
+
+
+  const handleNewMessage = (msg: any) => {
+    // 1️⃣ 메시지 목록 업데이트
+    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+      if (!oldData) return oldData;
+
+          const exists = oldData.pages
+      .flatMap((p: any) => p.messages)
+      .some((m: any) => m.messageId === msg.messageId);
+
+    if (exists) return oldData;
+
+      const lastPageIndex = oldData.pages.length - 1;
+      const updatedPages = [...oldData.pages];
+      updatedPages[lastPageIndex] = {
+        ...updatedPages[lastPageIndex],
+        messages: [...updatedPages[lastPageIndex].messages, msg],
+      };
+
+      return {
+        ...oldData,
+        pages: updatedPages,
+      };
     });
+
+    const lastMessageText =
+      msg.messageType === 'text'
+        ? msg.textContent
+        : msg.messageType === 'image'
+        ? '사진'
+        : msg.messageType === 'proposal'
+        ? '견적서'
+        : '요청서';
+
+    // 2️⃣ 채팅방 목록 업데이트 + 맨 위로
+    [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach(filterType => {
+      queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
+        if (!oldData?.data) return oldData;
+
+        const updatedData = oldData.data.map((room: any) =>
+          room.chatRoomId === chatId
+            ? { ...room, lastMessage: lastMessageText, lastMessageAt: msg.createdAt }
+            : room
+        );
+
+        const sortedData = [
+          updatedData.find((room: any) => room.chatRoomId === chatId)!,
+          ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
+        ];
+
+        return { ...oldData, data: sortedData };
+      });
+    });
+
+    // 읽음 처리
+    const socket = getSocket();
+      socket?.emit('readChatRoom', { roomId: chatId });
+    };
+
+    // 소켓 이벤트 등록
+    if (socket.connected) handleConnect();
+    socket.on('connect', handleConnect);
+    socket.on('newMessage', handleNewMessage);
+    socket.on('readStatus', handleReadStatus);
+
+    return () => {
+      if (isJoined) socket.emit('leaveRoom', { roomId: chatId });
+      socket.off('connect', handleConnect);
+      socket.off('newMessage', handleNewMessage);
+      socket.off('readStatus', handleReadStatus);
+    };
+  }, [accessToken, chatId, queryClient]);
+
+
+
+  /* =========================
+   * 4. 핸들러 함수
+   * ========================= */
+    const handleSend = () => {
+  if (!inputText.trim()) return;
+
+  const socket = getSocket();
+  if (!socket || !socket.connected) {
+    console.error('소켓이 연결되지 않음');
+    return;
+  }
+
+  const tempMessage = {
+    messageId: `temp-${Date.now()}`, // 임시 ID
+    senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
+    senderId: 'me', // 임시
+    messageType: 'text',
+    textContent: inputText,
+    payload: null,
+    createdAt: new Date().toISOString(),
+    isRead: false,
+  };
+
+  //text 낙관적 UI 
+  queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+    if (!oldData) return oldData;
+
+    const lastPageIndex = oldData.pages.length - 1;
+    const updatedPages = [...oldData.pages];
+
+    updatedPages[lastPageIndex] = {
+      ...updatedPages[lastPageIndex],
+      messages: [
+        ...updatedPages[lastPageIndex].messages,
+        tempMessage,
+      ],
+    };
+
+  return { ...oldData, pages: updatedPages };
+  });
+
+
+    /// 채팅 목록(Tab) 낙관적 UI 업데이트 + 맨 위로
+  queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
+    if (!oldData?.data) return oldData;
+
+    const updatedData = oldData.data.map((room: any) =>
+      room.chatRoomId === chatId
+        ? { ...room, lastMessage: inputText, lastMessageAt: tempMessage.createdAt }
+        : room
+    );
+
+    // 맨 위로 올리기
+    const sortedData = [
+      updatedData.find((room: any) => room.chatRoomId === chatId)!,
+      ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
+    ];
+
+    return { ...oldData, data: sortedData };
+  });
+
+
+    // 서버로 전송
+    socket.emit('sendMessage', {
+      roomId: chatId,
+      contentType: 'text',
+      content: inputText,
+    });
+
+    // 입력창 초기화
+    setInputText('');
+  };
+
+
+  const handlePaymentSend = (paymentData: PaymentRequestData) => {
+    console.log("결제 요청 데이터 전송:", paymentData);
     setIsPaymentModalOpen(false);
   };
 
-  //견적서 거절
-  const handleRejectEstimate = () => {
-    sendMessage({
-      id: Date.now(),
-      type: 'system',
-      systemType: 'quotationRejected',
-      senderRole: myRole,
-      time: new Date().toLocaleTimeString('ko-KR', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      }),
-      isRead: false,
-    });
+  const handleSendAction = () => {
+    const path = myRole === 'REFORMER' ? '/chat/create/quotation' : '/chat/create/request';
+    navigate(path, { state: { chatId } });
   };
 
-
-  // 이미지 업로드
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
-
-    if (files.length > MAX_IMAGES) {
-      alert(`사진은 최대 ${MAX_IMAGES}개까지 보낼 수 있어요.`);
-      e.target.value = '';
-      return;
-    }
-
-    const imageUrls: string[] = [];
-    let loadedCount = 0;
-
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        imageUrls.push(reader.result as string);
-        loadedCount++;
-        if (loadedCount === files.length) {
-          sendMessage({
-            id: Date.now(),
-            type: 'image',
-            imageUrls,
-            senderRole: myRole,
-            time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true }),
-            isRead: false,
-          });
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-
-    e.target.value = '';
-  };
-
-  const handleImageClick = () => fileInputRef.current?.click();
-
-  // 텍스트 메시지 전송
-  const handleSend = () => {
-    if (!message.trim()) return;
-    sendMessage({
-      id: Date.now(),
-      type: 'text',
-      text: message.trim(),
-      senderRole: myRole,
-      time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: true }),
-      isRead: false,
-    });
-    setMessage('');
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-    // 견적서/요청서 이동만
-  const handleSendQuotationOrRequire = () => {
-    if (myRole === 'REFORMER') {
-      navigate('/chat/create/quotation', { state: { chatId } });
-    } else {
-      navigate('/chat/create/request', { state: { chatId } });
-    }
-  };
-
+  if (status === 'pending') {
+    return <div className="flex-1 flex items-center justify-center">로딩 중...</div>;
+  }
 
   return (
-    <div className="flex flex-col w-full h-full mx-auto h-[800px] border border-[var(--color-line-gray-40)] bg-white overflow-hidden">
-      {/* 결제 모달 */}
+    <div className="flex flex-col w-full h-[800px] border border-[var(--color-line-gray-40)] bg-white overflow-hidden">
       <PaymentModal 
         isOpen={isPaymentModalOpen} 
         onClose={() => setIsPaymentModalOpen(false)} 
@@ -202,212 +384,257 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole }) => {
       />
 
       {/* 상단 상품 정보 */}
-      <div className="flex items-center p-4 border-b border-[var(--color-line-gray-40)]">
-        <div className="w-12 h-12 bg-gray-200 rounded-md overflow-hidden mr-3 flex items-center justify-center text-[10px] text-white">
-          IMAGE
-        </div>
-        <div>
-          <h2 className="text-[14px] font-medium text-black">짐색 리폼 요청합니다.</h2>
-          <p className="text-[14px] font-bold text-black">30,000~50,000원</p>
-        </div>
-      </div>
+      {roomInfo && (roomType === 'REQUEST' || roomType === 'PROPOSAL') && (
+        <div className="flex items-center p-4 border-b border-[var(--color-line-gray-40)] bg-white">
+          <img
+            src={roomInfo.targetPayload?.image ?? ''}
+            alt="상품"
+            className="w-12 h-12 rounded-md object-cover mr-3 bg-gray-100"
+          />
+          <div className="flex-1">
+            <h2 className="text-[14px] font-medium text-black line-clamp-1">
+              {roomInfo.targetPayload?.title ?? ''}
+            </h2>
 
-      {/* 채팅 내역 */}
+            {roomType === 'REQUEST' ? (
+              <p className="text-[14px] font-bold text-black">
+                {(roomInfo.targetPayload?.minBudget ?? 0).toLocaleString()}원 ~ {(roomInfo.targetPayload?.maxBudget ?? 0).toLocaleString()}원
+              </p>
+            ) : (
+              <p className="text-[14px] font-bold text-black">
+                {(() => {
+                  // 배열이 이미 시간순이므로 마지막 proposal 찾기
+                  const proposals = messages.filter(msg => msg.messageType === 'proposal');
+                  const lastProposal = proposals[proposals.length - 1];
+                  return (lastProposal?.payload?.price ?? 0).toLocaleString() + '원';
+                })()}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 채팅 메시지 영역 */}
       <div 
         ref={messagesContainerRef}
+        onScroll={handleScroll}
         className="flex-1 overflow-y-auto bg-white p-4 space-y-6"
       >
-        
-        <div className="flex justify-center">
-          <span className="bg-[var(--color-gray-30)] text-[var(--color-gray-60)] body-b3-rg px-4 py-1 rounded-full">
-            2025년 12월 3일 수요일
-          </span>
-        </div>
-        
-        {messages.map((msg) => {
+        {isFetchingNextPage && (
+          <div className="text-center text-xs text-gray-400">이전 메시지 불러오는 중...</div>
+        )}
 
-          if (msg.type === 'system' && msg.systemType === 'quotationRejected') {
-            return (
-              <div key={msg.id} className="my-6 flex justify-center">
-                <span className="body-b3-rg text-[var(--color-gray-50)] border-b border-[var(--color-gray-50)] pb-0">
-                  제안이 거절되었습니다
-                </span>
-              </div>
-            );
-          }
+        {messages.map((msg, idx) => {
+          const msgDate = new Date(msg.createdAt);
+          const msgDateString = msgDate.toLocaleDateString('ko-KR', { 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit'
+          });
 
+          const prevMsg = messages[idx - 1];
+          const prevDateString = prevMsg
+            ? new Date(prevMsg.createdAt).toLocaleDateString('ko-KR', { 
+                year: 'numeric', 
+                month: '2-digit', 
+                day: '2-digit'
+              })
+            : null;
 
+          const showDate = msgDateString !== prevDateString;
+
+          const isMine = 
+            (myRole === 'REFORMER' && msg.senderType === 'OWNER') ||
+            (myRole === 'USER' && msg.senderType === 'USER');
+          
           return (
-          <div
-            key={msg.id}
-            className={`flex ${msg.senderRole === myRole ? 'flex-row-reverse' : 'flex-row'} items-start gap-2`}
-          >
-            {/* 상대방 프로필 */}
-            {msg.senderRole !== myRole && (
-              <div className="w-12 h-12 rounded-full border border-[var(--color-line-gray-40)] bg-[var(--color-gray-20)] overflow-hidden flex-shrink-0">
-                <img src="https://via.placeholder.com/40" alt="profile" className="w-full h-full object-cover" />
-              </div>
-            )}
-
-            {/* 메시지 + 시간 */}
-            <div className={`flex ${msg.senderRole === myRole ? 'flex-row-reverse' : 'flex-row'} items-end gap-1.5`}>
-              
-              {/* 견적서와 결제창은 말풍선 디자인이 다르므로 별도 처리 */}
-              {msg.type === 'require' ? (
-              
-                <RequireCard
-                  key={msg.id}
-                  type={msg.senderRole === myRole ? 'sent' : 'received'}
-                  price={50000}       // 예: 실제 데이터로 바꾸면 됨
-                  title="제 유니폼 원숄더 원피스로 가방 짐색 리폼 요청드립니다 제발요"
-                />
-
-              ) :
-                msg.type === 'quotation' ? (
-                <QuotationCard type={msg.senderRole === myRole ? 'sent' : 'received'} id={msg.id} chatId={chatId} myRole={myRole} key={msg.id} />
-              ) : msg.type === 'payment' ? (
-                <PaymentCard 
-                  price={msg.price!} 
-                  delivery={msg.delivery!} 
-                  days={msg.days!}
-                  nickname= "심심한 리본" 
-                  type={msg.senderRole === myRole ? 'sent' : 'received'}
-                />
-              ) : msg.type === 'payFinish' ? (
-                <PayFinishCard
-                  type={msg.senderRole === myRole ? 'sent' : 'received'}
-                  price={msg.price!}
-                  orderNumber={msg.orderNumber!}
-                  paymentMethod={msg.paymentMethod!}
-                  paymentDetail={msg.paymentDetail!}
-                  date={msg.date!}
-                />
-              ) : msg.type === 'estimateArrival' ? (
-                  <EstimateArrivalCard
-                    type={msg.senderRole === myRole ? 'sent' : 'received'}
-                    onReject={handleRejectEstimate} />
-              ) : (
-                /* 텍스트와 이미지는 동일한 말풍선 배경(Mint/Gray)을 사용하도록 통합 */
-                <div className={`p-2 rounded-[0.625rem] max-w-[40rem] ${
-                    msg.senderRole === myRole
-                      ? 'bg-[var(--color-mint-5)] text-black rounded-tr-none'
-                      : 'bg-[var(--color-gray-20)] text-black rounded-tl-none'
-                  }`}>
-                  
-                  {/* 텍스트 렌더링 */}
-                  {msg.type === 'text' && (
-                    <div className="p-1 text-[1rem] leading-relaxed">
-                      {msg.text}
-                    </div>
-                  )}
-
-                  {/* 이미지 렌더링 (말풍선 안으로 들어옴) */}
-                  {msg.type === 'image' && msg.imageUrls && (
-                    <div className={`grid gap-1.5 ${
-                        msg.imageUrls.length === 1
-                          ? 'grid-cols-1 w-[240px]'
-                          : msg.imageUrls.length === 2
-                          ? 'grid-cols-2 w-[320px]'
-                          : 'grid-cols-3 w-[360px]'
-                      }`}>
-                      {msg.imageUrls.map((url, idx) => (
-                        <div key={idx} className="relative aspect-square w-full overflow-hidden border border-[var(--color-line-gray-40)] rounded-md">
-                          <img
-                            src={url}
-                            alt={`sent-${idx}`}
-                            className="absolute inset-0 w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
+            <React.Fragment key={msg.messageId}>
+              {showDate && (
+                <div className="flex justify-center my-4">
+                  <span className="bg-[var(--color-gray-30)] text-[var(--color-gray-60)] px-4 py-1 rounded-full text-[12px]">
+                    {msgDate.toLocaleDateString('ko-KR', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </span>
                 </div>
               )}
 
-              {/* 시간 표시 영역 */}
-              <div className={`flex flex-col justify-end body-b5-rg text-[var(--color-gray-50)] min-w-max pb-0.5 ${
-                msg.senderRole === myRole ? 'items-end' : 'items-start'
-              }`}>
-                {msg.isRead && <span className="mb-0.5">읽음</span>}
-                <span>{msg.time}</span>
+              <div className={`flex ${isMine ? 'flex-row-reverse' : 'flex-row'} items-start gap-2 mb-4`}>
+                {!isMine && (
+                  <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                    <img 
+                      src={roomInfo?.owner.id === msg.senderId 
+                        ? roomInfo.owner.profileImage || '' 
+                        : roomInfo?.requester.profileImage || ''
+                      } 
+                      alt="profile" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+
+                <div className={`flex ${isMine ? 'flex-row-reverse' : 'flex-row'} items-end gap-1.5`}>
+                  <div className="flex flex-col">
+                    {msg.messageType === 'request' && (
+                      <RequireCard 
+                        type={isMine ? 'sent' : 'received'} 
+                        minBudget={msg.payload.minBudget}
+                        maxBudget={msg.payload.maxBudget}
+                        title={msg.payload.title}
+                        nickname={isMine 
+                          ? roomInfo?.requester.nickname ?? '알 수 없음' 
+                          : roomInfo?.owner.nickname ?? '알 수 없음'
+                        } 
+                      />
+                    )}
+                    {msg.messageType === 'proposal' && (
+                      <QuotationCard 
+                        type={isMine ? 'sent' : 'received'} 
+                        price={msg.payload.price} 
+                        delivery={msg.payload.delivery}
+                        nickname={isMine 
+                          ? roomInfo?.requester.nickname ?? '사용자' 
+                          : roomInfo?.owner.nickname ?? '리포머'
+                        }
+                      />
+                    )}
+                    {(msg.messageType === 'text' || msg.messageType === 'image') && (
+                      <div className={`p-3 rounded-[0.625rem] max-w-[400px] ${
+                        isMine 
+                          ? 'bg-[var(--color-mint-5)] text-black rounded-tr-none' 
+                          : 'bg-[var(--color-gray-20)] text-black rounded-tl-none'
+                      }`}>
+                        {msg.messageType === 'text' && (
+                          <p className="text-[1rem] leading-relaxed whitespace-pre-wrap">
+                            {msg.textContent}
+                          </p>
+                        )}
+                        {msg.messageType === 'image' && msg.payload.urls && (
+                          <div
+                            className={`grid gap-1.5 ${
+                              msg.payload.urls.length === 1
+                                ? 'grid-cols-1 w-[240px]'
+                                : msg.payload.urls.length === 2
+                                ? 'grid-cols-2 w-[320px]'
+                                : 'grid-cols-3 w-[360px]'
+                            }`}
+                          >
+                            {msg.payload.urls.map((url, idx) => (
+                              <div
+                                key={idx}
+                                className="relative aspect-square w-full overflow-hidden border border-[var(--color-line-gray-40)] rounded-md"
+                              >
+                                <img
+                                  src={url}
+                                  alt={`sent-${idx}`}
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                      </div>
+                    )}
+                  </div>
+
+                  <div
+                    className={`flex flex-col justify-end body-b5-rg text-[var(--color-gray-50)] min-w-max pb-0.5 ${
+                      isMine ? 'items-end' : 'items-start'
+                    }`}
+                  >
+                    {/* ✅ 읽음 표시 */}
+                    {isMine && isRead && ( /* 여기 추후에 msg.isRead로 변경 필요*/
+                      <span className="mb-0.5 text-[10px] text-[var(--color-gray-40)]">
+                        읽음
+                      </span>
+                    )}
+
+                    <span>
+                      {msgDate.toLocaleTimeString('ko-KR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true,
+                      })}
+                    </span>
+                  </div>
+
+                </div>
               </div>
-            </div>
-          </div>
-        )})}
-        <div ref={messagesEndRef} />
+            </React.Fragment>
+          );
+        })}
       </div>
 
       {/* 입력창 */}
       <div className="p-4 border-t border-[var(--color-line-gray-40)]">
-        <input 
-          title="사진 입력"
-          type="file" 
-          ref={fileInputRef} 
-          onChange={handleFileChange} 
-          accept="image/*"
-          multiple 
-          className="hidden" 
-        />
         <textarea
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyDown={handleKeyPress}
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
           placeholder="메세지를 입력하세요."
-          className="w-full h-10 resize-none outline-none body-b1-rg placeholder-[var(--color-gray-50)]"
+          className="w-full h-10 resize-none outline-none body-b1-rg"
         />
-
         <div className="flex justify-between items-center mt-2">
-        {/* 왼쪽 버튼 그룹 */}
-        <div className="flex items-center gap-3">
-          {/* 이미지 버튼은 항상 */}
-          <button className="text-[var(--color-gray-50)]" onClick={handleImageClick}>
-            <img src={Gallery} alt="갤러리 이모콘" className='w-7' />
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={() => fileInputRef.current?.click()}>
+              <img src={Gallery} alt="gallery" className="w-7" />
+            </button>
+            <input 
+              type="file" 
+              title="파일 첨부" 
+              ref={fileInputRef} 
+              className="hidden" 
+              multiple 
+              accept="image/*" 
+              onChange={handleImageChange}
+            />
+            
+            <div className="flex items-center gap-3">
+              {myRole === 'REFORMER' && (
+                <>
+                  <button 
+                    onClick={() => setIsPaymentModalOpen(true)} 
+                    className="px-3 py-1 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+                  >
+                    결제창 보내기
+                  </button>
 
-          {/* REFORMER 전용 버튼 */}
-          {myRole === 'REFORMER' && (
-            <>
-              <button
-                onClick={() => setIsPaymentModalOpen(true)}
-                className="flex items-center gap-1 px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
-              >
-                결제창 보내기
-              </button>
-              {!messages.some((msg) => msg.type === 'quotation') && (
-                <button
-                  onClick={handleSendQuotationOrRequire}
-                  className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+                  {roomType !== 'PROPOSAL' && (
+                    <button 
+                      onClick={handleSendAction} 
+                      className="px-3 py-1 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+                    >
+                      견적서 보내기
+                    </button>
+                  )}
+                </>
+              )}
+              {myRole === 'USER' && roomType !== 'PROPOSAL' && (
+                <button 
+                  onClick={handleSendAction} 
+                  className="px-3 py-1 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
                 >
-                  견적서 보내기
+                  요청서 보내기
                 </button>
               )}
-            </>
-          )}
-
-          {/* USER 전용 버튼 */}
-          {myRole === 'USER' && !messages.some((msg) => msg.type === 'quotation') && (
-            <button
-              onClick={handleSendQuotationOrRequire}
-              className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
-            >
-              요청서 보내기
-            </button>
-          )}
+            </div>
+          </div>
+          
+          <button 
+            onClick={handleSend}
+            disabled={!inputText.trim()}
+            className={`px-6 py-2 rounded-lg font-bold ${
+              inputText.trim() 
+                ? 'bg-[var(--color-mint-1)] text-white' 
+                : 'bg-gray-200 text-gray-400'
+            }`}
+          >
+            보내기
+          </button>
         </div>
-
-        {/* 오른쪽 보내기 버튼 */}
-        <button
-          onClick={handleSend}
-          disabled={!message.trim()}
-          className={`px-6 py-2 rounded-lg body-b1-sb transition-colors ${
-            message.trim() ? 'bg-[var(--color-mint-1)] text-white' : 'bg-[var(--color-gray-30)] text-[var(--color-gray-40)]'
-          }`}
-        >
-          보내기
-        </button>
-      </div>
-
       </div>
     </div>
   );

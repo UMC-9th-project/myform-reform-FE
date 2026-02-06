@@ -1,5 +1,6 @@
 import starIcon from '../../../assets/icons/star.svg';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { ReformerSearchResultCardProps } from './types';
 
 const ReformerSearchResultCard = ({
@@ -7,6 +8,7 @@ const ReformerSearchResultCard = ({
   onClick,
   isLast = false,
 }: ReformerSearchResultCardProps) => {
+  const navigate = useNavigate();
   const [isImageError, setIsImageError] = useState(false);
   const shouldShowPlaceholder = !reformer.profile_photo || isImageError;
   const formattedRating = Number.isFinite(reformer.avg_star)
@@ -16,10 +18,15 @@ const ReformerSearchResultCard = ({
     k.startsWith('#') ? k : `#${k}`
   );
 
+  const handleClick = () => {
+    if (onClick) return onClick();
+    navigate(`/profile/${reformer.owner_id}`);
+  };
+
   return (
     <div
       className={`bg-white py-4 flex gap-4 md:gap-[1.5rem] cursor-pointer w-full max-w-[719px] ${isLast ? '' : 'border-b border-[var(--color-gray-40)]'}`}
-      onClick={onClick}
+      onClick={handleClick}
     >
       {/* 왼쪽: 텍스트 정보 */}
       <div className="flex-1 flex flex-col gap-[0.475rem]">

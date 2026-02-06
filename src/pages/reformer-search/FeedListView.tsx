@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import ReformFeedCard from '../../components/domain/reformer-search/ReformFeedCard';
+import ImageViewerModal from '../../components/domain/mypage/ImageViewModal';
+import { getReformerFeedPhotos } from '../../api/reformer';
 import { useReformerFeedListView } from '../../hooks/domain/reformer-search/useReformerFeedListView';
 
 const FeedListView = () => {
@@ -10,6 +13,43 @@ const FeedListView = () => {
     isFetchingNextPage,
     observerTargetRef,
   } = useReformerFeedListView();
+
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const handleFeedClick = async (item: { feed_id: string; photo_url: string; is_multi_photo: boolean }) => {
+    if (!item.photo_url) return;
+
+    if (item.is_multi_photo) {
+      try {
+        const res = await getReformerFeedPhotos({ feed_id: item.feed_id });
+        const photos = (res as { photos?: { photo_order: number; url: string }[] })?.photos
+          ?? (res as { success?: { photos?: { photo_order: number; url: string }[] } })?.success?.photos;
+        const urls =
+          photos
+            ?.sort((a, b) => a.photo_order - b.photo_order)
+            ?.map((p) => p.url) ?? [];
+        if (urls.length > 0) {
+          setSelectedImages(urls);
+          setCurrentIndex(0);
+          setIsViewerOpen(true);
+        } else {
+          setSelectedImages([item.photo_url]);
+          setCurrentIndex(0);
+          setIsViewerOpen(true);
+        }
+      } catch {
+        setSelectedImages([item.photo_url]);
+        setCurrentIndex(0);
+        setIsViewerOpen(true);
+      }
+    } else {
+      setSelectedImages([item.photo_url]);
+      setCurrentIndex(0);
+      setIsViewerOpen(true);
+    }
+  };
 
   const breadcrumbItems = [
     { label: '홈', path: '/' },
@@ -59,13 +99,19 @@ const FeedListView = () => {
                 <ReformFeedCard
                   key={item.feed_id}
                   feed={item}
-                  onClick={() => {
-                    // TODO: 피드 상세 페이지로 이동 (추후 구현)
-                    console.log('피드 클릭:', item.feed_id);
-                  }}
+                  onClick={() => handleFeedClick(item)}
                 />
               ))}
             </div>
+          )}
+
+          {isViewerOpen && selectedImages.length > 0 && (
+            <ImageViewerModal
+              images={selectedImages}
+              currentIndex={currentIndex}
+              setCurrentIndex={setCurrentIndex}
+              onClose={() => setIsViewerOpen(false)}
+            />
           )}
 
           {/* 무한 스크롤 감지 영역 */}

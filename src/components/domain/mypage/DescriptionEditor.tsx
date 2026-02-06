@@ -12,11 +12,11 @@ import Button from '../../common/button/Button1';
 
 
 type DescriptionEditorProps = {
-  type: 'order' | 'sale'
   onSubmit: (html: string) => void; // 등록 버튼 클릭 시
+  onClose: () => void;
 };
 
-const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ type, onSubmit }) => {
+const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -68,16 +68,31 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ type, onSubmit })
 };
 
   return (
-    <div className="max-w-7xl mx-auto p-6 bg-white rounded-lg">
+    <div className="max-w-7xl mx-auto bg-white rounded-lg">
       {/* 헤더 */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="heading-h2-bd text-black">
-            { type === 'sale' ? '상품 설명 등록하기' :
-                '리폼 설명 등록하기' }</h2>
+      <div className="flex justify-end items-center mb-2">
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-[var(--color-gray-60)] hover:text-black transition"
+          aria-label="닫기"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <path
+              d="M6 6L18 18M18 6L6 18"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
       </div>
-
-      <hr className="border-black mb-4" />
-
+      <div className=' pt-1 p-6'>
       {/* 툴바 */}
       <div className="flex flex-col gap-2">
         {/* 상단 */}
@@ -176,6 +191,7 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ type, onSubmit })
         className="hidden"
         onChange={handleImageUpload}
       />
+    </div>
     </div>
   );
 };

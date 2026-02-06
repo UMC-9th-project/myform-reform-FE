@@ -12,7 +12,7 @@ interface ApiOrderItem {
   orderId: string;          // 주문 번호
   targetId: string;         // 상품 또는 리폼 제안 ID
   type: 'ITEM' | 'REFORM';  // ITEM = 마켓판매, REFORM = 주문제작
-  status: 'PENDING' | 'PROCESSING' | 'SHIPPED'; 
+  status: string 
   price: number;
   deliveryFee: number;
   userName: string;         // 구매자/요청자
@@ -21,11 +21,6 @@ interface ApiOrderItem {
   thumbnail: string;
 }
 
-const statusMap: Record<ApiOrderItem['status'], string> = {
-  PENDING: '결제 완료',
-  PROCESSING: '상품준비 중',
-  SHIPPED: '발송 완료'
-};
 
 const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail }) => {
 
@@ -56,7 +51,6 @@ const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail 
         const mapped = res.map(item => ({
           ...item,
           type: type as 'ITEM' | 'REFORM',
-          status: item.status as ApiOrderItem['status'], 
         }));
         setOrders(mapped);
       })
@@ -77,10 +71,17 @@ const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail 
 
   // --- 필터링 ---
   const filteredOrders = orders.filter(order => {
-    const typeMatch = activeOrderTab === 'product' ? order.type === 'ITEM' : order.type === 'REFORM';
-    const statusMatch = filterStatus === '전체' || statusMap[order.status] === filterStatus;
+    const typeMatch =
+      activeOrderTab === 'product'
+        ? order.type === 'ITEM'
+        : order.type === 'REFORM';
+
+    const statusMatch =
+      filterStatus === '전체' || order.status === filterStatus;
+
     return typeMatch && statusMatch;
   });
+
 
   return (
     <div className="w-full mx-auto bg-transparent min-h-screen p-4">
@@ -185,7 +186,7 @@ const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail 
                       {activeOrderTab === 'product' && (
                         <>
                           <span className='body-b0-rg text-[var(--color-gray-50)]'>진행 상태</span>
-                          <span className='body-b0-rg text-[var(--color-mint-1)]'>{statusMap[order.status]}</span>
+                          <span className='body-b0-rg text-[var(--color-mint-1)]'>{order.status}</span>
                         </>
                       )}
 

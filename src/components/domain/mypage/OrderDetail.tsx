@@ -54,6 +54,10 @@ const OrderDetail = () => {
         ? ` (${order.deliveryAddress.postalCode})`
         : '');
 
+    const formatNumber = (value: number) =>
+      value.toLocaleString('ko-KR');
+
+
 
     useEffect(() => {
 
@@ -72,7 +76,7 @@ const OrderDetail = () => {
             productTitle: data.title,
             productImage: data.thumbnail || '',
             price: data.price,
-            option: data.option,
+            option: data.option || '선택 안 함',
             paymentDate: data.createdAt.split('.')[0].replace('T', ' '), // YYYY-MM-DD HH:MM:SS
             buyer: data.userName,
             phone: data.phone,
@@ -132,7 +136,7 @@ const OrderDetail = () => {
               
               <div className="grid grid-cols-[80px_1fr] text-[15px] gap-y-2 gap-x-4">
                 <span className="body-b0-rg text-[var(--color-gray-50)]">결제금액</span>
-                <span className="text-black body-b0-rg">{order.price}</span>
+                <span className="text-black body-b0-rg">{formatNumber(order.price)}원</span>
 
                 <span className="body-b0-rg text-[var(--color-gray-50)]">옵션</span>
                 <span className="text-black body-b0-rg">{order.option}</span>

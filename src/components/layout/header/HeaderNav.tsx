@@ -1,15 +1,17 @@
 import { useNavigate, useLocation } from 'react-router-dom';
+import useAuthStore from '../../../stores/useAuthStore';
 
 export default function HeaderNav() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { role } = useAuthStore();
 
   const navItems = [
     { label: '홈', path: '/' }, //임시 경로
     { label: '마켓', path: '/market' }, //임시 경로
     { label: '주문제작', path: '/order' }, 
     { label: '리폼러 찾기', path: '/reformer-search' },
-    { label: '채팅하기', path: '/chat/reformer' }, //임시 경로
+    { label: '채팅하기', path: role === 'reformer' ? '/chat/reformer' : '/chat/normal' }, 
   ];
 
   const handleNavClick = (path: string) => {
