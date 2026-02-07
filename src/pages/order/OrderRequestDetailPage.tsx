@@ -7,18 +7,7 @@ import Button from '../../components/common/button/Button1';
 import ReformerSearchCard from '../../components/domain/reformer-search/ReformerProfileCard';
 import LeftIcon from '../../assets/icons/left.svg?react';
 import RightIcon from '../../assets/icons/right.svg?react';
-
-interface RequestDetail {
-  id: string;
-  title: string;
-  images: string[];
-  nickname: string;
-  profileImg: string;
-  budget: string;
-  deadline: string;
-  description: string;
-  type: 'myRequest' | 'Request';
-}
+import { useOrderRequestDetail } from '../../hooks/domain/order/useOrderRequestDetail';
 
 interface RecommendedReformer {
   id: string;
@@ -31,125 +20,74 @@ interface RecommendedReformer {
   tags: string[];
 }
 
-// 더미 데이터 (실제로는 API에서 가져올 데이터)
-const getMockRequestDetail = (id: string): RequestDetail => {
-  const mockData: Record<string, RequestDetail> = {
-    '1': {
-      id: '1',
-      title: '짐색 리폼 요청합니다.',
-      images: ['/crt1.jpg', '/crt2.jpg', '/crt1.jpg'],
-      nickname: '심심한 리본',
-      profileImg: '/crt1.jpg',
-      budget: '30,000~50,000원',
-      deadline: '2026년 5월 22일',
-      description: `2026년 5월 22일 마감일로 설정된 테스트 데이터입니다.
-      마감되지 않은 상태로 표시되어야 합니다.`,
-      type: 'Request',
-    },
-    '2': {
-      id: '2',
-      title: '짐색 리폼 요청합니다.',
-      images: ['/crt1.jpg', '/crt2.jpg', '/crt1.jpg'],
-      nickname: '심심한 리본',
-      profileImg: '/crt1.jpg',
-      budget: '30,000~50,000원',
-      deadline: '2025년 12월 31일',
-      description: `상세 요청 내용 텍스트 샘플입니다.
-      상세 요청 내용 텍스트 샘플입니다.
-      상세 요청 내용 텍스트 샘플입니다.
-      상세 요청 내용 텍스트 샘플입니다.`,
-      type: 'myRequest',
-    },
-    '3': {
-      id: '3',
-      title: '짐색 리폼 요청합니다.',
-      images: ['/crt1.jpg', '/crt2.jpg', '/crt1.jpg', '/crt2.jpg'],
-      nickname: '심심한 리본',
-      profileImg: '/crt1.jpg',
-      budget: '30,000~50,000원',
-      deadline: '2025년 12월 31일',
-      description: `상세 요청 내용 텍스트 샘플입니다.
-      상세 요청 내용 텍스트 샘플입니다.
-      상세 요청 내용 텍스트 샘플입니다.
-      상세 요청 내용 텍스트 샘플입니다.`,
-      type: 'Request',
-    },
-  };
-
-  return mockData[id] || mockData['3'];
-};
-
-// 추천 리폼러 더미 데이터
-const getRecommendedReformers = (): RecommendedReformer[] => {
-  return [
-    {
-      id: '1',
-      name: '침착한 대머리독수리',
-      profileImg: '/crt1.jpg',
-      rating: 4.9,
-      reviewCount: 271,
-      transactionCount: 415,
-      description:
-        '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-      tags: ['#빠른', '#친절한'],
-    },
-    {
-      id: '2',
-      name: '침착한 대머리독수리',
-      profileImg: '/crt1.jpg',
-      rating: 4.9,
-      reviewCount: 271,
-      transactionCount: 415,
-      description:
-        '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-      tags: ['#빠른', '#친절한'],
-    },
-    {
-      id: '3',
-      name: '침착한 대머리독수리',
-      profileImg: '/crt1.jpg',
-      rating: 4.9,
-      reviewCount: 271,
-      transactionCount: 415,
-      description:
-        '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-      tags: ['#빠른', '#친절한'],
-    },
-    {
-      id: '4',
-      name: '침착한 대머리독수리',
-      profileImg: '/crt1.jpg',
-      rating: 4.9,
-      reviewCount: 271,
-      transactionCount: 415,
-      description:
-        '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-      tags: ['#빠른', '#친절한'],
-    },
-    {
-      id: '5',
-      name: '침착한 대머리독수리',
-      profileImg: '/crt1.jpg',
-      rating: 4.9,
-      reviewCount: 271,
-      transactionCount: 415,
-      description:
-        '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-      tags: ['#빠른', '#친절한'],
-    },
-    {
-      id: '6',
-      name: '침착한 대머리독수리',
-      profileImg: '/crt1.jpg',
-      rating: 4.9,
-      reviewCount: 271,
-      transactionCount: 415,
-      description:
-        '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-      tags: ['#빠른', '#친절한'],
-    },
-  ];
-};
+const RECOMMENDED_REFORMERS: RecommendedReformer[] = [
+  {
+    id: '1',
+    name: '침착한 대머리독수리',
+    profileImg: '/crt1.jpg',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
+    tags: ['#빠른', '#친절한'],
+  },
+  {
+    id: '2',
+    name: '침착한 대머리독수리',
+    profileImg: '/crt1.jpg',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
+    tags: ['#빠른', '#친절한'],
+  },
+  {
+    id: '3',
+    name: '침착한 대머리독수리',
+    profileImg: '/crt1.jpg',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
+    tags: ['#빠른', '#친절한'],
+  },
+  {
+    id: '4',
+    name: '침착한 대머리독수리',
+    profileImg: '/crt1.jpg',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
+    tags: ['#빠른', '#친절한'],
+  },
+  {
+    id: '5',
+    name: '침착한 대머리독수리',
+    profileImg: '/crt1.jpg',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
+    tags: ['#빠른', '#친절한'],
+  },
+  {
+    id: '6',
+    name: '침착한 대머리독수리',
+    profileImg: '/crt1.jpg',
+    rating: 4.9,
+    reviewCount: 271,
+    transactionCount: 415,
+    description:
+      '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
+    tags: ['#빠른', '#친절한'],
+  },
+];
 
 const OrderRequestDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -158,8 +96,16 @@ const OrderRequestDetailPage = () => {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  const requestDetail = id ? getMockRequestDetail(id) : null;
-  const recommendedReformers = getRecommendedReformers();
+  const {
+    requestDetail,
+    isLoading,
+    isError,
+    imageUrls,
+    isClosed,
+    formattedDeadline,
+    formattedBudget,
+    handleShare,
+  } = useOrderRequestDetail();
 
   useEffect(() => {
     const updateScrollState = () => {
@@ -180,40 +126,31 @@ const OrderRequestDetailPage = () => {
         window.removeEventListener('resize', updateScrollState);
       };
     }
-     
   }, []);
 
-  if (!id || !requestDetail) {
+  if (!id) {
     return <div>요청을 찾을 수 없습니다.</div>;
   }
 
-  const { title, images, nickname, profileImg, budget, deadline, description, type } = requestDetail;
-  const isMyRequest = type === 'myRequest';
+  if (isLoading) {
+    return (
+      <div className="px-27 pt-6">
+        <p className="body-b1-rg text-[var(--color-gray-60)]">불러오는 중...</p>
+      </div>
+    );
+  }
 
-  // 마감일 확인 (예: "2025년 12월 31일" 형식)
-  const isClosed = (() => {
-    try {
-      // 마감일 문자열 파싱 (예: "2025년 12월 31일")
-      const deadlineMatch = deadline.match(/(\d{4})년\s*(\d{1,2})월\s*(\d{1,2})일/);
-      if (!deadlineMatch) return false;
+  if (isError || !requestDetail) {
+    return (
+      <div className="px-27 pt-6">
+        <p className="body-b1-rg text-[var(--color-gray-60)]">
+          요청서를 불러오지 못했어요.
+        </p>
+      </div>
+    );
+  }
 
-      const [, year, month, day] = deadlineMatch;
-      const deadlineDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      deadlineDate.setHours(0, 0, 0, 0);
-
-      // 오늘 날짜가 마감일보다 이후면 마감됨
-      return today > deadlineDate;
-    } catch {
-      return false;
-    }
-  })();
-
-  const handleShare = () => {
-    // 공유 기능 구현
-    console.log('공유하기');
-  };
+  const isMyRequest = requestDetail.isOwner;
 
   const handleEdit = () => {
     // 글 수정하기 기능
@@ -282,7 +219,7 @@ const OrderRequestDetailPage = () => {
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-[3.125rem]">
           {/* 왼쪽: 이미지 캐러셀 */}
           <div className="flex-1">
-            <ImageCarousel images={images} isClosed={isClosed} />
+            <ImageCarousel images={imageUrls} isClosed={isClosed} />
           </div>
 
           {/* 오른쪽: 요청 상세 정보 */}
@@ -292,12 +229,12 @@ const OrderRequestDetailPage = () => {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-[var(--color-gray-60)]">
                   <img
-                    src={profileImg}
-                    alt={nickname}
+                    src={requestDetail.profile}
+                    alt={requestDetail.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="body-b1-rg text-[var(--color-gray-60)]">{nickname}</span>
+                <span className="body-b1-rg text-[var(--color-gray-60)]">{requestDetail.name}</span>
               </div>
               <button
                 onClick={handleShare}
@@ -309,18 +246,18 @@ const OrderRequestDetailPage = () => {
             </div>
 
             {/* 요청 제목 */}
-            <h2 className="heading-h5-md text-[var(--color-black)] mb-4">{title}</h2>
+            <h2 className="heading-h5-md text-[var(--color-black)] mb-4">{requestDetail.title}</h2>
 
             {/* 희망 예산 */}
             <div className="mb-1 flex flex-row items-center  gap-4">
               <p className="body-b1-sb text-[var(--color-gray-60)] ">희망 예산</p>
-              <p className="heading-h4-bd text-[var(--color-black)]">{budget}</p>
+              <p className="heading-h4-bd text-[var(--color-black)]">{formattedBudget}</p>
             </div>
 
             {/* 마감일 */}
             <div className="mb-6 flex flex-row items-center  gap-4">
               <p className="body-b1-sb text-[var(--color-gray-60)]">마감일</p>
-              <p className="body-b1-rg text-[var(--color-gray-60)]">{deadline}</p>
+              <p className="body-b1-rg text-[var(--color-gray-60)]">{formattedDeadline}</p>
             </div>
 
             {/* 상세 요청 내용 */}
@@ -328,7 +265,7 @@ const OrderRequestDetailPage = () => {
               <div className="pl-10">
                 <p className="body-b1-rg text-[var(--color-gray-60)] mb-4 ">상세 요청 내용</p>
                 <div className="body-b1-rg text-[var(--color-black)] whitespace-pre-line pb-12">
-                  {description}
+                  {requestDetail.content}
                 </div>
               </div>
             </div>
@@ -381,7 +318,7 @@ const OrderRequestDetailPage = () => {
                   msOverflowStyle: 'none',
                 }}
               >
-                {recommendedReformers.map((reformer) => (
+                {RECOMMENDED_REFORMERS.map((reformer) => (
                   <div key={reformer.id} className="flex-shrink-0 w-[23.75rem]">
                     <ReformerSearchCard
                       reformer={{
