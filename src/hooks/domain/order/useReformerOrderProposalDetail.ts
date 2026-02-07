@@ -83,10 +83,6 @@ export const useReformerOrderProposalDetail = () => {
     }
   };
 
-  const handleEdit = () => {
-    if (id) navigate(`/reformer/order/proposals/${id}/edit`);
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -108,7 +104,6 @@ export const useReformerOrderProposalDetail = () => {
     formattedShippingFee,
     formattedEstimatedPeriod,
     handleShare,
-    handleEdit,
     handlePageChange,
     navigate,
   };
