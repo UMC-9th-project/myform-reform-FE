@@ -39,6 +39,8 @@ export interface ReformProposalImage {
 
 export interface ReformProposalDetail {
   isOwner: boolean;
+  /** 게시글 작성자 ID (프론트엔드 fallback용, API에서 제공 시 사용) */
+  ownerId?: string;
   reformProposalId: string;
   title: string;
   content: string;

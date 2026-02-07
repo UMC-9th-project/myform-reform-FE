@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getReformProposalDetail } from '../../../api/order/reformProposal';
+import useAuthStore from '../../../stores/useAuthStore';
 import type { ReformProposalDetail } from '../../../types/api/order/reformProposal';
 
 function formatWon(value: number) {
@@ -20,6 +21,7 @@ function formatExpectedWorking(expectedWorking: number): string {
 export const useReformerOrderProposalDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
   const [activeTab, setActiveTab] = useState<'info' | 'reformer' | 'review'>(
     'info'
   );
@@ -43,8 +45,17 @@ export const useReformerOrderProposalDetail = () => {
     staleTime: 1000 * 30,
   });
 
-  const proposalDetail: ReformProposalDetail | null =
-    reformProposalDetailResponse?.success ?? null;
+  const rawProposalDetail = reformProposalDetailResponse?.success ?? null;
+
+  // API의 isOwner 또는 로그인 유저와 ownerId 비교로 본인 글 여부 판단
+  const proposalDetail: ReformProposalDetail | null = rawProposalDetail
+    ? {
+        ...rawProposalDetail,
+        isOwner:
+          rawProposalDetail.isOwner ||
+          !!(user?.id && rawProposalDetail.ownerId && user.id === rawProposalDetail.ownerId),
+      }
+    : null;
 
   const imageUrls =
     proposalDetail != null
@@ -72,10 +83,6 @@ export const useReformerOrderProposalDetail = () => {
     }
   };
 
-  const handleEdit = () => {
-    if (id) navigate(`/reformer/order/proposals/${id}/edit`);
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -97,7 +104,6 @@ export const useReformerOrderProposalDetail = () => {
     formattedShippingFee,
     formattedEstimatedPeriod,
     handleShare,
-    handleEdit,
     handlePageChange,
     navigate,
   };

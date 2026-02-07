@@ -65,7 +65,6 @@ const ReformerOrderProposalDetailPage = () => {
     formattedShippingFee,
     formattedEstimatedPeriod,
     handleShare,
-    handleEdit,
     handlePageChange,
     navigate,
   } = useReformerOrderProposalDetail();
@@ -100,7 +99,7 @@ const ReformerOrderProposalDetailPage = () => {
     return <div className="p-8">제안서를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</div>;
   }
 
-  const { title, content, ownerName, ownerProfile, isOwner } = proposalDetail;
+  const { title, content, ownerName, ownerProfile, isOwner, ownerId } = proposalDetail;
   const isMyProposal = isOwner;
 
   const handleRequest = () => {};
@@ -146,7 +145,7 @@ const ReformerOrderProposalDetailPage = () => {
             />
             {isMyProposal && (
               <div className="mt-7">
-                <Button variant="white" onClick={handleEdit} className="w-full">
+                <Button variant="white"  className="w-full">
                   글 수정하기
                 </Button>
               </div>
@@ -184,7 +183,7 @@ const ReformerOrderProposalDetailPage = () => {
               orderCount={415}
               reviewCount={271}
               profileImg={ownerProfile}
-              onFeedClick={() => navigate('/profile')}
+              onFeedClick={() => ownerId && navigate(`/profile/${ownerId}`)}
             />
           </div>
         </div>
