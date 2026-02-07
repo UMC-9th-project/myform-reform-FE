@@ -20,8 +20,8 @@ export interface CustomOrderItem {
   thumbnail: string;
   title: string;
   min_price: number;
-  star: number;
-  review_count: number;
+  star?: number;
+  review_count?: number;
   owner_nickname: string;
   is_wished: boolean;
 }
@@ -50,7 +50,7 @@ const MarketCard = ({
 }: MarketCardProps) => {
   const isMarketItem = isMarketCardItem(item);
   const price = isMarketItem ? item.price : item.min_price;
-  const hasRating = isMarketItem == item.star > 0;
+  const hasRating = item.star !== undefined;
   const isWished = item.is_wished;
 
   const handleLikeClick = (isLiked: boolean) => {
@@ -116,9 +116,9 @@ const MarketCard = ({
               className="w-[0.8125rem] h-[0.75rem]"
             />
             <span className="body-b3-rg">
-              <span className="text-[var(--color-black)]">{item.star}</span>{' '}
+              <span className="text-[var(--color-black)]">{isMarketItem ? item.star : (item.star ?? 0)}</span>{' '}
               <span className="text-[var(--color-gray-50)]">
-                ({item.review_count})
+                ({isMarketItem ? item.review_count : (item.review_count ?? 0)})
               </span>
             </span>
           </div>
