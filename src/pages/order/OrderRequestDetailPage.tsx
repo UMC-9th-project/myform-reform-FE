@@ -86,8 +86,8 @@ const OrderRequestDetailPage = () => {
   };
 
   const handleCheckProposals = () => {
-    // 받은 제안 확인하기 기능
-    navigate(`/order/requests/${id}/proposals`);
+    // 받은 제안 확인하기 → 채팅 페이지 주문제작 탭으로 이동
+    navigate('/chat/normal?tab=order');
   };
 
   const handleCarouselScroll = () => {

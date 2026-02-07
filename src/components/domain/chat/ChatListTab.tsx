@@ -7,6 +7,8 @@ interface ChatListTabProps {
   selectedChat: SelectedChat | null;
   setSelectedChat: (chat: SelectedChat) => void;
   onChatsLoaded?: (chatCount: number) => void;
+  /** URL 등에서 지정한 초기 탭 (예: tab=order → 주문제작) */
+  initialFilterType?: ChatRoomFilter;
 }
 
 const filters: { label: string; type?: ChatRoomFilter }[] = [
@@ -16,8 +18,11 @@ const filters: { label: string; type?: ChatRoomFilter }[] = [
   { label: '안 읽은 채팅방', type: 'UNREAD' },
 ];
 
-const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat, onChatsLoaded }) => {
-  const [filter, setFilter] = useState(filters[0]);
+const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat, onChatsLoaded, initialFilterType }) => {
+  const initialFilter = initialFilterType
+    ? filters.find((f) => f.type === initialFilterType) ?? filters[0]
+    : filters[0];
+  const [filter, setFilter] = useState(initialFilter);
   const queryClient = useQueryClient();
 
   // ✅ React Query로 변경
