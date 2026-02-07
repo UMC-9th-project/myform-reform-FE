@@ -6,7 +6,7 @@ const MARKET_DETAIL_PATH = '/market/product';
 
 export interface MarketCardItem {
   item_id: string;
-  thumbnail: string;
+  thumbnail: string; 
   title: string;
   price: number;
   star: number;
@@ -20,6 +20,8 @@ export interface CustomOrderItem {
   thumbnail: string;
   title: string;
   min_price: number;
+  star: number;
+  review_count: number;
   owner_nickname: string;
   is_wished: boolean;
 }
@@ -48,7 +50,7 @@ const MarketCard = ({
 }: MarketCardProps) => {
   const isMarketItem = isMarketCardItem(item);
   const price = isMarketItem ? item.price : item.min_price;
-  const hasRating = isMarketItem && item.star !== undefined && item.review_count !== undefined;
+  const hasRating = isMarketItem == item.star > 0;
   const isWished = item.is_wished;
 
   const handleLikeClick = (isLiked: boolean) => {
