@@ -36,8 +36,15 @@ export const useOrderRequestDetail = () => {
     staleTime: 1000 * 30,
   });
 
-  const requestDetail: ReformRequestDetail | null =
-    reformRequestDetailResponse?.success ?? null;
+  const rawDetail = reformRequestDetailResponse?.success;
+  const requestDetail: ReformRequestDetail | null = rawDetail
+    ? {
+        ...rawDetail,
+        isOwner: Boolean(
+          rawDetail.isOwner ?? (rawDetail as { is_owner?: boolean }).is_owner
+        ),
+      }
+    : null;
 
   const imageUrls =
     requestDetail != null

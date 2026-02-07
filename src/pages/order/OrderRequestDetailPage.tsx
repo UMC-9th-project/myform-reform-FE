@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import shareIcon from '../../assets/icons/share.svg';
 import { ImageCarousel } from '../../components/common/product/Image';
@@ -8,86 +9,7 @@ import ReformerSearchCard from '../../components/domain/reformer-search/Reformer
 import LeftIcon from '../../assets/icons/left.svg?react';
 import RightIcon from '../../assets/icons/right.svg?react';
 import { useOrderRequestDetail } from '../../hooks/domain/order/useOrderRequestDetail';
-
-interface RecommendedReformer {
-  id: string;
-  name: string;
-  profileImg: string;
-  rating: number;
-  reviewCount: number;
-  transactionCount: number;
-  description: string;
-  tags: string[];
-}
-
-const RECOMMENDED_REFORMERS: RecommendedReformer[] = [
-  {
-    id: '1',
-    name: '침착한 대머리독수리',
-    profileImg: '/crt1.jpg',
-    rating: 4.9,
-    reviewCount: 271,
-    transactionCount: 415,
-    description:
-      '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-    tags: ['#빠른', '#친절한'],
-  },
-  {
-    id: '2',
-    name: '침착한 대머리독수리',
-    profileImg: '/crt1.jpg',
-    rating: 4.9,
-    reviewCount: 271,
-    transactionCount: 415,
-    description:
-      '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-    tags: ['#빠른', '#친절한'],
-  },
-  {
-    id: '3',
-    name: '침착한 대머리독수리',
-    profileImg: '/crt1.jpg',
-    rating: 4.9,
-    reviewCount: 271,
-    transactionCount: 415,
-    description:
-      '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-    tags: ['#빠른', '#친절한'],
-  },
-  {
-    id: '4',
-    name: '침착한 대머리독수리',
-    profileImg: '/crt1.jpg',
-    rating: 4.9,
-    reviewCount: 271,
-    transactionCount: 415,
-    description:
-      '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-    tags: ['#빠른', '#친절한'],
-  },
-  {
-    id: '5',
-    name: '침착한 대머리독수리',
-    profileImg: '/crt1.jpg',
-    rating: 4.9,
-    reviewCount: 271,
-    transactionCount: 415,
-    description:
-      '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-    tags: ['#빠른', '#친절한'],
-  },
-  {
-    id: '6',
-    name: '침착한 대머리독수리',
-    profileImg: '/crt1.jpg',
-    rating: 4.9,
-    reviewCount: 271,
-    transactionCount: 415,
-    description:
-      '2019년부터 리폼 공방 운영 시작 +/- 6년차 스포츠 의류 리폼 전문 공방 / 고객님들의 요청과 아쉬움...',
-    tags: ['#빠른', '#친절한'],
-  },
-];
+import { getReformerList } from '../../api/reformer';
 
 const OrderRequestDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -95,6 +17,12 @@ const OrderRequestDetailPage = () => {
   const carouselRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const { data: reformerListData } = useQuery({
+    queryKey: ['reformer-list', 'recommended'],
+    queryFn: () => getReformerList({ sort: 'rating' }),
+  });
+  const recommendedReformers = reformerListData?.reformers ?? [];
 
   const {
     requestDetail,
@@ -318,20 +246,9 @@ const OrderRequestDetailPage = () => {
                   msOverflowStyle: 'none',
                 }}
               >
-                {RECOMMENDED_REFORMERS.map((reformer) => (
-                  <div key={reformer.id} className="flex-shrink-0 w-[23.75rem]">
-                    <ReformerSearchCard
-                      reformer={{
-                        owner_id: reformer.id,
-                        nickname: reformer.name,
-                        keywords: reformer.tags,
-                        bio: reformer.description,
-                        profile_photo: reformer.profileImg,
-                        avg_star: reformer.rating,
-                        review_count: reformer.reviewCount,
-                        trade_count: reformer.transactionCount,
-                      }}
-                    />
+                {recommendedReformers.map((reformer) => (
+                  <div key={reformer.owner_id} className="flex-shrink-0 w-[23.75rem]">
+                    <ReformerSearchCard reformer={reformer} />
                   </div>
                 ))}
               </div>
