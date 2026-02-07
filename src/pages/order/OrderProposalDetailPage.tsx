@@ -49,6 +49,7 @@ const OrderProposalDetailPage = () => {
   const navigate = useNavigate();
   const {
     proposalDetail,
+    profile,
     isLoading,
     isError,
     isLiked,
@@ -134,14 +135,14 @@ const OrderProposalDetailPage = () => {
             <ProductInfoCard
               title={proposalDetail.title}
               price={formattedPrice}
-              rating={0}
-              recentRating={0}
+              rating={profile?.avgStar ?? 0}
+              recentRating={profile?.avgStarRecent3m}
               shippingFee={formattedShippingFee}
               estimatedPeriod={formattedEstimatedPeriod}
               reformer={{
-                id: proposalDetail.reformProposalId,
-                name: proposalDetail.ownerName,
-                profileImg: proposalDetail.ownerProfile,
+                id: profile?.ownerId ?? proposalDetail.ownerId ?? proposalDetail.reformProposalId,
+                name: profile?.nickname ?? proposalDetail.ownerName,
+                profileImg: profile?.profilePhoto ?? proposalDetail.ownerProfile,
                 description: proposalDetail.content,
               }}
               isLiked={isLiked}
@@ -180,12 +181,17 @@ const OrderProposalDetailPage = () => {
         <div ref={reformerSectionRef} className="mb-16 flex justify-center scroll-mt-24">
           <div className="max-w-[63.75rem] w-full">
             <ReformerProfileDetailCard
-              name={proposalDetail.ownerName}
-              rating={0}
-              orderCount={0}
-              reviewCount={0}
-              profileImg={proposalDetail.ownerProfile}
-              onFeedClick={() => navigate('/profile')}
+              name={profile?.nickname ?? proposalDetail.ownerName}
+              rating={profile?.avgStar ?? 0}
+              orderCount={profile?.totalSaleCount ?? 0}
+              reviewCount={profile?.reviewCount ?? 0}
+              profileImg={profile?.profilePhoto ?? proposalDetail.ownerProfile}
+              bio={profile?.bio}
+              onFeedClick={() => {
+                const ownerId = profile?.ownerId ?? proposalDetail.ownerId;
+                if (ownerId) navigate(`/profile/${ownerId}`);
+                else navigate('/profile');
+              }}
             />
           </div>
         </div>
@@ -193,7 +199,7 @@ const OrderProposalDetailPage = () => {
         {/* 상품 후기 */}
         <div ref={reviewSectionRef} className="scroll-mt-24">
           <ProductReviewSection
-            rating={0}
+            rating={profile?.avgStar ?? 0}
             photoReviewCount={0}
             reviews={reviews}
             currentPage={currentPage}

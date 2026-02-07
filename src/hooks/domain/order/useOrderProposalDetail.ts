@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getReformProposalDetail } from '../../../api/order/reformProposal';
+import { getProfile } from '../../../api/profile/user';
 import type { ReformProposalDetail } from '../../../types/api/order/reformProposal';
 
 function formatWon(value: number) {
@@ -45,6 +46,19 @@ export const useOrderProposalDetail = () => {
   const proposalDetail: ReformProposalDetail | null =
     reformProposalDetailResponse?.success ?? null;
 
+  const profileId = proposalDetail?.ownerId ?? proposalDetail?.ownerName ?? '';
+  const { data: profileResponse } = useQuery({
+    queryKey: ['profile', profileId],
+    queryFn: () => getProfile(profileId),
+    enabled: !!profileId,
+    staleTime: 1000 * 60,
+  });
+
+  const profile =
+    profileResponse?.resultType === 'SUCCESS' && profileResponse?.success
+      ? profileResponse.success
+      : null;
+
   const imageUrls =
     proposalDetail != null
       ? [...proposalDetail.images]
@@ -78,6 +92,7 @@ export const useOrderProposalDetail = () => {
   return {
     id,
     proposalDetail,
+    profile,
     isLoading,
     isError,
     isLiked,
