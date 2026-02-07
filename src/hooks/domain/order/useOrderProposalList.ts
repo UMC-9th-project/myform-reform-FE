@@ -1,31 +1,67 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getReformProposalList } from '../../../api/order/reformProposal';
+import type {
+  ReformProposalListItem,
+  ReformProposalSortBy,
+} from '../../../types/api/order/reformProposal';
+
+const ITEMS_PER_PAGE = 15;
 
 export type OrderCategorySelection = {
   categoryTitle: string;
   itemLabel: string;
 } | null;
 
-export const useOrderProposalList = (
-  proposals: {
-    id: number;
-    img: string;
-    name: string;
-    price: string;
-    review: number;
-    reviewCount: number;
-    nickname: string;
-  }[],
-  itemsPerPage: number
-) => {
+function mapSortValueToApiSort(sortValue: string): ReformProposalSortBy {
+  if (sortValue === 'latest') return 'RECENT';
+  return 'POPULAR'; // 'popular' | 'rating' -> POPULAR
+}
+
+export const useOrderProposalList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] =
     useState<OrderCategorySelection>(null);
   const [sortValue, setSortValue] = useState<string>('popular');
 
-  const totalPages = Math.ceil(proposals.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const displayedProposals = proposals.slice(startIndex, endIndex);
+  const category = selectedCategory?.categoryTitle;
+  const subcategory =
+    selectedCategory?.itemLabel && selectedCategory.itemLabel !== '전체'
+      ? selectedCategory.itemLabel
+      : undefined;
+  const apiSortBy = mapSortValueToApiSort(sortValue);
+
+  const { data: reformProposalListResponse, isLoading, isError } = useQuery({
+    queryKey: [
+      'reform-proposal-list',
+      'order',
+      currentPage,
+      category,
+      subcategory,
+      apiSortBy,
+    ],
+    queryFn: async () => {
+      const data = await getReformProposalList({
+        sortBy: apiSortBy,
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
+        category,
+        subcategory,
+      });
+
+      if (data.resultType !== 'SUCCESS' || !data.success) {
+        throw new Error(data.error?.message || '제안서 목록 조회 실패');
+      }
+
+      return data;
+    },
+    staleTime: 1000 * 30,
+  });
+
+  const proposals: ReformProposalListItem[] =
+    reformProposalListResponse?.success ?? [];
+  const hasNextPage = proposals.length >= ITEMS_PER_PAGE;
+  const totalPages = currentPage + (hasNextPage ? 1 : 0);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -39,6 +75,12 @@ export const useOrderProposalList = (
     itemLabel: string
   ) => {
     setSelectedCategory({ categoryTitle, itemLabel });
+    setCurrentPage(1);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedCategory(null);
+    setCurrentPage(1);
   };
 
   const handleSortChange = (value: string) => {
@@ -47,13 +89,15 @@ export const useOrderProposalList = (
   };
 
   return {
-    currentPage,
+    proposals,
+    isLoading,
+    isError,
     selectedCategory,
     sortValue,
-    displayedProposals,
     totalPages,
     handlePageChange,
     handleCategoryChange,
+    handleClearSelection,
     handleSortChange,
   };
 };
