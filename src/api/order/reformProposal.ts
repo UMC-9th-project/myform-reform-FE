@@ -9,12 +9,17 @@ import type {
 export const getReformProposalList = async (
   params: GetReformProposalListParams
 ): Promise<GetReformProposalListResponse> => {
+  const { category, subcategory, ...rest } = params;
+  const queryParams: Record<string, unknown> = {
+    ...rest,
+    page: params.page ?? 1,
+    limit: params.limit ?? 15,
+  };
+  if (category != null && category !== '') queryParams.category = category;
+  if (subcategory != null && subcategory !== '') queryParams.subcategory = subcategory;
+
   const response = await api.get<GetReformProposalListResponse>('/reform/proposal', {
-    params: {
-      ...params,
-      page: params.page ?? 1,
-      limit: params.limit ?? 15,
-    },
+    params: queryParams,
   });
 
   return response.data;

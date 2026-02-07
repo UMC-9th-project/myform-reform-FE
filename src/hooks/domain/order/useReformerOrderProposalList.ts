@@ -25,18 +25,11 @@ export const useReformerOrderProposalList = () => {
     useState<OrderCategorySelection>(null);
   const [sortValue, setSortValue] = useState<string>('popular');
 
-  const category =
-    selectedCategory &&
-    selectedCategory.categoryTitle === '기타' &&
-    selectedCategory.itemLabel === '전체'
-      ? undefined
-      : selectedCategory?.categoryTitle;
+  const category = selectedCategory?.categoryTitle;
   const subcategory =
-    selectedCategory &&
-    selectedCategory.categoryTitle === '기타' &&
-    selectedCategory.itemLabel === '전체'
-      ? undefined
-      : selectedCategory?.itemLabel;
+    selectedCategory?.itemLabel && selectedCategory.itemLabel !== '전체'
+      ? selectedCategory.itemLabel
+      : undefined;
   const apiSortBy = mapSortValueToApiSort(sortValue);
 
   const { data: reformProposalListResponse, isLoading, isError } = useQuery({
@@ -49,13 +42,15 @@ export const useReformerOrderProposalList = () => {
       apiSortBy,
     ],
     queryFn: async () => {
-      const data = await getReformProposalList({
+      const params = {
         sortBy: apiSortBy,
         page: currentPage,
         limit: ITEMS_PER_PAGE,
         category,
         subcategory,
-      });
+      };
+      console.log('[제안 목록 API] 요청 params:', params);
+      const data = await getReformProposalList(params);
 
       if (data.resultType !== 'SUCCESS' || !data.success) {
         throw new Error(data.error?.message || '제안서 목록 조회 실패');
@@ -86,6 +81,11 @@ export const useReformerOrderProposalList = () => {
     setCurrentPage(1);
   };
 
+  const handleClearSelection = () => {
+    setSelectedCategory(null);
+    setCurrentPage(1);
+  };
+
   const handleSortChange = (value: string) => {
     setSortValue(value);
     setCurrentPage(1);
@@ -101,6 +101,7 @@ export const useReformerOrderProposalList = () => {
     totalPages,
     handlePageChange,
     handleCategoryChange,
+    handleClearSelection,
     handleSortChange,
   };
 };

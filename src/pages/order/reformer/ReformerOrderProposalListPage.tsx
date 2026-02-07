@@ -39,7 +39,9 @@ const ReformerOrderProposalListPage = () => {
         {/* 메인 콘텐츠 영역 (사이드바 + 메인 콘텐츠) */}
         <div className="flex gap-[3.125rem] ">
           {/* 왼쪽 사이드바 - 카테고리 필터 */}
-          <OrderCategoryFilter onCategoryChange={handleCategoryChange} />
+          <OrderCategoryFilter
+            onCategoryChange={handleCategoryChange}
+          />
 
           {/* 오른쪽 메인 콘텐츠 */}
           <div className="flex flex-col flex-1 max-w-full">

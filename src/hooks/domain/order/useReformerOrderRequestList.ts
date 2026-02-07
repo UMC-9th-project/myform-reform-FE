@@ -15,29 +15,18 @@ export const useReformerOrderRequestList = () => {
   const [selectedCategory, setSelectedCategory] =
     useState<OrderCategorySelection>(null);
 
-  const category =
-    selectedCategory &&
-    selectedCategory.categoryTitle === '기타' &&
-    selectedCategory.itemLabel === '전체'
-      ? undefined
-      : selectedCategory?.categoryTitle;
+  const category = selectedCategory?.categoryTitle;
   const subcategory =
-    selectedCategory &&
-    selectedCategory.categoryTitle === '기타' &&
-    selectedCategory.itemLabel === '전체'
-      ? undefined
-      : selectedCategory?.itemLabel;
+    selectedCategory?.itemLabel && selectedCategory.itemLabel !== '전체'
+      ? selectedCategory.itemLabel
+      : undefined;
 
   const { data: reformRequestListResponse, isLoading, isError } = useQuery({
     queryKey: ['reform-request-list', 'reformer', currentPage, category, subcategory],
     queryFn: async () => {
-      const data = await getReformRequestList({
-        sortBy: 'RECENT',
-        page: currentPage,
-        limit: ITEMS_PER_PAGE,
-        category,
-        subcategory,
-      });
+      const params = { sortBy: 'RECENT' as const, page: currentPage, limit: ITEMS_PER_PAGE, category, subcategory };
+      console.log('[요청 목록 API] 요청 params:', params);
+      const data = await getReformRequestList(params);
 
       if (data.resultType !== 'SUCCESS' || !data.success) {
         throw new Error(data.error?.message || '요청서 목록 조회 실패');
@@ -68,6 +57,11 @@ export const useReformerOrderRequestList = () => {
     setCurrentPage(1);
   };
 
+  const handleClearSelection = () => {
+    setSelectedCategory(null);
+    setCurrentPage(1);
+  };
+
   return {
     requests,
     isLoading,
@@ -77,5 +71,6 @@ export const useReformerOrderRequestList = () => {
     totalPages,
     handlePageChange,
     handleCategoryChange,
+    handleClearSelection,
   };
 };
