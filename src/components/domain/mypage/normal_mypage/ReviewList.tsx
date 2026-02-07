@@ -25,7 +25,7 @@ const ReviewList = () => {
 
   const handleWriteReviewClick = (orderId: string) => {
     setSelectedOrderId(orderId);
-    navigate('normal-mypage');
+    navigate('/mypage/review/write');
   };
 
   // 작성 가능한 후기 조회

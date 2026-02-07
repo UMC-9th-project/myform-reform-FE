@@ -34,6 +34,7 @@ const BuyList = () => {
             status: o.status === 'PENDING' ? '상품준비 중' : o.status === 'SHIPPED' ? '발송 완료' : '결제 완료',
             isCustomOrder: o.targetType === 'REFORM',
             reviewAvailable: o.reviewAvailable,
+            targetId: o.targetId,
           }));
 
           setOrders(mapped)
@@ -57,9 +58,9 @@ const BuyList = () => {
     navigate('/mypage/review/write');
   };
 
-  const handleChatClick = (orderId: string) => {
+  const handleChatClick = (targetId: string) => {
     // 예: 채팅 페이지 URL에 주문 ID 포함
-    console.log('채팅 페이지로 이동, 아이디:',orderId);
+    navigate(`/chat/normal/${targetId}`)
   };
 
   return (

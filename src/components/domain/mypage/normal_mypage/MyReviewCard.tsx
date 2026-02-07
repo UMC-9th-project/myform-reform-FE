@@ -82,7 +82,7 @@ const MyReviewCard: React.FC<SalesCardProps> = ({
                 onClick={() => item.reviewAvailable && onWriteReviewClick?.(item.id)}
                 disabled={!item.reviewAvailable}
               >
-                {item.reviewAvailable ? '후기 작성하기' : '후기가 작성했어요'}
+                {item.reviewAvailable ? '후기 작성하기' : '후기를 작성했어요'}
               </button>
             </div>
 
