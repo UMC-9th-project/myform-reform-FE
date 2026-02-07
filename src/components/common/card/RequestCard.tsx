@@ -27,7 +27,6 @@ export default function RequestCard({
   title = '제 소중한 기아 쿠로미 유니폼 짐색으로 만들어 주실 리폼 장인을 찾아요',
   priceRange = '30,000원~50,000원',
   className = '',
-  seller = '침착한 대머리독수리',
   id,
   variant = 'order',
   to,
@@ -71,11 +70,6 @@ export default function RequestCard({
         <p className="mt-[0.75rem] heading-h4-bd text-[var(--color-black)]">
           {priceRange}
         </p>
-        {seller != null && seller !== '' && (
-          <span className="mt-[0.875rem] inline-flex items-center body-b5-sb text-[var(--color-gray-50)] bg-[var(--color-gray-30)] rounded-[0.375rem] px-[0.3125rem] py-[0.125rem]">
-            {seller}
-          </span>
-        )}
       </div>
     </article>
   );
