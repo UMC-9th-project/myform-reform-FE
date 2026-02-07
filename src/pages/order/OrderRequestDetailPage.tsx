@@ -191,8 +191,7 @@ const OrderRequestDetailPage = () => {
             {/* 상세 요청 내용 */}
             <div className="pt-8 border-b border-[var(--color-gray-40)]">
               <div className="pl-10">
-                <p className="body-b1-rg text-[var(--color-gray-60)] mb-4 ">상세 요청 내용</p>
-                <div className="body-b1-rg text-[var(--color-black)] whitespace-pre-line pb-12">
+                <div className="body-b1-rg text-[var(--color-gray-60)] whitespace-pre-line pb-12">
                   {requestDetail.content}
                 </div>
               </div>
