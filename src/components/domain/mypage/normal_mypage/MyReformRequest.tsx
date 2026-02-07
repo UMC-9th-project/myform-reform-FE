@@ -1,31 +1,37 @@
 import React, { useEffect, useRef, useState } from 'react';
-import moreVertical from '../../../../assets/icons/morevertical.svg';
-import Pencil from '../../../../assets/icons/pencil.svg';
-import Trash from '../../../../assets/icons/trash.svg';
-import { getMyReformRequests, type ReformRequestItem } from '@/api/mypage/reformRequestApi';
+import moreVertical from '@/assets/icons/morevertical.svg';
+import Pencil from '@/assets/icons/pencil.svg';
+import Trash from '@/assets/icons/trash.svg';
+import { getMyReformRequests, deleteReformRequests } from '@/api/mypage/reformRequestApi';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 const MyReformRequest: React.FC = () => {
-  const [requests, setRequests] = useState<ReformRequestItem[]>([]);
-  const [loading, setLoading] = useState(true);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
+  const queryClient = useQueryClient();
 
-    useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        setLoading(true);
-        const response = await getMyReformRequests();
-        setRequests(response.requestData);
-      } catch (err) {
-        console.error('API 호출 실패', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data, isLoading } = useQuery({
+    queryKey: ['myReformRequests'],
+    queryFn: () => getMyReformRequests(),
+  });
 
-    fetchRequests();
-  }, []);
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteReformRequests(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['myReformRequests']});
+    },
+    onError: () => {
+      alert('삭제에 실패했습니다. 다시 시도해주세요.');
+    }
+  })
+
+  const handleDelete = (id: string) => {
+    const confirmDelete = window.confirm('정말 이 리폼 요청을 삭제할까요?');
+    if (!confirmDelete) return;
+
+    deleteMutation.mutate(id);
+  };
 
     useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -46,13 +52,14 @@ const MyReformRequest: React.FC = () => {
     };
   }, [openMenuId]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="text-center py-20 text-gray-400 body-b1-rg">
         로딩중...
       </div>
     );
   }
+  const requests = data?.requestData ?? [];
 
 
   return (
@@ -114,9 +121,10 @@ const MyReformRequest: React.FC = () => {
 
                   <button
                     className="w-full px-4 py-2 text-left body-b1-rg flex gap-2 items-center"
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setOpenMenuId(null);
-                      console.log('삭제', item.reformRequestId);
+                      handleDelete(item.reformRequestId);
                     }}
                   >
                     <img src={Trash} alt="삭제" className="w-8" />

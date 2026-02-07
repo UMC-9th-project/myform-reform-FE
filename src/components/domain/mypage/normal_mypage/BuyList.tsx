@@ -33,6 +33,7 @@ const BuyList = () => {
             image: o.thumbnail || '',
             status: o.status === 'PENDING' ? '상품준비 중' : o.status === 'SHIPPED' ? '발송 완료' : '결제 완료',
             isCustomOrder: o.targetType === 'REFORM',
+            reviewAvailable: o.reviewAvailable,
           }));
 
           setOrders(mapped)

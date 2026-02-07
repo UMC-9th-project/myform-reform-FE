@@ -56,7 +56,7 @@ const SalesCard: React.FC<SalesCardProps> = ({
                 </button>
               )}
             </div>
-
+              
             {/* 내용 */}
             <div className="flex justify-between items-end gap-4">
               <div className="flex gap-4">
@@ -106,7 +106,7 @@ const SalesCard: React.FC<SalesCardProps> = ({
 
           </div>
         ))}
-      </div>요요
+      </div>
     </div>
   );
 };

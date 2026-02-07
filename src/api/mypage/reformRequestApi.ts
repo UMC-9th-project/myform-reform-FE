@@ -34,3 +34,8 @@ export const getMyReformRequests = async (
   const { data } = await api.get<{ success: GetMyRequestsResponse }>('/profile/requests', { params });
   return data.success;
 };
+
+export const deleteReformRequests = async (id: string) => {
+  const response = await api.delete(`/reform/request/${id}`);
+  return response.data;
+}
