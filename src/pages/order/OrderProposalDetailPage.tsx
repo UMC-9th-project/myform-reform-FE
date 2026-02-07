@@ -1,36 +1,12 @@
+import { useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import { ImageCarousel } from '../../components/common/product/Image';
 import ProductInfoToggle from '../../components/common/product/detail/ProductInfoToggle';
 import ProductInfoCard from '../../components/common/product/detail/ProductInfoCard';
 import ProductTabMenu from '../../components/common/product/detail/ProductTabMenu';
 import ReformerProfileDetailCard from '../../components/common/product/detail/ReformerProfileDetailCard';
 import ProductReviewSection from '../../components/common/product/detail/ProductReviewSection';
-import ex4 from '../../components/common/product/eximage/ex4.jpg';
-import ex5 from '../../components/common/product/eximage/ex5.jpg';
-import ex6 from '../../components/common/product/eximage/ex6.jpg';
-
-interface ProposalDetail {
-  id: string;
-  title: string;
-  images: string[];
-  price: string;
-  shippingFee: string;
-  estimatedPeriod: string;
-  reformer: {
-    id: string;
-    name: string;
-    profileImg?: string;
-    rating: number;
-    reviewCount: number;
-    transactionCount: number;
-    description: string;
-    tags: string[];
-  };
-  rating: number;
-  reviewCount: number;
-  photoReviewCount: number;
-}
+import { useOrderProposalDetail } from '../../hooks/domain/order/useOrderProposalDetail';
 
 interface ReviewData {
   id: string;
@@ -42,36 +18,6 @@ interface ReviewData {
   profileImg?: string;
 }
 
-// 더미 데이터
-const getMockProposalDetail = (id: string): ProposalDetail => {
-  const mockData: Record<string, ProposalDetail> = {
-    '1': {
-      id: '1',
-      title: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
-      images: ['/wsh1.jpg', '/wsh1.jpg', '/wsh1.jpg'],
-      price: '75,000원',
-      shippingFee: '무료 배송',
-      estimatedPeriod: '평균 3일 이내 배송 시작',
-      reformer: {
-        id: '1',
-        name: '침착한 대머리독수리',
-        rating: 4.97,
-        reviewCount: 271,
-        transactionCount: 415,
-        description:
-          '- 2019년부터 리폼 공방 운영 시작\n - 6년차 스포츠 의류 리폼 전문 공방\n\n고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어 있던 옷에 새로운 가치와 트렌디한 디자인을 더하는 리폼을 선보이고 있어요. 1:1 맞춤 리폼 제작부터 완성 제품까지 모두 주문 가능합니다.',
-        tags: ['#빠른', '#친절한'],
-      },
-      rating: 4.94,
-      reviewCount: 362,
-      photoReviewCount: 182,
-    },
-  };
-
-  return mockData[id] || mockData['1'];
-};
-
-// 더미 후기 데이터
 const getMockReviews = (): ReviewData[] => {
   return [
     {
@@ -96,36 +42,69 @@ const getMockReviews = (): ReviewData[] => {
   ];
 };
 
+const ITEMS_PER_PAGE = 5;
+
 const OrderProposalDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'info' | 'reformer' | 'review'>(
-    'info'
-  );
-  const [sortBy, setSortBy] = useState<'latest' | 'high' | 'low'>('latest');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLiked, setIsLiked] = useState(false);
+  const {
+    proposalDetail,
+    isLoading,
+    isError,
+    isLiked,
+    setIsLiked,
+    activeTab,
+    setActiveTab,
+    sortBy,
+    setSortBy,
+    currentPage,
+    imageUrls,
+    formattedPrice,
+    formattedShippingFee,
+    formattedEstimatedPeriod,
+    handleShare,
+    handlePageChange,
+  } = useOrderProposalDetail();
 
-  const proposalDetail = id ? getMockProposalDetail(id) : null;
   const reviews = getMockReviews();
-  const ITEMS_PER_PAGE = 5;
+  const infoSectionRef = useRef<HTMLDivElement>(null);
+  const reformerSectionRef = useRef<HTMLDivElement>(null);
+  const reviewSectionRef = useRef<HTMLDivElement>(null);
 
-  if (!id || !proposalDetail) {
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId as 'info' | 'reformer' | 'review');
+    const refMap = {
+      info: infoSectionRef,
+      reformer: reformerSectionRef,
+      review: reviewSectionRef,
+    };
+    refMap[tabId as keyof typeof refMap]?.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  };
+
+  if (!id) {
     return <div>제안을 찾을 수 없습니다.</div>;
   }
 
-  const {
-    title,
-    images,
-    price,
-    shippingFee,
-    estimatedPeriod,
-    reformer,
-    rating,
-    photoReviewCount,
-  } = proposalDetail;
+  if (isLoading) {
+    return (
+      <div className="px-4 md:px-27 pt-15">
+        <p className="body-b1-rg text-[var(--color-gray-60)]">불러오는 중...</p>
+      </div>
+    );
+  }
 
-  const handleShare = () => {};
+  if (isError || !proposalDetail) {
+    return (
+      <div className="px-4 md:px-27 pt-15">
+        <p className="body-b1-rg text-[var(--color-gray-60)]">
+          제안서를 불러오지 못했어요.
+        </p>
+      </div>
+    );
+  }
 
   const handleRequest = () => {};
 
@@ -133,13 +112,12 @@ const OrderProposalDetailPage = () => {
     setIsLiked(liked);
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
   const handleMorePhotoReviewsClick = () => {
     // 사진 후기 더보기 로직
   };
+
+  const firstImage = imageUrls[0];
+  const additionalImages = imageUrls.length > 1 ? imageUrls.slice(1) : [];
 
   return (
     <div className="bg-white">
@@ -148,24 +126,23 @@ const OrderProposalDetailPage = () => {
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-[3.125rem] mb-16">
           {/* 왼쪽: 이미지 캐러셀 */}
           <div className="flex-1">
-            <ImageCarousel images={images} />
+            <ImageCarousel images={imageUrls} />
           </div>
 
           {/* 오른쪽: 제안 상세 정보 */}
           <div className="flex-1">
             <ProductInfoCard
-              title={title}
-              price={price}
-              rating={rating}
-              recentRating={4.92}
-              shippingFee={shippingFee}
-              estimatedPeriod={estimatedPeriod}
+              title={proposalDetail.title}
+              price={formattedPrice}
+              rating={0}
+              recentRating={0}
+              shippingFee={formattedShippingFee}
+              estimatedPeriod={formattedEstimatedPeriod}
               reformer={{
-                id: reformer.id,
-                name: reformer.name,
-                profileImg: reformer.profileImg,
-                description:
-                  '이제는 유니폼도 색다르게! 한화-롯데 등 야구단 유니폼 리폼해 드립니다.',
+                id: proposalDetail.reformProposalId,
+                name: proposalDetail.ownerName,
+                profileImg: proposalDetail.ownerProfile,
+                description: proposalDetail.content,
               }}
               isLiked={isLiked}
               onLikeClick={handleLike}
@@ -175,45 +152,49 @@ const OrderProposalDetailPage = () => {
           </div>
         </div>
 
-        {/* 탭 메뉴 */}
-        <ProductTabMenu
-          tabs={[
-            { id: 'info', label: '상품 정보' },
-            { id: 'reformer', label: '리폼러 정보' },
-            { id: 'review', label: '상품 후기' },
-          ]}
-          activeTabId={activeTab}
-          onTabChange={(tabId) =>
-            setActiveTab(tabId as 'info' | 'reformer' | 'review')
-          }
-        />
-
-        {/* 탭 콘텐츠 */}
-        {activeTab === 'info' && (
-          <div className="mb-16">
-            <ProductInfoToggle firstImage={ex4} additionalImages={[ex5, ex6]} />
+        {/* 탭 메뉴 - 스티키 고정, 좌우 여백 없이 밑줄 전체 */}
+        <div className="sticky top-0 z-10 bg-white -mx-4 md:-mx-27 pt-4 border-b border-[var(--color-gray-40)]">
+          <div className="px-4 md:px-27">
+            <ProductTabMenu
+              tabs={[
+                { id: 'info', label: '상품 정보' },
+                { id: 'reformer', label: '리폼러 정보' },
+                { id: 'review', label: '상품 후기' },
+              ]}
+              activeTabId={activeTab}
+              onTabChange={handleTabChange}
+              hideBorder
+            />
           </div>
-        )}
+        </div>
 
-        {activeTab === 'reformer' && (
-          <div className="mb-16 flex justify-center">
-            <div className="max-w-[63.75rem] w-full">
-              <ReformerProfileDetailCard
-                name={reformer.name}
-                rating={reformer.rating}
-                orderCount={reformer.transactionCount}
-                reviewCount={reformer.reviewCount}
-                profileImg={reformer.profileImg}
-                onFeedClick={() => navigate('/profile')}
-              />
-            </div>
+        {/* 상품 정보 */}
+        <div ref={infoSectionRef} data-tab="info" className="mb-16 scroll-mt-24">
+          <ProductInfoToggle
+            firstImage={firstImage}
+            additionalImages={additionalImages}
+          />
+        </div>
+
+        {/* 리폼러 정보 */}
+        <div ref={reformerSectionRef} className="mb-16 flex justify-center scroll-mt-24">
+          <div className="max-w-[63.75rem] w-full">
+            <ReformerProfileDetailCard
+              name={proposalDetail.ownerName}
+              rating={0}
+              orderCount={0}
+              reviewCount={0}
+              profileImg={proposalDetail.ownerProfile}
+              onFeedClick={() => navigate('/profile')}
+            />
           </div>
-        )}
+        </div>
 
-        {activeTab === 'review' && (
+        {/* 상품 후기 */}
+        <div ref={reviewSectionRef} className="scroll-mt-24">
           <ProductReviewSection
-            rating={rating}
-            photoReviewCount={photoReviewCount}
+            rating={0}
+            photoReviewCount={0}
             reviews={reviews}
             currentPage={currentPage}
             itemsPerPage={ITEMS_PER_PAGE}
@@ -222,7 +203,7 @@ const OrderProposalDetailPage = () => {
             onPageChange={handlePageChange}
             onMorePhotoReviewsClick={handleMorePhotoReviewsClick}
           />
-        )}
+        </div>
       </div>
     </div>
   );
