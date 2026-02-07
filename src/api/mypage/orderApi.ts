@@ -48,3 +48,42 @@ export const getUserOrders = async ({
   const { data } = await api.get<{ success: GetOrdersResponse }>('/profile/orders', { params });
   return data.success;
 };
+
+export interface OrderDetailOptionItem {
+  extra_price: number;
+  option_item_id: string;
+  name: string;
+}
+
+export interface OrderDetailOption {
+  option_group_id: string;
+  name: string;
+  option_item: OrderDetailOptionItem[];
+}
+
+export interface OrderDetail {
+  title: string;
+  thumbnail: string;
+  receiptNumber: string;
+  orderId: string;
+  targetType: string;
+  targetId: string;
+  status: 'PENDING' | 'SHIPPED' | 'COMPLETED' | string;
+  price: number;
+  deliveryFee: number;
+  totalPrice: string;
+  trackingNumber: string;
+  createdAt: string;
+  deliveryPostalCode: string;
+  deliveryAddress: string;
+  deliveryAddressDetail: string;
+  deliveryRecipientName: string;
+  deliveryPhone: string;
+  deliveryAddressName: string;
+  options: OrderDetailOption[];
+}
+
+export const getOrderDetail = async (id: string): Promise<OrderDetail> => {
+  const { data } = await api.get(`/profile/orders/${id}`);
+  return data.success;
+};

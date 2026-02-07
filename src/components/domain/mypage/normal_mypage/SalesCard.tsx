@@ -16,6 +16,7 @@ export interface ProductOrder {
 // 2. props 타입 정의
 interface SalesCardProps {
   data: ProductOrder[];
+  tab: 'market' | 'reform';
   onDetailClick?: (id: string) => void; // 일반 상품 상세보기
   onWriteReviewClick?: (id: string) => void; // 후기 작성
   onChatClick?: (id: string) => void; // 주문 제작 채팅 이동
@@ -40,16 +41,16 @@ const SalesCard: React.FC<SalesCardProps> = ({
               {item.isCustomOrder ? (
                 <button
                   className="flex items-center gap-3 hover:text-black transition-colors"
-                  onClick={() => onDetailClick?.(item.id)}
+                  onClick={() => onChatClick?.(item.id)}
                 >
-                  상세 보기<span>❯</span>
+                  채팅 바로가기<span>❯</span>
                 </button>
               ) : (
                 <button
                   className="flex items-center gap-3 hover:text-black transition-colors"
-                  onClick={() => onChatClick?.(item.id)}
+                  onClick={() => onDetailClick?.(item.id)}
                 >
-                  채팅 바로가기<span>❯</span>
+                  상세 보기<span>❯</span>
                 </button>
               )}
             </div>

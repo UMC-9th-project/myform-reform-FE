@@ -145,7 +145,7 @@ const ReviewList = () => {
           ) : writtenReviews.length === 0 ? (
             <div className="flex flex-col items-center space-y-4 text-black body-b1-sb py-20">
               <img src={alertCircle} alt="안내 모달" className="w-12 h-12" />
-              <span>작성한 리뷰가 없어요.</span>
+              <span>작성한 후기가 없어요.</span>
             </div>
           ) : (
             <MyReviewGrid

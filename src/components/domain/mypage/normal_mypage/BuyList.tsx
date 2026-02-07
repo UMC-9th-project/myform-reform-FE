@@ -87,10 +87,15 @@ const BuyList = () => {
         <div className="text-center py-20 text-gray-400 body-b1-rg">내역이 없습니다.</div>
       ) : (
         <SalesCard 
-            data={orders} 
-            onDetailClick={handleDetailClick}
-            onWriteReviewClick={handleWriteReviewClick}
-            onChatClick={handleChatClick} />
+          data={orders.map(o => ({
+            ...o,
+            isCustomOrder: localTab === 'reform' || o.isCustomOrder // 주문 제작이거나 리폼 탭이면 true
+          }))}
+          tab={localTab} 
+          onDetailClick={handleDetailClick}
+          onWriteReviewClick={handleWriteReviewClick}
+          onChatClick={handleChatClick} 
+        />
       )}
     </div>
   );
