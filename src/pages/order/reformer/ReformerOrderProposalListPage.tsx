@@ -1,35 +1,36 @@
 import Breadcrumb from '../../../components/common/breadcrumb/Breadcrumb';
-import RequestCard, { type RequestDetailVariant } from '../../../components/common/card/RequestCard';
+import ProposalCard, {
+  type ProposalDetailVariant,
+} from '../../../components/common/card/ProposalCard';
 import Pagination from '../../../components/common/pagination/Pagination';
 import OrderCategoryFilter from '../../../components/domain/order/OrderCategoryFilter';
-import { useReformerOrderRequestList } from '../../../hooks/domain/order/useReformerOrderRequestList';
+import Select from '../../../components/common/dropdown/SortDropdown';
+import { useReformerOrderProposalList } from '../../../hooks/domain/order/useReformerOrderProposalList';
 
-/** 리폼러 모드: 카드 상세 링크가 /reformer/order/requests/:id */
-const CARD_VARIANT: RequestDetailVariant = 'reformer';
+/** 리폼러 모드: 카드 상세 링크·이미지 하트가 리폼러용으로 동작 */
+const CARD_VARIANT: ProposalDetailVariant = 'reformer';
 
 function formatWon(value: number) {
   return `${value.toLocaleString('ko-KR')}원`;
 }
 
-function formatBudgetRange(minBudget: number, maxBudget: number) {
-  return `${formatWon(minBudget)}~${formatWon(maxBudget)}`;
-}
-
-const ReformerOrderRequestListPage = () => {
+const ReformerOrderProposalListPage = () => {
   const {
-    requests,
+    proposals,
     isLoading,
     isError,
     selectedCategory,
+    sortValue,
     totalPages,
     handlePageChange,
     handleCategoryChange,
-  } = useReformerOrderRequestList();
+    handleSortChange,
+  } = useReformerOrderProposalList();
 
   const breadcrumbItems = [
     { label: '홈', path: '/' },
     { label: '주문제작', path: '/reformer/order' },
-    { label: '주문제작 요청' },
+    { label: '주문제작 제안' },
   ];
 
   return (
@@ -59,15 +60,21 @@ const ReformerOrderRequestListPage = () => {
             <div className="mb-5 mt-3">
               <div className="flex flex-row items-start sm:items-center justify-between ">
                 <p className="body-b1-rg text-[var(--color-gray-60)]">
-                  총 {requests.length}개의 제품
+                  총 {proposals.length}개의 제품
                 </p>
-                <p className="body-b1-rg text-[var(--color-gray-60)]">
-                  최신순
-                </p>
+                <Select
+                  options={[
+                    { value: 'popular', label: '인기순' },
+                    { value: 'latest', label: '최신순' },
+                    { value: 'rating', label: '평점순' },
+                  ]}
+                  value={sortValue}
+                  onChange={handleSortChange}
+                />
               </div>
             </div>
 
-            {/* 요청 카드 그리드 */}
+            {/* 제안 카드 그리드 */}
             <div className="mb-12">
               <div className="grid grid-cols-3 gap-[1.875rem]">
                 {isLoading && (
@@ -77,24 +84,27 @@ const ReformerOrderRequestListPage = () => {
                 )}
                 {isError && (
                   <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3">
-                    요청서를 불러오지 못했어요. 잠시 후 다시 시도해주세요.
+                    제안서를 불러오지 못했어요. 잠시 후 다시 시도해주세요.
                   </p>
                 )}
-                {!isLoading && !isError && requests.length === 0 && (
+                {!isLoading && !isError && proposals.length === 0 && (
                   <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3">
-                    요청서가 없어요.
+                    제안서가 없어요.
                   </p>
                 )}
                 {!isLoading &&
                   !isError &&
-                  requests.map((request) => (
-                    <RequestCard
-                      key={request.reformRequestId}
-                      id={request.reformRequestId}
+                  proposals.map((proposal) => (
+                    <ProposalCard
+                      key={proposal.reformProposalId}
+                      id={proposal.reformProposalId}
                       variant={CARD_VARIANT}
-                      imgSrc={request.thumbnail}
-                      title={request.title}
-                      priceRange={formatBudgetRange(request.minBudget, request.maxBudget)}
+                      imgSrc={proposal.thumbnail}
+                      title={proposal.title}
+                      price={formatWon(proposal.price)}
+                      rating={proposal.avgStar}
+                      reviewCountText={`(${proposal.reviewCount})`}
+                      nickname={proposal.ownerName}
                       className="pb-[5.875rem] w-full"
                     />
                   ))}
@@ -112,4 +122,4 @@ const ReformerOrderRequestListPage = () => {
   );
 };
 
-export default ReformerOrderRequestListPage;
+export default ReformerOrderProposalListPage;

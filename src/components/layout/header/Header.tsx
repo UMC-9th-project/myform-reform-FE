@@ -12,6 +12,7 @@ import logo from '../../../assets/logos/logo.svg';
 import { useSellerTabStore, useUserTabStore, type UserTabType } from '../../../stores/tabStore';
 import useAuthStore from '../../../stores/useAuthStore';
 import { useLogout } from '../../../hooks/domain/auth/useLogout';
+import NotificationPanel from '../../common/Modal/NotificationPanel';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export default function Header() {
   const { accessToken, role } = useAuthStore(); // role 기준으로 드롭다운 분기
   const { logout } = useLogout();
 
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -166,9 +168,18 @@ export default function Header() {
 
         {/* 아이콘 및 프로필 */}
         <div className="flex items-center gap-[1.625rem] ml-auto">
-          <button className="cursor-pointer">
-            <img src={bell} alt="bell" />
-          </button>
+          <div className="relative">
+            <button
+              className="cursor-pointer"
+              onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+            >
+              <img src={bell} alt="bell" />
+            </button>
+            <NotificationPanel
+              isOpen={isNotificationOpen}
+              onClose={() => setIsNotificationOpen(false)}
+            />
+          </div>
           <Link to="/wishlist" className="cursor-pointer">
             <img src={heart} alt="heart" />
           </Link>
@@ -210,6 +221,16 @@ export default function Header() {
                       className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
                     >
                       판매 관리
+                    </button>
+                    <button
+                      onClick={() => {
+                        setSellerActiveTab('수익 관리'); // 탭 상태 업데이트
+                        navigate('/reformer-mypage'); // 해당 페이지로 이동
+                        setIsProfileOpen(false); // 드롭다운 닫기
+                      }}
+                      className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
+                    >
+                      수익 관리
                     </button>
                   </div>
                 </div>

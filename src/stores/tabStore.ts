@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type SellerTabType = '프로필 관리' | '판매 관리';
+export type SellerTabType = '프로필 관리' | '판매 관리' | '수익 관리';
 
 export interface SellerTabStore {
   activeTab: SellerTabType;

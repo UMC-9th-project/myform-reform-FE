@@ -220,9 +220,9 @@ const OrderRequestDetailPage = () => {
     navigate(`/order/requests/${id}/edit`);
   };
 
-  const handleCheckSuggestions = () => {
+  const handleCheckProposals = () => {
     // 받은 제안 확인하기 기능
-    navigate(`/order/requests/${id}/suggestions`);
+    navigate(`/order/requests/${id}/proposals`);
   };
 
   const handleCarouselScroll = () => {
@@ -339,7 +339,7 @@ const OrderRequestDetailPage = () => {
                 <Button variant="white" onClick={handleEdit} className="flex-1">
                   글 수정하기
                 </Button>
-                <Button variant="outlined-mint" onClick={handleCheckSuggestions} className="flex-2">
+                <Button variant="outlined-mint" onClick={handleCheckProposals} className="flex-2">
                   받은 제안 확인하기
                 </Button>
               </div>

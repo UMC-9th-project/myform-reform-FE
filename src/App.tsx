@@ -24,14 +24,14 @@ import OrderPage from './pages/order/OrderPage';
 import OrderRequestListPage from './pages/order/OrderRequestListPage';
 import OrderRequestDetailPage from './pages/order/OrderRequestDetailPage';
 import OrderRequestCreatePage from './pages/order/OrderRequestCreatePage';
-import OrderSuggestionListPage from './pages/order/OrderSuggestionListPage';
-import OrderSuggestionDetailPage from './pages/order/OrderSuggestionDetailPage';
+import OrderProposalListPage from './pages/order/OrderProposalListPage';
+import OrderProposalDetailPage from './pages/order/OrderProposalDetailPage';
 import ReformerOrderPage from './pages/order/reformer/ReformerOrderPage';
 import ReformerOrderRequestListPage from './pages/order/reformer/ReformerOrderRequestListPage';
 import ReformerOrderRequestDetailPage from './pages/order/reformer/ReformerOrderRequestDetailPage';
 import ReformerOrderEstimateCreatePage from './pages/order/reformer/ReformerOrderEstimateCreatePage';
-import ReformerOrderSuggestionListPage from './pages/order/reformer/ReformerOrderSuggestionListPage';
-import ReformerOrderSuggestionDetailPage from './pages/order/reformer/ReformerOrderSuggestionDetailPage';
+import ReformerOrderProposalListPage from './pages/order/reformer/ReformerOrderProposalListPage';
+import ReformerOrderProposalDetailPage from './pages/order/reformer/ReformerOrderProposalDetailPage';
 
 import SignupPage from './pages/signup/SignupPage';
 import SignupTypeSelection from './pages/signup/SignupTypeSelection';
@@ -63,6 +63,21 @@ function App() {
     <>
       <ScrollToTop />
       <Routes>
+
+      <Route
+        element={
+          <Layout
+            showHeader={true}
+            showNavbar={true}
+            showFooter={true}
+            footerVariant="dark"
+          />
+        }
+      >
+        {/* 홈 페이지 */}
+        <Route path="/" element={<Home />} />
+      </Route>
+
       <Route
         element={
           <Layout
@@ -73,7 +88,6 @@ function App() {
           />
         }
       >
-        <Route path="/" element={<Home />} />
 
          {/* 장바구니 페이지 */}
         <Route path="/cart" element={<Cart />} />
@@ -82,15 +96,15 @@ function App() {
         <Route path="/order" element={<OrderPage />} />
         <Route path="/order/requests" element={<OrderRequestListPage />} />
         <Route path="/order/requests/:id" element={<OrderRequestDetailPage />} />
-        <Route path="/order/suggestions" element={<OrderSuggestionListPage />} />
-        <Route path="/order/suggestions/:id" element={<OrderSuggestionDetailPage />} />
+        <Route path="/order/proposals" element={<OrderProposalListPage />} />
+        <Route path="/order/proposals/:id" element={<OrderProposalDetailPage />} />
 
          {/* 주문제작 페이지 (리폼러) */}
         <Route path="/reformer/order" element={<ReformerOrderPage />} />
         <Route path="/reformer/order/requests" element={<ReformerOrderRequestListPage />} />
         <Route path="/reformer/order/requests/:id" element={<ReformerOrderRequestDetailPage />} />
-        <Route path="/reformer/order/suggestions" element={<ReformerOrderSuggestionListPage />} />
-        <Route path="/reformer/order/suggestions/:id" element={<ReformerOrderSuggestionDetailPage />} />
+        <Route path="/reformer/order/proposals" element={<ReformerOrderProposalListPage />} />
+        <Route path="/reformer/order/proposals/:id" element={<ReformerOrderProposalDetailPage />} />
 
          {/* 프로필 페이지 */}
         <Route path="/profile/:ownerId" element={<Profile />} />

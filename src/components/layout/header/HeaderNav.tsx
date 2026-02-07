@@ -15,6 +15,11 @@ export default function HeaderNav() {
   ];
 
   const handleNavClick = (path: string) => {
+    // 리폼러 유저가 "주문제작" 탭 클릭 시 리폼러 주문제작 페이지로 이동
+    if (path === '/order' && role === 'reformer') {
+      navigate('/reformer/order');
+      return;
+    }
     navigate(path);
   };
 

@@ -4,7 +4,7 @@ import SearchResultEmpty from '../../components/domain/search-result/SearchResul
 import SearchResultSkeleton from '../../components/domain/search-result/SearchResultSkeleton';
 import MarketCard, { type MarketCardItem } from '../../components/common/card/MarketCard';
 import RequestCard from '../../components/common/card/RequestCard';
-import SuggestionCard from '../../components/common/card/SuggestionCard';
+import ProposalCard from '../../components/common/card/ProposalCard';
 import Pagination from '../../components/common/pagination/Pagination';
 
 export default function Search() {
@@ -38,17 +38,18 @@ export default function Search() {
   const hasResults = true;
 
   // TODO: 마켓 탭 실제 API 연동 시 교체
-  const marketItemBase: Omit<MarketCardItem, 'id'> = {
-    image: '/Home/images/p1.jpg',
+  const marketItemBase: Omit<MarketCardItem, 'item_id' | 'is_wished'> = {
+    thumbnail: '/Home/images/p1.jpg',
     title: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
     price: 75000,
-    rating: 4.9,
-    reviewCount: 271,
-    seller: '침착한 대머리독수리',
+    star: 4.9,
+    review_count: 271,
+    owner_nickname: '침착한 대머리독수리',
   };
   const marketItems: MarketCardItem[] = Array.from({ length: 15 }, (_, i) => ({
     ...marketItemBase,
-    id: i + 1,
+    item_id: (i + 1).toString(),
+    is_wished: false,
   }));
 
   // TODO: 주문제작 요청 탭 실제 API 연동 시 교체
@@ -64,7 +65,7 @@ export default function Search() {
   }));
 
   // TODO: 주문제작 제안 탭 실제 API 연동 시 교체
-  const suggestionItemBase = {
+  const proposalItemBase = {
     imgSrc: '/wsh1.jpg',
     title: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
     price: '75,000원',
@@ -72,8 +73,8 @@ export default function Search() {
     reviewCountText: '(271)',
     nickname: '침착한 대머리독수리',
   };
-  const suggestionItems = Array.from({ length: 15 }, (_, i) => ({
-    ...suggestionItemBase,
+  const proposalItems = Array.from({ length: 15 }, (_, i) => ({
+    ...proposalItemBase,
     key: i + 1,
     id: i + 1,
   }));
@@ -138,7 +139,7 @@ export default function Search() {
                 >
                   {marketItems.map((item) => (
                     <MarketCard
-                      key={item.id}
+                      key={item.item_id}
                       item={item}
                       onLikeClick={() => {}}
                     />
@@ -166,8 +167,8 @@ export default function Search() {
                   className="px-40 grid gap-x-10 gap-y-20 w-full mt-10"
                   style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}
                 >
-                  {suggestionItems.map((item) => (
-                    <SuggestionCard
+                  {proposalItems.map((item) => (
+                    <ProposalCard
                       key={item.key}
                       id={item.id}
                       imgSrc={item.imgSrc}

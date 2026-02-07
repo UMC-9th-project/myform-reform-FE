@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import RequestCard from '../../components/common/card/RequestCard';
-import SuggestionCard from '../../components/common/card/SuggestionCard';
+import ProposalCard from '../../components/common/card/ProposalCard';
 import Button from '../../components/common/button/Button1';
 import pencilIcon from '../../assets/icons/pencilLine.svg';
 
@@ -127,7 +127,7 @@ const OrderPage = () => {
           <div className="flex items-center justify-between mb-[1.5rem]">
             <h2 className="heading-h4-bd">리폼러가 주문제작을 받고 있어요 🔥</h2>
             <button 
-              onClick={() => navigate('/order/suggestions')}
+              onClick={() => navigate('/order/proposals')}
               className="cursor-pointer body-b1-rg text-[var(--color-gray-60)] hover:text-[var(--color-black)] transition-colors"
             >
               더보기 &gt;
@@ -135,7 +135,7 @@ const OrderPage = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-[1.875rem]">
             {reformerOrders.map((item) => (
-              <SuggestionCard
+              <ProposalCard
                 key={item.id}
                 id={item.id}
                 imgSrc={item.img}
