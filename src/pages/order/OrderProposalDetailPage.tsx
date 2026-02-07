@@ -8,40 +8,6 @@ import ReformerProfileDetailCard from '../../components/common/product/detail/Re
 import ProductReviewSection from '../../components/common/product/detail/ProductReviewSection';
 import { useOrderProposalDetail } from '../../hooks/domain/order/useOrderProposalDetail';
 
-interface ReviewData {
-  id: string;
-  userName: string;
-  rating: number;
-  date: string;
-  reviewText?: string;
-  image?: string;
-  profileImg?: string;
-}
-
-const getMockReviews = (): ReviewData[] => {
-  return [
-    {
-      id: '1',
-      userName: '뜨거운 아이스 아메리카노',
-      rating: 5,
-      date: '2025년 11월 20일',
-      reviewText: `제가 정말 아끼던 유니폼이 있었는데, 사이즈도 맞지 않고 낡아서 솔직히 옷장 속에만 보관되어 있었습니다. 버리기는 너무 아깝고, 그렇다고 걸어두기엔 먼지만 쌓여서 볼 때마다 마음이 아팠습니다.
-
-그러다가 '리폼'이라는 것을 알게 되었고, 이 유니폼을 짐색으로 만들기로 결정했습니다. 결과는 매우 만족스럽습니다! 등번호와 이름 부분, 그리고 팀 엠블럼이 정확히 가운데 오도록 디자인해 주셨는데, 정말 세상에 하나뿐인 굿즈가 탄생한 느낌입니다.
-
-옛날 유니폼이라 재질이 얇을까 염려했는데, 안에 덧댐 작업을 깔끔하게 해 주셔서 튼튼하고 마감도 완벽합니다. 이제는 경기장에 갈 때마다 여기에 응원봉과 간식 등 여러 가지를 챙겨서 다니는데, 그럴 때마다 유니폼을 입고 뛰던 시절의 추억이 새록새록 떠오릅니다. 정말 돈이 아깝지 않은 리폼이었습니다`,
-      image: '/wsh1.jpg',
-    },
-    {
-      id: '2',
-      userName: '차가운 핫초코',
-      rating: 5,
-      date: '2025년 11월 15일',
-      reviewText: '정말 만족스러운 리폼이었습니다. 빠른 배송과 깔끔한 마감이 인상적이에요!',
-    },
-  ];
-};
-
 const ITEMS_PER_PAGE = 5;
 
 const OrderProposalDetailPage = () => {
@@ -50,6 +16,10 @@ const OrderProposalDetailPage = () => {
   const {
     proposalDetail,
     profile,
+    reviews,
+    photoReviewCount,
+    reviewPhotos,
+    reviewsAvgStar,
     isLoading,
     isError,
     isLiked,
@@ -66,8 +36,6 @@ const OrderProposalDetailPage = () => {
     handleShare,
     handlePageChange,
   } = useOrderProposalDetail();
-
-  const reviews = getMockReviews();
   const infoSectionRef = useRef<HTMLDivElement>(null);
   const reformerSectionRef = useRef<HTMLDivElement>(null);
   const reviewSectionRef = useRef<HTMLDivElement>(null);
@@ -199,8 +167,8 @@ const OrderProposalDetailPage = () => {
         {/* 상품 후기 */}
         <div ref={reviewSectionRef} className="scroll-mt-24">
           <ProductReviewSection
-            rating={profile?.avgStar ?? 0}
-            photoReviewCount={0}
+            rating={reviewsAvgStar ?? profile?.avgStar ?? 0}
+            photoReviewCount={photoReviewCount}
             reviews={reviews}
             currentPage={currentPage}
             itemsPerPage={ITEMS_PER_PAGE}
@@ -208,6 +176,7 @@ const OrderProposalDetailPage = () => {
             onSortChange={setSortBy}
             onPageChange={handlePageChange}
             onMorePhotoReviewsClick={handleMorePhotoReviewsClick}
+            photoReviewImages={reviewPhotos}
           />
         </div>
       </div>

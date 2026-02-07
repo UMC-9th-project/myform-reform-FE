@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getReformProposalDetail } from '../../../api/order/reformProposal';
 import { getProfile } from '../../../api/profile/user';
+import { getReformerReviews } from '../../../api/order/reviews';
 import type { ReformProposalDetail } from '../../../types/api/order/reformProposal';
+import type { ReformerReviewsSortBy } from '../../../types/api/reviews';
 
 function formatWon(value: number) {
   return `${value.toLocaleString('ko-KR')}원`;
@@ -59,6 +61,57 @@ export const useOrderProposalDetail = () => {
       ? profileResponse.success
       : null;
 
+  const reformerId = profile?.ownerId ?? proposalDetail?.ownerId ?? '';
+  const apiSortBy: ReformerReviewsSortBy =
+    sortBy === 'latest' ? 'recent' : sortBy === 'high' ? 'high_rating' : 'low_rating';
+
+  const { data: reviewsResponse } = useQuery({
+    queryKey: ['reformer-reviews', reformerId, apiSortBy],
+    queryFn: () =>
+      getReformerReviews(reformerId, { limit: 50, sortBy: apiSortBy }),
+    enabled: !!reformerId,
+    staleTime: 1000 * 60,
+  });
+
+  const reviewsData = useMemo(() => {
+    const raw = reviewsResponse?.resultType === 'SUCCESS' && reviewsResponse?.success
+      ? reviewsResponse.success
+      : null;
+    if (!raw) {
+      return {
+        reviews: [],
+        photoReviewCount: 0,
+        reviewPhotos: [] as string[],
+        avgStar: profile?.avgStar ?? 0,
+      };
+    }
+    const reviews = raw.reviews.map((r) => {
+      const createdAt = (() => {
+        try {
+          const d = new Date(r.createdAt);
+          return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+        } catch {
+          return r.createdAt;
+        }
+      })();
+      return {
+        id: r.reviewId,
+        userName: r.userNickname,
+        rating: r.star,
+        date: createdAt,
+        reviewText: r.content,
+        image: r.reviewPhotos?.[0],
+        profileImg: r.userProfilePhoto,
+      };
+    });
+    return {
+      reviews,
+      photoReviewCount: raw.photoReviewCount,
+      reviewPhotos: raw.reviewPhotos ?? [],
+      avgStar: raw.avgStar,
+    };
+  }, [reviewsResponse, profile?.avgStar]);
+
   const imageUrls =
     proposalDetail != null
       ? [...proposalDetail.images]
@@ -93,6 +146,10 @@ export const useOrderProposalDetail = () => {
     id,
     proposalDetail,
     profile,
+    reviews: reviewsData.reviews,
+    photoReviewCount: reviewsData.photoReviewCount,
+    reviewPhotos: reviewsData.reviewPhotos,
+    reviewsAvgStar: reviewsData.avgStar,
     isLoading,
     isError,
     isLiked,
