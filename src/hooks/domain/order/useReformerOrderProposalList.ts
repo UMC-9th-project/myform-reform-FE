@@ -25,9 +25,14 @@ export const useReformerOrderProposalList = () => {
     useState<OrderCategorySelection>(null);
   const [sortValue, setSortValue] = useState<string>('popular');
 
-  const category = selectedCategory?.categoryTitle;
-  const subcategory =
-    selectedCategory?.itemLabel && selectedCategory.itemLabel !== '전체'
+  // 기타 > 전체: 카테고리 안 넣으면 API에서 전체 반환
+  const isOtherAll =
+    selectedCategory?.categoryTitle === '기타' &&
+    selectedCategory?.itemLabel === '전체';
+  const category = isOtherAll ? undefined : selectedCategory?.categoryTitle;
+  const subcategory = isOtherAll
+    ? undefined
+    : selectedCategory?.itemLabel && selectedCategory.itemLabel !== '전체'
       ? selectedCategory.itemLabel
       : undefined;
   const apiSortBy = mapSortValueToApiSort(sortValue);
