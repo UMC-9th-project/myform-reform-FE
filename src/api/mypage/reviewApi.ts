@@ -6,7 +6,7 @@ export interface MyReviewItem {
     userName: string;
     userNickname: string;
     userProfilePhoto: string;
-    start: number;
+    star: number;
     createdAt: string;
     content: string;
     orderId: string;
@@ -42,4 +42,33 @@ export const getMyReviews = async ({
 
   const { data } = await api.get<{ success: GetMyReviewsResponse }>('/reviews/me', { params });
   return data.success;
+};
+
+export interface CreateReviewRequest {
+  star: number;
+  content: string;
+  photos?: string[];
+}
+
+export interface CreateReviewResponse {
+  review_id: string;
+  user_id: string;
+  order_id: string;
+  star: number;
+  content: string;
+  created_at: string;
+  review_photo: string[];
+}
+
+export const createReview = async (
+  orderId: string,
+  payload: CreateReviewRequest
+): Promise<CreateReviewResponse> => {
+  const { data } = await api.post(`/orders/${orderId}/review`, payload);
+  return data.success;
+};
+
+export const deleteReview = async (reviewId: string) => {
+  const { data } = await api.delete(`/reviews/${reviewId}`);
+  return data;
 };

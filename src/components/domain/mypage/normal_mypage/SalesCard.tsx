@@ -10,7 +10,9 @@ export interface ProductOrder {
   date: string;
   image: string;
   status?: '결제 완료' | '상품준비 중' | '발송 완료';
-  isCustomOrder?: boolean; // 주문 제작 여부
+  isCustomOrder?: boolean; 
+  reviewAvailable?: boolean;
+
 }
 
 // 2. props 타입 정의
@@ -85,16 +87,26 @@ const SalesCard: React.FC<SalesCardProps> = ({
 
               {/* 후기 작성 버튼 */}
               <button
-                className="px-5 py-3 bg-[var(--color-mint-6)] border border-[var(--color-mint-3)] text-[var(--color-mint-1)] rounded-xl body-b1-rg hover:bg-[#76D2CC]/5 transition-colors active:scale-95 whitespace-nowrap mb-0.5"
-                onClick={() => onWriteReviewClick?.(item.id)}
+                disabled={!item.reviewAvailable}
+                className={`px-5 py-3 rounded-xl body-b1-rg whitespace-nowrap mb-0.5 transition-colors
+                  ${
+                    item.reviewAvailable
+                      ? 'bg-[var(--color-mint-6)] border border-[var(--color-mint-3)] text-[var(--color-mint-1)] hover:bg-[#76D2CC]/5 active:scale-95'
+                      : 'bg-[var(--color-gray-30)] border border-[var(--color-gray-40)] text-[var(--color-gray-50)] cursor-not-allowed'
+                  }
+                `}
+                onClick={() => {
+                  if (!item.reviewAvailable) return;
+                  onWriteReviewClick?.(item.id);
+                }}
               >
-                후기 작성하기
+                {item.reviewAvailable ? '후기 작성하기' : '후기를 작성했어요'}
               </button>
             </div>
 
           </div>
         ))}
-      </div>
+      </div>요요
     </div>
   );
 };

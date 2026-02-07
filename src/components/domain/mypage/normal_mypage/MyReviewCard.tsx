@@ -74,14 +74,15 @@ const MyReviewCard: React.FC<SalesCardProps> = ({
               {/* 후기 작성 버튼 */}
               <button
                 className={`px-5 py-3 rounded-xl body-b1-rg transition-colors whitespace-nowrap
-                  ${item.reviewAvailable
-                    ? 'bg-[var(--color-mint-6)] border border-[var(--color-mint-3)] text-[var(--color-mint-1)] hover:bg-[#76D2CC]/5'
-                    : 'bg-gray-200 border-gray-300 text-gray-400 cursor-not-allowed'
+                  ${
+                    item.reviewAvailable
+                      ? 'bg-[var(--color-mint-6)] border border-[var(--color-mint-3)] text-[var(--color-mint-1)] hover:bg-[#76D2CC]/5'
+                      : 'bg-[var(--color-gray-30)] border border-[var(--color-gray-40)] text-[var(--color-gray-50)] cursor-not-allowed'
                   }`}
                 onClick={() => item.reviewAvailable && onWriteReviewClick?.(item.id)}
                 disabled={!item.reviewAvailable}
               >
-                후기 작성하기
+                {item.reviewAvailable ? '후기 작성하기' : '후기가 작성했어요'}
               </button>
             </div>
 
