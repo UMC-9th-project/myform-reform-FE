@@ -6,6 +6,8 @@ import CategorySelect from '../../components/common/editor/CategorySelect';
 import calendarIcon from '../../assets/icons/calendar.svg';
 import pinkXIcon from '../../assets/icons/pinkX.svg';
 import uploadIcon from '../../assets/icons/upload.svg';
+import { uploadImages } from '../../api/upload';
+import { createReformRequest } from '../../api/order/reformRequest';
 
 const OrderRequestCreatePage = () => {
   const navigate = useNavigate();
@@ -18,6 +20,8 @@ const OrderRequestCreatePage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -31,7 +35,7 @@ const OrderRequestCreatePage = () => {
     setImages(images.filter((_, i) => i !== index));
   };
 
-  const isButtonEnabled =
+  const isFormValid =
     images.length > 0 &&
     title.trim() !== '' &&
     description.trim() !== '' &&
@@ -39,20 +43,83 @@ const OrderRequestCreatePage = () => {
     maxBudget.trim() !== '' &&
     deadline !== undefined &&
     selectedCategory !== null;
+  const isButtonEnabled = isFormValid && !isSubmitting;
 
-  const handleSubmit = () => {
-    // TODO: API 호출
-    console.log({
-      images,
-      title,
-      description,
-      minBudget,
-      maxBudget,
-      deadline,
-      selectedCategory,
-      selectedSubcategory,
-    });
-    navigate('/order/requests');
+  const handleSubmit = async () => {
+    if (!isFormValid || !deadline || selectedCategory === null) return;
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const uploadRes = await uploadImages(images);
+      if (
+        uploadRes.resultType !== 'SUCCESS' ||
+        !uploadRes.success?.url?.length
+      ) {
+        throw new Error('이미지 업로드에 실패했어요.');
+      }
+      const imageUrls = uploadRes.success.url;
+
+      const minBudgetNum = Number(minBudget.replace(/,/g, ''));
+      const maxBudgetNum = Number(maxBudget.replace(/,/g, ''));
+      if (Number.isNaN(minBudgetNum) || Number.isNaN(maxBudgetNum)) {
+        throw new Error('희망 예산을 올바르게 입력해주세요.');
+      }
+
+      const payload = {
+        title: title.trim(),
+        contents: description.trim(),
+        minBudget: minBudgetNum,
+        maxBudget: maxBudgetNum,
+        dueDate: deadline.toISOString(),
+        category: {
+          major: selectedCategory,
+          sub: selectedSubcategory ?? '',
+        },
+        images: imageUrls,
+      };
+
+      const res = await createReformRequest(payload);
+      if (res.resultType !== 'SUCCESS' || res.success == null) {
+        throw new Error(res.error?.message ?? '요청서 등록에 실패했어요.');
+      }
+
+      const reformRequestId = res.success;
+      navigate(reformRequestId ? `/order/requests/${reformRequestId}` : '/order/requests');
+    } catch (err: unknown) {
+      let message = '요청서 등록에 실패했어요.';
+      if (err && typeof err === 'object' && 'response' in err) {
+        const res = (err as { response?: { data?: unknown; status?: number } }).response;
+        const data = res?.data;
+        if (data != null && typeof data === 'object') {
+          const d = data as Record<string, unknown>;
+          const errObj = d.error as Record<string, unknown> | undefined;
+          const msg =
+            (typeof errObj?.message === 'string' && errObj.message) ||
+            (typeof d.message === 'string' && d.message) ||
+            (typeof d.msg === 'string' && d.msg);
+          if (msg) message = msg;
+          else if (Array.isArray(d.errors) && d.errors.length > 0) {
+            const first = d.errors[0];
+            message =
+              typeof first === 'string'
+                ? first
+                : typeof (first as { message?: string })?.message === 'string'
+                  ? (first as { message: string }).message
+                  : JSON.stringify(first);
+          }
+        }
+        if (import.meta.env.DEV && data != null) {
+          console.error('[POST /reform/request]', res?.status, data);
+        }
+      }
+      if (message === '요청서 등록에 실패했어요.' && err instanceof Error)
+        message = err.message;
+      setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatDate = (date: Date | undefined) => {
@@ -310,15 +377,23 @@ const OrderRequestCreatePage = () => {
       <hr className="my-8 border-[var(--color-line-gray-40)]" />
 
 
+      {/* 에러 메시지 */}
+      {submitError && (
+        <p className="body-b1-rg text-[var(--color-red-1)] mb-4 text-right pr-0">
+          {submitError}
+        </p>
+      )}
+
       {/* 등록하기 버튼 */}
       <div className="flex justify-end">
         <Button
           variant={isButtonEnabled ? 'primary' : 'disabled'}
           size="default"
           onClick={handleSubmit}
+          disabled={isSubmitting}
           className="px-12 min-w-[200px]"
         >
-          등록하기
+          {isSubmitting ? '등록 중...' : '등록하기'}
         </Button>
       </div>
     </div>
