@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import ReformFeedCard from './ReformFeedCard';
+import ImageViewerModal from '../mypage/ImageViewModal';
 import rightIcon from '../../../assets/icons/right.svg';
+import { getReformerFeedPhotos } from '../../../api/reformer';
 import type { ReformFeedProps } from './types';
 
 const ReformFeed = ({
@@ -7,6 +10,44 @@ const ReformFeed = ({
   feeds,
   onCardClick,
 }: ReformFeedProps) => {
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const handleFeedClick = async (feed: { feed_id: string; photo_url: string; is_multi_photo: boolean }) => {
+    if (!feed.photo_url) return;
+
+    if (feed.is_multi_photo) {
+      try {
+        const res = await getReformerFeedPhotos({ feed_id: feed.feed_id });
+        const photos = (res as { photos?: { photo_order: number; url: string }[] })?.photos
+          ?? (res as { success?: { photos?: { photo_order: number; url: string }[] } })?.success?.photos;
+        const urls =
+          photos
+            ?.sort((a, b) => a.photo_order - b.photo_order)
+            ?.map((p) => p.url) ?? [];
+        if (urls.length > 0) {
+          setSelectedImages(urls);
+          setCurrentIndex(0);
+          setIsViewerOpen(true);
+        } else {
+          setSelectedImages([feed.photo_url]);
+          setCurrentIndex(0);
+          setIsViewerOpen(true);
+        }
+      } catch {
+        setSelectedImages([feed.photo_url]);
+        setCurrentIndex(0);
+        setIsViewerOpen(true);
+      }
+    } else {
+      setSelectedImages([feed.photo_url]);
+      setCurrentIndex(0);
+      setIsViewerOpen(true);
+    }
+    onCardClick?.(feed.feed_id);
+  };
+
   return (
     <section className="mb-8 md:mb-[4.375rem] px-4 md:px-[110px]">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 md:mb-[1.875rem] gap-4">
@@ -28,10 +69,18 @@ const ReformFeed = ({
           <ReformFeedCard
             key={feed.feed_id}
             feed={feed}
-            onClick={() => onCardClick?.(feed.feed_id)}
+            onClick={() => handleFeedClick(feed)}
           />
         ))}
       </div>
+      {isViewerOpen && selectedImages.length > 0 && (
+        <ImageViewerModal
+          images={selectedImages}
+          currentIndex={currentIndex}
+          setCurrentIndex={setCurrentIndex}
+          onClose={() => setIsViewerOpen(false)}
+        />
+      )}
     </section>
   );
 };

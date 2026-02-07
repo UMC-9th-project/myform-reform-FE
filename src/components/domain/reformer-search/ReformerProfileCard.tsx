@@ -20,7 +20,7 @@ const ReformerSearchCard = ({
 
   const handleClick = () => {
     if (onClick) return onClick();
-    navigate('/profile');
+    navigate(`/profile/${reformer.owner_id}`);
   };
 
   return (
