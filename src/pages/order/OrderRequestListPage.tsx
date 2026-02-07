@@ -1,52 +1,27 @@
-import { useState } from 'react';
 import Breadcrumb from '../../components/common/breadcrumb/Breadcrumb';
 import RequestCard from '../../components/common/card/RequestCard';
 import Pagination from '../../components/common/pagination/Pagination';
 import OrderCategoryFilter from '../../components/domain/order/OrderCategoryFilter';
+import { useOrderRequestList } from '../../hooks/domain/order/useOrderRequestList';
 
-// 더미 데이터 (132개 시뮬레이션)
-const generateMockRequests = () => {
-  const requests = [];
-  for (let i = 1; i <= 132; i++) {
-    requests.push({
-      id: i,
-      img: '/crt1.jpg',
-      name: '예쁘게 짐색 리폼해주실분, 리폼 요청합니다.',
-      price: '30,000원~50,000원',
-    });
-  }
-  return requests;
-};
+function formatWon(value: number) {
+  return `${value.toLocaleString('ko-KR')}원`;
+}
 
-const MOCK_REQUESTS = generateMockRequests();
-const ITEMS_PER_PAGE = 15; // 3열 x 5행
-const TOTAL_PAGES = Math.ceil(MOCK_REQUESTS.length / ITEMS_PER_PAGE);
+function formatBudgetRange(minBudget: number, maxBudget: number) {
+  return `${formatWon(minBudget)}~${formatWon(maxBudget)}`;
+}
 
 const OrderRequestListPage = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedCategory, setSelectedCategory] = useState<{
-    categoryTitle: string;
-    itemLabel: string;
-  } | null>(null);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleCategoryChange = (
-    categoryIndex: number,
-    itemId: number,
-    categoryTitle: string,
-    itemLabel: string
-  ) => {
-    setSelectedCategory({ categoryTitle, itemLabel });
-    console.log('카테고리 변경:', categoryIndex, itemId, categoryTitle, itemLabel);
-  };
-
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const displayedRequests = MOCK_REQUESTS.slice(startIndex, endIndex);
+  const {
+    requests,
+    isLoading,
+    isError,
+    selectedCategory,
+    totalPages,
+    handlePageChange,
+    handleCategoryChange,
+  } = useOrderRequestList();
 
   const breadcrumbItems = [
     { label: '홈', path: '/' },
@@ -81,7 +56,9 @@ const OrderRequestListPage = () => {
             <div className="mb-5 mt-3">
               <div className="flex flex-row items-start sm:items-center justify-between ">
                 <p className="body-b1-rg text-[var(--color-gray-60)]">
-                  총 {MOCK_REQUESTS.length}개의 제품
+                  {isLoading
+                    ? '불러오는 중...'
+                    : `총 ${requests.length}개의 제품`}
                 </p>
                 <p className="body-b1-rg text-[var(--color-gray-60)]">
                   최신순
@@ -92,21 +69,41 @@ const OrderRequestListPage = () => {
             {/* 요청 카드 그리드 */}
             <div className="mb-12">
               <div className="grid grid-cols-3 gap-[1.875rem]">
-                {displayedRequests.map((request) => (
-                  <RequestCard
-                    key={request.id}
-                    id={request.id}
-                    imgSrc={request.img}
-                    title={request.name}
-                    priceRange={request.price}
-                    className="pb-[5.875rem] w-full"
-                  />
-                ))}
+                {isLoading && (
+                  <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3 py-8">
+                    불러오는 중...
+                  </p>
+                )}
+                {isError && (
+                  <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3 py-8">
+                    요청 목록을 불러오지 못했어요.
+                  </p>
+                )}
+                {!isLoading && !isError && requests.length === 0 && (
+                  <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3 py-8">
+                    등록된 요청이 없어요.
+                  </p>
+                )}
+                {!isLoading &&
+                  !isError &&
+                  requests.map((request) => (
+                    <RequestCard
+                      key={request.reformRequestId}
+                      id={request.reformRequestId}
+                      variant="order"
+                      imgSrc={request.thumbnail}
+                      title={request.title}
+                      priceRange={formatBudgetRange(request.minBudget, request.maxBudget)}
+                      className="pb-[5.875rem] w-full"
+                    />
+                  ))}
               </div>
             </div>
 
             {/* 페이지네이션 */}
-            <Pagination totalPages={TOTAL_PAGES} onPageChange={handlePageChange} />
+            {totalPages > 1 && (
+              <Pagination totalPages={totalPages} onPageChange={handlePageChange} />
+            )}
           </div>
         </div>
       </div>
