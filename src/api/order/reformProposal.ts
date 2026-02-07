@@ -3,6 +3,8 @@ import type {
   GetReformProposalListParams,
   GetReformProposalListResponse,
   GetReformProposalDetailResponse,
+  UpdateReformProposalRequest,
+  UpdateReformProposalResponse,
 } from '../../types/api/order/reformProposal';
 
 /** 제안서 목록 조회 */
@@ -30,6 +32,18 @@ export const getReformProposalDetail = async (
   id: string
 ): Promise<GetReformProposalDetailResponse> => {
   const response = await api.get<GetReformProposalDetailResponse>(`/reform/proposal/${id}`);
+  return response.data;
+};
+
+/** 제안서 수정 */
+export const updateReformProposal = async (
+  id: string,
+  payload: UpdateReformProposalRequest
+): Promise<UpdateReformProposalResponse> => {
+  const response = await api.patch<UpdateReformProposalResponse>(
+    `/reform/proposal/${id}`,
+    payload
+  );
   return response.data;
 };
 

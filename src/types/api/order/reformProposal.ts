@@ -61,3 +61,24 @@ export interface GetReformProposalDetailResponse {
   success: ReformProposalDetail | null;
 }
 
+export interface UpdateReformProposalCategory {
+  major: string;
+  sub: string;
+}
+
+export interface UpdateReformProposalRequest {
+  images: string[];
+  title?: string;
+  contents: string;
+  price: number;
+  delivery: number;
+  expectedWorking: number;
+  category?: UpdateReformProposalCategory;
+}
+
+export interface UpdateReformProposalResponse {
+  resultType: string;
+  error: null | { code: string; message: string };
+  success: string;
+}
+

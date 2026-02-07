@@ -32,6 +32,7 @@ import ReformerOrderRequestDetailPage from './pages/order/reformer/ReformerOrder
 import ReformerOrderEstimateCreatePage from './pages/order/reformer/ReformerOrderEstimateCreatePage';
 import ReformerOrderProposalListPage from './pages/order/reformer/ReformerOrderProposalListPage';
 import ReformerOrderProposalDetailPage from './pages/order/reformer/ReformerOrderProposalDetailPage';
+import ReformerOrderProposalEditPage from './pages/order/reformer/ReformerOrderProposalEditPage';
 
 import SignupPage from './pages/signup/SignupPage';
 import SignupTypeSelection from './pages/signup/SignupTypeSelection';
@@ -140,6 +141,7 @@ function App() {
         {/* 푸터 x */}
         <Route path="/order/requests/create" element={<OrderRequestCreatePage />} />
         <Route path="/reformer/order/requests/:id/estimate" element={<ReformerOrderEstimateCreatePage />} />
+        <Route path="/reformer/order/proposals/:id/edit" element={<ReformerOrderProposalEditPage />} />
       </Route>
 
       <Route
