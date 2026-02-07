@@ -80,7 +80,7 @@ export interface CreateReformRequestResponse {
   success: string | null;
 }
 
-/** PUT/PATCH /reform/request/:id - 리폼 요청서 수정 (요청 body는 작성과 동일) */
+/** PATCH /reform/request/{id} - 리폼 요청서 수정 (요청 body는 작성과 동일) */
 export type UpdateReformRequestRequest = CreateReformRequestRequest;
 
 export interface UpdateReformRequestResponse {

@@ -23,22 +23,28 @@ const CategorySelect = ({
     기타: [],
   };
 
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(
-    initialCategory
+  const [internalCategory, setInternalCategory] = useState<string | null>(
+    initialCategory ?? null
   );
-  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(
-    initialSubCategory
+  const [internalSubCategory, setInternalSubCategory] = useState<string | null>(
+    initialSubCategory ?? null
   );
 
+  // 부모가 넘긴 값이 있으면 그걸 표시(수정 페이지 등), 없으면 내부 state(작성 페이지). 빈 문자열은 미선택으로 처리
+  const hasInitialMajor = initialCategory != null && initialCategory !== '';
+  const hasInitialSub = initialSubCategory != null && initialSubCategory !== '';
+  const displayCategory = hasInitialMajor ? initialCategory : internalCategory;
+  const displaySubCategory = hasInitialSub ? initialSubCategory : internalSubCategory;
+
   const handleCategoryClick = (category: string) => {
-    setSelectedCategory(category);
-    setSelectedSubCategory(null); // 대분류 변경 시 소분류 선택 초기화
+    setInternalCategory(category);
+    setInternalSubCategory(null);
     onCategoryChange?.(category);
     onSubCategoryChange?.(null);
   };
 
   const handleSubCategoryClick = (subCategory: string) => {
-    setSelectedSubCategory(subCategory);
+    setInternalSubCategory(subCategory);
     onSubCategoryChange?.(subCategory);
   };
 
@@ -53,7 +59,7 @@ const CategorySelect = ({
               type="button"
               onClick={() => handleCategoryClick(category)}
               className={`text-left pt-[15px] pr-5 pb-[15px] pl-5 h-[57px] ${
-                selectedCategory === category
+                displayCategory === category
                   ? 'bg-[var(--color-gray-20)] body-b1-md'
                   : 'bg-white body-b1-rg hover:bg-[var(--color-gray-20)]'
               }`}
@@ -65,16 +71,16 @@ const CategorySelect = ({
 
         {/* 소분류 컬럼 */}
         <div className="w-1/2 flex flex-col">
-          {selectedCategory ? (
-            subCategories[selectedCategory].length > 0 ? (
+          {displayCategory ? (
+            subCategories[displayCategory].length > 0 ? (
               <div className="flex flex-col">
-                {subCategories[selectedCategory].map((subCategory) => (
+                {subCategories[displayCategory].map((subCategory) => (
                   <button
                     key={subCategory}
                     type="button"
                     onClick={() => handleSubCategoryClick(subCategory)}
                     className={`text-left pt-[15px] pr-5 pb-[15px] pl-5 h-[57px] ${
-                      selectedSubCategory === subCategory
+                      displaySubCategory === subCategory
                         ? 'bg-[var(--color-gray-20)] body-b1-md'
                         : 'bg-white body-b1-rg hover:bg-[var(--color-gray-20)]'
                     }`}

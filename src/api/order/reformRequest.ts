@@ -48,7 +48,7 @@ export const createReformRequest = async (
   return response.data;
 };
 
-/** 요청서 수정 (PATCH /reform/request/:id) */
+/** 요청서 수정 (PATCH /reform/request/{id}) - body: title, contents, minBudget, maxBudget, dueDate(ISO), category: { major, sub }, images: URL[] */
 export const updateReformRequest = async (
   id: string,
   payload: UpdateReformRequestRequest
