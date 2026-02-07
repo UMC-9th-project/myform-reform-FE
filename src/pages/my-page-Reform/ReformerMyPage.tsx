@@ -10,6 +10,7 @@ import { getMyReformerInfo } from '../../api/profile/user';
 const SELLER_TABS: readonly SellerTabType[] = [
   '프로필 관리',
   '판매 관리',
+  '수익 관리',
 ];
 
 const ReformerMyPage = () => {

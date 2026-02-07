@@ -63,6 +63,21 @@ function App() {
     <>
       <ScrollToTop />
       <Routes>
+
+      <Route
+        element={
+          <Layout
+            showHeader={true}
+            showNavbar={true}
+            showFooter={true}
+            footerVariant="dark"
+          />
+        }
+      >
+        {/* 홈 페이지 */}
+        <Route path="/" element={<Home />} />
+      </Route>
+
       <Route
         element={
           <Layout
@@ -73,7 +88,6 @@ function App() {
           />
         }
       >
-        <Route path="/" element={<Home />} />
 
          {/* 장바구니 페이지 */}
         <Route path="/cart" element={<Cart />} />
