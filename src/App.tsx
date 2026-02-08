@@ -11,6 +11,7 @@ import Wishlist from './pages/wishlist/Wishlist';
 import ReformerWishlist from './pages/wishlist-reformer/Wishlist';
 import ReformerMyPage from './pages/my-page-Reform/ReformerMyPage';
 import CreatePage from './pages/my-page-Reform/CreatePage';
+import EditPage from './pages/my-page-Reform/EditPage';
 import EditProfilePage from './pages/my-page-Reform/EditProfilePage';
 import Profile from './pages/Profile';
 import NormalMyPage from './pages/my-page/NormalMyPage';
@@ -132,6 +133,8 @@ function App() {
         <Route path="reformer-mypage" element={<ReformerMyPage />} />
         <Route path="/sales/create" element={<CreatePage type="sale" />} />
         <Route path="/custom/create" element={<CreatePage type="order" />} />
+        <Route path ="/sales/:id/edit" element={<EditPage type="sale" />} />
+        <Route path="/custom/:id/edit" element={<EditPage type="order" />} />
         <Route path="/reformer-profile-edit" element={<EditProfilePage />} />
         <Route path="/normal-mypage" element={<NormalMyPage />} />
         <Route path="/normal-profile-edit" element={<EditProfilePage />} />
