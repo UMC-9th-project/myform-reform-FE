@@ -31,6 +31,7 @@ export const useWishlistPage = () => {
   const activeMenuFromUrl = getMenuFromUrl(searchParams);
   const [activeMenu, setActiveMenu] = useState<WishlistMenu>(activeMenuFromUrl);
   const userRole = useAuthStore((state) => state.role);
+  const accessToken = useAuthStore((state) => state.accessToken);
   const isReformer = userRole === 'reformer';
 
   useEffect(() => {
@@ -41,8 +42,9 @@ export const useWishlistPage = () => {
   }, [searchParams, activeMenu]);
 
   const { data: wishData, isLoading } = useQuery({
-    queryKey: ['wishlist', activeMenu],
+    queryKey: ['wishlist', activeMenu, accessToken],
     queryFn: () => getWishList(getWishType(activeMenu)),
+    enabled: !!accessToken,
   });
 
   const queryClient = useQueryClient();

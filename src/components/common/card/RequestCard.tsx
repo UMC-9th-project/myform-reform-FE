@@ -43,10 +43,9 @@ export default function RequestCard({
   const accessToken = useAuthStore((state) => state.accessToken);
   const { toggleWish } = useWish();
   const { data: wishData } = useQuery({
-    queryKey: ['wishlist', 'REQUEST'],
+    queryKey: ['wishlist', 'REQUEST', accessToken],
     queryFn: () => getWishList('REQUEST'),
     enabled: id != null && !!accessToken,
-    placeholderData: (previousData) => previousData,
     staleTime: 5 * 60 * 1000,
   });
 

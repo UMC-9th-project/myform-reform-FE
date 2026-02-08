@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { logoutUser } from '../../../api/auth';
 import useAuthStore from '../../../stores/useAuthStore';
@@ -11,18 +11,18 @@ interface UseLogoutReturn {
 
 export const useLogout = (): UseLogoutReturn => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { clearAuth } = useAuthStore();
 
   const { mutate: logoutMutation, isPending: isLoading, error: mutationError } = useMutation({
     mutationFn: logoutUser,
     onSuccess: () => {
-
+      queryClient.removeQueries({ queryKey: ['wishlist'] });
       clearAuth();
-   
       navigate('/');
     },
     onError: () => {
-
+      queryClient.removeQueries({ queryKey: ['wishlist'] });
       clearAuth();
       navigate('/');
     },

@@ -52,10 +52,9 @@ export default function ProposalCard({
   const accessToken = useAuthStore((state) => state.accessToken);
   const { toggleWish } = useWish();
   const { data: wishData } = useQuery({
-    queryKey: ['wishlist', 'PROPOSAL'],
+    queryKey: ['wishlist', 'PROPOSAL', accessToken],
     queryFn: () => getWishList('PROPOSAL'),
     enabled: id != null && !!accessToken,
-    placeholderData: (previousData) => previousData,
     staleTime: 5 * 60 * 1000,
   });
 
