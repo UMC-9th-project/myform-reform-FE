@@ -4,10 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { getReformProposalDetail } from '../../../api/order/reformProposal';
 import { getProfile } from '../../../api/profile/user';
 import { getReformerReviews } from '../../../api/order/reviews';
-import useAuthStore from '../../../stores/useAuthStore';
 import type { ReformProposalDetail } from '../../../types/api/order/reformProposal';
 import type { ReformerReviewsSortBy } from '../../../types/api/reviews';
-import type { GetProfileResponse } from '../../../types/domain/profile/profile';
 
 function formatWon(value: number) {
   return `${value.toLocaleString('ko-KR')}원`;
@@ -22,9 +20,8 @@ function formatExpectedWorking(expectedWorking: number): string {
   return `평균 ${expectedWorking}일 이내 배송 시작`;
 }
 
-export const useReformerOrderProposalDetail = () => {
+export const useOrderProposalDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const user = useAuthStore((state) => state.user);
   const [activeTab, setActiveTab] = useState<'info' | 'reformer' | 'review'>(
     'info'
   );
@@ -48,50 +45,21 @@ export const useReformerOrderProposalDetail = () => {
     staleTime: 1000 * 30,
   });
 
-  const rawProposalDetail = reformProposalDetailResponse?.success ?? null;
+  const proposalDetail: ReformProposalDetail | null =
+    reformProposalDetailResponse?.success ?? null;
 
-  // API의 isOwner 또는 로그인 유저와 ownerId 비교로 본인 글 여부 판단
-  const proposalDetail: ReformProposalDetail | null = rawProposalDetail
-    ? {
-        ...rawProposalDetail,
-        isOwner:
-          rawProposalDetail.isOwner ||
-          !!(user?.id && rawProposalDetail.ownerId && user.id === rawProposalDetail.ownerId),
-      }
-    : null;
-
-  // 제안서 상세 API의 profile(별점, 후기수 등) 우선 사용, 없으면 GET /profile 호출
   const profileId = proposalDetail?.ownerId ?? proposalDetail?.ownerName ?? '';
   const { data: profileResponse } = useQuery({
     queryKey: ['profile', profileId],
     queryFn: () => getProfile(profileId),
-    enabled: !!profileId && !proposalDetail?.profile,
+    enabled: !!profileId,
     staleTime: 1000 * 60,
   });
 
-  const profileFromApi =
+  const profile =
     profileResponse?.resultType === 'SUCCESS' && profileResponse?.success
       ? profileResponse.success
       : null;
-
-  const profile: GetProfileResponse['success'] = useMemo(() => {
-    const p = proposalDetail?.profile;
-    if (p) {
-      const totalSaleCount = p.totalSaleCount ?? p.toatalSaleCount ?? 0;
-      return {
-        ownerId: proposalDetail?.ownerId,
-        profilePhoto: p.ownerProfile,
-        nickname: p.ownerName,
-        avgStar: p.avgStar,
-        avgStarRecent3m: p.avgStarRecent3m,
-        reviewCount: p.reviewCount,
-        totalSaleCount,
-        keywords: p.keywords ?? [],
-        bio: p.bio ?? '',
-      };
-    }
-    return profileFromApi;
-  }, [proposalDetail?.profile, proposalDetail?.ownerId, profileFromApi]);
 
   const reformerId = profile?.ownerId ?? proposalDetail?.ownerId ?? '';
   const apiSortBy: ReformerReviewsSortBy =

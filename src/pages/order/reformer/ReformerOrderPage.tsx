@@ -130,6 +130,7 @@ const ReformerOrderPage = () => {
                   title={item.title}
                   price={formatWon(item.price)}
                   rating={item.avgStar}
+                  ratingDecimals={1}
                   reviewCountText={`(${item.reviewCount})`}
                   nickname={item.ownerName}
                 />

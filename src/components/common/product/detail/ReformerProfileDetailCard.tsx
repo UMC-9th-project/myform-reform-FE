@@ -10,6 +10,8 @@ interface ReformerProfileDetailCardProps {
   orderCount: number;
   reviewCount: number;
   profileImg?: string;
+  /** 리폼러 프로필 소개글 */
+  bio?: string | null;
   onFeedClick?: () => void;
   className?: string;
 }
@@ -20,6 +22,7 @@ const ReformerProfileDetailCard = ({
   orderCount,
   reviewCount,
   profileImg,
+  bio,
   onFeedClick,
   className = '',
 }: ReformerProfileDetailCardProps) => {
@@ -46,7 +49,9 @@ const ReformerProfileDetailCard = ({
                 <img key={i} src={starIcon} alt="star" className="w-5 h-5" />
               ))}
             </div>
-            <span className="body-b1-sb text-[var(--color-black)] ml-1">{rating}</span>
+            <span className="body-b1-sb text-[var(--color-black)] ml-1">
+            {typeof rating === 'number' && Number.isFinite(rating) ? rating.toFixed(2) : rating}
+          </span>
           </div>
         </div>
 
@@ -68,9 +73,9 @@ const ReformerProfileDetailCard = ({
         {/* 구분선 */}
         <div className="border-t border-[var(--color-gray-40)] mb-4" />
 
-        {/* 설명 섹션 */}
+        {/* 설명 섹션 - 프로필 소개글 */}
         <div className="mb-4">
-          <ProfileTextAccordion />
+          <ProfileTextAccordion bio={bio} />
         </div>
 
         {/* 피드 보러가기 버튼 */}
