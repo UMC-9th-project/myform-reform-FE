@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 
 interface PaginationProps {
   totalPages: number;
+  currentPage?: number;
   onPageChange: (page: number) => void;
 }
 
-const Pagination: React.FC<PaginationProps> = ({ totalPages = 13, onPageChange }) => {
-  const [currentPage, setCurrentPage] = useState(1);
+const Pagination: React.FC<PaginationProps> = ({ totalPages = 13, currentPage: externalCurrentPage, onPageChange }) => {
+  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
+  const currentPage = externalCurrentPage ?? internalCurrentPage;
   const PAGE_GROUP_SIZE = 10; // 한 번에 보여줄 페이지 수
 
   // 1. 현재 페이지가 속한 그룹 계산 (0부터 시작)
@@ -21,9 +23,19 @@ const Pagination: React.FC<PaginationProps> = ({ totalPages = 13, onPageChange }
   for (let i = startPage; i <= endPage; i++) {
     pagesToShow.push(i);
   }
+  
+  // 4. 1페이지가 항상 포함되도록 (없으면 맨 앞에 추가, 최대 10개까지만)
+  if (pagesToShow[0] !== 1) {
+    pagesToShow.unshift(1);
+    if (pagesToShow.length > PAGE_GROUP_SIZE) {
+      pagesToShow.pop();
+    }
+  }
 
   const handlePageClick = (page: number) => {
-    setCurrentPage(page);
+    if (externalCurrentPage === undefined) {
+      setInternalCurrentPage(page);
+    }
     onPageChange?.(page);
   };
 

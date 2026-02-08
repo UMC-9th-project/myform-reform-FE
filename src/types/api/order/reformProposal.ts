@@ -15,6 +15,7 @@ export interface GetReformProposalListParams {
 
 export interface ReformProposalListItem {
   reformProposalId: string;
+  isWished: boolean;
   thumbnail: string;
   title: string;
   price: number;

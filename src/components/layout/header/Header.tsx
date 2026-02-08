@@ -26,10 +26,7 @@ export default function Header() {
   const [searchValue, setSearchValue] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>([
-    '야구 유니폼 리폼',
-    '한화 유니폼',
-  ]);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -50,7 +47,6 @@ export default function Header() {
     setIsProfileOpen(false);        // 드롭다운 닫기
   };
 
-
   const handleSearchClick = () => setIsSearchOpen(true);
 
   const handleDeleteRecent = (index: number) =>
@@ -58,10 +54,32 @@ export default function Header() {
 
   const handleDeleteAll = () => setRecentSearches([]);
 
+  const handleSearchSubmit = (term: string) => {
+    const trimmedTerm = term.trim();
+    if (trimmedTerm.length === 0) return;
+    
+    // 최근 검색어에 추가
+    if (!recentSearches.includes(trimmedTerm)) {
+      setRecentSearches([trimmedTerm, ...recentSearches].slice(0, 5));
+    }
+    
+    // 검색 결과 페이지로 이동
+    navigate(`/search?q=${encodeURIComponent(trimmedTerm)}`);
+    setIsSearchOpen(false);
+    setSearchValue('');
+  };
+
   const handleRecommendedClick = (term: string) => {
-    setSearchValue(term);
-    if (!recentSearches.includes(term)) {
-      setRecentSearches([term, ...recentSearches].slice(0, 5));
+    handleSearchSubmit(term);
+  };
+
+  const handleRecentSearchClick = (term: string) => {
+    handleSearchSubmit(term);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit(searchValue);
     }
   };
 
@@ -106,10 +124,14 @@ export default function Header() {
             onChange={(e) => setSearchValue(e.target.value)}
             onClick={handleSearchClick}
             onFocus={handleSearchClick}
+            onKeyDown={handleKeyDown}
             placeholder="어떤 리폼 스타일을 찾으세요?"
             className="body-b1-rg w-full py-[0.875rem] pl-[1.5rem] pr-[3rem] rounded-[6.25rem] border border-[var(--color-mint-1)] text-[var(--color-black)] placeholder:text-[var(--color-gray-40)] focus:outline-none focus:border-[var(--color-mint-1)] transition-colors"
           />
-          <div className="absolute right-[1.5rem] top-1/2 -translate-y-1/2 cursor-pointer">
+          <div 
+            className="absolute right-[1.5rem] top-1/2 -translate-y-1/2 cursor-pointer"
+            onClick={() => handleSearchSubmit(searchValue)}
+          >
             <img src={search} alt="search" className="w-6.5 h-6.5" />
           </div>
 
@@ -129,14 +151,20 @@ export default function Header() {
                   <div className="space-y-3">
                     {recentSearches.map((term, index) => (
                       <div key={index} className="flex items-center justify-between py-2">
-                        <div className="flex items-center gap-3 flex-1">
+                        <div 
+                          className="flex items-center gap-3 flex-1 cursor-pointer"
+                          onClick={() => handleRecentSearchClick(term)}
+                        >
                           <img src={bgsearch} alt="bgsearch" />
-                          <span className="body-b2-rg text-[var(--color-gray-60)] hover:text-[var(--color-black)] cursor-pointer">
+                          <span className="body-b2-rg text-[var(--color-gray-60)] hover:text-[var(--color-black)]">
                             {term}
                           </span>
                         </div>
                         <button
-                          onClick={() => handleDeleteRecent(index)}
+                          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                            e.stopPropagation();
+                            handleDeleteRecent(index);
+                          }}
                           className="cursor-pointer hover:scale-110 transition-transform duration-200"
                         >
                           <img src={xIcon} alt="delete" className="w-5 h-5" />
@@ -146,6 +174,7 @@ export default function Header() {
                   </div>
                 </div>
               )}
+
 
               <div className="py-[1.125rem] px-[1.5625rem]">
                 <h3 className="body-b4-sb text-[var(--color-gray-60)] mb-[1.0625rem]">추천 검색어</h3>
