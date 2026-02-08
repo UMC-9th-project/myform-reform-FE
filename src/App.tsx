@@ -136,7 +136,7 @@ function App() {
         <Route path="/normal-mypage" element={<NormalMyPage />} />
         <Route path="/normal-profile-edit" element={<EditProfilePage />} />
         <Route path="/mypage/review/write" element={<ReviewWritePage />} />
-        <Route path="/chat/quotation/detail" element={<ChatQuotationDetailPage />} />
+        <Route path="/chat/quotation/detail/:requestId" element={<ChatQuotationDetailPage />} />
 
         {/* 404 처리 */}
         <Route path="*" element={<div>Not Found</div>} />
@@ -207,8 +207,8 @@ function App() {
         }>
         <Route path="/chat/reformer/:chatId?" element={<ChatPage role="REFORMER" />} />
         <Route path="/chat/normal/:chatId?" element={<ChatPage role="USER" />} />
-        <Route path="/chat/create/quotation" element={<ChatQuotationFormPage />} />
-        <Route path="/chat/create/request" element={<ChatRequestFormPage />} />
+        <Route path="/chat/create/quotation/:chatRoomId" element={<ChatQuotationFormPage />} />
+        <Route path="/chat/create/request/:chatRoomId" element={<ChatRequestFormPage />} />
       </Route>
 
 

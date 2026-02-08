@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getChatRooms,  type ChatRoomFilter } from '@/api/chat/chatApi';
 import type { SelectedChat } from '@/types/api/chat/chatMessages';
+import { useLocation } from 'react-router-dom';
 
 interface ChatListTabProps {
   selectedChat: SelectedChat | null;
@@ -19,6 +20,8 @@ const filters: { label: string; type?: ChatRoomFilter }[] = [
 const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat, onChatsLoaded }) => {
   const [filter, setFilter] = useState(filters[0]);
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const chatRoomIdFromUrl = location.pathname.split('/').pop();
 
   // ✅ React Query로 변경
   const { data, isLoading, error } = useQuery({
@@ -48,6 +51,18 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
       onChatsLoaded(chats.length);
     }
   }, [data, onChatsLoaded]);
+
+  React.useEffect(() => {
+    if (chatRoomIdFromUrl && chats.length > 0) {
+      const matched = chats.find(c => c.chatRoomId === chatRoomIdFromUrl);
+      if (matched) {
+        setSelectedChat({
+          chatRoomId: matched.chatRoomId,
+          roomType: matched.roomType as 'FEED' | 'PROPOSAL' | 'REQUEST',
+        });
+      }
+    }
+  }, [chatRoomIdFromUrl, chats]);
 
   if (isLoading) return <div>로딩 중...</div>;
   if (error) return <div className="text-red-500">채팅 조회 실패</div>;
