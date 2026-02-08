@@ -12,7 +12,7 @@ const ReformerSearchCard = ({
   const [isImageError, setIsImageError] = useState(false);
   const shouldShowPlaceholder = !reformer.profile_photo || isImageError;
   const formattedRating = Number.isFinite(reformer.avg_star)
-    ? reformer.avg_star.toFixed(1)
+    ? reformer.avg_star.toFixed(2)
     : '-';
   const tags = (reformer.keywords ?? []).map((k) =>
     k.startsWith('#') ? k : `#${k}`

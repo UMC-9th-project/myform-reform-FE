@@ -25,6 +25,7 @@ import OrderPage from './pages/order/OrderPage';
 import OrderRequestListPage from './pages/order/OrderRequestListPage';
 import OrderRequestDetailPage from './pages/order/OrderRequestDetailPage';
 import OrderRequestCreatePage from './pages/order/OrderRequestCreatePage';
+import OrderRequestEditPage from './pages/order/OrderRequestEditPage';
 import OrderProposalListPage from './pages/order/OrderProposalListPage';
 import OrderProposalDetailPage from './pages/order/OrderProposalDetailPage';
 import ReformerOrderPage from './pages/order/reformer/ReformerOrderPage';
@@ -156,6 +157,7 @@ function App() {
       >
         {/* 푸터 x */}
         <Route path="/order/requests/create" element={<OrderRequestCreatePage />} />
+        <Route path="/order/requests/:id/edit" element={<OrderRequestEditPage />} />
         <Route path="/reformer/order/requests/:id/estimate" element={<ReformerOrderEstimateCreatePage />} />
       </Route>
 

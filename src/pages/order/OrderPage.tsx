@@ -4,64 +4,28 @@ import RequestCard from '../../components/common/card/RequestCard';
 import ProposalCard from '../../components/common/card/ProposalCard';
 import Button from '../../components/common/button/Button1';
 import pencilIcon from '../../assets/icons/pencilLine.svg';
+import { useOrderPage } from '../../hooks/domain/order/useOrderPage';
+
+function formatWon(value: number) {
+  return `${value.toLocaleString('ko-KR')}원`;
+}
+
+function formatBudgetRange(minBudget: number, maxBudget: number) {
+  return `${formatWon(minBudget)}~${formatWon(maxBudget)}`;
+}
 
 const OrderPage = () => {
   const navigate = useNavigate();
+  const {
+    recentRequests,
+    proposals,
+    isLoading,
+    isError,
+  } = useOrderPage();
+
   const handleRequestReform = () => {
     navigate('/order/requests/create');
   };
-  // 새로 등록된 요청 데이터
-  const newRequests = [
-    {
-      id: 1,
-      img: '/crt1.jpg',
-      name: '제 소중한 기아 쿠로미 유니폼 짐색으로 만들어 주실 리폼 장인을 찾아요',
-      price: '30,000원~50,000원',
-    },
-    {
-      id: 2,
-      img: '/crt2.jpg',
-      name: '제 소중한 기아 쿠로미 유니폼 짐색으로 만들어 주실 리폼 장인을 찾아요',
-      price: '30,000원~50,000원',
-    },
-    {
-      id: 3,
-      img: '/crt1.jpg',
-      name: '제 소중한 기아 쿠로미 유니폼 짐색으로 만들어 주실 리폼 장인을 찾아요',
-      price: '30,000원~50,000원',
-    },
-  ];
-
-  // 리폼러가 받고 있는 주문제작 데이터
-  const reformerOrders = [
-    {
-      id: 1,
-      img: '/wsh1.jpg',
-      name: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
-      price: '75,000원',
-      review: 4.9,
-      reviewCount: 271,
-      nickname: '침착한 대머리독수리',
-    },
-    {
-      id: 2,
-      img: '/wsh2.jpg',
-      name: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
-      price: '75,000원',
-      review: 4.9,
-      reviewCount: 271,
-      nickname: '침착한 대머리독수리',
-    },
-    {
-      id: 3,
-      img: '/wsh3.jpg',
-      name: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
-      price: '75,000원',
-      review: 4.9,
-      reviewCount: 271,
-      nickname: '침착한 대머리독수리',
-    },
-  ];
 
   
 
@@ -110,15 +74,33 @@ const OrderPage = () => {
             </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-[1.875rem]">
-            {newRequests.map((item) => (
-              <RequestCard
-                key={item.id}
-                id={item.id}
-                imgSrc={item.img}
-                title={item.name}
-                priceRange={item.price}
-              />
-            ))}
+            {isLoading && (
+              <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3">
+                불러오는 중...
+              </p>
+            )}
+            {isError && (
+              <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3">
+                목록을 불러오지 못했어요.
+              </p>
+            )}
+            {!isLoading && !isError && recentRequests.length === 0 && (
+              <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3">
+                새로 등록된 요청이 없어요.
+              </p>
+            )}
+            {!isLoading &&
+              !isError &&
+              recentRequests.map((item) => (
+                <RequestCard
+                  key={item.reformRequestId}
+                  id={item.reformRequestId}
+                  imgSrc={item.thumbnail}
+                  title={item.title}
+                  priceRange={formatBudgetRange(item.minBudget, item.maxBudget)}
+                  variant="order"
+                />
+              ))}
           </div>
         </section>
 
@@ -134,18 +116,37 @@ const OrderPage = () => {
             </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-[1.875rem]">
-            {reformerOrders.map((item) => (
-              <ProposalCard
-                key={item.id}
-                id={item.id}
-                imgSrc={item.img}
-                title={item.name}
-                price={item.price}
-                rating={item.review}
-                reviewCountText={`(${item.reviewCount})`}
-                nickname={item.nickname}
-              />
-            ))}
+            {isLoading && (
+              <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3">
+                불러오는 중...
+              </p>
+            )}
+            {isError && (
+              <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3">
+                목록을 불러오지 못했어요.
+              </p>
+            )}
+            {!isLoading && !isError && proposals.length === 0 && (
+              <p className="body-b1-rg text-[var(--color-gray-60)] col-span-3">
+                주문제작 제안이 없어요.
+              </p>
+            )}
+            {!isLoading &&
+              !isError &&
+              proposals.map((item) => (
+                <ProposalCard
+                  key={item.reformProposalId}
+                  id={item.reformProposalId}
+                  imgSrc={item.thumbnail}
+                  title={item.title}
+                  price={formatWon(item.price)}
+                  rating={item.avgStar}
+                  ratingDecimals={1}
+                  reviewCountText={`(${item.reviewCount})`}
+                  nickname={item.ownerName}
+                  variant="order"
+                />
+              ))}
           </div>
         </section>
       </div>

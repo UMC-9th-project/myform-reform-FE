@@ -80,10 +80,14 @@ const ProductInfoCard = ({
       <div className="flex items-center gap-2 mt-5">
         <div className="flex items-center gap-1">
           <img src={starIcon} alt="star" className="w-5 h-5" />
-          <span className="body-b1-sb text-[var(--color-black)]">{rating}</span>
+          <span className="body-b1-sb text-[var(--color-black)]">
+            {typeof rating === 'number' && Number.isFinite(rating) ? rating.toFixed(2) : rating}
+          </span>
         </div>
-        {recentRating && (
-          <span className="body-b5-rg text-[var(--color-gray-50)]">(최근 3개월 {recentRating})</span>
+        {recentRating != null && Number.isFinite(Number(recentRating)) && (
+          <span className="body-b5-rg text-[var(--color-gray-50)]">
+            (최근 3개월 {Number(recentRating).toFixed(2)})
+          </span>
         )}
       </div>
 
