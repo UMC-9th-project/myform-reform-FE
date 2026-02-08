@@ -1,5 +1,10 @@
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import LikeButton from '../likebutton/LikeButton';
+import { useWish } from '../../../hooks/domain/wishlist/useWish';
+import { getWishList } from '../../../api/wishlist';
+import useAuthStore from '../../../stores/useAuthStore';
 
 export type RequestDetailVariant = 'order' | 'reformer';
 
@@ -15,6 +20,8 @@ interface RequestCardProps {
   variant?: RequestDetailVariant;
   /** 클릭 시 이동할 상세 페이지 경로 (직접 지정 시 id/variant 대신 사용) */
   to?: string;
+  /** 초기 위시 상태 */
+  isWished?: boolean;
 }
 
 const REQUEST_DETAIL_PATH: Record<RequestDetailVariant, string> = {
@@ -30,10 +37,77 @@ export default function RequestCard({
   id,
   variant = 'order',
   to,
+  isWished = false,
 }: RequestCardProps) {
+  const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const { toggleWish } = useWish();
+  const { data: wishData } = useQuery({
+    queryKey: ['wishlist', 'REQUEST'],
+    queryFn: () => getWishList('REQUEST'),
+    enabled: id != null && !!accessToken,
+    placeholderData: (previousData) => previousData,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const itemId = id ? (typeof id === 'string' ? id : id.toString()) : null;
+  
+  const isWishedFromServer = useMemo(() => {
+    if (isWished) {
+      return true;
+    }
+    if (wishData === undefined || !itemId) {
+      return undefined;
+    }
+    if (wishData?.success?.list) {
+      return wishData.success.list.some((item) => item.itemId === itemId);
+    }
+    return false;
+  }, [wishData, itemId, isWished]);
+
+  const initialLiked = useMemo(() => {
+    if (isWished) {
+      return true;
+    }
+    if (isWishedFromServer === undefined) {
+      return false;
+    }
+    return isWishedFromServer;
+  }, [isWished, isWishedFromServer]);
+
+  const [isLiked, setIsLiked] = useState(initialLiked);
+
+  useEffect(() => {
+    if (!isWished && isWishedFromServer !== undefined) {
+      setIsLiked(isWishedFromServer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isWishedFromServer]);
+
   const detailTo =
     id != null ? `${REQUEST_DETAIL_PATH[variant]}/${id}` : undefined;
   const linkTo = to ?? detailTo;
+
+  const handleLikeClick = async (liked: boolean) => {
+    if (!accessToken) {
+      navigate('/login/type');
+      return;
+    }
+
+    if (itemId) {
+      try {
+        await toggleWish('REQUEST', itemId, liked);
+        setIsLiked(liked);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response?: { status?: number } };
+          if (axiosError.response?.status === 401) {
+            navigate('/login/type');
+          }
+        }
+      }
+    }
+  };
 
   const content = (
     <article className={`w-full ${linkTo ? 'cursor-pointer' : ''} ${className}`}>
@@ -46,7 +120,7 @@ export default function RequestCard({
           alt={title}
           className="w-full h-full object-cover"
         />
-        {variant === 'reformer' && (
+        {(variant === 'reformer' || variant === 'order') && (
           <div
             className="absolute bottom-[0.75rem] right-[0.75rem] z-10"
             onClick={(e) => {
@@ -61,7 +135,10 @@ export default function RequestCard({
             }}
             role="presentation"
           >
-            <LikeButton />
+            <LikeButton
+              initialLiked={isLiked}
+              onClick={handleLikeClick}
+            />
           </div>
         )}
       </div>
