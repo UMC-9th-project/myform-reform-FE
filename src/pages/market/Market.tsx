@@ -6,6 +6,7 @@ import leftArrowIcon from '../../assets/icons/left.svg';
 import rightArrowIcon from '../../assets/icons/right.svg';
 import downArrowIcon from '../../assets/icons/down.svg';
 
+import { useMarket } from '../../hooks/domain/market/useMarket';
 
 const mockProducts = Array.from({ length: 15 }, (_, i) => ({
   id: i + 1,
@@ -26,7 +27,9 @@ const Market = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
+  const { data: marketData } = useMarket();
+  console.log(marketData);
+  
   return (
     <div className=" min-h-screen pb-[7.4375rem]">
       <div className="flex gap-[1.875rem] items-start pt-[0.9375rem]">

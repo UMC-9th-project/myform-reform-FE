@@ -6,7 +6,7 @@ const MARKET_DETAIL_PATH = '/market/product';
 
 export interface MarketCardItem {
   item_id: string;
-  thumbnail: string; 
+  thumbnail: string;
   title: string;
   price: number;
   star: number;
@@ -109,19 +109,19 @@ const MarketCard = ({
             : `${formatPrice(price)}원`}
         </p>
         {hasRating && (
-          <div className="flex items-center gap-[0.375rem] mb-[0.525rem]">
-            <img
-              src={starIcon}
-              alt="별점"
-              className="w-[0.8125rem] h-[0.75rem]"
-            />
-            <span className="body-b3-rg">
+        <div className="flex items-center gap-[0.375rem] mb-[0.525rem]">
+          <img
+            src={starIcon}
+            alt="별점"
+            className="w-[0.8125rem] h-[0.75rem]"
+          />
+          <span className="body-b3-rg">
               <span className="text-[var(--color-black)]">{isMarketItem ? item.star : (item.star ?? 0)}</span>{' '}
-              <span className="text-[var(--color-gray-50)]">
+            <span className="text-[var(--color-gray-50)]">
                 ({isMarketItem ? item.review_count : (item.review_count ?? 0)})
-              </span>
             </span>
-          </div>
+          </span>
+        </div>
         )}
         <span className="mt-[0.875rem] inline-flex items-center body-b5-sb text-[var(--color-gray-50)] bg-[var(--color-gray-30)] rounded-[0.375rem] px-[0.3125rem] py-[0.125rem]">
           {item.owner_nickname}

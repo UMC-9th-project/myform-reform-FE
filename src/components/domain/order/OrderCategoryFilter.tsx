@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import downArrow from '../../../assets/icons/down.svg';
+import { useMarket } from '../../../hooks/domain/market/useMarket';
 
 interface CategoryItem {
-  id: number;
+  id: string;
   label: string;
 }
 
@@ -12,60 +13,78 @@ interface CategoryData {
   defaultOpen?: boolean;
 }
 
-const categoriesData: CategoryData[] = [
-  {
-    title: '의류',
-    items: [
-      { id: 1, label: '전체' },
-      { id: 2, label: '상의' },
-      { id: 3, label: '하의' },
-      { id: 4, label: '아우터' },
-    ],
-    defaultOpen: false,
-  },
-  {
-    title: '잡화',
-    items: [
-      { id: 1, label: '전체' },
-      { id: 2, label: '가방·짐색' },
-      { id: 3, label: '지갑·파우치' },
-      { id: 4, label: '모자·캡·비니' },
-    ],
-    defaultOpen: false,
-  },
-  {
-    title: '악세서리',
-    items: [
-      { id: 1, label: '전체' },
-      { id: 2, label: '헤어 악세서리' },
-      { id: 3, label: '폰케이스' },
-      { id: 4, label: '키링' },
-    ],
-    defaultOpen: false,
-  },
-  {
-    title: '홈·리빙',
-    items: [
-      { id: 1, label: '전체' },
-      { id: 2, label: '패브릭 소품' },
-      { id: 3, label: '쿠션·방석' },
-    ],
-    defaultOpen: false,
-  },
-  {
-    title: '기타',
-    items: [
-      { id: 1, label: '전체' },
-    ],
-    defaultOpen: false,
-  },
-];
+// 허용된 카테고리 이름 목록
+const ALLOWED_CATEGORY_NAMES = ['의류', '잡화', '홈·리빙', '기타', ];
+
+// 하위 카테고리 하드코드 데이터
+const HARDCODED_SUBCATEGORIES: Record<string, CategoryItem[]> = {
+  '의류': [
+    { id: '1', label: '전체' },
+    { id: '2', label: '상의' },
+    { id: '3', label: '하의' },
+    { id: '4', label: '아우터' },
+  ],
+  '잡화': [
+    { id: '1', label: '전체' },
+    { id: '2', label: '가방·짐색' },
+    { id: '3', label: '지갑·파우치' },
+    { id: '4', label: '모자·캡·비니' },
+  ],
+  '홈·리빙': [
+    { id: '1', label: '전체' },
+    { id: '2', label: '패브릭 소품' },
+    { id: '3', label: '쿠션·방석' },
+  ],
+  '기타': [
+    { id: '1', label: '전체' },
+  ],
+};
 
 interface OrderCategoryFilterProps {
   onCategoryChange?: (categoryIndex: number, itemId: number, categoryTitle: string, itemLabel: string) => void;
 }
 
 const OrderCategoryFilter = ({ onCategoryChange }: OrderCategoryFilterProps) => {
+  const { data: categories, isLoading, isError } = useMarket();
+
+  // API에서 상위 카테고리 이름만 가져와서 하드코드된 하위 항목과 매핑
+  const categoriesData = useMemo<CategoryData[]>(() => {
+    // API 데이터가 없으면 하드코드된 카테고리 사용
+    if (!categories || categories.length === 0) {
+      return ALLOWED_CATEGORY_NAMES.map((name) => ({
+        title: name,
+        items: HARDCODED_SUBCATEGORIES[name] || [{ id: '1', label: '전체' }],
+        defaultOpen: false,
+      }));
+    }
+
+    const filtered = categories
+      .filter((category) => 
+        category?.market?.name && ALLOWED_CATEGORY_NAMES.includes(category.market.name)
+      )
+      .map((category) => {
+        const categoryName = category.market.name;
+        const items = HARDCODED_SUBCATEGORIES[categoryName] || [{ id: '1', label: '전체' }];
+
+        return {
+          title: categoryName,
+          items,
+          defaultOpen: false,
+        };
+      });
+
+    // 필터링된 결과가 없으면 하드코드된 카테고리 사용
+    if (filtered.length === 0) {
+      return ALLOWED_CATEGORY_NAMES.map((name) => ({
+        title: name,
+        items: HARDCODED_SUBCATEGORIES[name] || [{ id: '1', label: '전체' }],
+        defaultOpen: false,
+      }));
+    }
+
+    return filtered;
+  }, [categories]);
+
   const [openStates, setOpenStates] = useState<boolean[]>(
     categoriesData.map(() => false)
   );
@@ -80,13 +99,55 @@ const OrderCategoryFilter = ({ onCategoryChange }: OrderCategoryFilterProps) => 
     });
   };
 
-  const handleItemClick = (categoryIndex: number, itemId: number) => {
+  const handleItemClick = (categoryIndex: number, itemId: string) => {
     const itemKey = `${categoryIndex}-${itemId}`;
     setSelectedItem(itemKey);
     const category = categoriesData[categoryIndex];
     const item = category.items.find((i) => i.id === itemId);
-    onCategoryChange?.(categoryIndex, itemId, category.title, item?.label || '');
+    onCategoryChange?.(categoryIndex, Number(itemId) || 0, category.title, item?.label || '');
   };
+
+  if (isLoading) {
+    return (
+      <aside className="hidden md:block w-[217px] flex-shrink-0">
+        <div className="p-4">로딩 중...</div>
+      </aside>
+    );
+  }
+
+  if (isError) {
+    // 에러 발생 시 하드코드된 카테고리 표시
+    const fallbackCategories = ALLOWED_CATEGORY_NAMES.map((name) => ({
+      title: name,
+      items: HARDCODED_SUBCATEGORIES[name] || [{ id: '1', label: '전체' }],
+      defaultOpen: false,
+    }));
+    
+    return (
+      <aside className="hidden md:block w-[217px] flex-shrink-0">
+        <nav className="flex flex-col">
+          {fallbackCategories.map((category, categoryIndex) => (
+            <div
+              key={category.title}
+              className={`w-full bg-[var(--color-bg-white)] ${
+                categoryIndex < fallbackCategories.length - 1 
+                  ? 'border-b border-[var(--color-gray-40)]' 
+                  : ''
+              }`}
+            >
+              <div className="flex flex-col">
+                <div className="flex items-center justify-between px-[1.125rem] py-[1.125rem]">
+                  <h2 className="body-b1-sb text-[var(--color-black)]">
+                    {category.title}
+                  </h2>
+                </div>
+              </div>
+            </div>
+          ))}
+        </nav>
+      </aside>
+    );
+  }
 
   return (
     <aside className="hidden md:block w-[217px] flex-shrink-0">
