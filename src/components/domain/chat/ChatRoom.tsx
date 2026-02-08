@@ -76,77 +76,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     }
   };
 
-  const handleReadStatus = (data: {
-    chatRoomId: string;
-    readerId: string;
-    lastReadMessageId: string;
-  }) => {
-    if (data.chatRoomId !== chatId) return;
-
-    const lastReadId = Number(data.lastReadMessageId);
-
-    // 1️⃣ 메시지 목록 업데이트 (내가 보낸 메시지의 isRead를 true로)
-    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-      if (!oldData) return oldData;
-
-      const updatedPages = oldData.pages.map((page: any) => ({
-        ...page,
-        messages: page.messages.map((msg: any) => {
-          // 내가 보낸 메시지인지 확인
-          const isMine =
-            (myRole === 'REFORMER' && msg.senderType === 'OWNER') ||
-            (myRole === 'USER' && msg.senderType === 'USER');
-
-          // 내가 보낸 메시지이고, lastReadMessageId 이하면 읽음 처리
-          if (!String(msg.messageId).startsWith('temp-') && isMine && Number(msg.messageId) <= lastReadId) {
-            return { ...msg, isRead: true };
-          }
-          return msg;
-        }),
-      }));
-
-      return { ...oldData, pages: updatedPages };
-    });
-
-    // 2️⃣ 채팅 목록의 unreadCount 업데이트 (모든 필터 타입)
-    [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach(filterType => {
-      queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
-        if (!oldData?.data) return oldData;
-
-        const updatedData = oldData.data.map((room: any) => {
-          if (room.chatRoomId !== chatId) return room;
-
-          // ✅ 현재 채팅방의 최신 메시지 데이터 가져오기
-          const currentMessages = queryClient.getQueryData(['chatMessages', chatId]) as any;
-          
-          if (!currentMessages) return { ...room, unreadCount: 0 };
-
-          const allMessages = currentMessages.pages.flatMap((p: any) => p.messages);
-          
-          // 상대방이 보낸 메시지 중 읽지 않은 메시지 개수 계산
-          const unread = allMessages.filter((msg: any) => {
-            // 임시 메시지 제외
-            if (String(msg.messageId).startsWith('temp-')) return false;
-            
-            // 상대방이 보낸 메시지인지 확인
-            const isFromOther =
-              (myRole === 'REFORMER' && msg.senderType === 'USER') ||
-              (myRole === 'USER' && msg.senderType === 'OWNER');
-            
-            // 읽지 않은 메시지만 카운트
-            return isFromOther && !msg.isRead;
-          }).length;
-
-          return {
-            ...room,
-            unreadCount: unread,
-          };
-        });
-
-        return { ...oldData, data: updatedData };
-      });
-    });
-  };
+  
 
   const sendImageMessage = (imageUrls: string[]) => {
   const socket = getSocket();
@@ -249,66 +179,87 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       socket.emit('joinRoom', { roomId: chatId });
       socket.emit('readChatRoom', { roomId: chatId });
       isJoined = true;
-
-      // ✅ 채팅방 입장 시 기존 메시지 모두 읽음 처리
-      queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-        if (!oldData) return oldData;
-
-        const updatedPages = oldData.pages.map((page: any) => ({
-          ...page,
-          messages: page.messages.map((msg: any) => ({
-            ...msg,
-            isRead: msg.isRead !== undefined ? msg.isRead : false, // isRead가 없으면 false로 초기화
-          })),
-        }));
-
-        return { ...oldData, pages: updatedPages };
-      });
-
-      // ✅ 채팅방 목록의 unreadCount를 0으로 초기화
-      [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach(filterType => {
-        queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
-          if (!oldData?.data) return oldData;
-
-          const updatedData = oldData.data.map((room: any) =>
-            room.chatRoomId === chatId
-              ? { ...room, unreadCount: 0 }
-              : room
-          );
-
-          return { ...oldData, data: updatedData };
-        });
-      });
     }
   };
+
+  const handleReadStatus = (data: {
+  chatRoomId: string;
+  readerId: string;
+  lastReadMessageId: string;
+}) => {
+  if (data.chatRoomId !== chatId) return;
+
+  // 1️⃣ messages 업데이트 (상대 메시지만 isRead: true)
+  queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+    if (!oldData) return oldData;
+
+    const updatedPages = oldData.pages.map((page: any) => ({
+      ...page,
+      messages: page.messages.map((msg: any) => {
+        const isOther =
+          (myRole === 'REFORMER' && msg.senderType === 'USER') ||
+          (myRole === 'USER' && msg.senderType === 'OWNER');
+
+        if (!String(msg.messageId).startsWith('temp-') && isOther && msg.messageId <= data.lastReadMessageId) {
+          return { ...msg, isRead: true }; // UI 표시 없이도 unreadCount 계산용
+        }
+        return msg;
+      }),
+    }));
+
+    return { ...oldData, pages: updatedPages };
+  });
+
+  // 2️⃣ chatRooms의 unreadCount 업데이트 (0으로)
+  queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
+    if (!oldData?.data) return oldData;
+
+    const updatedData = oldData.data.map((room: any) =>
+      room.chatRoomId === chatId
+        ? { ...room, unreadCount: 0 } // 여기서 탭에 표시되는 안읽음 개수 업데이트
+        : room
+    );
+
+    return { ...oldData, data: updatedData };
+  });
+};
 
 
 
 
   const handleNewMessage = (msg: any) => {
-  // 1️⃣ 메시지 목록 업데이트
-  queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-    if (!oldData) return oldData;
+  const isCurrentRoom = !msg.chatRoomId || msg.chatRoomId === chatId;
 
-    const exists = oldData.pages
-      .flatMap((p: any) => p.messages)
-      .some((m: any) => m.messageId === msg.messageId);
+  // 1️⃣ 현재 채팅방의 메시지만 메시지 목록에 추가
+  if (isCurrentRoom) {
+    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+      if (!oldData) return oldData;
 
-    if (exists) return oldData;
+      const exists = oldData.pages
+        .flatMap((p: any) => p.messages)
+        .some((m: any) => m.messageId === msg.messageId);
 
-    const lastPageIndex = oldData.pages.length - 1;
-    const updatedPages = [...oldData.pages];
-    updatedPages[lastPageIndex] = {
-      ...updatedPages[lastPageIndex],
-      messages: [...updatedPages[lastPageIndex].messages, { ...msg, isRead: false }], // ✅ isRead 추가
-    };
+      if (exists) return oldData;
 
-    return {
-      ...oldData,
-      pages: updatedPages,
-    };
-  });
+      const lastPageIndex = oldData.pages.length - 1;
+      const updatedPages = [...oldData.pages];
+      updatedPages[lastPageIndex] = {
+        ...updatedPages[lastPageIndex],
+        messages: [...updatedPages[lastPageIndex].messages, msg],
+      };
 
+      return {
+        ...oldData,
+        pages: updatedPages,
+      };
+    });
+
+    // 현재 채팅방이면 읽음 처리
+    const socket = getSocket();
+    socket?.emit('readChatRoom', { roomId: chatId });
+  }
+
+  // 2️⃣ 모든 채팅방에 대해 탭 목록 업데이트
   const lastMessageText =
     msg.messageType === 'text'
       ? msg.textContent
@@ -318,36 +269,38 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       ? '견적서'
       : '요청서';
 
-  // 2️⃣ 채팅방 목록 업데이트 + 맨 위로
+  const targetRoomId = msg.chatRoomId || chatId;
+
   [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach(filterType => {
     queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
       if (!oldData?.data) return oldData;
 
       const updatedData = oldData.data.map((room: any) => {
-        if (room.chatRoomId === chatId) {
-          // ✅ 현재 채팅방이면 unreadCount를 0으로 설정 (내가 채팅방에 있으므로)
-          return { 
-            ...room, 
-            lastMessage: lastMessageText, 
-            lastMessageAt: msg.createdAt,
-            unreadCount: 0 // ✅ 추가
-          };
-        }
-        return room;
+        if (room.chatRoomId !== targetRoomId) return room;
+
+        // 현재 채팅방이면 unreadCount 0, 다른 채팅방이면 +1
+        const newUnreadCount = isCurrentRoom ? 0 : (room.unreadCount || 0) + 1;
+
+        return {
+          ...room,
+          lastMessage: lastMessageText,
+          lastMessageAt: msg.createdAt,
+          unreadCount: newUnreadCount,
+        };
       });
 
+      // 메시지가 온 채팅방을 맨 위로
+      const targetRoom = updatedData.find((room: any) => room.chatRoomId === targetRoomId);
+      if (!targetRoom) return { ...oldData, data: updatedData };
+
       const sortedData = [
-        updatedData.find((room: any) => room.chatRoomId === chatId)!,
-        ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
+        targetRoom,
+        ...updatedData.filter((room: any) => room.chatRoomId !== targetRoomId),
       ];
 
       return { ...oldData, data: sortedData };
     });
   });
-
-  // 읽음 처리
-  const socket = getSocket();
-  socket?.emit('readChatRoom', { roomId: chatId });
 };
 
     // 소켓 이벤트 등록
