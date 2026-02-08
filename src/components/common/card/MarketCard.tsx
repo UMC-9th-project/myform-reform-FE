@@ -72,13 +72,13 @@ const MarketCard = ({
     <div className="bg-white rounded-[0.625rem] overflow-visible cursor-pointer">
       {/* 상품 이미지 */}
       <div
-        className="relative w-full bg-[var(--color-gray-20)] rounded-t-[0.625rem] overflow-hidden"
+        className="relative w-full rounded-[0.625rem] overflow-hidden"
         style={{ aspectRatio: '361/307' }}
       >
         <img
           src={item.thumbnail}
           alt={item.title}
-          className="w-full h-full object-cover rounded-[1.25rem]"
+          className="w-full h-full object-cover"
         />
         {!hideLikeButton && (
           <div
