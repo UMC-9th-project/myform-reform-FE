@@ -210,7 +210,7 @@ function App() {
         <Route path="/chat/reformer/:chatId?" element={<ChatPage role="REFORMER" />} />
         <Route path="/chat/normal/:chatId?" element={<ChatPage role="USER" />} />
         <Route path="/chat/create/quotation/:chatRoomId" element={<ChatQuotationFormPage />} />
-        <Route path="/chat/create/request/edit/:chatRequestId" element={<ChatRequestFormPage />} />
+        <Route path="/chat/create/request/edit/:requestId" element={<ChatRequestFormPage />} />
         <Route path="/chat/create/request/:chatRoomId" element={<ChatRequestFormPage />} />
       </Route>
 

@@ -10,7 +10,6 @@ import type { RoomType } from '@/types/api/chat/chatMessages';
 import { connectSocket, getSocket } from '@/utils/domain/socket';
 import useAuthStore from '@/stores/useAuthStore';
 import { uploadImages } from '@/api/upload';
-import { createChatRequest } from '@/api/chat/chatRequestApi';
 
 interface ChatRoomProps {
   chatId: string;
@@ -33,7 +32,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
    * 1. React Query 무한 스크롤 설정
    * ========================= */
   // select 제거
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } = useInfiniteQuery({
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: ['chatMessages', chatId],
     queryFn: ({ pageParam }) => getChatMessages(chatId, { cursor: pageParam as string }),
     initialPageParam: null as string | null,

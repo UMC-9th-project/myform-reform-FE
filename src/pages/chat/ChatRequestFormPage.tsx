@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { uploadImages } from '@/api/upload';
-import { createChatRequest, getChatRequestDetail } from '@/api/chat/chatRequestApi';
+import { createChatRequest, getChatRequestDetail, updateChatRequest } from '@/api/chat/chatRequestApi';
+
 
 
 interface RequestImage {
@@ -40,16 +41,13 @@ const ChatRequestFormPage: React.FC = () => {
   const MAX_IMAGES = 10;
 
   useEffect(() => {
-  // 수정 모드가 아니면 그냥 return
   if (!isEditMode || !requestId) return;
 
-  // location.state가 있으면 API 호출 불필요
   if (requestData) {
     setFormData(requestData);
     return;
   }
 
-  // state가 없으면 API 호출 (직접 URL 접근 시)
   const fetchRequest = async () => {
     try {
       const data = await getChatRequestDetail(requestId); 
@@ -115,31 +113,58 @@ const ChatRequestFormPage: React.FC = () => {
     formData.minBudget.trim() !== '' &&
     formData.content.trim() !== '';
 
-  // --- 제출 ---
   const handleSubmit = async () => {
+
     if (!isFormComplete) return;
 
     try {
-      // 1. 이미지 업로드 (새로 업로드한 파일만)
-      const files = formData.images.map(img => img.file).filter(Boolean) as File[];
-      const uploadRes = files.length > 0 ? await uploadImages(files) : { resultType: 'SUCCESS', success: { url: formData.images.map(img => img.preview) } };
+    
+      const existingImageUrls = formData.images
+        .filter(img => img.file === null)
+        .map(img => img.preview);
 
-      if (uploadRes.resultType !== 'SUCCESS') throw new Error('이미지 업로드 실패');
+      const newFiles = formData.images
+        .filter(img => img.file)
+        .map(img => img.file!) as File[];
 
-      const imageUrls = uploadRes.success.url;
+      const uploadRes =
+        newFiles.length > 0
+          ? await uploadImages(newFiles)
+          : {
+              resultType: 'SUCCESS',
+              success: { url: [] },
+            };
+
+      if (uploadRes.resultType !== 'SUCCESS') {
+        throw new Error('이미지 업로드 실패');
+      }
+
+      const imageUrls = [
+        ...existingImageUrls,
+        ...uploadRes.success.url,
+      ];
+
 
       if (isEditMode && requestId) {
-        // TODO: 수정 API 연결
-        console.log('수정 모드 payload:', {
-          requestId,
+        const payload = {
           image: imageUrls,
           title: formData.title,
+          content: formData.content,
           minBudget: Number(formData.minBudget),
           maxBudget: Number(formData.maxBudget),
-          content: formData.content,
-        });
-        alert('수정 API 호출 예정 (콘솔 확인)');
-      } else if (chatRoomId) {
+        };
+
+        const res = await updateChatRequest(requestId, payload);
+
+        if (res.data.resultType === 'SUCCESS') {
+          alert('요청서가 수정되었습니다.');
+          navigate(-1); 
+        }
+
+        return;
+      }
+
+      if (chatRoomId) {
         const payload = {
           chatRoomId,
           image: imageUrls,
@@ -148,22 +173,24 @@ const ChatRequestFormPage: React.FC = () => {
           minBudget: Number(formData.minBudget),
           maxBudget: Number(formData.maxBudget),
         };
+
         const res = await createChatRequest(payload);
+
         if (res.data.resultType === 'SUCCESS') {
           alert('요청서가 전송되었습니다!');
           navigate(`/chat/normal/${chatRoomId}`);
         }
       }
-    } catch (error) {
-      console.error(error);
-      alert('요청서 전송 중 오류가 발생했습니다.');
+    } catch (err) {
+      console.error(err);
+      alert('요청서 처리 중 오류가 발생했습니다.');
     }
   };
 
   return (
     <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
       <h1 className="heading-h2-bd text-black mb-10 pb-6 border-b border-black">
-        {mode === 'edit' ? '리폼 요청서 수정하기' : '리폼 요청서 작성하기'}
+        {isEditMode ? '리폼 요청서 수정하기' : '리폼 요청서 작성하기'}
       </h1>
 
       <div className="space-y-12">
