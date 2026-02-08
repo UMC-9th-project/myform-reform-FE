@@ -83,21 +83,22 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   }) => {
     if (data.chatRoomId !== chatId) return;
 
+    const lastReadId = Number(data.lastReadMessageId);
+
+    // 1️⃣ 메시지 목록 업데이트 (내가 보낸 메시지의 isRead를 true로)
     queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
       if (!oldData) return oldData;
 
       const updatedPages = oldData.pages.map((page: any) => ({
         ...page,
         messages: page.messages.map((msg: any) => {
+          // 내가 보낸 메시지인지 확인
           const isMine =
             (myRole === 'REFORMER' && msg.senderType === 'OWNER') ||
             (myRole === 'USER' && msg.senderType === 'USER');
 
-          if (
-            isMine &&
-            !String(msg.messageId).startsWith('temp-') &&
-            msg.messageId <= data.lastReadMessageId
-          ) {
+          // 내가 보낸 메시지이고, lastReadMessageId 이하면 읽음 처리
+          if (!String(msg.messageId).startsWith('temp-') && isMine && Number(msg.messageId) <= lastReadId) {
             return { ...msg, isRead: true };
           }
           return msg;
@@ -106,7 +107,52 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
 
       return { ...oldData, pages: updatedPages };
     });
+
+    // 2️⃣ 채팅 목록의 unreadCount 업데이트 (모든 필터 타입)
+    [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach(filterType => {
+      queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
+        if (!oldData?.data) return oldData;
+
+        const updatedData = oldData.data.map((room: any) => {
+          if (room.chatRoomId !== chatId) return room;
+
+          // ✅ 현재 채팅방의 최신 메시지 데이터 가져오기
+          const currentMessages = queryClient.getQueryData(['chatMessages', chatId]) as any;
+          
+          if (!currentMessages) return { ...room, unreadCount: 0 };
+
+          const allMessages = currentMessages.pages.flatMap((p: any) => p.messages);
+          
+          // 상대방이 보낸 메시지 중 읽지 않은 메시지 개수 계산
+          const unread = allMessages.filter((msg: any) => {
+            // 임시 메시지 제외
+            if (String(msg.messageId).startsWith('temp-')) return false;
+            
+            // 상대방이 보낸 메시지인지 확인
+            const isFromOther =
+              (myRole === 'REFORMER' && msg.senderType === 'USER') ||
+              (myRole === 'USER' && msg.senderType === 'OWNER');
+            
+            // 읽지 않은 메시지만 카운트
+            return isFromOther && !msg.isRead;
+          }).length;
+
+          return {
+            ...room,
+            unreadCount: unread,
+          };
+        });
+
+        return { ...oldData, data: updatedData };
+      });
+    });
   };
+
+
+
+
+
+
 
   const sendImageMessage = (imageUrls: string[]) => {
   const socket = getSocket();
