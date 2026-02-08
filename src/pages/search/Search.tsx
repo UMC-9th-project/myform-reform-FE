@@ -4,7 +4,7 @@ import SearchResultEmpty from '../../components/domain/search-result/SearchResul
 import SearchResultSkeleton from '../../components/domain/search-result/SearchResultSkeleton';
 import MarketCard, { type MarketCardItem } from '../../components/common/card/MarketCard';
 import RequestCard from '../../components/common/card/RequestCard';
-import SuggestionCard from '../../components/common/card/SuggestionCard';
+import ProposalCard from '../../components/common/card/ProposalCard';
 import Pagination from '../../components/common/pagination/Pagination';
 
 export default function Search() {
@@ -65,7 +65,7 @@ export default function Search() {
   }));
 
   // TODO: 주문제작 제안 탭 실제 API 연동 시 교체
-  const suggestionItemBase = {
+  const proposalItemBase = {
     imgSrc: '/wsh1.jpg',
     title: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
     price: '75,000원',
@@ -73,8 +73,8 @@ export default function Search() {
     reviewCountText: '(271)',
     nickname: '침착한 대머리독수리',
   };
-  const suggestionItems = Array.from({ length: 15 }, (_, i) => ({
-    ...suggestionItemBase,
+  const proposalItems = Array.from({ length: 15 }, (_, i) => ({
+    ...proposalItemBase,
     key: i + 1,
     id: i + 1,
   }));
@@ -167,8 +167,8 @@ export default function Search() {
                   className="px-40 grid gap-x-10 gap-y-20 w-full mt-10"
                   style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}
                 >
-                  {suggestionItems.map((item) => (
-                    <SuggestionCard
+                  {proposalItems.map((item) => (
+                    <ProposalCard
                       key={item.key}
                       id={item.id}
                       imgSrc={item.imgSrc}
