@@ -552,6 +552,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                           ? roomInfo?.requester.nickname ?? '사용자' 
                           : roomInfo?.owner.nickname ?? '리포머'
                         }
+                        expectedWorking={msg.payload.expected_working}
                       />
                     )}
                     {(msg.messageType === 'text' || msg.messageType === 'image') && (
