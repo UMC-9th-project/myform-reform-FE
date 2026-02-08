@@ -1,35 +1,61 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import rightIcon from '../../assets/icons/right.svg';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { getChatRequestDetail } from '@/api/chat/chatRequestApi';
+import { type ChatRequestDetail } from '@/types/api/chat/chatDetail';
+import profile from '@/assets/icons/profile.svg';
 
 const ChatQuotationDetailPage = () => {
-
+  const { requestId } = useParams<{ requestId: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const myRole = location.state?.myRole as 'REFORMER' | 'USER' | undefined;
   const isQuotation = location.state?.isQuotation ?? false;
 
 
-  // mock 이미지 데이터
-  const images = [
-    'https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&q=80',
-  ];
-
+  const [requestDetail , setRequestDetail] = useState<ChatRequestDetail | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+
+
+  useEffect(() => {
+  if (!requestId) {
+    console.warn('requestId 없음');
+    return;
+  }
+  
+
+  const fetchDetail = async () => {
+    try {
+      setLoading(true);
+      const data = await getChatRequestDetail(requestId);
+      console.log('requestDetail', data); 
+      if (data) setRequestDetail(data);
+    } catch (err) {
+      console.error('요청서 상세 조회 실패', err);
+      alert('요청서 정보를 불러오지 못했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchDetail();
+}, [requestId]);
+
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
+  if (!requestDetail?.body?.images?.length) return; // 안전하게 체크
+    setCurrentIndex((prev) => (prev + 1) % requestDetail.body.images.length);
   };
   if (!myRole) return <div>권한 정보가 없습니다.</div>
-
+  const images = requestDetail?.body.images ?? [];
   const handleEditQuotation = () => {
     navigate('/chat/create/quotation', {
       state: {
         mode: 'edit',
         quotationData: {
-          images: images.map((url) => ({
+          images: images?.map((url) => ({
             file: null, 
             preview: url,
           })),
@@ -43,20 +69,31 @@ const ChatQuotationDetailPage = () => {
   };
 
   const handleEditRequest = () => {
-    navigate('/chat/create/request', {
+    if (!requestDetail) return;
+
+    navigate(`/chat/create/request/edit/${requestDetail.chatRequestId}`, {
       state: {
         mode: 'edit',
         requestData: {
-          images,
-          title: '기존 요청서 제목',
-          content: '기존 요청서 내용',
-          minBudget: '50000',
-          maxBudget: '70000',
+          images: requestDetail.body.images.map(url => ({ file: null, preview: url })),
+          title: requestDetail.body.title,
+          content: requestDetail.body.content,
+          minBudget: requestDetail.body.minBudget.toString(),
+          maxBudget: requestDetail.body.maxBudget.toString(),
         },
       },
     });
   };
 
+
+
+  if (!myRole) return <div>권한 정보가 없습니다.</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <span className="text-gray-500">로딩 중...</span>
+      </div>
+    );
 
   return (
     <div className="min-h-screen bg-white mb-10">
@@ -82,7 +119,7 @@ const ChatQuotationDetailPage = () => {
             <div className="relative aspect-square w-full overflow-hidden">
 
               <img
-                src={images[currentIndex]}
+                src={images?.[currentIndex]}
                 alt="견적 이미지"
                 className="w-full h-full object-cover transition-all"
               />
@@ -107,7 +144,7 @@ const ChatQuotationDetailPage = () => {
 
             {/* 도트 인디케이터 */}
             <div className="flex justify-center mt-6 gap-2">
-              {images.map((_, idx) => (
+              {images?.map((_, idx) => (
                 <button
                   title="도트 페이지네이션"
                   key={idx}
@@ -130,12 +167,15 @@ const ChatQuotationDetailPage = () => {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-[#646F7C33] overflow-hidden">
                   <img
-                    src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"
+                    src={requestDetail?.requester.profileImage ?? profile}
                     alt="판매자"
+                    className={`w-full h-full object-cover transition-all ${
+                      !requestDetail?.requester.profileImage ? 'scale-140' : ''
+                    }`}
                   />
                 </div>
                 <span className="text-[15px] font-medium text-gray-600">
-                  심심한 리본
+                  {requestDetail?.requester.nickname ?? '작성자'}
                 </span>
               </div>
               <button className="text-gray-400" title="공유 이모지">
@@ -148,7 +188,7 @@ const ChatQuotationDetailPage = () => {
 
             {/* 제목 */}
             <h2 className="heading-h5-md text-black mb-8">
-              [제안] 침색 리폼 요청합니다.
+              {isQuotation ? `[제안] ${requestDetail?.body.title}` : `[요청] ${requestDetail?.body.title}`}
             </h2>
 
             {/* 요약 */}
@@ -156,33 +196,18 @@ const ChatQuotationDetailPage = () => {
               <div className="flex items-center gap-4">
                 <span className="body-b1-rg text-[var(--color-gray-60)]">견적 금액</span>
                 <span className="heading-h4-bd text-black">
-                  46,500원
+                  {requestDetail?.body.minBudget?.toLocaleString() ?? '0'} ~ {requestDetail?.body.maxBudget?.toLocaleString() ?? '0'}원
                 </span>
               </div>
               <div className="flex gap-4">
-                <span className="body-b1-rg text-[var(--color-gray-60)]">
-                  예상 작업 기간
-                </span>
-                <span className="body-b1-rg text-black">
-                  5일 이내
-                </span>
               </div>
               <div className="flex gap-4">
-                <span className="body-b1-rg text-[var(--color-gray-60)]">
-                  배송비
-                </span>
-                <span className="body-b1-rg">
-                  3,500원
-                </span>
               </div>
             </div>
 
             {/* 상세 설명 */}
             <div className="body-b1-rg text-black leading-7 space-y-4 flex-grow pl-10 pr-5 pb-10">
-              <p>상세 제안 내용 텍스트 샘플입니다. 상세 제안 내용 텍스트 샘플입니다</p>
-              <p>
-                작업 방식과 재료에 대한 설명이 들어갑니다. 글자가 어디까지 갈까 과연 궁금합니다 시험해봅니다
-              </p>
+              <p>{requestDetail?.body.content}</p>
             </div>
             </div>
 

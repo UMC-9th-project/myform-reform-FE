@@ -10,6 +10,7 @@ import type { RoomType } from '@/types/api/chat/chatMessages';
 import { connectSocket, getSocket } from '@/utils/domain/socket';
 import useAuthStore from '@/stores/useAuthStore';
 import { uploadImages } from '@/api/upload';
+import { createChatRequest } from '@/api/chat/chatRequestApi';
 
 interface ChatRoomProps {
   chatId: string;
@@ -18,7 +19,6 @@ interface ChatRoomProps {
 }
 
 const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
-  console.log('🔥 ChatRoom props chatId:', chatId);
   const [inputText, setInputText] = useState('');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   
@@ -28,8 +28,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   const queryClient = useQueryClient();
 
   const navigate = useNavigate();
-
-  const isRead = false; // 더미 데이터
 
   /* =========================
    * 1. React Query 무한 스크롤 설정
@@ -175,12 +173,25 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   let isJoined = false;
 
   const handleConnect = () => {
-    if (!isJoined) {
-      socket.emit('joinRoom', { roomId: chatId });
-      socket.emit('readChatRoom', { roomId: chatId });
-      isJoined = true;
-    }
-  };
+  if (!isJoined) {
+    socket.emit('joinRoom', { roomId: chatId });
+    socket.emit('readChatRoom', { roomId: chatId });
+    isJoined = true;
+
+    // ✅ 방 입장 시 탭의 unreadCount 바로 0 처리
+    queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
+      if (!oldData?.data) return oldData;
+
+      const updatedData = oldData.data.map((room: any) =>
+        room.chatRoomId === chatId
+          ? { ...room, unreadCount: 0 }
+          : room
+      );
+
+      return { ...oldData, data: updatedData };
+    });
+  }
+};
 
   const handleReadStatus = (data: {
   chatRoomId: string;
@@ -399,18 +410,23 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   };
 
   const handleSendAction = () => {
-    const path =
-      myRole === 'REFORMER'
-        ? `/chat/create/quotation/${chatId}`
-        : `/chat/create/request/${chatId}`;
+    if (myRole === 'USER') {
+      // USER는 요청서 작성 페이지로 이동
+      navigate(`/chat/create/request/${chatId}`, {
+        state: {
+          mode: 'create',
+        },
+      });
+    } else if (myRole === 'REFORMER') {
+      // REFORMER는 견적서 작성 페이지로 이동
+      navigate(`/chat/create/quotation/${chatId}`, {
+        state: {
+          mode: 'create',
+        },
+      });
+    }
+  };
 
-        navigate(path);
-    };
-
-
-  if (status === 'pending') {
-    return <div className="flex-1 flex items-center justify-center">로딩 중...</div>;
-  }
 
   return (
     <div className="flex flex-col w-full h-[800px] border border-[var(--color-line-gray-40)] bg-white overflow-hidden">
@@ -521,10 +537,11 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                         minBudget={msg.payload.minBudget}
                         maxBudget={msg.payload.maxBudget}
                         title={msg.payload.title}
+                        requestId={msg.payload.id}
                         nickname={isMine 
                           ? roomInfo?.requester.nickname ?? '알 수 없음' 
                           : roomInfo?.owner.nickname ?? '알 수 없음'
-                        } 
+                        }
                       />
                     )}
                     {msg.messageType === 'proposal' && (
@@ -584,11 +601,11 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                     }`}
                   >
                     {/* ✅ 읽음 표시 */}
-                    {isMine && isRead && ( /* 여기 추후에 msg.isRead로 변경 필요*/
+                     {/*{isMine && isRead && ( /* 여기 추후에 msg.isRead로 변경 필요
                       <span className="mb-0.5 text-[10px] text-[var(--color-gray-40)]">
                         읽음
                       </span>
-                    )}
+                    )} */}
 
                     <span>
                       {msgDate.toLocaleTimeString('ko-KR', {

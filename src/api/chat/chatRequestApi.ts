@@ -11,10 +11,12 @@ export interface ChatRequestPayload {
   image: string[];
 }
 
-export const createChatRequest = async (payload: ChatRequestPayload) => {
-  return api.post('/chat/request', payload); 
+export const createChatRequest = async (payload?: ChatRequestPayload) => {
+  return api.post('/chat/request', payload ?? {}); 
 };
 
 export const getChatRequestDetail = async (requestId: string) => {
-  return api.get<ChatRequestDetailResponse>(`/chat/request/${requestId}`);
+  const response= await api.get<ChatRequestDetailResponse>(`/chat/request/${requestId}`);
+  return response.data.success;
 };
+

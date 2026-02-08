@@ -9,10 +9,11 @@ export interface RequireCardProps {
   nickname: string;
   id?: number;
   chatId?: number;
+  requestId?:string;
 }
 
 
-const RequireCard: React.FC<RequireCardProps> = ({ minBudget, maxBudget, title, type, nickname, id, chatId }) => {
+const RequireCard: React.FC<RequireCardProps> = ({ minBudget, maxBudget, title, type, nickname, id, chatId, requestId }) => {
   const isSent = type === 'sent';
   const navigate = useNavigate();
   // 디자인 및 문구 설정
@@ -45,7 +46,7 @@ const RequireCard: React.FC<RequireCardProps> = ({ minBudget, maxBudget, title, 
           {/* 결제 버튼 */}
           <button 
             className="w-full bg-black text-white py-2.5 rounded-xl body-b4-sb cursor-pointer"
-            onClick={() => navigate('/chat/quotation/detail', {
+            onClick={() => navigate(`/chat/quotation/detail/${requestId}`, {
               state: {
                 myRole: isSent ? 'USER' : 'REFORMER',
                 isQuotation: false,
