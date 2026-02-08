@@ -46,6 +46,8 @@ export interface ReformRequestDetail {
   name: string;
   profile: string;
   images: ReformRequestImage[];
+  /** 수정 시 폼 pre-fill용 (상세 API에서 내려주는 경우) */
+  category?: { major: string; sub: string };
 }
 
 export interface GetReformRequestDetailResponse {
@@ -55,5 +57,38 @@ export interface GetReformRequestDetailResponse {
     message: string;
   };
   success: ReformRequestDetail | null;
+}
+
+/** POST /reform/request - 리폼 요청서 작성 요청 (API 스펙) */
+export interface CreateReformRequestRequest {
+  title: string;
+  contents: string;
+  minBudget: number;
+  maxBudget: number;
+  dueDate: string; // ISO date string (e.g. 2026-02-07T17:43:26.362Z)
+  category: { major: string; sub: string };
+  images: string[]; // 이미지 URL 배열
+}
+
+export interface CreateReformRequestResponse {
+  resultType: 'SUCCESS' | 'ERROR';
+  error: null | {
+    code: string;
+    message: string;
+  };
+  /** 생성 성공 시 요청서 ID (문자열) */
+  success: string | null;
+}
+
+/** PATCH /reform/request/{id} - 리폼 요청서 수정 (요청 body는 작성과 동일) */
+export type UpdateReformRequestRequest = CreateReformRequestRequest;
+
+export interface UpdateReformRequestResponse {
+  resultType: 'SUCCESS' | 'ERROR';
+  error: null | {
+    code: string;
+    message: string;
+  };
+  success: string | null;
 }
 

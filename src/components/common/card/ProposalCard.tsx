@@ -9,6 +9,8 @@ interface ProposalCardProps {
   title?: string;
   price?: string;
   rating?: number;
+  /** 평점 소수 자리수 (기본 2). OrderPage 등에서는 1 사용 */
+  ratingDecimals?: 1 | 2;
   reviewCountText?: string;
   nickname?: string;
   className?: string;
@@ -30,6 +32,7 @@ export default function ProposalCard({
   title = '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
   price = '75,000원',
   rating = 4.9,
+  ratingDecimals = 2,
   reviewCountText = '(271)',
   nickname = '침착한 대머리독수리',
   className = '',
@@ -37,6 +40,10 @@ export default function ProposalCard({
   variant = 'order',
   to,
 }: ProposalCardProps) {
+  const formattedRating =
+    typeof rating === 'number' && Number.isFinite(rating)
+      ? rating.toFixed(ratingDecimals)
+      : rating;
   const detailTo =
     id != null ? `${PROPOSAL_DETAIL_PATH[variant]}/${id}` : undefined;
   const linkTo = to ?? detailTo;
@@ -90,7 +97,7 @@ export default function ProposalCard({
             className="w-[0.8125rem] h-[0.75rem]"
           />
           <span className="body-b3-rg">
-            <span className="text-[var(--color-black)]">{rating}</span>{' '}
+            <span className="text-[var(--color-black)]">{formattedRating}</span>{' '}
             <span className="text-[var(--color-gray-50)]">{reviewCountText}</span>
           </span>
         </div>

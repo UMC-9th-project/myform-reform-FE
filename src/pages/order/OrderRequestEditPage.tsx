@@ -1,141 +1,90 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Button from '../../components/common/button/Button1';
 import Calendar from '../../components/common/editor/Calendar';
 import CategorySelect from '../../components/common/editor/CategorySelect';
 import calendarIcon from '../../assets/icons/calendar.svg';
 import pinkXIcon from '../../assets/icons/pinkX.svg';
 import uploadIcon from '../../assets/icons/upload.svg';
-import { uploadImages } from '../../api/upload';
-import { createReformRequest } from '../../api/order/reformRequest';
+import { useOrderRequestEdit } from '../../hooks/domain/order/useOrderRequestEdit';
 
-const OrderRequestCreatePage = () => {
-  const navigate = useNavigate();
-  const [images, setImages] = useState<File[]>([]);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [minBudget, setMinBudget] = useState('');
-  const [maxBudget, setMaxBudget] = useState('');
-  const [deadline, setDeadline] = useState<Date | undefined>(undefined);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+const OrderRequestEditPage = () => {
+  const {
+    id,
+    detail,
+    isLoading,
+    isError,
+    isOwner,
+    isFormReady,
+    existingImageUrls,
+    newImageFiles,
+    totalImageCount,
+    canAddMoreImages,
+    title,
+    setTitle,
+    description,
+    setDescription,
+    minBudget,
+    setMinBudget,
+    maxBudget,
+    setMaxBudget,
+    deadline,
+    setDeadline,
+    selectedCategory,
+    setSelectedCategory,
+    selectedSubcategory,
+    setSelectedSubcategory,
+    showCalendar,
+    setShowCalendar,
+    isSubmitting,
+    submitError,
+    isButtonEnabled,
+    handleAddNewImages,
+    handleRemoveExistingImage,
+    handleRemoveNewImage,
+    handleSubmit,
+    formatDate,
+  } = useOrderRequestEdit();
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const newImages = Array.from(files).slice(0, 10 - images.length);
-      setImages([...images, ...newImages]);
-    }
-  };
+  if (!id) {
+    return (
+      <div className="w-full px-28 mx-auto py-13">
+        <p className="body-b1-rg text-[var(--color-gray-60)]">요청 ID가 없습니다.</p>
+      </div>
+    );
+  }
 
-  const handleRemoveImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
-  };
+  if (isLoading || !isFormReady) {
+    return (
+      <div className="w-full px-28 mx-auto py-13">
+        <p className="body-b1-rg text-[var(--color-gray-60)]">불러오는 중...</p>
+      </div>
+    );
+  }
 
-  const isFormValid =
-    images.length > 0 &&
-    title.trim() !== '' &&
-    description.trim() !== '' &&
-    minBudget.trim() !== '' &&
-    maxBudget.trim() !== '' &&
-    deadline !== undefined &&
-    selectedCategory !== null;
-  const isButtonEnabled = isFormValid && !isSubmitting;
+  if (isError || !detail) {
+    return (
+      <div className="w-full px-28 mx-auto py-13">
+        <p className="body-b1-rg text-[var(--color-gray-60)]">
+          요청서를 불러오지 못했어요.
+        </p>
+      </div>
+    );
+  }
 
-  const handleSubmit = async () => {
-    if (!isFormValid || !deadline || selectedCategory === null) return;
-
-    setIsSubmitting(true);
-    setSubmitError(null);
-
-    try {
-      const uploadRes = await uploadImages(images);
-      if (
-        uploadRes.resultType !== 'SUCCESS' ||
-        !uploadRes.success?.url?.length
-      ) {
-        throw new Error('이미지 업로드에 실패했어요.');
-      }
-      const imageUrls = uploadRes.success.url;
-
-      const minBudgetNum = Number(minBudget.replace(/,/g, ''));
-      const maxBudgetNum = Number(maxBudget.replace(/,/g, ''));
-      if (Number.isNaN(minBudgetNum) || Number.isNaN(maxBudgetNum)) {
-        throw new Error('희망 예산을 올바르게 입력해주세요.');
-      }
-
-      const payload = {
-        title: title.trim(),
-        contents: description.trim(),
-        minBudget: minBudgetNum,
-        maxBudget: maxBudgetNum,
-        dueDate: deadline.toISOString(),
-        category: {
-          major: selectedCategory,
-          sub: selectedSubcategory ?? '',
-        },
-        images: imageUrls,
-      };
-
-      const res = await createReformRequest(payload);
-      if (res.resultType !== 'SUCCESS' || res.success == null) {
-        throw new Error(res.error?.message ?? '요청서 등록에 실패했어요.');
-      }
-
-      const reformRequestId = res.success;
-      navigate(reformRequestId ? `/order/requests/${reformRequestId}` : '/order/requests');
-    } catch (err: unknown) {
-      let message = '요청서 등록에 실패했어요.';
-      if (err && typeof err === 'object' && 'response' in err) {
-        const res = (err as { response?: { data?: unknown; status?: number } }).response;
-        const data = res?.data;
-        if (data != null && typeof data === 'object') {
-          const d = data as Record<string, unknown>;
-          const errObj = d.error as Record<string, unknown> | undefined;
-          const msg =
-            (typeof errObj?.message === 'string' && errObj.message) ||
-            (typeof d.message === 'string' && d.message) ||
-            (typeof d.msg === 'string' && d.msg);
-          if (msg) message = msg;
-          else if (Array.isArray(d.errors) && d.errors.length > 0) {
-            const first = d.errors[0];
-            message =
-              typeof first === 'string'
-                ? first
-                : typeof (first as { message?: string })?.message === 'string'
-                  ? (first as { message: string }).message
-                  : JSON.stringify(first);
-          }
-        }
-        if (import.meta.env.DEV && data != null) {
-          console.error('[POST /reform/request]', res?.status, data);
-        }
-      }
-      if (message === '요청서 등록에 실패했어요.' && err instanceof Error)
-        message = err.message;
-      setSubmitError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const formatDate = (date: Date | undefined) => {
-    if (!date) return '';
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}년 ${month}월 ${day}일`;
-  };
+  if (!isOwner) {
+    return (
+      <div className="w-full px-28 mx-auto py-13">
+        <p className="body-b1-rg text-[var(--color-gray-60)]">
+          본인이 작성한 요청만 수정할 수 있어요.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full px-28 mx-auto py-13 bg-white text-gray-800">
-    
-
-      {/* 페이지 제목 */}
-      <h1 className="heading-h2-bd pb-6 border-b mb-8 border-[black]">리폼 요청글 작성하기</h1>
+      <h1 className="heading-h2-bd pb-6 border-b mb-8 border-[black]">
+        리폼 요청글 수정하기
+      </h1>
 
       {/* Step 1: 이미지 등록 */}
       <section className="mb-10">
@@ -143,7 +92,7 @@ const OrderRequestCreatePage = () => {
           <div className="w-1/4">
             <h2 className="body-b0-md">Step 1.</h2>
             <p className="body-b0-rg mt-4">
-              이미지 등록 ({images.length}/10) <span className="text-[var(--color-red-1)]">*</span>
+              이미지 등록 ({totalImageCount}/10) <span className="text-[var(--color-red-1)]">*</span>
             </p>
           </div>
           <div className="w-3/4">
@@ -152,37 +101,58 @@ const OrderRequestCreatePage = () => {
                 type="file"
                 accept="image/png,image/jpeg"
                 multiple
-                onChange={handleImageUpload}
+                onChange={handleAddNewImages}
                 className="hidden"
-                id="image-upload"
+                id="image-upload-edit"
               />
-              {images.map((image, index) => (
-                <div key={index} className="relative w-36 h-36 rounded-[0.75rem] overflow-hidden border border-[var(--color-gray-40)] group">
-                  <img
-                    src={URL.createObjectURL(image)}
-                    alt={`업로드 ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
+              {existingImageUrls.map((url, index) => (
+                <div
+                  key={`existing-${index}`}
+                  className="relative w-36 h-36 rounded-[0.75rem] overflow-hidden border border-[var(--color-gray-40)] group"
+                >
+                  <img src={url} alt={`이미지 ${index + 1}`} className="w-full h-full object-cover" />
                   {index === 0 && (
                     <span className="absolute top-2 left-2 bg-[var(--color-mint-0)] text-white body-b3-sb px-2 py-0.5 rounded-[6.25rem]">
                       대표
                     </span>
                   )}
                   <button
-                    onClick={() => handleRemoveImage(index)}
+                    type="button"
+                    onClick={() => handleRemoveExistingImage(index)}
                     className="absolute top-1 right-1 hover:opacity-80 transition"
                   >
                     <img src={pinkXIcon} alt="삭제" className="w-10 h-10" />
                   </button>
                 </div>
               ))}
-              {images.length < 10 && (
+              {newImageFiles.map((file, index) => (
+                <div
+                  key={`new-${index}`}
+                  className="relative w-36 h-36 rounded-[0.75rem] overflow-hidden border border-[var(--color-gray-40)] group"
+                >
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={`새 이미지 ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveNewImage(index)}
+                    className="absolute top-1 right-1 hover:opacity-80 transition"
+                  >
+                    <img src={pinkXIcon} alt="삭제" className="w-10 h-10" />
+                  </button>
+                </div>
+              ))}
+              {canAddMoreImages && (
                 <label
-                  htmlFor="image-upload"
+                  htmlFor="image-upload-edit"
                   className="w-36 h-36 rounded-lg border border-[var(--color-gray-40)] bg-[var(--color-gray-20)] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition"
                 >
                   <img src={uploadIcon} alt="업로드" className="w-10 h-10" />
-                  <span className="body-b3-rg text-[var(--color-gray-50)] mt-2 text-center">이미지 업로드</span>
+                  <span className="body-b3-rg text-[var(--color-gray-50)] mt-2 text-center">
+                    이미지 업로드
+                  </span>
                 </label>
               )}
             </div>
@@ -195,11 +165,13 @@ const OrderRequestCreatePage = () => {
       <hr className="mt-8 mb-12 border-[var(--color-line-gray-40)]" />
 
       {/* Step 2: 요청글 제목 */}
-      <section className="mb-10 ">
+      <section className="mb-10">
         <div className="flex">
           <div className="w-1/4">
             <h2 className="body-b0-md">Step 2.</h2>
-            <p className="body-b0-rg mt-4">요청글 제목 <span className="text-[var(--color-red-1)]">*</span></p>
+            <p className="body-b0-rg mt-4">
+              요청글 제목 <span className="text-[var(--color-red-1)]">*</span>
+            </p>
           </div>
           <div className="w-3/4 flex items-end gap-2 pr-12">
             <input
@@ -209,7 +181,9 @@ const OrderRequestCreatePage = () => {
               placeholder="요청글 제목을 입력해주세요."
               className="placeholder:text-[var(--color-gray-50)] flex-1 border border-[var(--color-gray-60)] body-b1-rg py-5 pl-5 pr-3 focus:outline-none"
             />
-            <span className="body-b1-rg text-[var(--color-gray-60)] whitespace-nowrap ">{title.length}/40자</span>
+            <span className="body-b1-rg text-[var(--color-gray-60)] whitespace-nowrap">
+              {title.length}/40자
+            </span>
           </div>
         </div>
       </section>
@@ -232,7 +206,9 @@ const OrderRequestCreatePage = () => {
               rows={8}
               className="placeholder:text-[var(--color-gray-50)] flex-1 border border-[var(--color-gray-60)] body-b1-rg py-5 pl-5 pr-3 focus:outline-none resize-none"
             />
-            <span className="body-b1-rg text-[var(--color-gray-60)] whitespace-nowrap">{description.length}/1000자</span>
+            <span className="body-b1-rg text-[var(--color-gray-60)] whitespace-nowrap">
+              {description.length}/1000자
+            </span>
           </div>
         </div>
       </section>
@@ -243,9 +219,11 @@ const OrderRequestCreatePage = () => {
         <div className="flex">
           <div className="w-1/4">
             <h2 className="body-b0-md">Step 4.</h2>
-            <p className="body-b0-rg mt-4">희망 예산 <span className="text-[var(--color-red-1)]">*</span></p>
+            <p className="body-b0-rg mt-4">
+              희망 예산 <span className="text-[var(--color-red-1)]">*</span>
+            </p>
           </div>
-          <div className="w-3/4 space-y-4 ">
+          <div className="w-3/4 space-y-4">
             <div className="flex items-center gap-4 pr-16">
               <div className="flex items-center border border-[var(--color-gray-60)] max-w-xs relative">
                 <input
@@ -279,7 +257,9 @@ const OrderRequestCreatePage = () => {
         <div className="flex">
           <div className="w-1/4">
             <h2 className="body-b0-md">Step 5.</h2>
-            <p className="body-b0-rg mt-4">요청 마감일 선택 <span className="text-[var(--color-red-1)]">*</span></p>
+            <p className="body-b0-rg mt-4">
+              요청 마감일 선택 <span className="text-[var(--color-red-1)]">*</span>
+            </p>
           </div>
           <div className="w-2/3">
             <div className="relative">
@@ -320,11 +300,16 @@ const OrderRequestCreatePage = () => {
         <div className="flex">
           <div className="w-1/4">
             <h2 className="body-b0-md">Step 6.</h2>
-            <p className="body-b0-rg mt-4">카테고리 선택 <span className="text-[var(--color-red-1)]">*</span></p>
-            <p className="body-b3-rg text-[var(--color-gray-50)] mt-1">소분류는 필수로 선택하지 않아도 됩니다.</p>
+            <p className="body-b0-rg mt-4">
+              카테고리 선택 <span className="text-[var(--color-red-1)]">*</span>
+            </p>
+            <p className="body-b3-rg text-[var(--color-gray-50)] mt-1">
+              소분류는 필수로 선택하지 않아도 됩니다.
+            </p>
           </div>
           <div className="w-3/4 pr-25">
             <CategorySelect
+              key={`edit-${selectedCategory ?? ''}-${selectedSubcategory ?? ''}`}
               onCategoryChange={(category) => setSelectedCategory(category)}
               onSubCategoryChange={(subCategory) => setSelectedSubcategory(subCategory)}
               initialCategory={selectedCategory}
@@ -342,9 +327,7 @@ const OrderRequestCreatePage = () => {
             <h3 className="body-b0-rg text-[var(--color-black)]">유의사항</h3>
           </div>
           <div className="w-3/4 body-b0-rg text-[var(--color-gray-50)] pr-25">
-            <p className="mb-4">
-              잠깐! 글을 올리기 전에 확인해보세요.
-            </p>
+            <p className="mb-4">잠깐! 글을 올리기 전에 확인해보세요.</p>
             <ul className="space-y-2">
               <li className="flex items-start gap-2">
                 <span>-</span>
@@ -376,15 +359,10 @@ const OrderRequestCreatePage = () => {
       </section>
       <hr className="my-8 border-[var(--color-line-gray-40)]" />
 
-
-      {/* 에러 메시지 */}
       {submitError && (
-        <p className="body-b1-rg text-[var(--color-red-1)] mb-4 text-right pr-0">
-          {submitError}
-        </p>
+        <p className="body-b1-rg text-[var(--color-red-1)] mb-4 text-right pr-0">{submitError}</p>
       )}
 
-      {/* 등록하기 버튼 */}
       <div className="flex justify-end">
         <Button
           variant={isButtonEnabled ? 'primary' : 'disabled'}
@@ -393,11 +371,11 @@ const OrderRequestCreatePage = () => {
           disabled={isSubmitting}
           className="px-12 min-w-[200px]"
         >
-          {isSubmitting ? '등록 중...' : '등록하기'}
+          {isSubmitting ? '수정 중...' : '수정하기'}
         </Button>
       </div>
     </div>
   );
 };
 
-export default OrderRequestCreatePage;
+export default OrderRequestEditPage;

@@ -62,9 +62,13 @@ const AccordionItem = ({
 
 interface ProfileTextAccordionProps {
   className?: string;
+  /** 리폼러 프로필 소개글 (GET /profile 응답의 bio). 없으면 기본 문구 표시 */
+  bio?: string | null;
 }
 
-const ProfileTextAccordion = ({ className = '' }: ProfileTextAccordionProps) => {
+const DEFAULT_BIO = `리폼러 소개가 등록되지 않았어요.`;
+
+const ProfileTextAccordion = ({ className = '', bio }: ProfileTextAccordionProps) => {
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
 
   const toggleItem = (id: string) => {
@@ -79,26 +83,16 @@ const ProfileTextAccordion = ({ className = '' }: ProfileTextAccordionProps) => 
     });
   };
 
-  const accordionData = [
-    {
-      id: 'item-1',
-      fullText: `- 2019년부터 리폼 공방 운영 시작 ✨
-- 6년차 스포츠 의류 리폼 전문 공방
-
-고객님들의 요청과 아쉬움을 담아, 버리지 못하고 잠들어 있던 옷에 새로운 가치와 트렌디한 디자인을 더하는 리폼을 선보이고 있어요. 1:1 맞춤 리폼 제작부터 완성 제품까지 모두 주문 가능합니다.`,
-    },
-  ];
+  const fullText = (bio != null && bio.trim() !== '') ? bio.trim() : DEFAULT_BIO;
 
   return (
     <div className={`w-full space-y-0 ${className}`}>
-      {accordionData.map((item) => (
-        <AccordionItem
-          key={item.id}
-          fullText={item.fullText}
-          isExpanded={expandedItems.has(item.id)}
-          onToggle={() => toggleItem(item.id)}
-        />
-      ))}
+      <AccordionItem
+        key="bio"
+        fullText={fullText}
+        isExpanded={expandedItems.has('bio')}
+        onToggle={() => toggleItem('bio')}
+      />
     </div>
   );
 };

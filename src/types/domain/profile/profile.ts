@@ -6,9 +6,11 @@ export interface GetProfileResponse {
     data: string;
   } | null;
   success: {
-    profilePhoto: string | null;
+    ownerId?: string;
+    profilePhoto?: string | null;
     nickname: string;
     avgStar: number;
+    avgStarRecent3m?: number;
     reviewCount: number;
     totalSaleCount: number;
     keywords: string[];

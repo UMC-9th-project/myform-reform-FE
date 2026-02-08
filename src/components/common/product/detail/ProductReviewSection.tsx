@@ -78,7 +78,9 @@ const ProductReviewSection = ({
       <div className="mb-10">
         <div className="flex items-center gap-2 mb-2">
           {renderStars(rating)}
-          <span className="heading-h4-bd text-[var(--color-black)]">{rating}</span>
+          <span className="heading-h4-bd text-[var(--color-black)]">
+          {typeof rating === 'number' && Number.isFinite(rating) ? rating.toFixed(2) : rating}
+        </span>
         </div>
       </div>
 
