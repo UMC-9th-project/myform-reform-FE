@@ -148,12 +148,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     });
   };
 
-
-
-
-
-
-
   const sendImageMessage = (imageUrls: string[]) => {
   const socket = getSocket();
   if (!socket || !socket.connected) {
@@ -255,68 +249,106 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       socket.emit('joinRoom', { roomId: chatId });
       socket.emit('readChatRoom', { roomId: chatId });
       isJoined = true;
+
+      // ✅ 채팅방 입장 시 기존 메시지 모두 읽음 처리
+      queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+        if (!oldData) return oldData;
+
+        const updatedPages = oldData.pages.map((page: any) => ({
+          ...page,
+          messages: page.messages.map((msg: any) => ({
+            ...msg,
+            isRead: msg.isRead !== undefined ? msg.isRead : false, // isRead가 없으면 false로 초기화
+          })),
+        }));
+
+        return { ...oldData, pages: updatedPages };
+      });
+
+      // ✅ 채팅방 목록의 unreadCount를 0으로 초기화
+      [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach(filterType => {
+        queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
+          if (!oldData?.data) return oldData;
+
+          const updatedData = oldData.data.map((room: any) =>
+            room.chatRoomId === chatId
+              ? { ...room, unreadCount: 0 }
+              : room
+          );
+
+          return { ...oldData, data: updatedData };
+        });
+      });
     }
   };
 
 
 
-  const handleNewMessage = (msg: any) => {
-    // 1️⃣ 메시지 목록 업데이트
-    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-      if (!oldData) return oldData;
 
-          const exists = oldData.pages
+  const handleNewMessage = (msg: any) => {
+  // 1️⃣ 메시지 목록 업데이트
+  queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+    if (!oldData) return oldData;
+
+    const exists = oldData.pages
       .flatMap((p: any) => p.messages)
       .some((m: any) => m.messageId === msg.messageId);
 
     if (exists) return oldData;
 
-      const lastPageIndex = oldData.pages.length - 1;
-      const updatedPages = [...oldData.pages];
-      updatedPages[lastPageIndex] = {
-        ...updatedPages[lastPageIndex],
-        messages: [...updatedPages[lastPageIndex].messages, msg],
-      };
-
-      return {
-        ...oldData,
-        pages: updatedPages,
-      };
-    });
-
-    const lastMessageText =
-      msg.messageType === 'text'
-        ? msg.textContent
-        : msg.messageType === 'image'
-        ? '사진'
-        : msg.messageType === 'proposal'
-        ? '견적서'
-        : '요청서';
-
-    // 2️⃣ 채팅방 목록 업데이트 + 맨 위로
-    [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach(filterType => {
-      queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
-        if (!oldData?.data) return oldData;
-
-        const updatedData = oldData.data.map((room: any) =>
-          room.chatRoomId === chatId
-            ? { ...room, lastMessage: lastMessageText, lastMessageAt: msg.createdAt }
-            : room
-        );
-
-        const sortedData = [
-          updatedData.find((room: any) => room.chatRoomId === chatId)!,
-          ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
-        ];
-
-        return { ...oldData, data: sortedData };
-      });
-    });
-
-    // 읽음 처리
-    const socket = getSocket();
-      socket?.emit('readChatRoom', { roomId: chatId });
+    const lastPageIndex = oldData.pages.length - 1;
+    const updatedPages = [...oldData.pages];
+    updatedPages[lastPageIndex] = {
+      ...updatedPages[lastPageIndex],
+      messages: [...updatedPages[lastPageIndex].messages, { ...msg, isRead: false }], // ✅ isRead 추가
     };
+
+    return {
+      ...oldData,
+      pages: updatedPages,
+    };
+  });
+
+  const lastMessageText =
+    msg.messageType === 'text'
+      ? msg.textContent
+      : msg.messageType === 'image'
+      ? '사진'
+      : msg.messageType === 'proposal'
+      ? '견적서'
+      : '요청서';
+
+  // 2️⃣ 채팅방 목록 업데이트 + 맨 위로
+  [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach(filterType => {
+    queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
+      if (!oldData?.data) return oldData;
+
+      const updatedData = oldData.data.map((room: any) => {
+        if (room.chatRoomId === chatId) {
+          // ✅ 현재 채팅방이면 unreadCount를 0으로 설정 (내가 채팅방에 있으므로)
+          return { 
+            ...room, 
+            lastMessage: lastMessageText, 
+            lastMessageAt: msg.createdAt,
+            unreadCount: 0 // ✅ 추가
+          };
+        }
+        return room;
+      });
+
+      const sortedData = [
+        updatedData.find((room: any) => room.chatRoomId === chatId)!,
+        ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
+      ];
+
+      return { ...oldData, data: sortedData };
+    });
+  });
+
+  // 읽음 처리
+  const socket = getSocket();
+  socket?.emit('readChatRoom', { roomId: chatId });
+};
 
     // 소켓 이벤트 등록
     if (socket.connected) handleConnect();
