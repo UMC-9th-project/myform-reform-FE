@@ -49,19 +49,29 @@ const LikeButton = ({
         ? redFilledHeart
         : redEmptyHeart;
 
+  const content = (
+    <img
+      src={heartIcon}
+      alt={displayLiked ? 'filled heart' : 'empty heart'}
+      className="w-10 h-10"
+    />
+  );
+
+  const baseClassName = `w-12 h-12 flex items-center justify-center ${readOnly ? 'cursor-default' : 'cursor-pointer hover:scale-110 transition-transform'} ${className}`;
+
+  // readOnly일 때 span으로 렌더 (버튼 안에 버튼 중첩 방지)
+  if (readOnly) {
+    return <span className={baseClassName} role="presentation">{content}</span>;
+  }
+
   return (
     <button
       type="button"
       onClick={handleClick}
-      disabled={readOnly}
-      className={`w-12 h-12 flex items-center justify-center ${readOnly ? 'cursor-default' : 'cursor-pointer hover:scale-110 transition-transform'} ${className}`}
+      className={baseClassName}
       aria-label={displayLiked ? '좋아요 취소' : '좋아요'}
     >
-      <img
-        src={heartIcon}
-        alt={displayLiked ? 'filled heart' : 'empty heart'}
-        className="w-10 h-10"
-      />
+      {content}
     </button>
   );
 };
