@@ -11,6 +11,7 @@ const Wishlist = () => {
     isLoading,
     isReformer,
     currentItems,
+    requestDetailsMap,
     handleMenuChange,
     handleRemoveFromWishlist,
   } = useWishlistPage();
@@ -33,17 +34,24 @@ const Wishlist = () => {
               <EmptyWishlist />
             ) : isReformer && activeMenu === 'custom' ? (
               <div className="grid grid-cols-3 gap-[1.875rem] mt-[3.125rem]">
-                {wishData.success.list.map((item, index) => (
-                  <RequestCard
-                    key={`${item.itemId}-${index}`}
-                    id={item.itemId}
-                    imgSrc={item.content || ''}
-                    title={item.title}
-                    priceRange={`${item.price.toLocaleString('ko-KR')}원`}
-                    variant="reformer"
-                    isWished={true}
-                  />
-                ))}
+                {wishData.success.list.map((item, index) => {
+                  const detail = requestDetailsMap.get(item.itemId);
+                  const priceRange = detail
+                    ? `${detail.minBudget.toLocaleString('ko-KR')}원~${detail.maxBudget.toLocaleString('ko-KR')}원`
+                    : `${item.price.toLocaleString('ko-KR')}원`;
+                  
+                  return (
+                    <RequestCard
+                      key={`${item.itemId}-${index}`}
+                      id={item.itemId}
+                      imgSrc={item.content || ''}
+                      title={item.title}
+                      priceRange={priceRange}
+                      variant="reformer"
+                      isWished={true}
+                    />
+                  );
+                })}
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-[1.875rem] mt-[3.125rem]">

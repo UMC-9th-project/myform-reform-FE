@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWishList, deleteWish } from '../../../api/wishlist';
+import { getReformRequestDetail } from '../../../api/order/reformRequest';
 import useAuthStore from '../../../stores/useAuthStore';
 import type { WishlistItem } from '@/types/api/wishlist/wishlist';
 import type { WishType } from '@/types/api/wishlist/wish';
@@ -39,13 +40,51 @@ export const useWishlistPage = () => {
     if (menuFromUrl !== activeMenu) {
       setActiveMenu(menuFromUrl);
     }
-  }, [searchParams, activeMenu]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const { data: wishData, isLoading } = useQuery({
     queryKey: ['wishlist', activeMenu, accessToken],
     queryFn: () => getWishList(getWishType(activeMenu)),
     enabled: !!accessToken,
   });
+
+  const requestItemIds = useMemo(() => {
+    if (activeMenu !== 'custom' || !wishData?.success?.list) {
+      return [];
+    }
+    return wishData.success.list
+      .filter((item) => item.wishType === 'REQUEST')
+      .map((item) => item.itemId);
+  }, [wishData, activeMenu]);
+
+  const requestDetailsQueries = useQueries({
+    queries: requestItemIds.map((itemId) => ({
+      queryKey: ['reform-request-detail', itemId] as const,
+      queryFn: () => getReformRequestDetail(itemId),
+      enabled: !!itemId && !!accessToken,
+      staleTime: 5 * 60 * 1000,
+    })),
+  });
+
+  const requestDetailsMap = useMemo(() => {
+    const map = new Map<string, { minBudget: number; maxBudget: number }>();
+    requestDetailsQueries.forEach((query, index) => {
+      const itemId = requestItemIds[index];
+      if (itemId && query.data?.success) {
+        map.set(itemId, {
+          minBudget: query.data.success.minBudget,
+          maxBudget: query.data.success.maxBudget,
+        });
+      }
+    });
+    return map;
+  }, [requestDetailsQueries, requestItemIds]);
+
+  const isLoadingRequestDetails = useMemo(
+    () => requestDetailsQueries.some((query) => query.isLoading),
+    [requestDetailsQueries]
+  );
 
   const queryClient = useQueryClient();
 
@@ -95,9 +134,10 @@ export const useWishlistPage = () => {
   return {
     activeMenu,
     wishData,
-    isLoading,
+    isLoading: isLoading || (activeMenu === 'custom' && isLoadingRequestDetails),
     isReformer,
     currentItems,
+    requestDetailsMap,
     handleMenuChange,
     handleRemoveFromWishlist,
   };

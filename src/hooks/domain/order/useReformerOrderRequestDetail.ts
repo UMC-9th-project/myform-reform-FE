@@ -1,7 +1,10 @@
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getReformRequestDetail } from '../../../api/order/reformRequest';
+import { getWishList } from '../../../api/wishlist';
+import { useWish } from '../wishlist/useWish';
+import useAuthStore from '../../../stores/useAuthStore';
 import type { ReformRequestDetail } from '../../../types/api/order/reformRequest';
 
 function formatDate(dateString: string): string {
@@ -18,7 +21,67 @@ function formatDate(dateString: string): string {
 
 export const useReformerOrderRequestDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [isLiked, setIsLiked] = useState(false);
+  const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const { toggleWish } = useWish();
+  
+  const { data: wishData } = useQuery({
+    queryKey: ['wishlist', 'REQUEST', accessToken],
+    queryFn: () => getWishList('REQUEST'),
+    enabled: !!id && !!accessToken,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (previousData) => previousData,
+  });
+
+  const itemId = id || null;
+  
+  const isWishedFromServer = useMemo(() => {
+    if (wishData === undefined || !itemId) {
+      return undefined;
+    }
+    if (wishData?.success?.list) {
+      return wishData.success.list.some((item) => item.itemId === itemId);
+    }
+    return false;
+  }, [wishData, itemId]);
+
+  const initialLiked = useMemo(() => {
+    if (isWishedFromServer === undefined) {
+      return false;
+    }
+    return isWishedFromServer;
+  }, [isWishedFromServer]);
+
+  const [isLiked, setIsLiked] = useState(initialLiked);
+
+  useEffect(() => {
+    if (isWishedFromServer !== undefined) {
+      setIsLiked(isWishedFromServer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isWishedFromServer]);
+
+  const handleLikeClick = async () => {
+    if (!accessToken) {
+      navigate('/login/type');
+      return;
+    }
+
+    if (!itemId) return;
+
+    const newLikedState = !isLiked;
+    try {
+      await toggleWish('REQUEST', itemId, newLikedState);
+      setIsLiked(newLikedState);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError.response?.status === 401) {
+          navigate('/login/type');
+        }
+      }
+    }
+  };
 
   const { data: reformRequestDetailResponse, isLoading, isError } = useQuery({
     queryKey: ['reform-request-detail', id],
@@ -84,7 +147,7 @@ export const useReformerOrderRequestDetail = () => {
     isLoading,
     isError,
     isLiked,
-    setIsLiked,
+    handleLikeClick,
     imageUrls,
     isClosed,
     formattedDeadline,
