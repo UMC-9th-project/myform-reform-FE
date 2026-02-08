@@ -71,7 +71,7 @@ const ChatQuotationDetailPage = () => {
   const handleEditRequest = () => {
     if (!requestDetail) return;
 
-    navigate(`/chat/create/request/edit/${requestDetail.chatRequestId}`, {
+    navigate(`/chat/create/request/edit/${requestId}`, {
       state: {
         mode: 'edit',
         requestData: {
