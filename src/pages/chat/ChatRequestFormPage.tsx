@@ -22,8 +22,8 @@ const ChatRequestFormPage: React.FC = () => {
   const navigate = useNavigate();
   const { chatRoomId } = useParams<{ chatRoomId: string }>();
 
-  const [mode, setMode] = useState<'create' | 'edit'>('create');
-  const requestData = null; // edit 대비용 (지금은 안 씀)
+  const [mode] = useState<'create' | 'edit'>('create');
+  //const requestData = null; // edit 대비용 (지금은 안 씀)
 
   const [formData, setFormData] = useState<ChatRequestFormData>({
     images: [],

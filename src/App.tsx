@@ -136,7 +136,7 @@ function App() {
         <Route path="/normal-mypage" element={<NormalMyPage />} />
         <Route path="/normal-profile-edit" element={<EditProfilePage />} />
         <Route path="/mypage/review/write" element={<ReviewWritePage />} />
-        <Route path="/chat/quotation/detail" element={<ChatQuotationDetailPage />} />
+        <Route path="/chat/quotation/detail/:requestId" element={<ChatQuotationDetailPage />} />
 
         {/* 404 처리 */}
         <Route path="*" element={<div>Not Found</div>} />
