@@ -105,7 +105,7 @@ const LandingPage = () => {
           <p className="heading-h2-bd">리폼하고 싶은데</p>
           <p className="heading-h2-bd">누구에게 맡길지는 모르겠다면?</p>
           <img src={logo} alt="logo" className="mt-10 w-140 h-140 brightness-0 -my-4 object-contain" style={{ maxHeight: '200px' }} />
-          <button type="button" onClick={() => navigate('/')} className="mt-20 heading-h5-sb bg-black text-white px-16 py-4 rounded-full flex items-center gap-2 cursor-pointer">
+          <button type="button" onClick={() => navigate('/home')} className="mt-20 heading-h5-sb bg-black text-white px-16 py-4 rounded-full flex items-center gap-2 cursor-pointer">
             자세히 둘러보기
 
             <img src={rightIcon} alt="right" className="w-10 h-10 brightness-0 invert pb-1" />
