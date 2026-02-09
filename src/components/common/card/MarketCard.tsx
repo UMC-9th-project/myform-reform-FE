@@ -6,7 +6,7 @@ const MARKET_DETAIL_PATH = '/market/product';
 
 export interface MarketCardItem {
   item_id: string;
-  thumbnail: string; 
+  thumbnail: string;
   title: string;
   price: number;
   star: number;
@@ -25,7 +25,7 @@ export interface CustomOrderItem {
   owner_nickname: string;
   is_wished: boolean;
 }
-// 타입 가드 함수
+
 const isMarketCardItem = (item: MarketCardItem | CustomOrderItem): item is MarketCardItem => {
   return 'item_id' in item;
 };
@@ -34,7 +34,6 @@ interface MarketCardProps {
   item: MarketCardItem | CustomOrderItem;
   initialLiked?: boolean;
   onLikeClick?: (id: number, isLiked: boolean) => void;
-  /** 클릭 시 이동할 상세 페이지 경로 (미지정 시 자동으로 결정) */
   to?: string;
   /** 찜 버튼 숨김 여부 */
   hideLikeButton?: boolean;
@@ -124,9 +123,9 @@ const MarketCard = ({
               <span className="text-[var(--color-black)]">{isMarketItem ? item.star.toFixed(2) : (item.star ?? 0).toFixed(2)}</span>{' '}
               <span className="text-[var(--color-gray-50)]">
                 ({isMarketItem ? item.review_count : (item.review_count ?? 0)})
-              </span>
             </span>
-          </div>
+          </span>
+        </div>
         )}
         <span className="mt-[0.875rem] inline-flex items-center body-b5-sb text-[var(--color-gray-50)] bg-[var(--color-gray-30)] rounded-[0.375rem] px-[0.3125rem] py-[0.125rem]">
           {item.owner_nickname}
