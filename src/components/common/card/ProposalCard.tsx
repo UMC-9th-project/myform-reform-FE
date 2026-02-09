@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import LikeButton from '../likebutton/LikeButton';
@@ -14,18 +14,13 @@ interface ProposalCardProps {
   title?: string;
   price?: string;
   rating?: number;
-  /** 평점 소수 자리수 (기본 2). OrderPage 등에서는 1 사용 */
   ratingDecimals?: 1 | 2;
   reviewCountText?: string;
   nickname?: string;
   className?: string;
-  /** 상세 페이지로 이동 시 사용할 id (variant와 함께 사용) */
   id?: number | string;
-  /** 상세 경로 구분: order → /order/proposals/:id, reformer → /reformer/order/proposals/:id */
   variant?: ProposalDetailVariant;
-  /** 클릭 시 이동할 상세 페이지 경로 (직접 지정 시 id/variant 대신 사용) */
   to?: string;
-  /** 초기 위시 상태 */
   isWished?: boolean;
 }
 
@@ -35,13 +30,13 @@ const PROPOSAL_DETAIL_PATH: Record<ProposalDetailVariant, string> = {
 };
 
 export default function ProposalCard({
-  imgSrc = '/wsh1.jpg',
-  title = '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
-  price = '75,000원',
-  rating = 4.9,
+  imgSrc,
+  title,
+  price,
+  rating,
   ratingDecimals = 2,
-  reviewCountText = '(271)',
-  nickname = '침착한 대머리독수리',
+  reviewCountText,
+  nickname,
   className = '',
   id,
   variant = 'order',
@@ -73,24 +68,20 @@ export default function ProposalCard({
     return false;
   }, [wishData, itemId, isWished]);
 
-  const initialLiked = useMemo(() => {
+  const [localLiked, setLocalLiked] = useState<boolean | null>(null);
+
+  const isLiked = useMemo(() => {
     if (isWished) {
       return true;
+    }
+    if (localLiked !== null) {
+      return localLiked;
     }
     if (isWishedFromServer === undefined) {
       return false;
     }
     return isWishedFromServer;
-  }, [isWished, isWishedFromServer]);
-
-  const [isLiked, setIsLiked] = useState(initialLiked);
-
-  useEffect(() => {
-    if (!isWished && isWishedFromServer !== undefined) {
-      setIsLiked(isWishedFromServer);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isWishedFromServer]);
+  }, [isWished, localLiked, isWishedFromServer]);
 
   const formattedRating =
     typeof rating === 'number' && Number.isFinite(rating)
@@ -109,7 +100,7 @@ export default function ProposalCard({
     if (itemId) {
       try {
         await toggleWish('PROPOSAL', itemId, liked);
-        setIsLiked(liked);
+        setLocalLiked(liked);
       } catch (error: unknown) {
         if (error && typeof error === 'object' && 'response' in error) {
           const axiosError = error as { response?: { status?: number } };

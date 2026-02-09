@@ -43,9 +43,12 @@ export default function Search() {
 
     try {
       await toggleWish('ITEM', id.toString(), isLiked);
-    } catch (error: any) {
-      if (error?.response?.status === 401) {
-        navigate('/login/type');
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError.response?.status === 401) {
+          navigate('/login/type');
+        }
       }
     }
   }, [accessToken, navigate, toggleWish]);

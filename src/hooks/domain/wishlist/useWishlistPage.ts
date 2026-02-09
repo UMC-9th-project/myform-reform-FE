@@ -3,10 +3,13 @@ import { useSearchParams } from 'react-router-dom';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWishList, deleteWish } from '../../../api/wishlist';
 import { getReformRequestDetail } from '../../../api/order/reformRequest';
+import { getReformProposalDetail } from '../../../api/order/reformProposal';
 import useAuthStore from '../../../stores/useAuthStore';
 import type { WishlistItem } from '@/types/api/wishlist/wishlist';
-import type { WishType } from '@/types/api/wishlist/wish';
+import type { WishType, GetWishListResponse } from '@/types/api/wishlist/wish';
 import type { WishlistMenu } from '@/types/domain/wishlist/wishlist';
+import type { GetReformRequestDetailResponse } from '@/types/api/order/reformRequest';
+import type { GetReformProposalDetailResponse } from '@/types/api/order/reformProposal';
 
 const getMenuFromUrl = (searchParams: URLSearchParams): WishlistMenu => {
   const menuParam = searchParams.get('menu');
@@ -47,16 +50,53 @@ export const useWishlistPage = () => {
     queryKey: ['wishlist', activeMenu, accessToken],
     queryFn: () => getWishList(getWishType(activeMenu)),
     enabled: !!accessToken,
+    placeholderData: (previousData: GetWishListResponse | undefined) => previousData,
+    staleTime: 5 * 60 * 1000,
   });
 
+  const { data: proposalWishData, isLoading: isLoadingProposal, error: proposalError } = useQuery({
+    queryKey: ['wishlist', 'PROPOSAL', accessToken, 'custom'],
+    queryFn: () => getWishList('PROPOSAL'),
+    enabled: !!accessToken && activeMenu === 'custom' && !isReformer,
+    retry: false,
+    placeholderData: (previousData: GetWishListResponse | undefined) => previousData,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const combinedWishData = useMemo(() => {
+    if (activeMenu === 'custom' && !isReformer) {
+      const requestList = wishData?.success?.list || [];
+      if (proposalWishData?.success?.list && !proposalError) {
+        const proposalList = proposalWishData.success.list;
+        return {
+          ...wishData,
+          success: {
+            list: [...requestList, ...proposalList],
+          },
+        };
+      }
+      return wishData;
+    }
+    return wishData;
+  }, [wishData, proposalWishData, activeMenu, isReformer, proposalError]);
+
   const requestItemIds = useMemo(() => {
-    if (activeMenu !== 'custom' || !wishData?.success?.list) {
+    if (activeMenu !== 'custom' || !combinedWishData?.success?.list) {
       return [];
     }
-    return wishData.success.list
+    return combinedWishData.success.list
       .filter((item) => item.wishType === 'REQUEST')
       .map((item) => item.itemId);
-  }, [wishData, activeMenu]);
+  }, [combinedWishData, activeMenu]);
+
+  const proposalItemIds = useMemo(() => {
+    if (activeMenu !== 'custom' || !combinedWishData?.success?.list) {
+      return [];
+    }
+    return combinedWishData.success.list
+      .filter((item) => item.wishType === 'PROPOSAL')
+      .map((item) => item.itemId);
+  }, [combinedWishData, activeMenu]);
 
   const requestDetailsQueries = useQueries({
     queries: requestItemIds.map((itemId) => ({
@@ -64,27 +104,58 @@ export const useWishlistPage = () => {
       queryFn: () => getReformRequestDetail(itemId),
       enabled: !!itemId && !!accessToken,
       staleTime: 5 * 60 * 1000,
+      placeholderData: (previousData: GetReformRequestDetailResponse | undefined) => previousData,
+    })),
+  });
+
+  const proposalDetailsQueries = useQueries({
+    queries: proposalItemIds.map((itemId) => ({
+      queryKey: ['reform-proposal-detail', itemId] as const,
+      queryFn: () => getReformProposalDetail(itemId),
+      enabled: !!itemId && !!accessToken,
+      staleTime: 5 * 60 * 1000,
+      placeholderData: (previousData: GetReformProposalDetailResponse | undefined) => previousData,
     })),
   });
 
   const requestDetailsMap = useMemo(() => {
-    const map = new Map<string, { minBudget: number; maxBudget: number }>();
+    const map = new Map<string, { minBudget: number; maxBudget: number; firstImage?: string }>();
     requestDetailsQueries.forEach((query, index) => {
       const itemId = requestItemIds[index];
       if (itemId && query.data?.success) {
+        const images = query.data.success.images || [];
+        const sortedImages = [...images].sort((a, b) => a.photo_order - b.photo_order);
+        const firstImage = sortedImages.length > 0 ? sortedImages[0].photo : undefined;
+        
         map.set(itemId, {
           minBudget: query.data.success.minBudget,
           maxBudget: query.data.success.maxBudget,
+          firstImage,
         });
       }
     });
     return map;
   }, [requestDetailsQueries, requestItemIds]);
 
-  const isLoadingRequestDetails = useMemo(
-    () => requestDetailsQueries.some((query) => query.isLoading),
-    [requestDetailsQueries]
-  );
+  const proposalDetailsMap = useMemo(() => {
+    const map = new Map<string, { avgStar: number; reviewCount: number; firstImage?: string }>();
+    proposalDetailsQueries.forEach((query, index) => {
+      const itemId = proposalItemIds[index];
+      if (itemId && query.data?.success) {
+        const profile = query.data.success.profile;
+        const images = query.data.success.images || [];
+        const sortedImages = [...images].sort((a, b) => a.photo_order - b.photo_order);
+        const firstImage = sortedImages.length > 0 ? sortedImages[0].photo : undefined;
+        
+        map.set(itemId, {
+          avgStar: profile?.avgStar ?? 0,
+          reviewCount: profile?.reviewCount ?? 0,
+          firstImage,
+        });
+      }
+    });
+    return map;
+  }, [proposalDetailsQueries, proposalItemIds]);
 
   const queryClient = useQueryClient();
 
@@ -96,11 +167,11 @@ export const useWishlistPage = () => {
   });
 
   const transformWishItems = (): (WishlistItem & { itemId: string; wishType: WishType })[] => {
-    if (!wishData?.success?.list) {
+    if (!combinedWishData?.success?.list) {
       return [];
     }
 
-    return wishData.success.list.map((item, index) => ({
+    return combinedWishData.success.list.map((item, index) => ({
       id: parseInt(item.itemId.replace(/-/g, '').substring(0, 8), 16) || index + 1,
       itemId: item.itemId,
       wishType: item.wishType,
@@ -133,11 +204,12 @@ export const useWishlistPage = () => {
 
   return {
     activeMenu,
-    wishData,
-    isLoading: isLoading || (activeMenu === 'custom' && isLoadingRequestDetails),
+    wishData: combinedWishData,
+    isLoading: isLoading || isLoadingProposal,
     isReformer,
     currentItems,
     requestDetailsMap,
+    proposalDetailsMap,
     handleMenuChange,
     handleRemoveFromWishlist,
   };

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getReformRequestDetail } from '../../../api/order/reformRequest';
@@ -45,21 +45,17 @@ export const useReformerOrderRequestDetail = () => {
     return false;
   }, [wishData, itemId]);
 
-  const initialLiked = useMemo(() => {
+  const [localLiked, setLocalLiked] = useState<boolean | null>(null);
+
+  const isLiked = useMemo(() => {
+    if (localLiked !== null) {
+      return localLiked;
+    }
     if (isWishedFromServer === undefined) {
       return false;
     }
     return isWishedFromServer;
-  }, [isWishedFromServer]);
-
-  const [isLiked, setIsLiked] = useState(initialLiked);
-
-  useEffect(() => {
-    if (isWishedFromServer !== undefined) {
-      setIsLiked(isWishedFromServer);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isWishedFromServer]);
+  }, [localLiked, isWishedFromServer]);
 
   const handleLikeClick = async () => {
     if (!accessToken) {
@@ -72,7 +68,7 @@ export const useReformerOrderRequestDetail = () => {
     const newLikedState = !isLiked;
     try {
       await toggleWish('REQUEST', itemId, newLikedState);
-      setIsLiked(newLikedState);
+      setLocalLiked(newLikedState);
     } catch (error: unknown) {
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as { response?: { status?: number } };

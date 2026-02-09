@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import LikeButton from '../likebutton/LikeButton';
@@ -14,13 +14,9 @@ interface RequestCardProps {
   priceRange?: string;
   className?: string;
   seller?: string;
-  /** 상세 페이지로 이동 시 사용할 id (variant와 함께 사용) */
   id?: number | string;
-  /** 상세 경로 구분: order → /order/requests/:id, reformer → /reformer/order/requests/:id */
   variant?: RequestDetailVariant;
-  /** 클릭 시 이동할 상세 페이지 경로 (직접 지정 시 id/variant 대신 사용) */
   to?: string;
-  /** 초기 위시 상태 */
   isWished?: boolean;
 }
 
@@ -30,9 +26,9 @@ const REQUEST_DETAIL_PATH: Record<RequestDetailVariant, string> = {
 };
 
 export default function RequestCard({
-  imgSrc = '/crt1.jpg',
-  title = '제 소중한 기아 쿠로미 유니폼 짐색으로 만들어 주실 리폼 장인을 찾아요',
-  priceRange = '30,000원~50,000원',
+  imgSrc,
+  title,
+  priceRange,
   className = '',
   id,
   variant = 'order',
@@ -64,24 +60,20 @@ export default function RequestCard({
     return false;
   }, [wishData, itemId, isWished]);
 
-  const initialLiked = useMemo(() => {
+  const [localLiked, setLocalLiked] = useState<boolean | null>(null);
+
+  const isLiked = useMemo(() => {
     if (isWished) {
       return true;
+    }
+    if (localLiked !== null) {
+      return localLiked;
     }
     if (isWishedFromServer === undefined) {
       return false;
     }
     return isWishedFromServer;
-  }, [isWished, isWishedFromServer]);
-
-  const [isLiked, setIsLiked] = useState(initialLiked);
-
-  useEffect(() => {
-    if (!isWished && isWishedFromServer !== undefined) {
-      setIsLiked(isWishedFromServer);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isWishedFromServer]);
+  }, [isWished, localLiked, isWishedFromServer]);
 
   const detailTo =
     id != null ? `${REQUEST_DETAIL_PATH[variant]}/${id}` : undefined;
@@ -96,7 +88,7 @@ export default function RequestCard({
     if (itemId) {
       try {
         await toggleWish('REQUEST', itemId, liked);
-        setIsLiked(liked);
+        setLocalLiked(liked);
       } catch (error: unknown) {
         if (error && typeof error === 'object' && 'response' in error) {
           const axiosError = error as { response?: { status?: number } };
@@ -119,7 +111,7 @@ export default function RequestCard({
           alt={title}
           className="w-full h-full object-cover"
         />
-        {(variant === 'reformer' || variant === 'order') && (
+        {variant === 'reformer' && (
           <div
             className="absolute bottom-[0.75rem] right-[0.75rem] z-10"
             onClick={(e) => {
