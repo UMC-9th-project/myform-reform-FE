@@ -23,8 +23,8 @@ export interface MarketResponse {
 export interface GetMarketProductListParams {
     /** 카테고리 ID (선택) */
     categoryId?: string;
-    /** 정렬 기준 (popular/latest, 기본: popular) */
-    sort?: 'popular' | 'latest';
+    /** 정렬 기준 (popular/latest/rating, 기본: popular) */
+    sort?: 'popular' | 'latest' | 'rating';
     /** 페이지 번호 (기본: 1) */
     page?: number;
     /** 페이지당 개수 (기본: 15) */

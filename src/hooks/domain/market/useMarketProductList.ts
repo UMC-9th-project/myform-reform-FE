@@ -13,7 +13,7 @@ export const useMarketProductList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] =
     useState<MarketCategorySelection>(null);
-  const [sort, setSort] = useState<'popular' | 'latest'>('popular');
+  const [sort, setSort] = useState<'popular' | 'latest' | 'rating'>('popular');
 
   const categoryId = selectedCategory?.categoryId;
 
@@ -60,7 +60,7 @@ export const useMarketProductList = () => {
     setCurrentPage(1);
   };
 
-  const handleSortChange = (value: 'popular' | 'latest') => {
+  const handleSortChange = (value: 'popular' | 'latest' | 'rating') => {
     setSort(value);
     setCurrentPage(1);
   };

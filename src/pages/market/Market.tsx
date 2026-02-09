@@ -1,5 +1,7 @@
+import { useState, useRef, useEffect } from 'react';
 import MarketCard, { type MarketCardItem } from '../../components/common/card/MarketCard';
 import OrderCategoryFilter from '../../components/domain/order/OrderCategoryFilter';
+import MarketSortDropdown from '../../components/domain/market/MarketSortDropdown';
 import leftArrowIcon from '../../assets/icons/left.svg';
 import rightArrowIcon from '../../assets/icons/right.svg';
 import downArrowIcon from '../../assets/icons/down.svg';
@@ -7,6 +9,8 @@ import { useMarketProductList } from '../../hooks/domain/market/useMarketProduct
 import type { MarketProductItem } from '../../types/api/market/market';
 
 const Market = () => {
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
   const {
     products,
     currentPage,
@@ -16,6 +20,23 @@ const Market = () => {
     handleCategoryChange,
     handleSortChange,
   } = useMarketProductList();
+
+  // 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target as Node)) {
+        setIsSortDropdownOpen(false);
+      }
+    };
+
+    if (isSortDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isSortDropdownOpen]);
 
   const convertToMarketCardItem = (item: MarketProductItem): MarketCardItem => {
     return {
@@ -28,6 +49,13 @@ const Market = () => {
       owner_nickname: item.owner_nickname,
       is_wished: item.is_wished,
     };
+  };
+
+  const getSortLabel = () => {
+    if (sort === 'popular') return '인기순';
+    if (sort === 'latest') return '최신순';
+    if (sort === 'rating') return '평점순';
+    return '인기순';
   };
   
   return (
@@ -48,10 +76,30 @@ const Market = () => {
             <h1 className="heading-h2-bd text-[2.5rem] mb-[0.875rem]">
               마켓 홈
             </h1>
-            <div className="flex items-center justify-between">
-             
-              <div className='flex items-center gap-[0.4375rem] cursor-pointer' onClick={() => handleSortChange(sort === 'popular' ? 'latest' : 'popular')}>
-                {sort === 'popular' ? '인기순' : '최신순'} <img src={downArrowIcon} alt="down"/>
+            <div className="flex items-center justify-end">
+              <div className="relative" ref={sortDropdownRef}>
+                <div 
+                  className='flex items-center gap-[0.4375rem] cursor-pointer' 
+                  onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+                >
+                  {getSortLabel()}
+                  <img 
+                    src={downArrowIcon} 
+                    alt="down"
+                    className={`transition-transform ${isSortDropdownOpen ? 'rotate-180' : ''}`}
+                  />
+                </div>
+                {isSortDropdownOpen && (
+                  <div className="absolute w-[330px] right-[-155px] top-full mt-2 z-10">
+                    <MarketSortDropdown 
+                      selectedSort={sort}
+                      onSortChange={(newSort) => {
+                        handleSortChange(newSort as 'popular' | 'latest' | 'rating');
+                        setIsSortDropdownOpen(false);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -1,13 +1,14 @@
-import { useState } from 'react';
-
 interface SortOption {
   id: string;
   label: string;
 }
 
-export default function ProductSortDropdown() {
-  const [selectedOption, setSelectedOption] = useState<string>('popular');
+interface MarketSortDropdownProps {
+  selectedSort: 'popular' | 'latest' | 'rating';
+  onSortChange: (sort: string) => void;
+}
 
+export default function MarketSortDropdown({ selectedSort, onSortChange }: MarketSortDropdownProps) {
   const sortOptions: SortOption[] = [
     { id: 'popular', label: '인기순' },
     { id: 'latest', label: '최신순' },
@@ -15,7 +16,7 @@ export default function ProductSortDropdown() {
   ];
 
   const handleOptionChange = (optionId: string) => {
-    setSelectedOption(optionId);
+    onSortChange(optionId);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent, optionId: string) => {
@@ -27,12 +28,12 @@ export default function ProductSortDropdown() {
 
   return (
     <div
-      className="inline-flex flex-col items-start gap-[0.4375rem] pl-[1.0625rem] py-[0.9375rem] relative rounded-[1.25rem] shadow-[1px_3px_11.7px_0_rgba(0,0,0,0.15)]"
+      className="bg-white inline-flex flex-col items-start gap-[0.4375rem] pl-[1.0625rem] py-[0.9375rem] relative rounded-[1.25rem] shadow-[1px_3px_11.7px_0_rgba(0,0,0,0.15)]"
       role="radiogroup"
       aria-label="정렬 옵션"
     >
       {sortOptions.map((option) => {
-        const isSelected = selectedOption === option.id;
+        const isSelected = selectedSort === option.id;
 
         return (
           <div
