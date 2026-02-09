@@ -215,7 +215,8 @@ export default function Header() {
           <Link to="/cart" className="cursor-pointer">
             <img src={shoppingCart} alt="shopping cart" />
           </Link>
-
+          
+          {accessToken && (
           <div className="relative" ref={profileRef}>
             <button
               className="cursor-pointer"
@@ -251,16 +252,7 @@ export default function Header() {
                     >
                       판매 관리
                     </button>
-                    <button
-                      onClick={() => {
-                        setSellerActiveTab('수익 관리'); // 탭 상태 업데이트
-                        navigate('/reformer-mypage'); // 해당 페이지로 이동
-                        setIsProfileOpen(false); // 드롭다운 닫기
-                      }}
-                      className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
-                    >
-                      수익 관리
-                    </button>
+                    
                   </div>
                 </div>
                 <button
@@ -297,6 +289,7 @@ export default function Header() {
             )}
 
           </div>
+          )}
         </div>
       </div>
     </header>

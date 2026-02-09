@@ -65,6 +65,21 @@ function App() {
       <ScrollToTop />
       <Routes>
 
+
+      <Route
+      element={
+        <Layout
+          showHeader={false}
+          showNavbar={false}
+          showFooter={true}
+          footerVariant="dark"
+        />
+      }
+      >
+       <Route path="/" element={<LandingPage />} />
+
+      </Route>
+
       <Route
         element={
           <Layout
@@ -76,7 +91,7 @@ function App() {
         }
       >
         {/* 홈 페이지 */}
-        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
       </Route>
 
       <Route
@@ -156,20 +171,6 @@ function App() {
         <Route path="/order/requests/create" element={<OrderRequestCreatePage />} />
         <Route path="/order/requests/:id/edit" element={<OrderRequestEditPage />} />
         <Route path="/reformer/order/requests/:id/estimate" element={<ReformerOrderEstimateCreatePage />} />
-      </Route>
-
-      <Route
-      element={
-        <Layout
-          showHeader={false}
-          showNavbar={false}
-          showFooter={true}
-          footerVariant="dark"
-        />
-      }
-      >
-       <Route path="/landing" element={<LandingPage />} />
-
       </Route>
       
       <Route
