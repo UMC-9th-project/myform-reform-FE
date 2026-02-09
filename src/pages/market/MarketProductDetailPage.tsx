@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { ImageCarousel } from '../../components/common/product/Image';
 import OptionDropdown from '../../components/common/product/option/option-dropdown/OptionDropdown';  
 import OptionQuantity from '../../components/common/product/option/option-quantity-button/OptionQuantity';  
@@ -8,12 +9,16 @@ import Review from '../../components/common/product/detail/review/Review';
 import ReviewFilter from '../../components/common/product/detail/review/ReviewFilter';    
 import PageNumber from '../../components/common/product/PageNumber';  
 import starIcon from '../../assets/icons/star.svg';
-import heartIcon from '../../assets/icons/heart.svg';
+import Button from '../../components/common/button/Button1';
+import LikeButton from '../../components/common/likebutton/LikeButton';
 import cartIcon from '../../assets/icons/shoppingCart.svg';
 import chatIcon from '../../assets/icons/chat.svg';
 import profileImage from '../../components/domain/market/images/profile.png';
 import shareIcon from '../../assets/icons/share.svg';
-import type { OptionItem } from '../../components/common/product/option/option-dropdown/OptionItem';  
+import type { OptionItem } from '../../components/common/product/option/option-dropdown/OptionItem';
+import { useWish } from '../../hooks/domain/wishlist/useWish';
+import { getWishList } from '../../api/wishlist';
+import useAuthStore from '../../stores/useAuthStore';  
 
 
 const mockProduct = {
@@ -60,13 +65,63 @@ const mockProduct = {
 const MarketProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [activeSection, setActiveSection] = useState<'info' | 'reformer' | 'review'>('info');
+  const [localLiked, setLocalLiked] = useState<boolean | null>(null);
   
   const infoRef = useRef<HTMLDivElement>(null);
   const reformerRef = useRef<HTMLDivElement>(null);
   const reviewRef = useRef<HTMLDivElement>(null);
+
+  const { toggleWish } = useWish();
+  const { data: wishData } = useQuery({
+    queryKey: ['wishlist', 'ITEM', accessToken],
+    queryFn: () => getWishList('ITEM'),
+    enabled: !!accessToken && !!id && !isReformer,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  const isWished = useMemo(() => {
+    if (localLiked !== null) {
+      return localLiked;
+    }
+    if (!wishData?.success?.list || !id) {
+      return false;
+    }
+    return wishData.success.list.some((item) => item.itemId === id);
+  }, [wishData, id, localLiked]);
+
+  const handleWishClick = async () => {
+    if (!accessToken) {
+      navigate('/login/type');
+      return;
+    }
+
+    if (isReformer) {
+      return;
+    }
+
+    if (!id) {
+      return;
+    }
+
+    try {
+      await toggleWish('ITEM', id, !isWished);
+      setLocalLiked(!isWished);
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as { response?: { status?: number } };
+        if (axiosError.response?.status === 401) {
+          navigate('/login/type');
+        }
+      }
+    }
+  };
 
   const basePrice = mockProduct.price;
   const optionPrice = selectedOption
@@ -234,10 +289,20 @@ const MarketProductDetailPage = () => {
             </div>
             <div className="flex flex-col gap-[0.625rem]">
               <div className="flex gap-[0.625rem]">
-                <button className="flex-1 h-[4.625rem] bg-white border border-[var(--color-line-gray-40)] rounded-[0.625rem] flex items-center justify-center gap-[0.625rem]">
-                  <img src={heartIcon} alt="찜하기" className="w-10 h-10" />
+                <Button
+                  variant="white"
+                  onClick={handleWishClick}
+                  disabled={isReformer}
+                  className="flex items-center justify-center gap-2 flex-1 h-[4.625rem]"
+                >
+                  <LikeButton
+                    initialLiked={isWished}
+                    variant="blackLine"
+                    readOnly={true}
+                    className="!w-6 !h-6"
+                  />
                   <span className="body-b0-bd text-[1.25rem]">찜하기</span>
-                </button>
+                </Button>
                 <button className="flex-1 h-[4.625rem] bg-white border border-[var(--color-line-gray-40)] rounded-[0.625rem] flex items-center justify-center gap-[0.625rem]">
                   <img src={cartIcon} alt="장바구니" className="w-10 h-10" />
                   <span className="body-b0-bd text-[1.25rem]">장바구니</span>
