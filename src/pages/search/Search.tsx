@@ -41,6 +41,10 @@ export default function Search() {
       return;
     }
 
+    if (isReformer) {
+      return;
+    }
+
     try {
       await toggleWish('ITEM', id.toString(), isLiked);
     } catch (error: unknown) {
@@ -51,7 +55,7 @@ export default function Search() {
         }
       }
     }
-  }, [accessToken, navigate, toggleWish]);
+  }, [accessToken, navigate, toggleWish, isReformer]);
 
   return (
     <div className="w-full mx-auto py-10">

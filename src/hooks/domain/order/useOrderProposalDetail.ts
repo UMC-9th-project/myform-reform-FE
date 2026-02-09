@@ -27,6 +27,8 @@ export const useOrderProposalDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const accessToken = useAuthStore((state) => state.accessToken);
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
   const { toggleWish } = useWish();
   const [activeTab, setActiveTab] = useState<'info' | 'reformer' | 'review'>(
     'info'
@@ -56,7 +58,7 @@ export const useOrderProposalDetail = () => {
   const { data: wishData } = useQuery({
     queryKey: ['wishlist', 'PROPOSAL', accessToken],
     queryFn: () => getWishList('PROPOSAL'),
-    enabled: !!id && !!accessToken,
+    enabled: !!id && !!accessToken && !isReformer,
     staleTime: 5 * 60 * 1000,
     placeholderData: (previousData) => previousData,
   });

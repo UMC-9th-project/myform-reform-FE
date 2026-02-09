@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import LikeButton from '../likebutton/LikeButton';
@@ -40,12 +40,22 @@ export default function RequestCard({
   const userRole = useAuthStore((state) => state.role);
   const isReformer = userRole === 'reformer';
   const { toggleWish } = useWish();
-  const { data: wishData } = useQuery({
+  const { data: wishData, error: wishError } = useQuery({
     queryKey: ['wishlist', 'REQUEST', accessToken],
     queryFn: () => getWishList('REQUEST'),
     enabled: id != null && !!accessToken && variant === 'reformer' && isReformer,
     staleTime: 5 * 60 * 1000,
+    retry: false,
   });
+
+  useEffect(() => {
+    if (wishError && typeof wishError === 'object' && 'response' in wishError) {
+      const axiosError = wishError as { response?: { status?: number } };
+      if (axiosError.response?.status === 401) {
+        navigate('/login/type');
+      }
+    }
+  }, [wishError, navigate]);
 
   const itemId = id ? (typeof id === 'string' ? id : id.toString()) : null;
   

@@ -10,6 +10,7 @@ import swiperLeftIcon from '../../assets/home/swiperprev.svg';
 import swiperRightIcon from '../../assets/home/swipernext.svg';
 
 import { useHome } from '../../hooks/domain/home/useHome';
+import useAuthStore from '../../stores/useAuthStore';
 
 import service1 from '../../assets/home/service1.jpg';
 import service2 from '../../assets/home/service2.jpg';
@@ -23,6 +24,8 @@ import 'swiper/css/navigation';
 
 const Home = () => {
   const { data: homeData } = useHome();
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
 
   const banners = homeData?.success?.home_data?.banners ?? [];
   const bestReformers = homeData?.success?.home_data?.best_reformers ?? [];
@@ -80,7 +83,7 @@ const Home = () => {
         <div className='heading-h4-bd'>요즘 뜨는 리폼 스타일 👕</div>
         <div className='grid grid-cols-3 mt-[1.875rem] gap-[1.875rem] items-center'>
           {trendingItems.map((item) => (
-            <MarketCard key={item.item_id} item={item}  />
+            <MarketCard key={item.item_id} item={item} hideLikeButton={isReformer} />
           ))}
         </div>
 

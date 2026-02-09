@@ -45,11 +45,13 @@ export default function ProposalCard({
 }: ProposalCardProps) {
   const navigate = useNavigate();
   const accessToken = useAuthStore((state) => state.accessToken);
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
   const { toggleWish } = useWish();
   const { data: wishData } = useQuery({
     queryKey: ['wishlist', 'PROPOSAL', accessToken],
     queryFn: () => getWishList('PROPOSAL'),
-    enabled: id != null && !!accessToken,
+    enabled: id != null && !!accessToken && variant === 'order' && !isReformer,
     staleTime: 5 * 60 * 1000,
   });
 

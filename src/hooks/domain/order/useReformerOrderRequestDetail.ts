@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getReformRequestDetail } from '../../../api/order/reformRequest';
@@ -25,13 +25,23 @@ export const useReformerOrderRequestDetail = () => {
   const accessToken = useAuthStore((state) => state.accessToken);
   const { toggleWish } = useWish();
   
-  const { data: wishData } = useQuery({
+  const { data: wishData, error: wishError } = useQuery({
     queryKey: ['wishlist', 'REQUEST', accessToken],
     queryFn: () => getWishList('REQUEST'),
     enabled: !!id && !!accessToken,
     staleTime: 5 * 60 * 1000,
     placeholderData: (previousData) => previousData,
+    retry: false,
   });
+
+  useEffect(() => {
+    if (wishError && typeof wishError === 'object' && 'response' in wishError) {
+      const axiosError = wishError as { response?: { status?: number } };
+      if (axiosError.response?.status === 401) {
+        navigate('/login/type');
+      }
+    }
+  }, [wishError, navigate]);
 
   const itemId = id || null;
   

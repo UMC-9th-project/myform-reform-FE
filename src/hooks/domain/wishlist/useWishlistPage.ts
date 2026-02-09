@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWishList, deleteWish } from '../../../api/wishlist';
 import { getReformRequestDetail } from '../../../api/order/reformRequest';
@@ -32,6 +32,7 @@ const getWishType = (menu: WishlistMenu, isReformer: boolean): WishType => {
 
 export const useWishlistPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const activeMenuFromUrl = getMenuFromUrl(searchParams);
   const [activeMenu, setActiveMenu] = useState<WishlistMenu>(activeMenuFromUrl);
   const userRole = useAuthStore((state) => state.role);
@@ -46,13 +47,23 @@ export const useWishlistPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  const { data: wishData, isLoading } = useQuery({
+  const { data: wishData, isLoading, error: wishError } = useQuery({
     queryKey: ['wishlist', activeMenu, accessToken, isReformer],
     queryFn: () => getWishList(getWishType(activeMenu, isReformer)),
-    enabled: !!accessToken,
+    enabled: !!accessToken && !(activeMenu === 'market' && isReformer),
     placeholderData: (previousData: GetWishListResponse | undefined) => previousData,
     staleTime: 5 * 60 * 1000,
+    retry: false,
   });
+
+  useEffect(() => {
+    if (wishError && typeof wishError === 'object' && 'response' in wishError) {
+      const axiosError = wishError as { response?: { status?: number } };
+      if (axiosError.response?.status === 401) {
+        navigate('/login/type');
+      }
+    }
+  }, [wishError, navigate]);
 
   const { data: proposalWishData, isLoading: isLoadingProposal, error: proposalError } = useQuery({
     queryKey: ['wishlist', 'PROPOSAL', accessToken, 'custom'],
