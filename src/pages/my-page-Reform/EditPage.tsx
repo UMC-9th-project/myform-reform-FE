@@ -19,7 +19,7 @@ type CreatePageProps = {
   type: 'order' | 'sale';
 };
 
-const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
+const EditPage: React.FC<CreatePageProps> = ({ type }) => {
   const navigate = useNavigate();
   // --- 상태 관리 (Step 1 이미지용) ---
   const [images, setImages] = useState<ImageType[]>([]);
@@ -483,4 +483,4 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
   );
 };
 
-export default CreatePage;
+export default EditPage;

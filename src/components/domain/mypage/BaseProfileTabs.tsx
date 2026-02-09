@@ -78,9 +78,18 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
     setOpenMenuId(openMenuId === id ? null : id);
   };
 
-  const handleEdit = (item: unknown) => {
-    console.log('수정', item);
-  };
+  const handleEdit = (item: ProfileSaleItem | ProfileProposalItem) => {
+  if (activeSaleSubTab === '마켓 판매') {
+    // 판매 상품 수정
+    const saleItem = item as ProfileSaleItem;
+    navigate(`/sales/${saleItem.itemId}/edit`);
+  } else {
+    // 주문 제작 수정
+    const proposalItem = item as ProfileProposalItem;
+    navigate(`/custom/${proposalItem.proposalId}/edit`);
+  }
+};
+
 
   const handleDelete = (item: unknown) => {
     console.log('삭제', item);
