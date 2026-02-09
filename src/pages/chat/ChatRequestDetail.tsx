@@ -65,7 +65,7 @@ const ChatProposalDetailPage = () => {
 
   // 수정 버튼 클릭
   const handleEditProposal = () => {
-    navigate('/chat/create/quotation', {
+    navigate(`/chat/create/quotation/edit/${proposalId}`, {
       state: {
         mode: 'edit',
         quotationData: {
@@ -74,6 +74,7 @@ const ChatProposalDetailPage = () => {
           delivery: delivery.toString(),
           estimatedDays: expectedWorking.toString(),
           content: content,
+          proposalId,
         },
       },
     });

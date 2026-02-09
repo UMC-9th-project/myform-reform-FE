@@ -36,3 +36,12 @@ export interface ChatProposalDetail {
   };
   createdAt: string;
 }
+
+// 수정 payload (PATCH)
+export interface UpdateProposalPayload {
+  price: number;
+  delivery: number;
+  expectedWorking: number;
+  content: string;
+  image: string[];
+}

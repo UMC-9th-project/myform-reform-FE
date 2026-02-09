@@ -214,6 +214,7 @@ function App() {
         <Route path="/chat/create/quotation/:chatRoomId" element={<ChatQuotationFormPage />} />
         <Route path="/chat/create/request/edit/:requestId" element={<ChatRequestFormPage />} />
         <Route path="/chat/create/request/:chatRoomId" element={<ChatRequestFormPage />} />
+        <Route path="/chat/create/quotation/edit/:proposalId" element={<ChatQuotationFormPage />} />
       </Route>
 
 

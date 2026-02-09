@@ -3,6 +3,7 @@ import type {
   ChatProposalDetail,
   CreateProposalPayload,
   CreateProposalResponse,
+  UpdateProposalPayload,
 } from '@/types/api/chat/chatProposal';
 
 export const createChatProposal = (
@@ -19,4 +20,8 @@ export const getChatProposalDetail = async (
 ): Promise<ChatProposalDetail> => {
   const { data } = await api.get(`/chat/proposal/${proposalId}`);
   return data.success;
+};
+
+export const updateChatProposal = (proposalId: string, payload: UpdateProposalPayload) => {
+  return api.patch<CreateProposalResponse>(`/chat/proposal/${proposalId}`, payload);
 };

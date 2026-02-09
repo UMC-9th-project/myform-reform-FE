@@ -1,13 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-import { createChatProposal } from '@/api/chat/chatProposalApi';
+import { createChatProposal, getChatProposalDetail } from '@/api/chat/chatProposalApi';
 import { useNavigate, useParams } from 'react-router-dom'
 import { uploadImages } from '@/api/upload';
-import type { CreateProposalPayload } from '@/types/api/chat/chatProposal';
+//import type { CreateProposalPayload } from '@/types/api/chat/chatProposal';
+import { updateChatProposal } from '@/api/chat/chatProposalApi';
 
 interface QuotationImage {
-  file: File;
+  file: File | null;
   preview: string;
 }
 
@@ -22,7 +23,8 @@ interface ChatQuotationFormData {
 const ChatQuotationFormPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const location = useLocation();
-  const mode: 'create' | 'edit' = location.state?.mode ?? 'create';
+  const { chatRoomId, proposalId } = useParams<{ chatRoomId?: string; proposalId?: string }>();
+  const mode: 'create' | 'edit' = location.state?.mode ?? (proposalId ? 'edit' : 'create');
   const quotationData = location.state?.quotationData;
 
   const [formData, setFormData] = useState<ChatQuotationFormData>({
@@ -35,7 +37,27 @@ const ChatQuotationFormPage: React.FC = () => {
   const navigate = useNavigate();
 
   const MAX_IMAGES = 10;
-  const { chatRoomId } = useParams();
+
+  useEffect(() => {
+    if (mode === 'edit' && !quotationData && proposalId) {
+      getChatProposalDetail(proposalId)
+        .then((data) => {
+          setFormData({
+            images: data.body.images.map((url: string) => ({ file: null, preview: url })),
+            price: data.body.price.toString(),
+            delivery: data.body.delivery.toString(),
+            content: data.body.content,
+            estimatedDays: data.body.expectedWorking.toString(),
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+          alert('견적서 데이터를 불러오는데 실패했습니다.');
+          navigate(-1);
+        });
+    }
+  }, [mode, quotationData, proposalId, navigate]);
+  
   
 
   // 이미지 업로드
@@ -78,40 +100,59 @@ const ChatQuotationFormPage: React.FC = () => {
     formData.delivery.trim() !== '' &&
     formData.content.trim() !== '' &&
     formData.estimatedDays.trim() !== '';
+  
 
 
+  
   const handleSend = async () => {
-  if (!chatRoomId) {
-    alert('채팅방 정보가 없습니다.');
-    return;
-  }
-
   try {
-    let imageUrls: string[] = [];
+    // 1️⃣ 새로 업로드된 파일만 필터링
+    const newFiles = formData.images
+      .map(img => img.file)
+      .filter((file): file is File => file !== null);
 
-    if (formData.images.length > 0) {
-      const uploadRes = await uploadImages(formData.images.map(img => img.file));
-
-      if (uploadRes.resultType !== 'SUCCESS') {
-        throw new Error('이미지 업로드 실패');
-      }
-
-      imageUrls = uploadRes.success.url; // string[]
+    // 2️⃣ 새 파일 업로드
+    let uploadedUrls: string[] = [];
+    if (newFiles.length > 0) {
+      const uploadRes = await uploadImages(newFiles);
+      if (uploadRes.resultType !== 'SUCCESS') throw new Error('이미지 업로드 실패');
+      uploadedUrls = uploadRes.success.url;
     }
 
-    const payload: CreateProposalPayload = {
-      chatRoomId,
+    // 3️⃣ 기존 URL 이미지는 그대로 사용
+    const existingUrls = formData.images
+      .filter(img => !img.file)
+      .map(img => img.preview);
+
+    // 4️⃣ 최종 이미지 URL 배열
+    const imageUrls = [...existingUrls, ...uploadedUrls];
+
+    // 5️⃣ payload 생성
+    const payload = {
       price: Number(formData.price),
       delivery: Number(formData.delivery),
       expectedWorking: Number(formData.estimatedDays),
       content: formData.content.trim(),
-      image: imageUrls, // 반드시 배열
+      image: imageUrls,
     };
 
-    console.log('payload to send:', payload); // <- 여기서 꼭 확인
-    await createChatProposal(payload);
+    // 6️⃣ 모드별 처리 - chatRoomId 체크를 여기서!
+    if (mode === 'edit') {
+      // ✅ 수정 모드: chatRoomId 불필요
+      const id = proposalId || quotationData?.proposalId;
+      if (!id) throw new Error('수정할 견적서 ID가 없습니다.');
+      await updateChatProposal(id, payload);
+      alert('견적서가 수정되었습니다.');
+    } else {
+      // ✅ 생성 모드: chatRoomId 필수
+      if (!chatRoomId) {
+        alert('채팅방 정보가 없습니다.');
+        return;
+      }
+      await createChatProposal({ chatRoomId, ...payload });
+      alert('견적서를 전송했습니다.');
+    }
 
-    alert('견적서를 전송했습니다.');
     navigate(-1);
   } catch (error) {
     console.error(error);
