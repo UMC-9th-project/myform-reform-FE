@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import LikeButton from '../likebutton/LikeButton';
 import starIcon from '../../../assets/icons/star.svg';
+import useAuthStore from '../../../stores/useAuthStore';
 
 const MARKET_DETAIL_PATH = '/market/product';
 
@@ -50,6 +51,8 @@ const MarketCard = ({
   to,
   hideLikeButton = false,
 }: MarketCardProps) => {
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
   const isMarketItem = isMarketCardItem(item);
   const price = isMarketItem ? item.price : item.min_price;
   const hasRating = item.star !== undefined;
@@ -79,7 +82,7 @@ const MarketCard = ({
           alt={item.title}
           className="w-full h-full object-cover"
         />
-        {!hideLikeButton && (
+        {!hideLikeButton && !isReformer && (
           <div
             className="absolute bottom-[0.75rem] right-[0.75rem]"
             onClick={(e) => {
