@@ -5,11 +5,10 @@ import { type OptionGroup } from '../../components/domain/mypage/Option5';
 import DescriptionEditor from '../../components/domain/mypage/DescriptionEditor';
 import Button from '../../components/common/button/Button1';
 import { uploadImage, uploadImages } from '../../api/upload';
-import { createSale } from '../../api/profile/sale';
-import type { SaleOption } from '../../types/domain/mypage/sale';
 import { useNavigate, useParams } from 'react-router-dom';
 import { editReformProposal } from '@/api/mypage/editProposal';
 import type { EditReformProposalRequest } from '@/types/domain/mypage/editProposal';
+import { editSaleItem, type EditSaleItemRequest, type SaleOptionGroup } from '@/types/domain/mypage/editSaleItem';
 
 type ImageType = {
   file: File;
@@ -93,82 +92,75 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
     };
 
     const handleSubmit = async () => {
-  try {
-    const token = localStorage.getItem('accessToken');
-    console.log('현재 localStorage accessToken:', token);
+      try {
+        const files = images.map(img => img.file);
+        let imageUrls: string[] = [];
 
-    // 이미지 업로드
-    const files = images.map(img => img.file);
-    let imageUrls: string[] = [];
+        // 이미지 업로드
+        if (files.length === 1) {
+          const res = await uploadImage(files[0]);
+          imageUrls = [res.success.url];
+        } else if (files.length > 1) {
+          const res = await uploadImages(files);
+          imageUrls = res.success.url;
+        }
 
-    if (files.length === 1) {
-      const res = await uploadImage(files[0]);
-      imageUrls = [res.success.url];
-    } else if (files.length > 1) {
-      const res = await uploadImages(files);
-      imageUrls = res.success.url;
-    }
+        if (type === 'sale') {
+          // 옵션 payload 변환
+          const saleOptions: SaleOptionGroup[] = optionGroups.map((group, groupIndex) => ({
+            title: group.name,
+            sortOrder: groupIndex,
+            content: group.subOptions.map((sub, subIndex) => ({
+              comment: sub.name,
+              price: Number(sub.price.replace(/,/g, '')),
+              quantity: Number(sub.quantity),
+              sortOrder: subIndex,
+            })),
+          }));
 
-    let result;
+          // 판매글 수정 payload
+          const payload: EditSaleItemRequest = {
+            title,
+            content: description,
+            price: Number(price.replace(/,/g, '')),
+            delivery: Number(shippingFee.replace(/,/g, '')),
+            option: saleOptions,
+            category: {
+              major: category,
+              sub: subCategory,
+            },
+            imageUrls,
+          };
 
-    if (type === 'sale') {
-      // --- 판매글 payload ---
-      const saleOptions: SaleOption[] = optionGroups.map(
-        (group, groupIndex) => ({
-          title: group.name,
-          sortOrder: groupIndex,
-          content: group.subOptions.map((sub, subIndex) => ({
-            comment: sub.name,
-            price: Number(sub.price.replace(/,/g, '')),
-            quantity: Number(sub.quantity),
-            sortOrder: subIndex,
-          })),
-        })
-      );
+          // 수정 호출: id는 useParams로 가져온 itemId
+          await editSaleItem(id!, payload);
 
-      const payload = {
-        title,
-        content: description,
-        price: Number(price.replace(/,/g, '')),
-        delivery: Number(shippingFee.replace(/,/g, '')),
-        option: saleOptions,
-        category: {
-          major: category,
-          sub: subCategory,
-        },
-        imageUrls,
-      };
-      result = await createSale(payload);
+        } else {
+          // 기존 주문제작 글 수정 로직
+          const payload: EditReformProposalRequest = {
+            title,
+            contents: description,
+            price: Number(price.replace(/,/g, '')),
+            delivery: Number(shippingFee.replace(/,/g, '')),
+            expectedWorking: Number(duration),
+            category: {
+              major: category,
+              sub: subCategory,
+            },
+            images: imageUrls,
+          };
 
-      } else {
-      // --- 주문제작 글 수정 payload ---
-      const payload: EditReformProposalRequest = {
-        title,
-        contents: description,
-        price: Number(price.replace(/,/g, '')),
-        delivery: Number(shippingFee.replace(/,/g, '')),
-        expectedWorking: Number(duration),
-        category: {
-          major: category,
-          sub: subCategory,
-        },
-        images: imageUrls,
-      };
+          await editReformProposal(id!, payload);
+        }
 
-      result = await editReformProposal(id!, payload); // <-- 여기서 itemId는 useParams 등에서 가져옴
-    }
+        alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 수정 완료!`);
+        navigate('/reformer-mypage');
 
-
-    // 공통 성공 처리
-    alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 등록 완료!`);
-    console.log('등록 결과:', result);
-    navigate('/reformer-mypage'); 
-
-  } catch (error) {
-    console.error(error);
-    alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 등록 실패`);
-  }
-};
+      } catch (error) {
+        console.error(error);
+        alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 수정 실패`);
+      }
+    };
 
   return (
     <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">

@@ -22,7 +22,6 @@ import ImageViewerModal from './ImageViewModal';
 import mintPlus from '../../../assets/icons/mintPlus.svg';
 import morevertical from '@/assets/icons/morevertical.svg';
 import Pencil from '@/assets/icons/pencil.svg';
-import Trash from '@/assets/icons/trash.svg';
 
 export type ProfileTabType = '피드' | '판매 상품' | '후기';
 export type ProfileMode = 'view' | 'edit';
@@ -89,15 +88,6 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
     navigate(`/custom/${proposalItem.proposalId}/edit`);
   }
 };
-
-
-  const handleDelete = (item: unknown) => {
-    console.log('삭제', item);
-  };
-
-
-
-
   
   // ───────── 프로필 정보 ─────────
   const profileQuery = useQuery<GetProfileResponse, Error>({
@@ -376,15 +366,6 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
                               >
                                 <img src={Pencil} alt="수정하기" className="w-6 h-6" />
                                 <span className="body-b1-rg text-black">수정하기</span>
-                              </button>
-
-                              {/* 삭제하기 버튼 */}
-                              <button
-                                className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--color-gray-20)] transition-colors text-left"
-                                onClick={() => handleDelete(item)}
-                              >
-                                <img src={Trash} alt="삭제하기" className="w-6 h-6" />
-                                <span className="body-b1-rg text-black">삭제하기</span>
                               </button>
                             </div>
                           </div>
