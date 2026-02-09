@@ -7,7 +7,7 @@ export interface CreateReformQuoteRequest {
   /** 배송비 (원) */
   delivery: number;
   /** 상세 내용 */
-  contents: string;
+  content: string;
   /** 이미지 URL 목록 */
   images: string[];
   /** 예상 작업 기간 (일) */

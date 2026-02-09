@@ -62,7 +62,7 @@ export interface GetReformRequestDetailResponse {
 /** POST /reform/request - 리폼 요청서 작성 요청 (API 스펙) */
 export interface CreateReformRequestRequest {
   title: string;
-  contents: string;
+  content: string;
   minBudget: number;
   maxBudget: number;
   dueDate: string; // ISO date string (e.g. 2026-02-07T17:43:26.362Z)

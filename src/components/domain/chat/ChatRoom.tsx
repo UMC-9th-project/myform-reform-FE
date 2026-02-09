@@ -544,7 +544,8 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                       />
                     )}
                     {msg.messageType === 'proposal' && (
-                      <QuotationCard 
+                      <QuotationCard
+                        id={msg.payload.id} 
                         type={isMine ? 'sent' : 'received'} 
                         price={msg.payload.price} 
                         delivery={msg.payload.delivery}
@@ -552,7 +553,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                           ? roomInfo?.requester.nickname ?? '사용자' 
                           : roomInfo?.owner.nickname ?? '리포머'
                         }
-                        expectedWorking={msg.payload.expected_working}
+                        expectedWorking={msg.payload.expectedWorking}
                       />
                     )}
                     {(msg.messageType === 'text' || msg.messageType === 'image') && (

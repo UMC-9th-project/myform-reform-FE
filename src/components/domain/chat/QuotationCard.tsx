@@ -15,11 +15,11 @@ interface QuotationCardProps {
 const QuotationCard: React.FC<QuotationCardProps> = ({ 
   type, 
   id, 
-  chatId, 
   price, 
   delivery, 
   expectedWorking,
-  nickname// 기본값 설정 
+  nickname,
+
 }) => {
   const navigate = useNavigate();
   const isSent = type === 'sent';
@@ -67,17 +67,16 @@ const QuotationCard: React.FC<QuotationCardProps> = ({
         
         <button
           className="w-full bg-black text-white py-2.5 rounded-xl body-b4-sb hover:bg-gray-800 transition-colors shadow-md"
-          onClick={() => navigate('/chat/quotation/detail', {
-            state: {
-              myRole: type === 'sent' ? 'REFORMER' : 'USER',
-              isQuotation: true,
-              id: id,
-              chatId: chatId,
+          onClick={() =>
+            navigate(`/chat/quotation/detail/${id}`, {
+              state: {isQuotation: true}
             }
-          })}
+            ) // id = payload.id
+          }
         >
           {btnText}
         </button>
+
       </div>
     </div>
   );

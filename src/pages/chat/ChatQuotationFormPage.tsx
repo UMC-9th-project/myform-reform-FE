@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom';
 import { createChatProposal } from '@/api/chat/chatProposalApi';
 import { useNavigate, useParams } from 'react-router-dom'
 import { uploadImages } from '@/api/upload';
+import type { CreateProposalPayload } from '@/types/api/chat/chatProposal';
 
 interface QuotationImage {
   file: File;
@@ -52,7 +53,7 @@ const ChatQuotationFormPage: React.FC = () => {
       images: [...prev.images, ...newImages].slice(0, MAX_IMAGES),
     }));
 
-    e.target.value = ''; // 재업로드 가능
+    e.target.value = ''; 
   };
 
   const removeImage = (index: number) => {
@@ -75,48 +76,49 @@ const ChatQuotationFormPage: React.FC = () => {
     formData.images.length > 0 &&
     formData.price.trim() !== '' &&
     formData.delivery.trim() !== '' &&
-    //formData.content.trim() !== '' &&
+    formData.content.trim() !== '' &&
     formData.estimatedDays.trim() !== '';
 
 
   const handleSend = async () => {
-    if (!chatRoomId) {
-      alert('채팅방 정보가 없습니다.');
-      return;
-    }
+  if (!chatRoomId) {
+    alert('채팅방 정보가 없습니다.');
+    return;
+  }
 
-    try {
-      /** 1️⃣ 이미지 업로드 */
-      let imageUrls: string[] = [];
+  try {
+    let imageUrls: string[] = [];
 
-      if (formData.images.length > 0) {
-        const uploadRes = await uploadImages(formData.images.map((img) => img.file));
+    if (formData.images.length > 0) {
+      const uploadRes = await uploadImages(formData.images.map(img => img.file));
 
-        if (uploadRes.resultType !== 'SUCCESS') {
-          throw new Error('이미지 업로드 실패');
-        }
-
-        imageUrls = uploadRes.success.url;
+      if (uploadRes.resultType !== 'SUCCESS') {
+        throw new Error('이미지 업로드 실패');
       }
 
-      /** 2️⃣ 백엔드로 견적서 전송 */
-      await createChatProposal({
-        chatRoomId,
-        price: Number(formData.price),
-        delivery: Number(formData.delivery),
-        expectedWorking: Number(formData.estimatedDays),
-        //content: formData.content,
-        image: imageUrls,
-      });
-
-      /** 3️⃣ 성공 처리 */
-      alert('견적서를 전송했습니다.');
-      navigate(-1);
-    } catch (error) {
-      console.error(error);
-      alert('견적서 전송 중 오류가 발생했습니다.');
+      imageUrls = uploadRes.success.url; // string[]
     }
-  };
+
+    const payload: CreateProposalPayload = {
+      chatRoomId,
+      price: Number(formData.price),
+      delivery: Number(formData.delivery),
+      expectedWorking: Number(formData.estimatedDays),
+      content: formData.content.trim(),
+      image: imageUrls, // 반드시 배열
+    };
+
+    console.log('payload to send:', payload); // <- 여기서 꼭 확인
+    await createChatProposal(payload);
+
+    alert('견적서를 전송했습니다.');
+    navigate(-1);
+  } catch (error) {
+    console.error(error);
+    alert('견적서 전송 중 오류가 발생했습니다.');
+  }
+};
+
 
   return (
     <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
