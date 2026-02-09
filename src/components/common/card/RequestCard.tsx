@@ -154,9 +154,9 @@ export default function RequestCard({
           <div className="mt-[0.75rem] heading-h4-bd text-[var(--color-black)] break-words">
             {priceRange.includes('~') ? (
               <>
-                {priceRange.split('~')[0]}
-                {' '}
-                ~{priceRange.split('~')[1]}
+                <span className="whitespace-nowrap">{priceRange.split('~')[0]}</span>
+                {' ~'}
+                <span className="whitespace-nowrap">{priceRange.split('~')[1]}</span>
               </>
             ) : (
               priceRange
