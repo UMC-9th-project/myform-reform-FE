@@ -150,9 +150,19 @@ export default function RequestCard({
         <p className="body-b0-sb line-clamp-2 text-[var(--color-black)]">
           {title}
         </p>
-        <p className="mt-[0.75rem] heading-h4-bd text-[var(--color-black)]">
-          {priceRange}
-        </p>
+        {priceRange && (
+          <div className="mt-[0.75rem] heading-h4-bd text-[var(--color-black)] break-words">
+            {priceRange.includes('~') ? (
+              <>
+                {priceRange.split('~')[0]}
+                {' '}
+                ~{priceRange.split('~')[1]}
+              </>
+            ) : (
+              priceRange
+            )}
+          </div>
+        )}
       </div>
     </article>
   );
