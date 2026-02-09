@@ -25,7 +25,7 @@ export interface CustomOrderItem {
   owner_nickname: string;
   is_wished: boolean;
 }
-// 타입 가드 함수
+
 const isMarketCardItem = (item: MarketCardItem | CustomOrderItem): item is MarketCardItem => {
   return 'item_id' in item;
 };
@@ -34,7 +34,6 @@ interface MarketCardProps {
   item: MarketCardItem | CustomOrderItem;
   initialLiked?: boolean;
   onLikeClick?: (id: number, isLiked: boolean) => void;
-  /** 클릭 시 이동할 상세 페이지 경로 (미지정 시 자동으로 결정) */
   to?: string;
 }
 

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import downArrow from '../../../assets/icons/down.svg';
 import { useMarket } from '../../../hooks/domain/market/useMarket';
+import type { MarketItem } from '../../../types/api/market/market';
 
 interface CategoryItem {
   id: string;
@@ -14,89 +15,103 @@ interface CategoryData {
 }
 
 // 허용된 카테고리 이름 목록
-const ALLOWED_CATEGORY_NAMES = ['의류', '잡화', '홈·리빙', '기타', ];
-
-// 하위 카테고리 하드코드 데이터
-const HARDCODED_SUBCATEGORIES: Record<string, CategoryItem[]> = {
-  '의류': [
-    { id: '1', label: '전체' },
-    { id: '2', label: '상의' },
-    { id: '3', label: '하의' },
-    { id: '4', label: '아우터' },
-  ],
-  '잡화': [
-    { id: '1', label: '전체' },
-    { id: '2', label: '가방·짐색' },
-    { id: '3', label: '지갑·파우치' },
-    { id: '4', label: '모자·캡·비니' },
-  ],
-  '홈·리빙': [
-    { id: '1', label: '전체' },
-    { id: '2', label: '패브릭 소품' },
-    { id: '3', label: '쿠션·방석' },
-  ],
-  '기타': [
-    { id: '1', label: '전체' },
-  ],
-};
+const ALLOWED_CATEGORY_NAMES = ['의류', '잡화', '홈·리빙', '기타'];
 
 interface OrderCategoryFilterProps {
-  onCategoryChange?: (categoryIndex: number, itemId: number, categoryTitle: string, itemLabel: string) => void;
+  onCategoryChange?: (categoryIndex: number, itemId: number, categoryTitle: string, itemLabel: string, categoryId?: string) => void;
 }
 
 const OrderCategoryFilter = ({ onCategoryChange }: OrderCategoryFilterProps) => {
-  const { data: categories, isLoading, isError } = useMarket();
+  const { data: categories } = useMarket();
 
-  // API에서 상위 카테고리 이름만 가져와서 하드코드된 하위 항목과 매핑
+  // API에서 상위 카테고리와 하위 카테고리를 모두 가져와서 매핑
   const categoriesData = useMemo<CategoryData[]>(() => {
-    // API 데이터가 없으면 하드코드된 카테고리 사용
     if (!categories || categories.length === 0) {
-      return ALLOWED_CATEGORY_NAMES.map((name) => ({
-        title: name,
-        items: HARDCODED_SUBCATEGORIES[name] || [{ id: '1', label: '전체' }],
-        defaultOpen: false,
-      }));
+      return [];
     }
 
-    const filtered = categories
-      .filter((category) => 
-        category?.market?.name && ALLOWED_CATEGORY_NAMES.includes(category.market.name)
-      )
-      .map((category) => {
-        const categoryName = category.market.name;
-        const items = HARDCODED_SUBCATEGORIES[categoryName] || [{ id: '1', label: '전체' }];
+    const getCategoryName = (category: { market?: MarketItem; name?: string }): string | null => {
+      return category.market?.name || category.name || null;
+    };
+
+    const getChildren = (category: { children?: Array<{ market?: MarketItem } | MarketItem> }): Array<{ market?: MarketItem } | MarketItem> => {
+      return category.children || [];
+    };
+
+    const getChildMarket = (child: { market?: MarketItem } | MarketItem): MarketItem | null => {
+      if ('market' in child && child.market) {
+        return child.market;
+      }
+      if ('categoryId' in child && 'name' in child) {
+        return child as MarketItem;
+      }
+      return null;
+    };
+
+    interface SubcategoryItem {
+      id: string;
+      label: string;
+      sortOrder: number;
+    }
+
+    const filtered: CategoryData[] = categories
+      .filter((category) => {
+        const categoryName = getCategoryName(category);
+        return categoryName && ALLOWED_CATEGORY_NAMES.includes(categoryName);
+      })
+      .map((category): CategoryData | null => {
+        const categoryName = getCategoryName(category);
+        if (!categoryName) {
+          return null;
+        }
+
+        const children = getChildren(category);
+        
+        const subcategories: SubcategoryItem[] = children
+          .map((child) => {
+            const childMarket = getChildMarket(child);
+            if (!childMarket) {
+              return null;
+            }
+            return {
+              id: childMarket.categoryId || '',
+              label: childMarket.name || '',
+              sortOrder: childMarket.sortOrder || 0,
+            };
+          })
+          .filter((item): item is SubcategoryItem => item !== null && item.label !== ''); // 빈 레이블 제거
+
+     
+        subcategories.sort((a, b) => a.sortOrder - b.sortOrder);
+
+        const items: CategoryItem[] = [
+          { id: '0', label: '전체' },
+          ...subcategories.map((sub) => ({
+            id: sub.id,
+            label: sub.label,
+          })),
+        ];
 
         return {
           title: categoryName,
           items,
           defaultOpen: false,
         };
-      });
-
-    // 필터링된 결과가 없으면 하드코드된 카테고리 사용
-    if (filtered.length === 0) {
-      return ALLOWED_CATEGORY_NAMES.map((name) => ({
-        title: name,
-        items: HARDCODED_SUBCATEGORIES[name] || [{ id: '1', label: '전체' }],
-        defaultOpen: false,
-      }));
-    }
+      })
+      .filter((item): item is CategoryData => item !== null);
 
     return filtered;
   }, [categories]);
 
-  const [openStates, setOpenStates] = useState<boolean[]>(
-    categoriesData.map(() => false)
-  );
+  const [openStates, setOpenStates] = useState<Record<number, boolean>>({});
  
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
   const toggleMenu = (index: number) => {
-    setOpenStates((prev) => {
-      const newStates = [...prev];
-      newStates[index] = !newStates[index];
-      return newStates;
-    });
+    setOpenStates((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
   };
 
   const handleItemClick = (categoryIndex: number, itemId: string) => {
@@ -104,51 +119,15 @@ const OrderCategoryFilter = ({ onCategoryChange }: OrderCategoryFilterProps) => 
     setSelectedItem(itemKey);
     const category = categoriesData[categoryIndex];
     const item = category.items.find((i) => i.id === itemId);
-    onCategoryChange?.(categoryIndex, Number(itemId) || 0, category.title, item?.label || '');
+    const numericId = itemId === '0' ? 0 : (Number(itemId) || 0);
+    // categoryId는 실제 카테고리 ID (UUID 문자열), itemId === '0'이면 undefined로 전달
+    const categoryId = itemId === '0' ? undefined : itemId;
+    onCategoryChange?.(categoryIndex, numericId, category.title, item?.label || '', categoryId);
   };
 
-  if (isLoading) {
-    return (
-      <aside className="hidden md:block w-[217px] flex-shrink-0">
-        <div className="p-4">로딩 중...</div>
-      </aside>
-    );
-  }
+ 
 
-  if (isError) {
-    // 에러 발생 시 하드코드된 카테고리 표시
-    const fallbackCategories = ALLOWED_CATEGORY_NAMES.map((name) => ({
-      title: name,
-      items: HARDCODED_SUBCATEGORIES[name] || [{ id: '1', label: '전체' }],
-      defaultOpen: false,
-    }));
-    
-    return (
-      <aside className="hidden md:block w-[217px] flex-shrink-0">
-        <nav className="flex flex-col">
-          {fallbackCategories.map((category, categoryIndex) => (
-            <div
-              key={category.title}
-              className={`w-full bg-[var(--color-bg-white)] ${
-                categoryIndex < fallbackCategories.length - 1 
-                  ? 'border-b border-[var(--color-gray-40)]' 
-                  : ''
-              }`}
-            >
-              <div className="flex flex-col">
-                <div className="flex items-center justify-between px-[1.125rem] py-[1.125rem]">
-                  <h2 className="body-b1-sb text-[var(--color-black)]">
-                    {category.title}
-                  </h2>
-                </div>
-              </div>
-            </div>
-          ))}
-        </nav>
-      </aside>
-    );
-  }
-
+ 
   return (
     <aside className="hidden md:block w-[217px] flex-shrink-0">
       <nav className="flex flex-col">
@@ -172,7 +151,7 @@ const OrderCategoryFilter = ({ onCategoryChange }: OrderCategoryFilterProps) => 
                   aria-label={
                     openStates[categoryIndex] ? '메뉴 닫기' : '메뉴 열기'
                   }
-                  aria-expanded={openStates[categoryIndex]}
+                  aria-expanded={!!openStates[categoryIndex]}
                 >
                   <img 
                     src={downArrow} 
