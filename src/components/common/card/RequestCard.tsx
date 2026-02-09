@@ -37,11 +37,13 @@ export default function RequestCard({
 }: RequestCardProps) {
   const navigate = useNavigate();
   const accessToken = useAuthStore((state) => state.accessToken);
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
   const { toggleWish } = useWish();
   const { data: wishData } = useQuery({
     queryKey: ['wishlist', 'REQUEST', accessToken],
     queryFn: () => getWishList('REQUEST'),
-    enabled: id != null && !!accessToken,
+    enabled: id != null && !!accessToken && variant === 'reformer' && isReformer,
     staleTime: 5 * 60 * 1000,
   });
 

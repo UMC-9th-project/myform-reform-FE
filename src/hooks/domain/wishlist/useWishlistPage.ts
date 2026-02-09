@@ -19,12 +19,12 @@ const getMenuFromUrl = (searchParams: URLSearchParams): WishlistMenu => {
   return 'market';
 };
 
-const getWishType = (menu: WishlistMenu): WishType => {
+const getWishType = (menu: WishlistMenu, isReformer: boolean): WishType => {
   switch (menu) {
     case 'market':
       return 'ITEM';
     case 'custom':
-      return 'REQUEST';
+      return isReformer ? 'REQUEST' : 'PROPOSAL';
     default:
       return 'ITEM';
   }
@@ -47,8 +47,8 @@ export const useWishlistPage = () => {
   }, [searchParams]);
 
   const { data: wishData, isLoading } = useQuery({
-    queryKey: ['wishlist', activeMenu, accessToken],
-    queryFn: () => getWishList(getWishType(activeMenu)),
+    queryKey: ['wishlist', activeMenu, accessToken, isReformer],
+    queryFn: () => getWishList(getWishType(activeMenu, isReformer)),
     enabled: !!accessToken,
     placeholderData: (previousData: GetWishListResponse | undefined) => previousData,
     staleTime: 5 * 60 * 1000,
