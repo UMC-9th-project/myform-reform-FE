@@ -28,7 +28,7 @@ export interface ProposalPayload {
   id: string;
   price: number;
   delivery: number;
-  expected_working: number;
+  expectedWorking: number;
 }
 
 /* =========================
