@@ -215,7 +215,8 @@ export default function Header() {
           <Link to="/cart" className="cursor-pointer">
             <img src={shoppingCart} alt="shopping cart" />
           </Link>
-
+          
+          {accessToken && (
           <div className="relative" ref={profileRef}>
             <button
               className="cursor-pointer"
@@ -297,6 +298,7 @@ export default function Header() {
             )}
 
           </div>
+          )}
         </div>
       </div>
     </header>
