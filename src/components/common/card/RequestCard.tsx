@@ -38,13 +38,13 @@ export default function RequestCard({
   const content = (
     <article className={`w-full ${linkTo ? 'cursor-pointer' : ''} ${className}`}>
       <div
-        className="relative w-full rounded-t-[0.625rem] overflow-hidden bg-[var(--color-gray-20)]"
+        className="relative w-full rounded-[0.625rem] overflow-hidden"
         style={{ aspectRatio: '361/307' }}
       >
         <img
           src={imgSrc}
           alt={title}
-          className="w-full h-full object-cover rounded-[1.25rem]"
+          className="w-full h-full object-cover"
         />
         {variant === 'reformer' && (
           <div

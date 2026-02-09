@@ -36,6 +36,8 @@ interface MarketCardProps {
   onLikeClick?: (id: number, isLiked: boolean) => void;
   /** 클릭 시 이동할 상세 페이지 경로 (미지정 시 자동으로 결정) */
   to?: string;
+  /** 찜 버튼 숨김 여부 */
+  hideLikeButton?: boolean;
 }
 
 const formatPrice = (price: number) => {
@@ -47,6 +49,7 @@ const MarketCard = ({
   initialLiked = false,
   onLikeClick,
   to,
+  hideLikeButton = false,
 }: MarketCardProps) => {
   const isMarketItem = isMarketCardItem(item);
   const price = isMarketItem ? item.price : item.min_price;
@@ -69,33 +72,35 @@ const MarketCard = ({
     <div className="bg-white rounded-[0.625rem] overflow-visible cursor-pointer">
       {/* 상품 이미지 */}
       <div
-        className="relative w-full bg-[var(--color-gray-20)] rounded-t-[0.625rem] overflow-hidden"
+        className="relative w-full rounded-[0.625rem] overflow-hidden"
         style={{ aspectRatio: '361/307' }}
       >
         <img
           src={item.thumbnail}
           alt={item.title}
-          className="w-full h-full object-cover rounded-[1.25rem]"
+          className="w-full h-full object-cover"
         />
-        <div
-          className="absolute bottom-[0.75rem] right-[0.75rem]"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
+        {!hideLikeButton && (
+          <div
+            className="absolute bottom-[0.75rem] right-[0.75rem]"
+            onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-            }
-          }}
-          role="presentation"
-        >
-          <LikeButton
-            initialLiked={initialLiked || isWished}
-            onClick={handleLikeClick}
-          />
-        </div>
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+              }
+            }}
+            role="presentation"
+          >
+            <LikeButton
+              initialLiked={initialLiked || isWished}
+              onClick={handleLikeClick}
+            />
+          </div>
+        )}
       </div>
 
       {/* 상품 정보 */}
@@ -116,7 +121,7 @@ const MarketCard = ({
               className="w-[0.8125rem] h-[0.75rem]"
             />
             <span className="body-b3-rg">
-              <span className="text-[var(--color-black)]">{isMarketItem ? item.star : (item.star ?? 0)}</span>{' '}
+              <span className="text-[var(--color-black)]">{isMarketItem ? item.star.toFixed(2) : (item.star ?? 0).toFixed(2)}</span>{' '}
               <span className="text-[var(--color-gray-50)]">
                 ({isMarketItem ? item.review_count : (item.review_count ?? 0)})
               </span>
