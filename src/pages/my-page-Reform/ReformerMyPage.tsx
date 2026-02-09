@@ -61,7 +61,7 @@ const ReformerMyPage = () => {
 
       {/* EditProfileCard는 showEditProfileCard일 때만 */}
       {showEditProfileCard && reformerInfo?.success && (
-        <BaseProfileTabs mode="edit" ownerId={reformerInfo.success.reformerId} />
+        <BaseProfileTabs mode="edit" ownerId={reformerInfo.success.reformerId} showHeart={false}/>
       )}
 
     </div>

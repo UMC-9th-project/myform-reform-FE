@@ -55,9 +55,10 @@ export const getMyReformerInfo = async (): Promise<GetMyReformerInfoResponse> =>
   return res.data;
 }
 
+/** 프로필 조회 - id에 owner UUID 또는 리폼러 닉네임 사용 가능 */
 export const getProfile = async (
-  ownerId: string
+  id: string
 ): Promise<GetProfileResponse> => {
-  const res = await api.get(`/profile/${ownerId}`);
+  const res = await api.get<GetProfileResponse>(`/profile/${encodeURIComponent(id)}`);
   return res.data;
 };

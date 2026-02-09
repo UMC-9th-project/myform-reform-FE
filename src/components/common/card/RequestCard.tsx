@@ -37,7 +37,10 @@ export default function RequestCard({
 
   const content = (
     <article className={`w-full ${linkTo ? 'cursor-pointer' : ''} ${className}`}>
-      <div className="relative w-full h-[22.375rem] rounded-[1.25rem] overflow-hidden bg-[var(--color-gray-20)]">
+      <div
+        className="relative w-full rounded-[0.625rem] overflow-hidden"
+        style={{ aspectRatio: '361/307' }}
+      >
         <img
           src={imgSrc}
           alt={title}

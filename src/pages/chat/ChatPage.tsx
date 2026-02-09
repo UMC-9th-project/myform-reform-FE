@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import ChatListTab from '../../components/domain/chat/ChatListTab';
 import ChatRoom from '../../components/domain/chat/ChatRoom';
 import EmptyChatRoom from '../../components/domain/chat/EmptyChatRoom';
@@ -14,11 +14,14 @@ interface ChatPageProps {
 
 const ChatPage = ({ role }: ChatPageProps) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
 
   const [hasChats, setHasChats] = useState(true);
   const [selectedChat, setSelectedChat] = useState<SelectedChat | null>(null);
 
   const basePath = role === 'USER' ? 'normal' : 'reformer';
+  const initialFilterType = tabParam === 'order' ? 'ORDER' : undefined;
 
   return (
     <div className="flex flex-row-reverse w-full h-screen bg-[var(--color-gray-20)] overflow-hidden">
@@ -26,6 +29,7 @@ const ChatPage = ({ role }: ChatPageProps) => {
       {/* 오른쪽 채팅 목록 */}
       <div className="w-[24rem] ml-3 m-10 border-[var(--color-line-gray-40)] bg-white">
         <ChatListTab
+          initialFilterType={initialFilterType}
           selectedChat={selectedChat}
           setSelectedChat={(chat) => {
             setSelectedChat(chat);

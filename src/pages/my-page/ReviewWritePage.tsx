@@ -3,16 +3,19 @@ import { useUserTabStore } from '../../stores/tabStore';
 import Button from '../../components/common/button/Button1';
 import starYellow from '../../assets/icons/star.svg';
 import starGray from '../../assets/icons/emptyStar.svg';
+import { uploadImages } from '@/api/upload';
+import { createReview } from '@/api/mypage/reviewApi';
+import { useNavigate } from 'react-router-dom';
 
 const ReviewWritePage: React.FC = () => {
-  const { selectedOrderId, setSelectedOrderId, setActiveTab } = useUserTabStore();
+  const { selectedOrderId, setSelectedOrderId } = useUserTabStore();
   const [rating, setRating] = useState(0);
   const [content, setContent] = useState('');
   
   // 사진 관련 상태
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const navigate = useNavigate();
   if (!selectedOrderId) return <div className="p-10">주문 정보가 없습니다.</div>;
 
   // 파일 선택 핸들러
@@ -30,16 +33,36 @@ const ReviewWritePage: React.FC = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (rating === 0) {
       alert("별점을 선택해주세요.");
       return;
     }
-    // API 제출 로직 (content, rating, selectedFiles)
-    
-    setSelectedOrderId(null);
-    setActiveTab('나의 후기');
+
+    try {
+      // 1. 이미지 업로드
+      let photoUrls: string[] = [];
+      if (selectedFiles.length > 0) {
+        const res = await uploadImages(selectedFiles);
+        photoUrls = res.success.url;
+      }
+
+      // 2. 리뷰 작성 API 호출
+      await createReview(selectedOrderId!, {
+        star: rating,
+        content,
+        photos: photoUrls,
+      });
+
+      alert('리뷰 작성 완료!');
+      setSelectedOrderId(null);
+      navigate('/normal-mypage', { state: { tab: '나의 후기' } });
+    } catch (err) {
+      console.error(err);
+      alert('리뷰 작성 실패');
+    }
   };
+
 
   return (
     <div className="max-w-7xl mx-auto p-10 bg-white min-h-screen">

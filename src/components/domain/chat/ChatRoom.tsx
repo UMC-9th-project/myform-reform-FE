@@ -18,6 +18,7 @@ interface ChatRoomProps {
 }
 
 const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
+  console.log('🔥 ChatRoom props chatId:', chatId);
   const [inputText, setInputText] = useState('');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   
@@ -367,9 +368,14 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   };
 
   const handleSendAction = () => {
-    const path = myRole === 'REFORMER' ? '/chat/create/quotation' : '/chat/create/request';
-    navigate(path, { state: { chatId } });
-  };
+    const path =
+      myRole === 'REFORMER'
+        ? `/chat/create/quotation/${chatId}`
+        : `/chat/create/request/${chatId}`;
+
+        navigate(path);
+    };
+
 
   if (status === 'pending') {
     return <div className="flex-1 flex items-center justify-center">로딩 중...</div>;

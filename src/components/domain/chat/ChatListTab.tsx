@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getChatRooms,  type ChatRoomFilter } from '@/api/chat/chatApi';
 import type { SelectedChat } from '@/types/api/chat/chatMessages';
+import { useLocation } from 'react-router-dom';
 
 interface ChatListTabProps {
   selectedChat: SelectedChat | null;
   setSelectedChat: (chat: SelectedChat) => void;
   onChatsLoaded?: (chatCount: number) => void;
+  /** URL 등에서 지정한 초기 탭 (예: tab=order → 주문제작) */
+  initialFilterType?: ChatRoomFilter;
 }
 
 const filters: { label: string; type?: ChatRoomFilter }[] = [
@@ -16,9 +19,14 @@ const filters: { label: string; type?: ChatRoomFilter }[] = [
   { label: '안 읽은 채팅방', type: 'UNREAD' },
 ];
 
-const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat, onChatsLoaded }) => {
-  const [filter, setFilter] = useState(filters[0]);
+const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat, onChatsLoaded, initialFilterType }) => {
+  const initialFilter = initialFilterType
+    ? filters.find((f) => f.type === initialFilterType) ?? filters[0]
+    : filters[0];
+  const [filter, setFilter] = useState(initialFilter);
   const queryClient = useQueryClient();
+  const location = useLocation();
+  const chatRoomIdFromUrl = location.pathname.split('/').pop();
 
   // ✅ React Query로 변경
   const { data, isLoading, error } = useQuery({
@@ -48,6 +56,18 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
       onChatsLoaded(chats.length);
     }
   }, [data, onChatsLoaded]);
+
+  React.useEffect(() => {
+    if (chatRoomIdFromUrl && chats.length > 0) {
+      const matched = chats.find(c => c.chatRoomId === chatRoomIdFromUrl);
+      if (matched) {
+        setSelectedChat({
+          chatRoomId: matched.chatRoomId,
+          roomType: matched.roomType as 'FEED' | 'PROPOSAL' | 'REQUEST',
+        });
+      }
+    }
+  }, [chatRoomIdFromUrl, chats]);
 
   if (isLoading) return <div>로딩 중...</div>;
   if (error) return <div className="text-red-500">채팅 조회 실패</div>;
