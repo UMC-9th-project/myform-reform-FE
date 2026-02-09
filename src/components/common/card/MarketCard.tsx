@@ -68,11 +68,11 @@ const MarketCard = ({
     : `/proposal/${item.proposal_id}`);
 
   const content = (
-    <div className="bg-white rounded-[0.625rem] overflow-visible cursor-pointer">
+    <div className="bg-white rounded-[1.25rem] overflow-visible cursor-pointer">
       {/* 상품 이미지 */}
       <div
-        className="relative w-full rounded-[0.625rem] overflow-hidden"
-        style={{ aspectRatio: '361/307' }}
+        className="relative w-full rounded-[1.25rem] overflow-hidden"
+        style={{ aspectRatio: '337/307' }}
       >
         <img
           src={item.thumbnail}
