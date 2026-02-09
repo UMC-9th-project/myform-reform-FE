@@ -35,7 +35,6 @@ const QuotationCard: React.FC<QuotationCardProps> = ({
 
   // 합계 계산
   const totalPrice = price + delivery;
-  console.log('Received expectedWorking:', expectedWorking);
   return (
     <div className={`flex w-full h-full mb-1 gap-3 ${isSent ? 'justify-end' : 'justify-start'}`}>
       <div className={`${bgColor} ${borderRadiusClass} p-5 w-full min-w-[23rem] shadow-sm`}>

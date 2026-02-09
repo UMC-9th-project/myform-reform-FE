@@ -24,11 +24,9 @@ const ChatProposalDetailPage = () => {
       try {
         setLoading(true);
         const data = await getChatProposalDetail(proposalId);
-        console.log('견적서 상세 데이터:', data);
         setProposalDetail(data);
       } catch (err) {
-        console.error('견적서 상세 조회 실패', err);
-        alert('견적서 정보를 불러오지 못했습니다.');
+        alert('견적서 정보를 불러오지 못했습니다.' + err);
       } finally {
         setLoading(false);
       }
