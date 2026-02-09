@@ -5,10 +5,11 @@ import { type OptionGroup } from '../../components/domain/mypage/Option5';
 import DescriptionEditor from '../../components/domain/mypage/DescriptionEditor';
 import Button from '../../components/common/button/Button1';
 import { uploadImage, uploadImages } from '../../api/upload';
-import { createOrder, createSale } from '../../api/profile/sale';
+import { createSale } from '../../api/profile/sale';
 import type { SaleOption } from '../../types/domain/mypage/sale';
-import type { CreateOrderRequest } from '../../types/domain/mypage/order';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { editReformProposal } from '@/api/mypage/editProposal';
+import type { EditReformProposalRequest } from '@/types/domain/mypage/editProposal';
 
 type ImageType = {
   file: File;
@@ -24,7 +25,7 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
   // --- 상태 관리 (Step 1 이미지용) ---
   const [images, setImages] = useState<ImageType[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const { id } = useParams<{ id: string }>();
 
   // Step 2,4,5, 6 상태 추가
   const [title, setTitle] = useState<string>('');
@@ -137,26 +138,26 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
         },
         imageUrls,
       };
-
       result = await createSale(payload);
 
-    } else {
-      // --- 주문제작 payload ---
-      const payload: CreateOrderRequest = {
+      } else {
+      // --- 주문제작 글 수정 payload ---
+      const payload: EditReformProposalRequest = {
         title,
-        content: description,
+        contents: description,
         price: Number(price.replace(/,/g, '')),
         delivery: Number(shippingFee.replace(/,/g, '')),
-        expected_working: Number(duration),
+        expectedWorking: Number(duration),
         category: {
           major: category,
           sub: subCategory,
         },
-        imageUrls,
+        images: imageUrls,
       };
 
-      result = await createOrder(payload);
+      result = await editReformProposal(id!, payload); // <-- 여기서 itemId는 useParams 등에서 가져옴
     }
+
 
     // 공통 성공 처리
     alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 등록 완료!`);

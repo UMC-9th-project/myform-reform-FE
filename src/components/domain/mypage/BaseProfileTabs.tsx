@@ -347,7 +347,7 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
                     <div className="heading-h4-bd text-black">{item.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원</div>
                     <div className="flex items-center">
                       <span className="text-[#FFCF41] text-[1.125rem] mr-1 relative -translate-y-[0.125rem]"><img src={star} alt="별" /></span>
-                      <span className="body-b3-rg text-black">{item.avgStar ?? '별점이 없습니다'}</span>
+                      <span className="body-b3-rg text-black">{item.avgStar ?? '0'}</span>
                       <span className="ml-1 text-[var(--color-gray-50)]">({item.reviewCount ?? 0})</span>
                     </div>
                     <div className="pt-1 flex justify-between items-center">
