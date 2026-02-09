@@ -38,7 +38,7 @@ const ReformerListView = () => {
         </div>
 
         {/* 헤더 */}
-        <div className="mb-8 md:mb-12 pl-0 md:pl-[110px]">
+        <div className="mb-8 mb-12 px-[110px] ">
           <h1 className="heading-h4-bd text-[var(--color-black)] mb-2">
             리폼러 탐색하기
           </h1>

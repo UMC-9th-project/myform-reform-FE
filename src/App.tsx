@@ -8,7 +8,6 @@ import MarketProductDetailPage from './pages/market/MarketProductDetailPage';
 import MarketPurchasePage from './pages/market/MarketPurchasePage';
 import MarketPurchaseCompletePage from './pages/market/MarketPurchaseCompletePage';
 import Wishlist from './pages/wishlist/Wishlist';
-import ReformerWishlist from './pages/wishlist-reformer/Wishlist';
 import ReformerMyPage from './pages/my-page-Reform/ReformerMyPage';
 import CreatePage from './pages/my-page-Reform/CreatePage';
 import EditProfilePage from './pages/my-page-Reform/EditProfilePage';
@@ -65,6 +64,21 @@ function App() {
       <ScrollToTop />
       <Routes>
 
+
+      <Route
+      element={
+        <Layout
+          showHeader={false}
+          showNavbar={false}
+          showFooter={true}
+          footerVariant="dark"
+        />
+      }
+      >
+       <Route path="/" element={<LandingPage />} />
+
+      </Route>
+
       <Route
         element={
           <Layout
@@ -76,7 +90,7 @@ function App() {
         }
       >
         {/* 홈 페이지 */}
-        <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
       </Route>
 
       <Route
@@ -112,7 +126,7 @@ function App() {
 
          {/* 찜 페이지 */}
         <Route path="/wishlist" element={<Wishlist />} />
-        <Route path="/reformer/wishlist" element={<ReformerWishlist />} />
+        <Route path="/reformer/wishlist" element={<Wishlist />} />
 
         {/* 마켓 페이지 */}
         <Route path="/market" element={<Market />} />
@@ -156,20 +170,6 @@ function App() {
         <Route path="/order/requests/create" element={<OrderRequestCreatePage />} />
         <Route path="/order/requests/:id/edit" element={<OrderRequestEditPage />} />
         <Route path="/reformer/order/requests/:id/estimate" element={<ReformerOrderEstimateCreatePage />} />
-      </Route>
-
-      <Route
-      element={
-        <Layout
-          showHeader={false}
-          showNavbar={false}
-          showFooter={true}
-          footerVariant="dark"
-        />
-      }
-      >
-       <Route path="/landing" element={<LandingPage />} />
-
       </Route>
       
       <Route

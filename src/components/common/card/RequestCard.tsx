@@ -1,5 +1,10 @@
-import { Link } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import LikeButton from '../likebutton/LikeButton';
+import { useWish } from '../../../hooks/domain/wishlist/useWish';
+import { getWishList } from '../../../api/wishlist';
+import useAuthStore from '../../../stores/useAuthStore';
 
 export type RequestDetailVariant = 'order' | 'reformer';
 
@@ -9,12 +14,10 @@ interface RequestCardProps {
   priceRange?: string;
   className?: string;
   seller?: string;
-  /** 상세 페이지로 이동 시 사용할 id (variant와 함께 사용) */
   id?: number | string;
-  /** 상세 경로 구분: order → /order/requests/:id, reformer → /reformer/order/requests/:id */
   variant?: RequestDetailVariant;
-  /** 클릭 시 이동할 상세 페이지 경로 (직접 지정 시 id/variant 대신 사용) */
   to?: string;
+  isWished?: boolean;
 }
 
 const REQUEST_DETAIL_PATH: Record<RequestDetailVariant, string> = {
@@ -23,17 +26,91 @@ const REQUEST_DETAIL_PATH: Record<RequestDetailVariant, string> = {
 };
 
 export default function RequestCard({
-  imgSrc = '/crt1.jpg',
-  title = '제 소중한 기아 쿠로미 유니폼 짐색으로 만들어 주실 리폼 장인을 찾아요',
-  priceRange = '30,000원~50,000원',
+  imgSrc,
+  title,
+  priceRange,
   className = '',
   id,
   variant = 'order',
   to,
+  isWished = false,
 }: RequestCardProps) {
+  const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
+  const { toggleWish } = useWish();
+  const { data: wishData, error: wishError } = useQuery({
+    queryKey: ['wishlist', 'REQUEST', accessToken],
+    queryFn: () => getWishList('REQUEST'),
+    enabled: id != null && !!accessToken && variant === 'reformer' && isReformer,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (wishError && typeof wishError === 'object' && 'response' in wishError) {
+      const axiosError = wishError as { response?: { status?: number } };
+      if (axiosError.response?.status === 401) {
+        navigate('/login/type');
+      }
+    }
+  }, [wishError, navigate]);
+
+  const itemId = id ? (typeof id === 'string' ? id : id.toString()) : null;
+  
+  const isWishedFromServer = useMemo(() => {
+    if (isWished) {
+      return true;
+    }
+    if (wishData === undefined || !itemId) {
+      return undefined;
+    }
+    if (wishData?.success?.list) {
+      return wishData.success.list.some((item) => item.itemId === itemId);
+    }
+    return false;
+  }, [wishData, itemId, isWished]);
+
+  const [localLiked, setLocalLiked] = useState<boolean | null>(null);
+
+  const isLiked = useMemo(() => {
+    if (isWished) {
+      return true;
+    }
+    if (localLiked !== null) {
+      return localLiked;
+    }
+    if (isWishedFromServer === undefined) {
+      return false;
+    }
+    return isWishedFromServer;
+  }, [isWished, localLiked, isWishedFromServer]);
+
   const detailTo =
     id != null ? `${REQUEST_DETAIL_PATH[variant]}/${id}` : undefined;
   const linkTo = to ?? detailTo;
+
+  const handleLikeClick = async (liked: boolean) => {
+    if (!accessToken) {
+      navigate('/login/type');
+      return;
+    }
+
+    if (itemId) {
+      try {
+        await toggleWish('REQUEST', itemId, liked);
+        setLocalLiked(liked);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response?: { status?: number } };
+          if (axiosError.response?.status === 401) {
+            navigate('/login/type');
+          }
+        }
+      }
+    }
+  };
 
   const content = (
     <article className={`w-full ${linkTo ? 'cursor-pointer' : ''} ${className}`}>
@@ -61,7 +138,10 @@ export default function RequestCard({
             }}
             role="presentation"
           >
-            <LikeButton />
+            <LikeButton
+              initialLiked={isLiked}
+              onClick={handleLikeClick}
+            />
           </div>
         )}
       </div>
@@ -70,9 +150,19 @@ export default function RequestCard({
         <p className="body-b0-sb line-clamp-2 text-[var(--color-black)]">
           {title}
         </p>
-        <p className="mt-[0.75rem] heading-h4-bd text-[var(--color-black)]">
-          {priceRange}
-        </p>
+        {priceRange && (
+          <div className="mt-[0.75rem] heading-h4-bd text-[var(--color-black)] break-words">
+            {priceRange.includes('~') ? (
+              <>
+                {priceRange.split('~')[0]}
+                {' '}
+                ~{priceRange.split('~')[1]}
+              </>
+            ) : (
+              priceRange
+            )}
+          </div>
+        )}
       </div>
     </article>
   );
