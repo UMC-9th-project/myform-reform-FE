@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import LikeButton from '../../common/likebutton/LikeButton';
 import starIcon from '../../../assets/icons/star.svg';
 import type { WishlistItem } from '@/types/api/wishlist/wishlist';
@@ -18,7 +19,11 @@ const WishlistItemCard = ({ item, onRemove }: WishlistItemCardProps) => {
     }
   };
 
-  return (
+  const linkTo = item.wishType === 'ITEM' && item.itemId
+    ? `/market/product/${item.itemId}`
+    : undefined;
+
+  const content = (
     <div className="bg-white rounded-[0.625rem] overflow-visible cursor-pointer">
       <div
         className="relative w-full bg-[var(--color-gray-20)] rounded-t-[0.625rem] overflow-hidden"
@@ -29,7 +34,20 @@ const WishlistItemCard = ({ item, onRemove }: WishlistItemCardProps) => {
           alt={item.title}
           className="w-full h-full object-cover rounded-[1.25rem]"
         />
-        <div className="absolute bottom-[0.75rem] right-[0.75rem]">
+        <div
+          className="absolute bottom-[0.75rem] right-[0.75rem] z-10"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          }}
+          role="presentation"
+        >
           <LikeButton initialLiked={true} onClick={handleLikeClick} />
         </div>
       </div>
@@ -66,6 +84,11 @@ const WishlistItemCard = ({ item, onRemove }: WishlistItemCardProps) => {
       </div>
     </div>
   );
+
+  if (linkTo) {
+    return <Link to={linkTo} className="block w-full">{content}</Link>;
+  }
+  return content;
 };
 
 export default WishlistItemCard;
