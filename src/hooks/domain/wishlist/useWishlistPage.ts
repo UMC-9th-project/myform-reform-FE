@@ -73,31 +73,10 @@ export const useWishlistPage = () => {
     }
   }, [wishError, navigate]);
 
-  const { data: proposalWishData, isLoading: isLoadingProposal, error: proposalError } = useQuery({
-    queryKey: ['wishlist', 'PROPOSAL', accessToken, 'custom'],
-    queryFn: () => getWishList('PROPOSAL'),
-    enabled: !!accessToken && activeMenu === 'custom' && !isReformer,
-    retry: false,
-    placeholderData: (previousData: GetWishListResponse | undefined) => previousData,
-    staleTime: 5 * 60 * 1000,
-  });
 
   const combinedWishData = useMemo(() => {
-    if (activeMenu === 'custom' && !isReformer) {
-      const requestList = wishData?.success?.list || [];
-      if (proposalWishData?.success?.list && !proposalError) {
-        const proposalList = proposalWishData.success.list;
-        return {
-          ...wishData,
-          success: {
-            list: [...requestList, ...proposalList],
-          },
-        };
-      }
-      return wishData;
-    }
     return wishData;
-  }, [wishData, proposalWishData, activeMenu, isReformer, proposalError]);
+  }, [wishData]);
 
   const requestItemIds = useMemo(() => {
     if (activeMenu !== 'custom' || !combinedWishData?.success?.list) {
@@ -224,7 +203,7 @@ export const useWishlistPage = () => {
   return {
     activeMenu,
     wishData: combinedWishData,
-    isLoading: isLoading || isLoadingProposal,
+    isLoading,
     isReformer,
     currentItems,
     requestDetailsMap,

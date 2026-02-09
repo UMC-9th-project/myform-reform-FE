@@ -37,26 +37,33 @@ const Wishlist = () => {
               <EmptyWishlist />
             ) : activeMenu === 'custom' ? (
               <div className="grid grid-cols-3 gap-[1.875rem] mt-[3.125rem]">
-                {wishData.success.list.map((item, index) => {
-                  if (item.wishType === 'REQUEST') {
-                    const detail = requestDetailsMap.get(item.itemId);
-                    const priceRange = detail
-                      ? `${detail.minBudget.toLocaleString('ko-KR')}원~${detail.maxBudget.toLocaleString('ko-KR')}원`
-                      : `${item.price.toLocaleString('ko-KR')}원`;
-                    const imgSrc = detail?.firstImage || item.content || '';
-                    
-                    return (
-                      <RequestCard
-                        key={`${item.itemId}-${index}`}
-                        id={item.itemId}
-                        imgSrc={imgSrc}
-                        title={item.title}
-                        priceRange={priceRange}
-                        variant={isReformer ? 'reformer' : 'order'}
-                        isWished={true}
-                      />
-                    );
-                  } else if (item.wishType === 'PROPOSAL') {
+                {wishData.success.list
+                  .filter((item) => {
+                    if (!isReformer && item.wishType === 'REQUEST') {
+                      return false;
+                    }
+                    return true;
+                  })
+                  .map((item, index) => {
+                    if (item.wishType === 'REQUEST') {
+                      const detail = requestDetailsMap.get(item.itemId);
+                      const priceRange = detail
+                        ? `${detail.minBudget.toLocaleString('ko-KR')}원~${detail.maxBudget.toLocaleString('ko-KR')}원`
+                        : `${item.price.toLocaleString('ko-KR')}원`;
+                      const imgSrc = detail?.firstImage || item.content || '';
+                      
+                      return (
+                        <RequestCard
+                          key={`${item.itemId}-${index}`}
+                          id={item.itemId}
+                          imgSrc={imgSrc}
+                          title={item.title}
+                          priceRange={priceRange}
+                          variant={isReformer ? 'reformer' : 'order'}
+                          isWished={true}
+                        />
+                      );
+                    } else if (item.wishType === 'PROPOSAL') {
                     const detail = proposalDetailsMap.get(item.itemId);
                     const imgSrc = detail?.firstImage || item.content || '';
                     
