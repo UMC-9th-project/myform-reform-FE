@@ -3,11 +3,13 @@ import type { WishlistMenuType } from '@/types/api/wishlist/wishlist';
 interface WishlistSidebarProps {
   activeMenu: WishlistMenuType;
   onMenuChange: (menu: WishlistMenuType) => void;
+  isReformer?: boolean;
 }
 
 const WishlistSidebar = ({
   activeMenu,
   onMenuChange,
+  isReformer = false,
 }: WishlistSidebarProps) => {
   return (
     <aside className="w-[240px] mt-[1.875rem] bg-white rounded-[0.625rem] p-[1.25rem] h-fit">
@@ -16,16 +18,18 @@ const WishlistSidebar = ({
       </h2>
       <hr className="border-[var(--color-gray-30)] mb-[0.625rem]" />
       <nav className="flex flex-col">
-        <button
-          onClick={() => onMenuChange('market')}
-          className={`ml-4 body-b0-md text-left py-[0.875rem] transition-colors ${
-            activeMenu === 'market'
-              ? 'text-[var(--color-black)]'
-              : 'text-[var(--color-gray-50)]'
-          }`}
-        >
-          마켓
-        </button>
+        {!isReformer && (
+          <button
+            onClick={() => onMenuChange('market')}
+            className={`ml-4 body-b0-md text-left py-[0.875rem] transition-colors ${
+              activeMenu === 'market'
+                ? 'text-[var(--color-black)]'
+                : 'text-[var(--color-gray-50)]'
+            }`}
+          >
+            마켓
+          </button>
+        )}
         <button
           onClick={() => onMenuChange('custom')}
           className={`ml-4 body-b0-md text-left py-[0.875rem] transition-colors ${

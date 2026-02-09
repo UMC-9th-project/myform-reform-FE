@@ -8,7 +8,6 @@ import MarketProductDetailPage from './pages/market/MarketProductDetailPage';
 import MarketPurchasePage from './pages/market/MarketPurchasePage';
 import MarketPurchaseCompletePage from './pages/market/MarketPurchaseCompletePage';
 import Wishlist from './pages/wishlist/Wishlist';
-import ReformerWishlist from './pages/wishlist-reformer/Wishlist';
 import ReformerMyPage from './pages/my-page-Reform/ReformerMyPage';
 import CreatePage from './pages/my-page-Reform/CreatePage';
 import EditProfilePage from './pages/my-page-Reform/EditProfilePage';
@@ -127,7 +126,7 @@ function App() {
 
          {/* 찜 페이지 */}
         <Route path="/wishlist" element={<Wishlist />} />
-        <Route path="/reformer/wishlist" element={<ReformerWishlist />} />
+        <Route path="/reformer/wishlist" element={<Wishlist />} />
 
         {/* 마켓 페이지 */}
         <Route path="/market" element={<Market />} />
