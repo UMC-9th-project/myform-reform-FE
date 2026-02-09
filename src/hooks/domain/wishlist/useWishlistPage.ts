@@ -33,19 +33,27 @@ const getWishType = (menu: WishlistMenu, isReformer: boolean): WishType => {
 export const useWishlistPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const activeMenuFromUrl = getMenuFromUrl(searchParams);
-  const [activeMenu, setActiveMenu] = useState<WishlistMenu>(activeMenuFromUrl);
   const userRole = useAuthStore((state) => state.role);
   const accessToken = useAuthStore((state) => state.accessToken);
   const isReformer = userRole === 'reformer';
+  const activeMenuFromUrl = getMenuFromUrl(searchParams);
+  const initialMenu = isReformer && activeMenuFromUrl === 'market' ? 'custom' : activeMenuFromUrl;
+  const [activeMenu, setActiveMenu] = useState<WishlistMenu>(initialMenu);
 
   useEffect(() => {
     const menuFromUrl = getMenuFromUrl(searchParams);
-    if (menuFromUrl !== activeMenu) {
+    if (isReformer && menuFromUrl === 'market') {
+      setActiveMenu('custom');
+      setSearchParams((prev: URLSearchParams) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('menu', 'custom');
+        return newParams;
+      });
+    } else if (menuFromUrl !== activeMenu) {
       setActiveMenu(menuFromUrl);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, isReformer]);
 
   const { data: wishData, isLoading, error: wishError } = useQuery({
     queryKey: ['wishlist', activeMenu, accessToken, isReformer],

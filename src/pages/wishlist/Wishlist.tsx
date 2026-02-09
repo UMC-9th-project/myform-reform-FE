@@ -27,6 +27,7 @@ const Wishlist = () => {
           <WishlistSidebar
             activeMenu={activeMenu}
             onMenuChange={handleMenuChange}
+            isReformer={isReformer}
           />
 
           <div className="flex-1">
