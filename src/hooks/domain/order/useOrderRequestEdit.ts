@@ -172,7 +172,7 @@ export function useOrderRequestEdit() {
       const allImageUrls = [...existingImageUrls, ...newUrls];
       const payload = {
         title: title.trim(),
-        content: description.trim(),
+        contents: description.trim(),
         minBudget: minBudgetNum,
         maxBudget: maxBudgetNum,
         dueDate: deadline.toISOString(),
