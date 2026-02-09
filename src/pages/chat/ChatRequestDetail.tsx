@@ -1,6 +1,6 @@
 // pages/chat/ChatProposalDetailPage.tsx
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getChatProposalDetail } from '@/api/chat/chatProposalApi';
 import type { ChatProposalDetail } from '@/types/api/chat/chatProposal';
 import rightIcon from '@/assets/icons/right.svg';
@@ -15,6 +15,13 @@ const ChatProposalDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const { role: userRole } = useAuthStore();
+
+
+  const chatListPath =
+    userRole === 'reformer'
+      ? '/chat/reformer'
+      : '/chat/normal';
+
 
   // 데이터 불러오기
   useEffect(() => {
@@ -83,10 +90,17 @@ const ChatProposalDetailPage = () => {
       <div className="max-w-[80rem] mx-auto px-6 py-4">
         {/* 브레드크럼 */}
         <nav className="body-b1-rg text-[var(--color-gray-60)] mb-3 flex gap-1">
-          <span>홈</span> &gt;
-          <span>채팅하기</span> &gt;
+          <Link to="/" className="hover:underline cursor-pointer">
+            홈
+          </Link>
+          &gt;
+          <Link to={chatListPath} className="hover:underline cursor-pointer">
+            채팅하기
+          </Link>
+          &gt;
           <span>견적서 상세</span>
         </nav>
+
 
         {/* 타이틀 */}
         <h1 className="heading-h2-bd text-black mb-7">1:1 리폼 견적서</h1>
