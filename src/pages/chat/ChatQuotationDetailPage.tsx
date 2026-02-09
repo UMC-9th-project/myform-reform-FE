@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getChatRequestDetail } from '@/api/chat/chatRequestApi';
 import { type ChatRequestDetail } from '@/types/api/chat/chatDetail';
 import profile from '@/assets/icons/profile.svg';
+import { Link } from 'react-router-dom';
 
 const ChatQuotationDetailPage = () => {
   const { requestId } = useParams<{ requestId: string }>();
@@ -16,6 +17,9 @@ const ChatQuotationDetailPage = () => {
   const [requestDetail , setRequestDetail] = useState<ChatRequestDetail | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const chatBasePath =
+    myRole === 'REFORMER' ? '/chat/reformer' : '/chat/normal';
 
 
 
@@ -101,9 +105,13 @@ const ChatQuotationDetailPage = () => {
 
         {/* 브레드크럼 */}
         <nav className="body-b1-rg text-[var(--color-gray-60)] mb-3 flex gap-1">
-          <span>홈</span> &gt;
-          <span>채팅하기</span> &gt;
-          <span>견적서 상세</span> &gt;
+            <Link to="/" className="cursor-pointer hover:underline">
+              홈
+            </Link> &gt;
+            <Link to={chatBasePath} className="cursor-pointer hover:underline">
+              채팅하기
+            </Link> &gt;
+          <span>요청서 상세</span>
         </nav>
 
         {/* 타이틀 */}
