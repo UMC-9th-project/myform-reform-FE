@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logos/logo.svg';
 
 interface FooterProps {
@@ -5,6 +6,7 @@ interface FooterProps {
 }
 
 const Footer = ({ variant = 'dark' }: FooterProps) => {
+  const navigate = useNavigate();
   const isDark = variant === 'dark';
 
   return (
@@ -60,7 +62,7 @@ const Footer = ({ variant = 'dark' }: FooterProps) => {
           </div>
         </div>
       </div>
-      <div className="w-[514px] h-[63px] flex gap-[3.5rem] mt-[2.5rem]">
+      <div className="h-[63px] flex gap-[3.5rem] mt-[2.5rem]">
         <div className="flex flex-col gap-[0.375rem]">
           <p className="body-b0-sb">내폼리폼 고객센터</p>
           <p className="body-b1-sb text-[var(--color-gray-40)]">
@@ -69,10 +71,11 @@ const Footer = ({ variant = 'dark' }: FooterProps) => {
         </div>
         <div className="flex flex-col gap-[0.375rem]">
           <p className="body-b0-sb">서비스</p>
-          <ul className="body-b1-sb flex gap-[0.875rem] list-none text-[var(--color-gray-40)]">
-            <li>리폼마켓</li>
-            <li>리폼 요청</li>
-            <li>리폼 제안</li>
+          <ul className="body-b1-sb flex gap-[0.875rem] list-none text-[var(--color-gray-40)] cursor-pointer">
+            <li onClick={() => navigate('/market')}>마켓</li>
+            <li onClick={() => navigate('/order')}>주문제작</li>
+            <li onClick={() => navigate('/reformer-search')}>리폼러 찾기</li>
+            <li onClick={() => navigate('/')}>서비스 소개</li>
           </ul>
         </div>
       </div>

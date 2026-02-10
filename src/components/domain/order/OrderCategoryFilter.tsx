@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import downArrow from '../../../assets/icons/down.svg';
+import { useMarket } from '../../../hooks/domain/market/useMarket';
+import type { MarketItem } from '../../../types/api/market/market';
 
 interface CategoryItem {
-  id: number;
+  id: string;
   label: string;
 }
 
@@ -12,86 +14,120 @@ interface CategoryData {
   defaultOpen?: boolean;
 }
 
-const categoriesData: CategoryData[] = [
-  {
-    title: '의류',
-    items: [
-      { id: 1, label: '전체' },
-      { id: 2, label: '상의' },
-      { id: 3, label: '하의' },
-      { id: 4, label: '아우터' },
-      { id: 5, label: '기타' },
-    ],
-    defaultOpen: false,
-  },
-  {
-    title: '잡화',
-    items: [
-      { id: 1, label: '전체' },
-      { id: 2, label: '가방·짐색' },
-      { id: 3, label: '지갑·파우치' },
-      { id: 4, label: '모자·캡·비니' },
-      { id: 5, label: '기타' },
-    ],
-    defaultOpen: false,
-  },
-  {
-    title: '악세서리',
-    items: [
-      { id: 1, label: '전체' },
-      { id: 2, label: '헤어 악세서리' },
-      { id: 3, label: '폰케이스' },
-      { id: 4, label: '키링' },
-      { id: 5, label: '기타' },
-    ],
-    defaultOpen: false,
-  },
-  {
-    title: '홈·리빙',
-    items: [
-      { id: 1, label: '전체' },
-      { id: 2, label: '패브릭 소품' },
-      { id: 3, label: '쿠션·방석' },
-      { id: 4, label: '기타' },
-    ],
-    defaultOpen: false,
-  },
-  {
-    title: '기타',
-    items: [
-      { id: 1, label: '전체' },
-    ],
-    defaultOpen: false,
-  },
-];
+// 허용된 카테고리 이름 목록
+const ALLOWED_CATEGORY_NAMES = ['의류', '잡화', '홈·리빙', '기타'];
 
 interface OrderCategoryFilterProps {
-  onCategoryChange?: (categoryIndex: number, itemId: number, categoryTitle: string, itemLabel: string) => void;
+  onCategoryChange?: (categoryIndex: number, itemId: number, categoryTitle: string, itemLabel: string, categoryId?: string) => void;
 }
 
 const OrderCategoryFilter = ({ onCategoryChange }: OrderCategoryFilterProps) => {
-  const [openStates, setOpenStates] = useState<boolean[]>(
-    categoriesData.map(() => false)
-  );
+  const { data: categories } = useMarket();
+
+  // API에서 상위 카테고리와 하위 카테고리를 모두 가져와서 매핑
+  const categoriesData = useMemo<CategoryData[]>(() => {
+    if (!categories || categories.length === 0) {
+      return [];
+    }
+
+    const getCategoryName = (category: { market?: MarketItem; name?: string }): string | null => {
+      return category.market?.name || category.name || null;
+    };
+
+    const getChildren = (category: { children?: Array<{ market?: MarketItem } | MarketItem> }): Array<{ market?: MarketItem } | MarketItem> => {
+      return category.children || [];
+    };
+
+    const getChildMarket = (child: { market?: MarketItem } | MarketItem): MarketItem | null => {
+      if ('market' in child && child.market) {
+        return child.market;
+      }
+      if ('categoryId' in child && 'name' in child) {
+        return child as MarketItem;
+      }
+      return null;
+    };
+
+    interface SubcategoryItem {
+      id: string;
+      label: string;
+      sortOrder: number;
+    }
+
+    const filtered: CategoryData[] = categories
+      .filter((category) => {
+        const categoryName = getCategoryName(category);
+        return categoryName && ALLOWED_CATEGORY_NAMES.includes(categoryName);
+      })
+      .map((category): CategoryData | null => {
+        const categoryName = getCategoryName(category);
+        if (!categoryName) {
+          return null;
+        }
+
+        const children = getChildren(category);
+        
+        const subcategories: SubcategoryItem[] = children
+          .map((child) => {
+            const childMarket = getChildMarket(child);
+            if (!childMarket) {
+              return null;
+            }
+            return {
+              id: childMarket.categoryId || '',
+              label: childMarket.name || '',
+              sortOrder: childMarket.sortOrder || 0,
+            };
+          })
+          .filter((item): item is SubcategoryItem => item !== null && item.label !== ''); // 빈 레이블 제거
+
+     
+        subcategories.sort((a, b) => a.sortOrder - b.sortOrder);
+
+        const items: CategoryItem[] = [
+          { id: '0', label: '전체' },
+          ...subcategories.map((sub) => ({
+            id: sub.id,
+            label: sub.label,
+          })),
+        ];
+
+        return {
+          title: categoryName,
+          items,
+          defaultOpen: false,
+        };
+      })
+      .filter((item): item is CategoryData => item !== null);
+
+    return filtered;
+  }, [categories]);
+
+  const [openStates, setOpenStates] = useState<Record<number, boolean>>({});
  
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
   const toggleMenu = (index: number) => {
-    setOpenStates((prev) => {
-      const newStates = [...prev];
-      newStates[index] = !newStates[index];
-      return newStates;
-    });
+    setOpenStates((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
   };
 
-  const handleItemClick = (categoryIndex: number, itemId: number) => {
+  const handleItemClick = (categoryIndex: number, itemId: string) => {
     const itemKey = `${categoryIndex}-${itemId}`;
     setSelectedItem(itemKey);
     const category = categoriesData[categoryIndex];
     const item = category.items.find((i) => i.id === itemId);
-    onCategoryChange?.(categoryIndex, itemId, category.title, item?.label || '');
+    const numericId = itemId === '0' ? 0 : (Number(itemId) || 0);
+    // categoryId는 실제 카테고리 ID (UUID 문자열), itemId === '0'이면 undefined로 전달
+    const categoryId = itemId === '0' ? undefined : itemId;
+    onCategoryChange?.(categoryIndex, numericId, category.title, item?.label || '', categoryId);
   };
 
+ 
+
+ 
   return (
     <aside className="hidden md:block w-[217px] flex-shrink-0">
       <nav className="flex flex-col">
@@ -115,7 +151,7 @@ const OrderCategoryFilter = ({ onCategoryChange }: OrderCategoryFilterProps) => 
                   aria-label={
                     openStates[categoryIndex] ? '메뉴 닫기' : '메뉴 열기'
                   }
-                  aria-expanded={openStates[categoryIndex]}
+                  aria-expanded={!!openStates[categoryIndex]}
                 >
                   <img 
                     src={downArrow} 
