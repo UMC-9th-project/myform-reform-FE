@@ -1,5 +1,6 @@
 import { api } from '@/api/axios';
 import type { ChatRequestDetailResponse} from '@/types/api/chat/chatDetail';
+import type { UpdateChatRequestPayload, UpdateChatRequestResponse } from '@/types/api/chat/chatRequestEdit';
 
 // ChatRequestPayload는 flat 구조로 정의
 export interface ChatRequestPayload {
@@ -11,10 +12,21 @@ export interface ChatRequestPayload {
   image: string[];
 }
 
-export const createChatRequest = async (payload: ChatRequestPayload) => {
-  return api.post('/chat/request', payload); 
+export const createChatRequest = async (payload?: ChatRequestPayload) => {
+  return api.post('/chat/request', payload ?? {}); 
 };
 
 export const getChatRequestDetail = async (requestId: string) => {
-  return api.get<ChatRequestDetailResponse>(`/chat/request/${requestId}`);
+  const response= await api.get<ChatRequestDetailResponse>(`/chat/request/${requestId}`);
+  return response.data.success;
+};
+
+export const updateChatRequest = (
+  requestId: string,
+  payload: UpdateChatRequestPayload
+) => {
+  return api.patch<UpdateChatRequestResponse>(
+    `/chat/request/${requestId}`,
+    payload
+  );
 };
