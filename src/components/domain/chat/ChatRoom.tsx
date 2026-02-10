@@ -423,6 +423,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       createdAt: new Date().toISOString(),
       isRead: false,
     };
+    
 
     // 1️⃣ 낙관적 UI
     queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
@@ -461,6 +462,56 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     // 모달 닫기
     setIsPaymentModalOpen(false);
   };
+
+  const handlePaymentFinishOptimistic = (payload: PaymentPayload) => {
+    const tempResultMessage = {
+      messageId: `temp-result-${Date.now()}`,
+      senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
+      senderId: 'me',
+      messageType: 'result',
+      payload: {
+        totalAmount: payload.price,
+        receiptNumber: '-', // 서버에서 채워줄 예정
+        approvedAt: new Date().toISOString(),
+        paymentMethod: {
+          type: 'CARD_EASY_PAY',
+          provider: '',
+          cardNumber: '',
+        },
+      },
+      createdAt: new Date().toISOString(),
+      isRead: false,
+    };
+
+    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+      if (!oldData) return oldData;
+      const lastPageIndex = oldData.pages.length - 1;
+      const updatedPages = [...oldData.pages];
+      updatedPages[lastPageIndex] = {
+        ...updatedPages[lastPageIndex],
+        messages: [...updatedPages[lastPageIndex].messages, tempResultMessage],
+      };
+      return { ...oldData, pages: updatedPages };
+    });
+
+    queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
+      if (!oldData?.data) return oldData;
+      const updatedData = oldData.data.map((room: any) =>
+        room.chatRoomId === chatId
+          ? { ...room, lastMessage: '결제 완료', lastMessageAt: tempResultMessage.createdAt }
+          : room
+      );
+      const sortedData = [
+        updatedData.find((room: any) => room.chatRoomId === chatId)!,
+        ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
+      ];
+      return { ...oldData, data: sortedData };
+    });
+  };
+
+
+  
+
 
 
   const handleSendAction = () => {
@@ -603,17 +654,29 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                         type={isMine ? 'sent' : 'received'}
                         nickname={isMine ? roomInfo?.requester.nickname ?? '사용자' : roomInfo?.owner.nickname ?? '리포머'}
                         payload={msg.payload}
+                        onFinish={handlePaymentFinishOptimistic}
                       />
                     )}
 
-                    {msg.messageType === 'result' && (
+                    {msg.messageType === 'result' && msg.payload && (
                       <PayFinishCard
                         type={isMine ? 'sent' : 'received'}
-                        price={msg.payload.totalAmount}
-                        orderNumber={msg.payload.receiptNumber}
-                        paymentMethod={msg.payload.paymentMethod.type === 'CARD_EASY_PAY' ? '카드 간편결제' : msg.payload.paymentMethod.type}
-                        paymentDetail={`${msg.payload.paymentMethod.provider} / ${msg.payload.paymentMethod.cardNumber}`}
-                        date={new Date(msg.payload.approvedAt!).toLocaleString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })}
+                        price={msg.payload.totalAmount ?? 0}
+                        orderNumber={msg.payload.receiptNumber ?? '-'}
+                        paymentMethod={
+                          msg.payload.paymentMethod?.type === 'CARD_EASY_PAY' 
+                            ? '카드 간편결제' 
+                            : (msg.payload.paymentMethod?.type || '결제 수단 없음')
+                        }
+                        paymentDetail={`${msg.payload.paymentMethod?.provider ?? ''} / ${msg.payload.paymentMethod?.cardNumber ?? ''}`}
+                        date={
+                          msg.payload.approvedAt 
+                            ? new Date(msg.payload.approvedAt).toLocaleString('ko-KR', { 
+                                year: 'numeric', month: '2-digit', day: '2-digit', 
+                                hour: '2-digit', minute: '2-digit', hour12: false 
+                              })
+                            : '-'
+                        }
                       />
                     )}
 

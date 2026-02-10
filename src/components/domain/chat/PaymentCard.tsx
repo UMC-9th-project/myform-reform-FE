@@ -6,9 +6,10 @@ export interface PaymentCardProps {
   nickname: string;
   type: 'sent' | 'received';
   payload: PaymentPayload;
+  onFinish?: (payload: PaymentPayload) => void;
 }
 
-const PaymentCard: React.FC<PaymentCardProps> = ({ type, nickname, payload }) => {
+const PaymentCard: React.FC<PaymentCardProps> = ({ type, nickname, payload, onFinish }) => {
   const isSent = type === 'sent';
   const displayNickname = nickname || '심심한 리본';
 
@@ -41,56 +42,46 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ type, nickname, payload }) =>
     });
   };
 
+  
   const handlePaymentClick = async () => {
-  if (!receiptNumber) {
-    alert('결제 정보를 불러오지 못했습니다.');
-    return;
-  }
+    if (!receiptNumber) return alert('결제 정보를 불러오지 못했습니다.');
 
-  try {
-    await loadPortOne();
+    try {
+      await loadPortOne();
+      const IMP = (window as any).IMP;
+      if (!IMP) throw new Error('포트원 SDK 로드 실패');
 
-    const IMP = (window as any).IMP;
-      if (!IMP) throw new Error('포트원 SDK가 로드되지 않았습니다.');
-
-    // IMP.request_pay 콜백 안에서
-    IMP.request_pay(
-      {
-        pg: 'html5_inicis',
-        pay_method: 'card',
-        merchant_uid: receiptNumber,
-        name: '내폼리폼 결제',
-        amount: totalPrice,
-        buyer_name: displayNickname,
-      },
-      (rsp: any) => {
-        if (rsp.success) {
-          console.log('결제 성공:', rsp);
-          alert(`결제가 완료되었습니다.\n결제 금액: ${rsp.paid_amount.toLocaleString()}원`);
-
-          if (payload.orderId) {
-            // verifyPayment 호출
-            verifyPayment({ order_id: payload.orderId, imp_uid: rsp.imp_uid })
-              .then((res) => {
-                if (res.resultType === 'SUCCESS' && res.success?.success) {
-                  console.log('결제 검증 완료');
-                } else {
-                  console.error('결제 검증 실패', res);
-                }
-              })
-              .catch((err) => {
-                console.error('verify API 호출 오류', err);
+      IMP.request_pay(
+        {
+          pg: 'html5_inicis',
+          pay_method: 'card',
+          merchant_uid: receiptNumber,
+          name: '내폼리폼 결제',
+          amount: totalPrice,
+          buyer_name: displayNickname,
+        },
+        (rsp: any) => {
+          if (rsp.success) {
+            alert(`결제가 완료되었습니다.\n결제 금액: ${rsp.paid_amount.toLocaleString()}원`);
+            
+            // ✅ 결제 완료 시 콜백
+            if (onFinish) {
+              onFinish({
+                ...payload,
+                expectedWorking: payload.expectedWorking, // PaymentPayload 타입 맞춤
               });
-          }
-        } else {
-          console.error('결제 실패:', rsp);
-          alert(`결제 실패: ${rsp.error_msg}`);
-        }
-      }
-    );  
+            }
 
+            // 서버 검증
+            if (payload.orderId) {
+              verifyPayment({ order_id: payload.orderId, imp_uid: rsp.imp_uid }).then(() => {});
+            }
+          } else {
+            alert(`결제 실패: ${rsp.error_msg}`);
+          }
+        }
+      );
     } catch (err) {
-      console.error('결제 오류:', err);
       alert((err as Error).message);
     }
   };
