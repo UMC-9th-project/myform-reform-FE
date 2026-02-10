@@ -11,6 +11,7 @@ import { connectSocket, getSocket } from '@/utils/domain/socket';
 import useAuthStore from '@/stores/useAuthStore';
 import { uploadImages } from '@/api/upload';
 import PaymentCard from './PaymentCard';
+import PayFinishCard from './PayFinishCard';
 
 interface ChatRoomProps {
   chatId: string;
@@ -601,9 +602,18 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                       <PaymentCard
                         type={isMine ? 'sent' : 'received'}
                         nickname={isMine ? roomInfo?.requester.nickname ?? '사용자' : roomInfo?.owner.nickname ?? '리포머'}
-                        price={msg.payload.price}
-                        delivery={msg.payload.delivery}
-                        days={msg.payload.expectedWorking}
+                        payload={msg.payload}
+                      />
+                    )}
+
+                    {msg.messageType === 'result' && (
+                      <PayFinishCard
+                        type={isMine ? 'sent' : 'received'}
+                        price={msg.payload.totalAmount}
+                        orderNumber={msg.payload.receiptNumber}
+                        paymentMethod={msg.payload.paymentMethod.type === 'CARD_EASY_PAY' ? '카드 간편결제' : msg.payload.paymentMethod.type}
+                        paymentDetail={`${msg.payload.paymentMethod.provider} / ${msg.payload.paymentMethod.cardNumber}`}
+                        date={new Date(msg.payload.approvedAt!).toLocaleString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' })}
                       />
                     )}
 

@@ -39,6 +39,18 @@ export interface PaymentPayload {
   expectedWorking: number;
 }
 
+export interface PaymentResult {
+  receiptNumber: string;
+  totalAmount: number;
+  currency: string;
+  paymentMethod: {
+    type: string;
+    provider: string | null;
+    cardNumber: string | null;
+  };
+  approvedAt: string | null;
+}
+
 /* =========================
  * Message Types
  * ========================= */
@@ -48,7 +60,8 @@ export type MessageType =
   | 'image'
   | 'request'
   | 'proposal'
-  | 'payment';
+  | 'payment'
+  | 'result';
 
 /* =========================
  * Chat Message (Discriminated Union)
@@ -100,6 +113,15 @@ export type ChatMessage =
       payload: PaymentPayload;
       createdAt: string;
   }
+  | {
+    messageId: string;
+    senderId: string;
+    senderType: 'USER' | 'OWNER';
+    messageType: 'result';
+    textContent: null;
+    payload: PaymentResult;
+    createdAt: string;
+}
 
 /* =========================
  * ChatRoom Info (상단 정보)
