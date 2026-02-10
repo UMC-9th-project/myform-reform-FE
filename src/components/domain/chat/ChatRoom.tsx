@@ -6,7 +6,7 @@ import Gallery from '@/assets/chat/gallery.svg';
 import QuotationCard from './QuotationCard';
 import RequireCard from './RequireCard';
 import PaymentModal, { type PaymentRequestData } from './PaymentModal';
-import type { RoomType } from '@/types/api/chat/chatMessages';
+import type { PaymentPayload, RoomType } from '@/types/api/chat/chatMessages';
 import { connectSocket, getSocket } from '@/utils/domain/socket';
 import useAuthStore from '@/stores/useAuthStore';
 import { uploadImages } from '@/api/upload';
