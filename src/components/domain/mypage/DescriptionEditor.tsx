@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { AlignLeft, ArrowsUpFromLine } from 'lucide-react';
+import { AlignLeft, AlignCenter, AlignRight, ArrowsUpFromLine } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -153,11 +153,26 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose
 
           <div className="flex items-center gap-5">
             <button
-              title="오른쪽 정렬"
+              title="왼쪽 정렬"
               onClick={() => editor.chain().focus().setTextAlign('left').run()}
             >
               <AlignLeft size={23} />
             </button>
+
+            <button
+              title="가운데 정렬"
+              onClick={() => editor.chain().focus().setTextAlign('center').run()}
+            >
+              <AlignCenter size={23} />
+            </button>
+
+            <button
+              title="오른쪽 정렬"
+              onClick={() => editor.chain().focus().setTextAlign('right').run()}
+            >
+              <AlignRight size={23} />
+            </button>
+
             <button
               title="줄바꿈" onClick={() => editor.chain().focus().setHardBreak().run()}
             >

@@ -250,10 +250,14 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
               type="text" 
               placeholder="요청글 제목을 입력해주세요."
               value = {title}
-              onChange={e => setTitle(e.target.value)} 
+              onChange={e => {
+                if (e.target.value.length <= 40) {
+                  setTitle(e.target.value);
+                }
+              }} 
               className="placeholder:text-[var(--color-gray-50)] w-full border border-[var(--color-gray-60)] body-b1-rg p-5 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
-            <span className="absolute right-3 top-10 text-sm text-gray-400">0/40자</span>
+            <span className="absolute right-3 top-10 text-sm text-gray-400">{title.length}/40자</span>
           </div>
         </div>
       </section>
