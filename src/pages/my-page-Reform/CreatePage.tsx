@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Plus } from 'lucide-react';
+import { X } from 'lucide-react';
 import Option5 from '../../components/domain/mypage/Option5';
 import { type OptionGroup } from '../../components/domain/mypage/Option5';
 import DescriptionEditor from '../../components/domain/mypage/DescriptionEditor';
@@ -9,6 +9,7 @@ import { createOrder, createSale } from '../../api/profile/sale';
 import type { SaleOption } from '../../types/domain/mypage/sale';
 import type { CreateOrderRequest } from '../../types/domain/mypage/order';
 import { useNavigate } from 'react-router-dom';
+import upload from '@/assets/icons/upload.svg';
 
 type ImageType = {
   file: File;
@@ -224,7 +225,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                   onClick={() => fileInputRef.current?.click()}
                   className="w-36 h-36 rounded-lg border border-[var(--color-gray-40)] bg-[var(--color-gray-20)] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition"
                 >
-                  <Plus size={28} className="text-gray-400" />
+                  <img src={upload} alt="이미지 업로드 아이콘" className="text-gray-400" />
                   <span className="body-b3-rg text-[var(--color-gray-50)] mt-2 text-center">이미지 업로드</span>
                 </div>
               )}
