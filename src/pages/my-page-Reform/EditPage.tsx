@@ -12,6 +12,7 @@ import type { EditReformProposalRequest } from '@/types/domain/mypage/editPropos
 import { editSaleItem, type EditSaleItemRequest } from '@/types/domain/mypage/editSaleItem';
 import { getSaleItem } from '@/api/mypage/sale';
 import type { SaleOption } from '@/types/domain/mypage/sale';
+import { getProfileProposal } from '@/api/profile/proposal';
 
 type ImageType = {
   file: File | null;
@@ -50,80 +51,95 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
   '기타': []
   };
 
-    useEffect(() => {
-      if (!id) return;
+  useEffect(() => {
+    if (!id) return;
 
-      const fetchData = async () => {
-        try {
-          if (type === 'sale') {
-            // --- 판매글 조회 ---
-            const res = await getSaleItem(id);
+    const fetchData = async () => {
+      try {
+        if (type === 'sale') {
+          // --- 판매글 조회 ---
+          const res = await getSaleItem(id);
 
-            // 이미지 세팅
-            setImages(res.images.map(url => ({ file: null, preview: url })));
+          // 이미지 세팅
+          setImages(res.images.map(url => ({ file: null, preview: url })));
 
-            // 텍스트 세팅
-            setTitle(res.title);
-            setDescription(''); // 판매글 content 없으면 빈 문자열
-            setPrice(res.price.toString());
-            setShippingFee(res.delivery.toString());
-            setDescription(res.content || '');
-            // 카테고리 세팅
-            setCategory(res.category?.major || '');
-            setSubCategory(res.category?.sub || '');
+          // 텍스트 세팅
+          setTitle(res.title);
+          setDescription(res.content || '');
+          setPrice(res.price.toString());
+          setShippingFee(res.delivery.toString());
 
-            // 옵션 그룹 변환
-            if (res.option_groups && res.option_groups.length > 0) {
-              setOptionGroups(
-                res.option_groups.map((group, groupIndex) => ({
-                  id: optionGroupsIdRef.current++,
-                  apiId: group.option_group_id,
-                  name: group.name,
-                  sortOrder: groupIndex, // 그룹 순서 저장
-                  subOptions: group.option_items.map((item, subIndex) => ({
-                    id: subOptionIdRef.current++,
-                    apiId: item.option_item_id,
-                    name: item.name,
-                    price: item.extra_price.toString(),
-                    quantity: item.quantity.toString(),
-                    sortOrder: subIndex, // 세부 옵션 순서 저장
-                  })),
-                }))
-              );
-            }
+          // 카테고리 세팅
+          setCategory(res.category?.major || '');
+          setSubCategory(res.category?.sub || '');
 
-          } else if (type === 'order') {
-            // --- 주문제작 글 조회 ---
-            const res = await getReformProposal(id);
-            const data = res.success;
-
-            // 이미지 세팅
-            setImages(
-              data.images?.map(img => ({ file: null, preview: img.photo })) || []
+          // 옵션 그룹 변환
+          if (res.option_groups && res.option_groups.length > 0) {
+            setOptionGroups(
+              res.option_groups.map((group, groupIndex) => ({
+                id: optionGroupsIdRef.current++,
+                apiId: group.option_group_id,
+                name: group.name,
+                sortOrder: groupIndex,
+                subOptions: group.option_items.map((item, subIndex) => ({
+                  id: subOptionIdRef.current++,
+                  apiId: item.option_item_id,
+                  name: item.name,
+                  price: item.extra_price.toString(),
+                  quantity: item.quantity.toString(),
+                  sortOrder: subIndex,
+                })),
+              }))
             );
+          }
 
-            // 텍스트 세팅
-            setTitle(data.title || '');
-            setDescription(data.content || '');
-            setPrice(data.price?.toString() || '');
-            setShippingFee(data.delivery?.toString() || '');
-            setDuration(data.expectedWorking?.toString() || '');
+        } else if (type === 'order') {
+          // --- 단일 주문제작 글 조회 ---
+          const res = await getReformProposal(id);
+          const data = res.success;
+          if (!data) throw new Error('주문제작 글 데이터 없음');
 
-            // 카테고리 세팅
+          // 이미지 세팅
+          setImages(data.images?.map(img => ({ file: null, preview: img.photo })) || []);
+
+          // 텍스트 세팅
+          setTitle(data.title || '');
+          setDescription(data.content || '');
+          setPrice(data.price?.toString() || '');
+          setShippingFee(data.delivery?.toString() || '');
+          setDuration(data.expectedWorking?.toString() || '');
+
+          // --- 카테고리만 getProfileProposal에서 가져오기 ---
+          if (data.ownerId) {
+            const profileRes = await getProfileProposal({ ownerId: data.ownerId, limit: 20 });
+            const matchedProposal = profileRes.success?.proposals.find(p => p.proposalId === id);
+
+            if (matchedProposal?.category) {
+              setCategory(matchedProposal.category.major || '');
+              setSubCategory(matchedProposal.category.sub || '');
+            } else {
+              // fallback
+              setCategory(data.category?.major || '');
+              setSubCategory(data.category?.sub || '');
+            }
+          } else {
+            // fallback
             setCategory(data.category?.major || '');
             setSubCategory(data.category?.sub || '');
-
-            // 주문제작은 옵션 없음
-            setOptionGroups([]);
           }
-        } catch (error) {
-          console.error('데이터 불러오기 실패', error);
-          alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 불러오기에 실패했습니다.`);
-        }
-      };
 
-      fetchData();
-    }, [id, type]);
+          // 주문제작은 옵션 없음
+          setOptionGroups([]);
+        }
+      } catch (error) {
+        console.error('데이터 불러오기 실패', error);
+        alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 불러오기에 실패했습니다.`);
+      }
+    };
+
+    fetchData();
+  }, [id, type]);
+
 
 
 
