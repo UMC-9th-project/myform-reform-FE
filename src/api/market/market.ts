@@ -2,8 +2,11 @@ import { api } from '../axios';
 import type { 
     MarketResponse,
     GetMarketProductListParams,
-    GetMarketProductListResponse 
+    GetMarketProductListResponse,
+    GetMarketProductDetailParams,
+    GetMarketProductDetailResponse
 } from '../../types/api/market/market';
+
 
 /** 마켓 카테고리 조회 */
 export const getMarket = async (): Promise<MarketResponse> => {
@@ -22,6 +25,15 @@ export const getMarketProductList = async (
             page: params.page ?? 1,
             limit: params.limit ?? 15,
         },
+    });
+    return response.data;
+};
+
+export const getMarketProductDetail = async (
+    params: GetMarketProductDetailParams
+): Promise<GetMarketProductDetailResponse> => {
+    const response = await api.get<GetMarketProductDetailResponse>('/market/', {
+        params,
     });
     return response.data;
 };

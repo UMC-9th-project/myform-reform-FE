@@ -79,18 +79,15 @@ const OrderCategoryFilter = ({ onCategoryChange }: OrderCategoryFilterProps) => 
               sortOrder: childMarket.sortOrder || 0,
             };
           })
-          .filter((item): item is SubcategoryItem => item !== null && item.label !== ''); // 빈 레이블 제거
+          .filter((item): item is SubcategoryItem => item !== null && item.label !== ''); 
 
      
         subcategories.sort((a, b) => a.sortOrder - b.sortOrder);
 
-        const items: CategoryItem[] = [
-          { id: '0', label: '전체' },
-          ...subcategories.map((sub) => ({
-            id: sub.id,
-            label: sub.label,
-          })),
-        ];
+        const items: CategoryItem[] = subcategories.map((sub) => ({
+          id: sub.id,
+          label: sub.label,
+        }));
 
         return {
           title: categoryName,
@@ -119,9 +116,8 @@ const OrderCategoryFilter = ({ onCategoryChange }: OrderCategoryFilterProps) => 
     setSelectedItem(itemKey);
     const category = categoriesData[categoryIndex];
     const item = category.items.find((i) => i.id === itemId);
-    const numericId = itemId === '0' ? 0 : (Number(itemId) || 0);
-    // categoryId는 실제 카테고리 ID (UUID 문자열), itemId === '0'이면 undefined로 전달
-    const categoryId = itemId === '0' ? undefined : itemId;
+    const numericId = Number(itemId) || 0;
+    const categoryId = itemId;
     onCategoryChange?.(categoryIndex, numericId, category.title, item?.label || '', categoryId);
   };
 
