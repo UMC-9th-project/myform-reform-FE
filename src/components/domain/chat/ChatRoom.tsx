@@ -22,7 +22,7 @@ interface ChatRoomProps {
 const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   const [inputText, setInputText] = useState('');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  
+
   const messagesContainerRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -50,6 +50,10 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   }, [data]);
 
   const roomInfo = data?.pages[0]?.chatRoomInfo; 
+  const myUserId =
+  myRole === 'REFORMER'
+    ? roomInfo?.owner.id
+    : roomInfo?.requester.id;
 
   const handleImageChange = async (
   e: React.ChangeEvent<HTMLInputElement>
@@ -87,7 +91,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     const tempMessage = {
       messageId: `temp-${Date.now()}`,
       senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
-      senderId: 'me',
+      senderId: myUserId,
       messageType: 'image',
       payload: { urls: imageUrls },
       createdAt: new Date().toISOString(),
@@ -345,7 +349,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   const tempMessage = {
     messageId: `temp-${Date.now()}`, // 임시 ID
     senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
-    senderId: 'me', // 임시
+    senderId: myUserId, // 임시
     messageType: 'text',
     textContent: inputText,
     payload: null,
@@ -411,7 +415,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     const tempMessage = {
       messageId: `temp-${Date.now()}`,
       senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
-      senderId: 'me',
+      senderId: myUserId,
       messageType: 'payment', // 여기 중요
       payload: {
         price: paymentData.price,
@@ -451,7 +455,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       return { ...oldData, data: sortedData };
     });
 
-    // 3️⃣ 서버 전송
     socket.emit('sendMessage', {
       roomId: chatId,
       contentType: 'payment',
@@ -466,7 +469,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     const tempResultMessage = {
       messageId: `temp-result-${Date.now()}`,
       senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
-      senderId: 'me',
+      senderId: myUserId,
       messageType: 'result',
       payload: {
         totalAmount: payload.price,
@@ -600,10 +603,13 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
 
           const showDate = msgDateString !== prevDateString;
 
-          const isMine = 
-            (myRole === 'REFORMER' && msg.senderType === 'OWNER') ||
-            (myRole === 'USER' && msg.senderType === 'USER');
-          
+          const isMine = myUserId ? msg.senderId === myUserId : false;
+          console.log({
+            myUserId,
+            senderId: msg.senderId,
+            isMine: msg.senderId === myUserId,
+          });
+
           return (
             <React.Fragment key={msg.messageId}>
               {showDate && (

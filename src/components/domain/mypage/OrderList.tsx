@@ -64,7 +64,7 @@ const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail 
       // 마켓 판매 → 상세보기
       if (onClickDetail) onClickDetail(order.orderId);
     } else {
-      navigate(`/chat/reformer/1`);
+      navigate(`/chat/reformer/${order.targetId}`);
     }
   };
 

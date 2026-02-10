@@ -43,6 +43,9 @@ const ReviewList = () => {
           image: o.thumbnail || '',
           status: '결제 완료',
           reviewAvailable: o.reviewAvailable,
+
+          targetType: o.targetType === 'ITEM' || o.targetType === 'REQUEST' ? o.targetType : undefined,// "ITEM" | "REQUEST"
+          targetId: o.targetId,
         }));
         setWritableReviews(mapped);
       } catch (err) {
@@ -131,6 +134,8 @@ const ReviewList = () => {
               data={writableReviews}
               onDetailClick={handleDetailClick}
               onWriteReviewClick={handleWriteReviewClick}
+              onChatClick={(targetId: string) => {
+                navigate(`/chat/normal/${targetId}`); }}
             />
           )}
         </div>
@@ -152,6 +157,7 @@ const ReviewList = () => {
               maxWidth="6xl"
               reviews={writtenReviewsData}
               onDelete={(reviewId: string) => deleteMutation.mutate(reviewId)}
+              
             />
           )}
         </div>
