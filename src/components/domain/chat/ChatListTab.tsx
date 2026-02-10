@@ -128,7 +128,22 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="body-b3-sb text-black">{chat.title}</h3>
-                      <p className="body-b3-rg text-[var(--color-gray-60)] mt-1">{chat.lastMessage}</p>
+                      <p className="body-b3-rg text-[var(--color-gray-60)] mt-1">
+                        <p className="body-b3-rg text-[var(--color-gray-60)] mt-1">
+                          {chat.lastMessage ??
+                            (chat.messageType === 'payment'
+                              ? '결제창'
+                              : chat.messageType === 'text'
+                              ? '메시지'
+                              : chat.messageType === 'require'
+                              ? '요청서'
+                              : chat.messageType === 'image'
+                              ? '사진'
+                              : chat.messageType === 'result'
+                              ? '결제 완료'
+                              : '새로운 메시지')}
+                        </p>
+                      </p>
                     </div>
                     <div className="flex flex-col items-end">
                       <span className="body-b5-rg text-[var(--color-gray-50)] mb-2">
