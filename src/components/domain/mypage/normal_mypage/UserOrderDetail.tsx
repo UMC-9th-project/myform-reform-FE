@@ -123,7 +123,7 @@ const UserOrderDetail = () => {
                 
                 <div className="flex items-center gap-2">
                   <span className="body-b0-rg text-[var(--color-gray-50)]">진행 상태</span>
-                  <span className="text-black body-b0-rg ml-6">{order.status}</span>
+                  <span className="text-[var(--color-mint-1)] body-b0-rg ml-6">{order.status}</span>
                 </div>
                 {/* 운송장 번호 */}
                 <div className="grid grid-cols-[100px_1fr] items-center">

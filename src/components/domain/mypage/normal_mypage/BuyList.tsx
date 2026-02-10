@@ -18,6 +18,7 @@ const BuyList = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
+      setSelectedOrderId(null);
       try {
         setLoading(true);
         const type = localTab === 'market' ? 'ITEM' : 'REFORM';
