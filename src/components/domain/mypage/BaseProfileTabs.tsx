@@ -292,7 +292,16 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
             {/* ───────── 상품 리스트 ───────── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10">
               {saleItems.map((item) => (
-                <div key={getItemKey(item)} className="flex flex-col group cursor-pointer">
+                <div key={getItemKey(item)} className="flex flex-col group cursor-pointer"
+                  onClick={() => {
+                    if (activeSaleSubTab === '마켓 판매') {
+                      const saleItem = item as ProfileSaleItem;
+                      navigate(`/market/product/${saleItem.itemId}`);
+                    } else {
+                      const proposalItem = item as ProfileProposalItem;
+                      navigate(`/reformer/order/proposals/${proposalItem.proposalId}`)
+                    }
+                  }}>
                   <div className="relative aspect-square mb-3 overflow-hidden rounded-[1.25rem] bg-white">
                     <img
                       src={item.photo ?? '/images/default.png'}
