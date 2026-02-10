@@ -21,6 +21,8 @@ const formatPrice = (price: number) => {
 const MarketProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { productDetailResponse } = useMarketProductDetail(id);
+  
   const [quantity, setQuantity] = useState(1);
   const [activeSection, setActiveSection] = useState<'info' | 'reformer' | 'review'>('info');
   
