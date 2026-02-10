@@ -67,6 +67,10 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
             setDescription(''); // 판매글 content 없으면 빈 문자열
             setPrice(res.price.toString());
             setShippingFee(res.delivery.toString());
+            setDescription(res.content || '');
+            // 카테고리 세팅
+            setCategory(res.category?.major || '');
+            setSubCategory(res.category?.sub || '');
 
             // 옵션 그룹 변환
             if (res.option_groups && res.option_groups.length > 0) {

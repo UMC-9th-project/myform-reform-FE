@@ -5,6 +5,7 @@ export interface SaleItemResponse {
   title: string;
   images: string[];
   price: number;
+  content: string;
   delivery: number;
   delivery_info?: string;
   option_groups: SaleOptionGroupResponse[];
@@ -12,6 +13,7 @@ export interface SaleItemResponse {
   is_wished: boolean;
   review_summary?: ReviewSummary;
   reviews?: Review[];
+  category: SaleCategory;
 }
 
 export interface SaleOptionGroupResponse {
