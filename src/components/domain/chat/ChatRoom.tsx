@@ -78,71 +78,64 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   
 
   const sendImageMessage = (imageUrls: string[]) => {
-  const socket = getSocket();
-  if (!socket || !socket.connected) {
-    console.error('소켓 연결 안 됨');
-    return;
-  }
+    const socket = getSocket();
+    if (!socket || !socket.connected) {
+      console.error('소켓 연결 안 됨');
+      return;
+    }
 
-  const tempMessage = {
-    messageId: `temp-${Date.now()}`,
-    senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
-    senderId: 'me',
-    messageType: 'image',
-    payload: {
-      urls: imageUrls,
-    },
-    createdAt: new Date().toISOString(),
-    isRead: false,
-  };
-
-  /** ✅ 1. 채팅 메시지 낙관적 UI */
-  queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-    if (!oldData) return oldData;
-
-    const lastPageIndex = oldData.pages.length - 1;
-    const updatedPages = [...oldData.pages];
-
-    updatedPages[lastPageIndex] = {
-      ...updatedPages[lastPageIndex],
-      messages: [
-        ...updatedPages[lastPageIndex].messages,
-        tempMessage,
-      ],
+    const tempMessage = {
+      messageId: `temp-${Date.now()}`,
+      senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
+      senderId: 'me',
+      messageType: 'image',
+      payload: { urls: imageUrls },
+      createdAt: new Date().toISOString(),
+      isRead: false,
     };
 
-    return { ...oldData, pages: updatedPages };
-  });
+    /** 1️⃣ 채팅 메시지 낙관적 UI */
+    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+      if (!oldData) return oldData;
 
-  /** ✅ 2. 채팅 목록 낙관적 UI */
-  queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
-    if (!oldData?.data) return oldData;
+      const lastPageIndex = oldData.pages.length - 1;
+      const updatedPages = [...oldData.pages];
+      updatedPages[lastPageIndex] = {
+        ...updatedPages[lastPageIndex],
+        messages: [...updatedPages[lastPageIndex].messages, tempMessage],
+      };
 
-    const updatedData = oldData.data.map((room: any) =>
-      room.chatRoomId === chatId
-        ? {
-            ...room,
-            lastMessage: '사진',
-            lastMessageAt: tempMessage.createdAt,
-          }
-        : room
-    );
+      return { ...oldData, pages: updatedPages };
+    });
 
-    const sortedData = [
-      updatedData.find((room: any) => room.chatRoomId === chatId)!,
-      ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
-    ];
+    /** 2️⃣ 모든 채팅 탭 UI 낙관적 업데이트 */
+    [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach((filterType) => {
+      queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
+        if (!oldData?.data) return oldData;
 
-    return { ...oldData, data: sortedData };
-  });
+        const updatedData = oldData.data.map((room: any) =>
+          room.chatRoomId === chatId
+            ? { ...room, lastMessage: '사진', lastMessageAt: tempMessage.createdAt }
+            : room
+        );
 
-  /** ✅ 3. 서버 전송 */
-  socket.emit('sendMessage', {
-    roomId: chatId,
-    contentType: 'image',
-    content: imageUrls,
-  });
-};
+        const targetRoom = updatedData.find((room: any) => room.chatRoomId === chatId);
+        if (!targetRoom) return oldData; // 안전 체크
+
+        const sortedData = [targetRoom, ...updatedData.filter((room: any) => room.chatRoomId !== chatId)];
+
+        return { ...oldData, data: sortedData };
+      });
+    });
+
+    /** 3️⃣ 서버 전송 */
+    socket.emit('sendMessage', {
+      roomId: chatId,
+      contentType: 'image',
+      content: imageUrls,
+    });
+  };
+
 
 
 
@@ -276,10 +269,16 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     msg.messageType === 'text'
       ? msg.textContent
       : msg.messageType === 'image'
-      ? '사진'
+      ? '(사진)'
       : msg.messageType === 'proposal'
-      ? '견적서'
-      : '요청서';
+      ? '(견적서)'
+      : msg.messageType === 'request'
+      ? '(요청서)'
+      : msg.messageType === 'payment'
+      ? '(결제창) '
+      : msg.messageType === 'result'
+      ? '(결제 완료)'
+      : '(새로운 메시지)'
 
   const targetRoomId = msg.chatRoomId || chatId;
 
@@ -360,37 +359,37 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
 
     const lastPageIndex = oldData.pages.length - 1;
     const updatedPages = [...oldData.pages];
-
     updatedPages[lastPageIndex] = {
       ...updatedPages[lastPageIndex],
-      messages: [
-        ...updatedPages[lastPageIndex].messages,
-        tempMessage,
-      ],
+      messages: [...updatedPages[lastPageIndex].messages, tempMessage],
     };
 
-  return { ...oldData, pages: updatedPages };
+    return { ...oldData, pages: updatedPages };
   });
 
+  // 2️⃣ 모든 채팅 탭 UI 낙관적 업데이트
+  [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach(filterType => {
+    queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
+      if (!oldData?.data) return oldData;
 
-    /// 채팅 목록(Tab) 낙관적 UI 업데이트 + 맨 위로
-  queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
-    if (!oldData?.data) return oldData;
+      const updatedData = oldData.data.map((room: any) =>
+        room.chatRoomId === chatId
+          ? { ...room, lastMessage: inputText, lastMessageAt: tempMessage.createdAt }
+          : room
+      );
 
-    const updatedData = oldData.data.map((room: any) =>
-      room.chatRoomId === chatId
-        ? { ...room, lastMessage: inputText, lastMessageAt: tempMessage.createdAt }
-        : room
-    );
+      // 메시지가 온 채팅방 맨 위로
+      const targetRoom = updatedData.find((room: any) => room.chatRoomId === chatId);
+      if (!targetRoom) return oldData;
+      const sortedData = [
+        targetRoom,
+        ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
+      ];
 
-    // 맨 위로 올리기
-    const sortedData = [
-      updatedData.find((room: any) => room.chatRoomId === chatId)!,
-      ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
-    ];
-
-    return { ...oldData, data: sortedData };
+      return { ...oldData, data: sortedData };
+    });
   });
+
 
 
     // 서버로 전송

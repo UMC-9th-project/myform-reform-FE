@@ -26,7 +26,7 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
   const [filter, setFilter] = useState(initialFilter);
   const queryClient = useQueryClient();
   const location = useLocation();
-  const chatRoomIdFromUrl = location.pathname.split('/').pop();
+  const chatRoomIdFromUrl = location.pathname.split('/').pop() || null;
 
   // ✅ React Query로 변경
   const { data, isLoading, error } = useQuery({
@@ -105,6 +105,7 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
         ) : (
           <>
             {chats.map((chat) => (
+              chat?.chatRoomId ? (
               <div
                 key={chat.chatRoomId}
                 className={`flex items-center p-4 cursor-pointer transition-colors ${
@@ -135,8 +136,10 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
                               ? '결제창'
                               : chat.messageType === 'text'
                               ? '메시지'
-                              : chat.messageType === 'require'
+                              : chat.messageType === 'request'
                               ? '요청서'
+                              : chat.messageType === 'proposal'
+                              ? '견적서'
                               : chat.messageType === 'image'
                               ? '사진'
                               : chat.messageType === 'result'
@@ -158,6 +161,7 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
                   </div>
                 </div>
               </div>
+              ) : null
             ))}
 
             {/* 더보기 버튼 */}
