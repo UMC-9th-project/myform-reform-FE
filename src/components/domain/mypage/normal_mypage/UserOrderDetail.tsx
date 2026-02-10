@@ -130,6 +130,7 @@ const UserOrderDetail = () => {
                   <span className="body-b0-rg text-[var(--color-gray-50)]">운송장 번호</span>
                   <input 
                     type="text"
+                    readOnly
                     value={order.trackingNumber || ''}
                     onChange={(e) => setOrder({ ...order, trackingNumber: e.target.value })}
                     className="w-full max-w-[18rem] h-[2rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[14px] rounded-sm focus:outline-none focus:border-[var(--color-mint-1)] ml-2"
