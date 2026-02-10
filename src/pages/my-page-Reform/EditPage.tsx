@@ -9,7 +9,9 @@ import { uploadImage, uploadImages } from '../../api/upload';
 import { useNavigate, useParams } from 'react-router-dom';
 import { editReformProposal, getReformProposal } from '@/api/mypage/editProposal';
 import type { EditReformProposalRequest } from '@/types/domain/mypage/editProposal';
-import { editSaleItem, type EditSaleItemRequest, type SaleOptionGroup } from '@/types/domain/mypage/editSaleItem';
+import { editSaleItem, type EditSaleItemRequest } from '@/types/domain/mypage/editSaleItem';
+import { getSaleItem } from '@/api/mypage/sale';
+import type { SaleOption } from '@/types/domain/mypage/sale';
 
 type ImageType = {
   file: File | null;
@@ -35,6 +37,10 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
   const [category, setCategory] = useState<string>(''); // 선택 안 됐으면 빈 문자열
   const [subCategory, setSubCategory] = useState<string>(''); // 소분류
   const [description, setDescription] = useState('');
+  const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
+  const optionGroupsIdRef = useRef(1);
+  const subOptionIdRef = useRef(1);
+  const [showEditor, setShowEditor] = useState(false);
 
   const subCategoryMap: Record<string, string[]> = {
   '의류': ['상의', '하의', '아우터', '기타'],
@@ -45,50 +51,75 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
   };
 
     useEffect(() => {
-    if (!id || type !== 'order') return;
+      if (!id) return;
 
-    const fetchProposal = async () => {
-      try {
-        const res = await getReformProposal(id);
-        const data = res.success;
+      const fetchData = async () => {
+        try {
+          if (type === 'sale') {
+            // --- 판매글 조회 ---
+            const res = await getSaleItem(id);
 
-        // 이미지 세팅
-        if (data.images && data.images.length > 0) {
-          setImages(
-            data.images.map(img => ({
-              file: null,
-              preview: img.photo
-            }))
-          );
+            // 이미지 세팅
+            setImages(res.images.map(url => ({ file: null, preview: url })));
+
+            // 텍스트 세팅
+            setTitle(res.title);
+            setDescription(''); // 판매글 content 없으면 빈 문자열
+            setPrice(res.price.toString());
+            setShippingFee(res.delivery.toString());
+
+            // 옵션 그룹 변환
+            if (res.option_groups && res.option_groups.length > 0) {
+              setOptionGroups(
+                res.option_groups.map((group, groupIndex) => ({
+                  id: optionGroupsIdRef.current++,
+                  apiId: group.option_group_id,
+                  name: group.name,
+                  sortOrder: groupIndex, // 그룹 순서 저장
+                  subOptions: group.option_items.map((item, subIndex) => ({
+                    id: subOptionIdRef.current++,
+                    apiId: item.option_item_id,
+                    name: item.name,
+                    price: item.extra_price.toString(),
+                    quantity: item.quantity.toString(),
+                    sortOrder: subIndex, // 세부 옵션 순서 저장
+                  })),
+                }))
+              );
+            }
+
+          } else if (type === 'order') {
+            // --- 주문제작 글 조회 ---
+            const res = await getReformProposal(id);
+            const data = res.success;
+
+            // 이미지 세팅
+            setImages(
+              data.images?.map(img => ({ file: null, preview: img.photo })) || []
+            );
+
+            // 텍스트 세팅
+            setTitle(data.title || '');
+            setDescription(data.content || '');
+            setPrice(data.price?.toString() || '');
+            setShippingFee(data.delivery?.toString() || '');
+            setDuration(data.expectedWorking?.toString() || '');
+
+            // 카테고리 세팅
+            setCategory(data.category?.major || '');
+            setSubCategory(data.category?.sub || '');
+
+            // 주문제작은 옵션 없음
+            setOptionGroups([]);
+          }
+        } catch (error) {
+          console.error('데이터 불러오기 실패', error);
+          alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 불러오기에 실패했습니다.`);
         }
+      };
 
-        // 텍스트 세팅
-        setTitle(data.title || '');
-        setDescription(data.content || '');
-        setPrice(data.price?.toString() || '');
-        setShippingFee(data.delivery?.toString() || '');
-        setDuration(data.expectedWorking?.toString() || '');
-
-        // 카테고리 세팅
-        if (data.category) {
-          setCategory(data.category.major || '');
-          setSubCategory(data.category.sub || '');
-        }
-
-      } catch (error) {
-        console.error('리폼 제안서 불러오기 실패', error);
-        alert('리폼 제안서 불러오기에 실패했습니다.');
-      }
-    };
-
-    fetchProposal();
-  }, [id]);
-
-  const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
-  const optionGroupsIdRef = useRef(1);
-  const subOptionIdRef = useRef(1);
-  const [showEditor, setShowEditor] = useState(false);
-  
+      fetchData();
+    }, [id, type]);
 
 
 
@@ -133,84 +164,66 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
     };
 
     const handleSubmit = async () => {
-        try {
-          const files = images.map(img => img.file).filter((f): f is File => f !== null);
+  try {
+    // 1. 이미지 업로드
+    const files = images.map(img => img.file).filter((f): f is File => f !== null);
+    let imageUrls: string[] = [];
+    if (files.length === 1) {
+      const res = await uploadImage(files[0]);
+      imageUrls = [res.success.url];
+    } else if (files.length > 1) {
+      const res = await uploadImages(files);
+      imageUrls = res.success.url;
+    }
 
-          let imageUrls: string[] = [];
+    if (type === 'sale') {
+      const saleOptions: SaleOption[] = optionGroups.map((group, groupIndex) => ({
+        title: group.name,
+        sortOrder: groupIndex,
+        content: group.subOptions.map((sub, subIndex) => ({
+          comment: sub.name,
+          price: Number(sub.price.replace(/,/g, '')),
+          quantity: Number(sub.quantity),
+          sortOrder: subIndex,
+        })),
+      }));
 
-          if (files.length === 1) {
-            const res = await uploadImage(files[0]);
-            imageUrls = [res.success.url];
-          } else if (files.length > 1) {
-            const res = await uploadImages(files);
-            imageUrls = res.success.url;
-          }
+      const payload: EditSaleItemRequest = {
+        title,
+        content: description,
+        price: Number(price.replace(/,/g, '')),
+        delivery: Number(shippingFee.replace(/,/g, '')),
+        option: saleOptions,
+        category: {
+          major: category,
+          sub: subCategory,
+        },
+        imageUrls,
+      };
 
-        // 이미지 업로드
-        if (files.length === 1) {
-          const res = await uploadImage(files[0]);
-          imageUrls = [res.success.url];
-        } else if (files.length > 1) {
-          const res = await uploadImages(files);
-          imageUrls = res.success.url;
-        }
+      await editSaleItem(id!, payload);
+    } else {
+      const payload: EditReformProposalRequest = {
+        title,
+        contents: description,
+        price: Number(price.replace(/,/g, '')),
+        delivery: Number(shippingFee.replace(/,/g, '')),
+        expectedWorking: Number(duration),
+        category: { major: category, sub: subCategory },
+        images: imageUrls,
+      };
 
-        if (type === 'sale') {
-          // 옵션 payload 변환
-          const saleOptions: SaleOptionGroup[] = optionGroups.map((group, groupIndex) => ({
-            title: group.name,
-            sortOrder: groupIndex,
-            content: group.subOptions.map((sub, subIndex) => ({
-              comment: sub.name,
-              price: Number(sub.price.replace(/,/g, '')),
-              quantity: Number(sub.quantity),
-              sortOrder: subIndex,
-            })),
-          }));
+      await editReformProposal(id!, payload);
+    }
 
-          // 판매글 수정 payload
-          const payload: EditSaleItemRequest = {
-            title,
-            content: description,
-            price: Number(price.replace(/,/g, '')),
-            delivery: Number(shippingFee.replace(/,/g, '')),
-            option: saleOptions,
-            category: {
-              major: category,
-              sub: subCategory,
-            },
-            imageUrls,
-          };
+    alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 수정 완료!`);
+    navigate('/reformer-mypage');
+  } catch (error) {
+    console.error(error);
+    alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 수정 실패`);
+  }
+};
 
-          // 수정 호출: id는 useParams로 가져온 itemId
-          await editSaleItem(id!, payload);
-
-        } else {
-          // 기존 주문제작 글 수정 로직
-          const payload: EditReformProposalRequest = {
-            title,
-            contents: description,
-            price: Number(price.replace(/,/g, '')),
-            delivery: Number(shippingFee.replace(/,/g, '')),
-            expectedWorking: Number(duration),
-            category: {
-              major: category,
-              sub: subCategory,
-            },
-            images: imageUrls,
-          };
-
-          await editReformProposal(id!, payload);
-        }
-
-        alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 수정 완료!`);
-        navigate('/reformer-mypage');
-
-      } catch (error) {
-        console.error(error);
-        alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 수정 실패`);
-      }
-    };
 
   return (
     <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
