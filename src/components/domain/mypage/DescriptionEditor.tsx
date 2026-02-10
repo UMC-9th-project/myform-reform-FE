@@ -14,9 +14,10 @@ import Button from '../../common/button/Button1';
 type DescriptionEditorProps = {
   onSubmit: (html: string) => void; // 등록 버튼 클릭 시
   onClose: () => void;
+  initialContent?: string
 };
 
-const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose }) => {
+const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose, initialContent }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -25,24 +26,16 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose
       Underline,
       TextStyle,
       Highlight,
-      Image.configure({
-        inline: false,
-        allowBase64: true,
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      Placeholder.configure({
-        placeholder:'제품의 상세 설명을 입력해주세요!'
-      })
+      Image.configure({ inline: false, allowBase64: true }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Placeholder.configure({ placeholder: '제품의 상세 설명을 입력해주세요!' })
     ],
-    content: '',
+    content: initialContent || '', // 초기 content 반영
     editorProps: {
-      attributes: {
-        class: 'outline-none min-h-[60rem] focus:outline-none',
-      },
+      attributes: { class: 'outline-none min-h-[60rem] focus:outline-none' },
     },
   });
+
 
   if (!editor) return null;
 

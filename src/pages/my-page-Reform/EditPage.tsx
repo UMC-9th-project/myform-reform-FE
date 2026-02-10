@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import upload from '@/assets/icons/upload.svg';
 import Option5 from '../../components/domain/mypage/Option5';
@@ -7,12 +7,12 @@ import DescriptionEditor from '../../components/domain/mypage/DescriptionEditor'
 import Button from '../../components/common/button/Button1';
 import { uploadImage, uploadImages } from '../../api/upload';
 import { useNavigate, useParams } from 'react-router-dom';
-import { editReformProposal } from '@/api/mypage/editProposal';
+import { editReformProposal, getReformProposal } from '@/api/mypage/editProposal';
 import type { EditReformProposalRequest } from '@/types/domain/mypage/editProposal';
 import { editSaleItem, type EditSaleItemRequest, type SaleOptionGroup } from '@/types/domain/mypage/editSaleItem';
 
 type ImageType = {
-  file: File;
+  file: File | null;
   preview: string;
 };
 
@@ -26,7 +26,7 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
   const [images, setImages] = useState<ImageType[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { id } = useParams<{ id: string }>();
-
+  console.log('현재 id:', id);
   // Step 2,4,5, 6 상태 추가
   const [title, setTitle] = useState<string>('');
   const [price, setPrice] = useState<string>(''); // string으로 받음
@@ -34,6 +34,7 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
   const [duration, setDuration] = useState<string>('');
   const [category, setCategory] = useState<string>(''); // 선택 안 됐으면 빈 문자열
   const [subCategory, setSubCategory] = useState<string>(''); // 소분류
+  const [description, setDescription] = useState('');
 
   const subCategoryMap: Record<string, string[]> = {
   '의류': ['상의', '하의', '아우터', '기타'],
@@ -43,12 +44,51 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
   '기타': []
   };
 
+    useEffect(() => {
+    if (!id || type !== 'order') return;
+
+    const fetchProposal = async () => {
+      try {
+        const res = await getReformProposal(id);
+        const data = res.success;
+
+        // 이미지 세팅
+        if (data.images && data.images.length > 0) {
+          setImages(
+            data.images.map(img => ({
+              file: null,
+              preview: img.photo
+            }))
+          );
+        }
+
+        // 텍스트 세팅
+        setTitle(data.title || '');
+        setDescription(data.content || '');
+        setPrice(data.price?.toString() || '');
+        setShippingFee(data.delivery?.toString() || '');
+        setDuration(data.expectedWorking?.toString() || '');
+
+        // 카테고리 세팅
+        if (data.category) {
+          setCategory(data.category.major || '');
+          setSubCategory(data.category.sub || '');
+        }
+
+      } catch (error) {
+        console.error('리폼 제안서 불러오기 실패', error);
+        alert('리폼 제안서 불러오기에 실패했습니다.');
+      }
+    };
+
+    fetchProposal();
+  }, [id]);
+
   const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
   const optionGroupsIdRef = useRef(1);
   const subOptionIdRef = useRef(1);
-
   const [showEditor, setShowEditor] = useState(false);
-  const [description, setDescription] = useState('');
+  
 
 
 
@@ -93,9 +133,18 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
     };
 
     const handleSubmit = async () => {
-      try {
-        const files = images.map(img => img.file);
-        let imageUrls: string[] = [];
+        try {
+          const files = images.map(img => img.file).filter((f): f is File => f !== null);
+
+          let imageUrls: string[] = [];
+
+          if (files.length === 1) {
+            const res = await uploadImage(files[0]);
+            imageUrls = [res.success.url];
+          } else if (files.length > 1) {
+            const res = await uploadImages(files);
+            imageUrls = res.success.url;
+          }
 
         // 이미지 업로드
         if (files.length === 1) {
@@ -279,7 +328,7 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
                     />
                     <button
                     onClick={() => setShowEditor(true)}
-                    className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white border border-[var(--color-line-gray-40)] px-4 py-2 rounded-[0.63rem] body-b2-rg hover:bg-gray-50 shadow-md transition"
+                    className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white border border-[var(--color-line-gray-40)] px-4 py-2 rounded-[0.63rem] body-b2-rg shadow-md transition"
                     >
                     <svg width="25" height="25" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M9 31.0755H13.7303L31.0755 13.7303L26.3446 9L9 26.3452V31.0755Z" stroke="#646F7C" stroke-width="2" stroke-linejoin="round"/>
@@ -318,6 +367,7 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
                         setDescription(html);
                         setShowEditor(false);
                       }}
+                      initialContent={description}
                       onClose={() => setShowEditor(false)}
                     />
                 </div>

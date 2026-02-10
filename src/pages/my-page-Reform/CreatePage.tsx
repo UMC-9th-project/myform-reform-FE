@@ -286,7 +286,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                     />
                     <button
                     onClick={() => setShowEditor(true)}
-                    className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white border border-[var(--color-line-gray-40)] px-4 py-2 rounded-[0.63rem] body-b2-rg hover:bg-gray-50 shadow-md transition"
+                    className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white border border-[var(--color-line-gray-40)] px-4 py-2 rounded-[0.63rem] body-b2-rg shadow-md transition"
                     >
                     <svg width="25" height="25" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M9 31.0755H13.7303L31.0755 13.7303L26.3446 9L9 26.3452V31.0755Z" stroke="#646F7C" stroke-width="2" stroke-linejoin="round"/>
@@ -325,6 +325,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                         setDescription(html);
                         setShowEditor(false);
                       }}
+                      initialContent={description}
                       onClose={() => setShowEditor(false)}
                     />
                 </div>
