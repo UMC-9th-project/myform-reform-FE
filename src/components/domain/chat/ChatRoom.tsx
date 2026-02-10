@@ -604,11 +604,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
           const showDate = msgDateString !== prevDateString;
 
           const isMine = myUserId ? msg.senderId === myUserId : false;
-          console.log({
-            myUserId,
-            senderId: msg.senderId,
-            isMine: msg.senderId === myUserId,
-          });
 
           return (
             <React.Fragment key={msg.messageId}>
