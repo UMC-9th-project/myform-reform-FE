@@ -14,11 +14,12 @@ const UserOrderDetail = () => {
 
   const [loading, setLoading] = useState(true);
 
-  const displayStatusMap: Record<OrderDetail['status'], '결제 완료' | '상품준비 중' | '발송 완료'> = {
+  const displayStatusMap: Record<string, '결제 완료' | '상품준비 중' | '발송 완료'> = {
     PENDING: '상품준비 중',
     SHIPPED: '발송 완료',
-    COMPLETED: '결제 완료',
+    COMPLETE: '결제 완료', // <-- 여기 수정
   };
+
 
 
   useEffect(() => {
@@ -28,7 +29,7 @@ const UserOrderDetail = () => {
       try {
         setLoading(true);
         const data = await getOrderDetail(selectedOrderId);
-        const mappedStatus = data.status ? displayStatusMap[data.status] : '상태 없음';
+        const mappedStatus = data.status ? displayStatusMap[data.status] ?? '상태 없음' : '상태 없음';
         setOrder({ ...data, status: mappedStatus, postalCode: data.deliveryPostalCode });
       } catch (err) {
         console.error('주문 상세 조회 실패', err);
