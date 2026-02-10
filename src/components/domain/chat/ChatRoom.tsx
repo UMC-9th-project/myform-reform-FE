@@ -10,6 +10,7 @@ import type { RoomType } from '@/types/api/chat/chatMessages';
 import { connectSocket, getSocket } from '@/utils/domain/socket';
 import useAuthStore from '@/stores/useAuthStore';
 import { uploadImages } from '@/api/upload';
+import PaymentCard from './PaymentCard';
 
 interface ChatRoomProps {
   chatId: string;
@@ -404,9 +405,62 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
 
 
   const handlePaymentSend = (paymentData: PaymentRequestData) => {
-    console.log("결제 요청 데이터 전송:", paymentData);
+    const socket = getSocket();
+    if (!socket || !socket.connected) return;
+
+    const tempMessage = {
+      messageId: `temp-${Date.now()}`,
+      senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
+      senderId: 'me',
+      messageType: 'payment', // 여기 중요
+      payload: {
+        price: paymentData.price,
+        delivery: paymentData.delivery,
+        expectedWorking: paymentData.days,
+        // receiptNumber, orderId는 서버에서 나중에 채워줄 수 있음
+      },
+      createdAt: new Date().toISOString(),
+      isRead: false,
+    };
+
+    // 1️⃣ 낙관적 UI
+    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+      if (!oldData) return oldData;
+      const lastPageIndex = oldData.pages.length - 1;
+      const updatedPages = [...oldData.pages];
+      updatedPages[lastPageIndex] = {
+        ...updatedPages[lastPageIndex],
+        messages: [...updatedPages[lastPageIndex].messages, tempMessage],
+      };
+      return { ...oldData, pages: updatedPages };
+    });
+
+    // 2️⃣ 채팅 탭 UI
+    queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
+      if (!oldData?.data) return oldData;
+      const updatedData = oldData.data.map((room: any) =>
+        room.chatRoomId === chatId
+          ? { ...room, lastMessage: '결제 요청', lastMessageAt: tempMessage.createdAt }
+          : room
+      );
+      const sortedData = [
+        updatedData.find((room: any) => room.chatRoomId === chatId)!,
+        ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
+      ];
+      return { ...oldData, data: sortedData };
+    });
+
+    // 3️⃣ 서버 전송
+    socket.emit('sendMessage', {
+      roomId: chatId,
+      contentType: 'payment',
+      content: paymentData,
+    });
+
+    // 모달 닫기
     setIsPaymentModalOpen(false);
   };
+
 
   const handleSendAction = () => {
     if (myRole === 'USER') {
@@ -543,6 +597,16 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                         }
                       />
                     )}
+                    {msg.messageType === 'payment' && (
+                      <PaymentCard
+                        type={isMine ? 'sent' : 'received'}
+                        nickname={isMine ? roomInfo?.requester.nickname ?? '사용자' : roomInfo?.owner.nickname ?? '리포머'}
+                        price={msg.payload.price}
+                        delivery={msg.payload.delivery}
+                        days={msg.payload.expectedWorking}
+                      />
+                    )}
+
                     {msg.messageType === 'proposal' && (
                       <QuotationCard
                         id={msg.payload.id} 

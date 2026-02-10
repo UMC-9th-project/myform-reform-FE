@@ -31,6 +31,14 @@ export interface ProposalPayload {
   expectedWorking: number;
 }
 
+export interface PaymentPayload {
+  price: number;
+  orderId: string;
+  delivery: number;
+  receiptNumber: string;
+  expectedWorking: number;
+}
+
 /* =========================
  * Message Types
  * ========================= */
@@ -39,7 +47,8 @@ export type MessageType =
   | 'text'
   | 'image'
   | 'request'
-  | 'proposal';
+  | 'proposal'
+  | 'payment';
 
 /* =========================
  * Chat Message (Discriminated Union)
@@ -81,7 +90,16 @@ export type ChatMessage =
       textContent: null;
       payload: ProposalPayload;
       createdAt: string;
-    };
+    }
+  | {
+      messageId: string;
+      senderId: string;
+      senderType: 'USER' | 'OWNER';
+      messageType: 'payment';
+      textContent: null;
+      payload: PaymentPayload;
+      createdAt: string;
+  }
 
 /* =========================
  * ChatRoom Info (상단 정보)
