@@ -14,7 +14,7 @@ import { uploadImages } from '@/api/upload';
 interface ChatRoomProps {
   chatId: string;
   myRole: 'REFORMER' | 'USER';
-  roomType: RoomType
+  roomType?: RoomType
 }
 
 const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {

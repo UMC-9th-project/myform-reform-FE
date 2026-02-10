@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useUserTabStore } from '../../../../stores/tabStore';
 import { getOrderDetail, type OrderDetail } from '@/api/mypage/orderApi';
+import formatPhoneNumber from '@/utils/domain/formatPhoneNumber';
 
 const UserOrderDetail = () => {
   const { selectedOrderId, setSelectedOrderId } = useUserTabStore();
@@ -17,7 +18,7 @@ const UserOrderDetail = () => {
   const displayStatusMap: Record<string, '결제 완료' | '상품준비 중' | '발송 완료'> = {
     PENDING: '상품준비 중',
     SHIPPED: '발송 완료',
-    COMPLETE: '결제 완료', // <-- 여기 수정
+    PAID: '결제 완료', // <-- 여기 수정
   };
 
 
@@ -115,7 +116,7 @@ const UserOrderDetail = () => {
                 <span className="body-b0-rg text-black">{order.deliveryRecipientName}</span>
 
                 <span className="body-b0-rg text-[var(--color-gray-50)]">연락처</span>
-                <span className="text-black body-b0-rg">{order.deliveryPhone}</span>
+                <span className="text-black body-b0-rg">{formatPhoneNumber(order.deliveryPhone)}</span>
               </div>
 
               {/* 오른쪽: 진행 상태 및 운송장 입력 */}
