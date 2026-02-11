@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import xIcon from '../../assets/icons/x.svg';
 import { ImageCarousel } from '../../components/common/product/Image';
 import OptionQuantity from '../../components/common/product/option/option-quantity-button/OptionQuantity';  
 import ProductInfoToggle from '../../components/common/product/detail/ProductInfoToggle';
@@ -292,8 +293,8 @@ const MarketProductDetailPage = () => {
           {/* 선택된 옵션이 있을 때만 표시 */}
           {Object.keys(selectedOptions).length > 0 && (
             <div className="bg-[var(--color-gray-20)] p-[0.625rem] flex flex-col gap-[1.75rem] mt-[2.25rem]">
-              <div className='flex flex-col gap-[0.5rem]'>
-                <span className="body-b1-rg px-[0.625rem]">
+              <div className=' flex items-center justify-between gap-[0.5rem]'>
+                <span className="body-b1-rg px-[0.625rem] flex items-center justify-between w-full">
                   {product.option_groups
                     .map((group) => {
                       const selectedOptionId = selectedOptions[group.option_group_id];
@@ -306,11 +307,14 @@ const MarketProductDetailPage = () => {
                       return '';
                     })
                     .filter(Boolean)
-                    .join(', ')}
+                    .join(', ')}                  
+                      <img src={xIcon} alt="x" className="w-10 h-10 cursor-pointer" onClick={() => setSelectedOptions({})} 
+                      />
+                 
                 </span>
               </div>
-              <div className="flex items-center justify-between">
-                
+
+              <div className="flex items-center justify-between">              
                 <OptionQuantity
                   quantity={quantity}
                   onIncrease={() => setQuantity(quantity + 1)}
@@ -319,7 +323,7 @@ const MarketProductDetailPage = () => {
                
                 <p className="body-b0-bd px-[0.625rem]">
                   {formatPrice((basePrice + optionPrice) * quantity)}원
-                  {optionPrice > 0 && ` (옵션 +${formatPrice(optionPrice)}원)`}
+                 
                 </p>
               </div>
             </div>
@@ -335,6 +339,7 @@ const MarketProductDetailPage = () => {
             </div>
             
             <div className="flex flex-col gap-[0.625rem]">
+              
               <div className="flex gap-[0.625rem]">
                 <Button
                   variant="white"
@@ -350,15 +355,31 @@ const MarketProductDetailPage = () => {
                   />
                   <span className="body-b0-bd text-[1.25rem]">찜하기</span>
                 </Button>
-                <button className="flex-1 h-[4.625rem] bg-white border border-[var(--color-line-gray-40)] rounded-[0.625rem] flex items-center justify-center gap-[0.625rem]">
+                <Button
+                  variant="white"
+                  onClick={() => {
+                    navigate(`/market/product/${id}/cart`);
+                  }}
+                  className="flex items-center justify-center gap-2 flex-1 h-[4.625rem]"
+                >
                   <img src={cartIcon} alt="장바구니" className="w-10 h-10" />
                   <span className="body-b0-bd text-[1.25rem]">장바구니</span>
-                </button>
-                <button className="flex-1 h-[4.625rem] bg-white border border-[var(--color-line-gray-40)] rounded-[0.625rem] flex items-center justify-center gap-[0.625rem]">
-                  <img src={chatIcon} alt="문의하기" className="w-10 h-10" />
+                </Button>
+                 
+               <Button
+                  variant="white"
+                  onClick={() => {
+                    navigate(`/market/product/${id}/chat`);
+                  }}
+                  className="flex items-center justify-center gap-2 flex-1 h-[4.625rem]"
+                >
+                  <img src={chatIcon} alt="채팅" className="w-10 h-10" />
                   <span className="body-b0-bd text-[1.25rem]">문의하기</span>
-                </button>
+                </Button>
+                  
+               
               </div>
+
               <button 
                 onClick={() => {
                   const allOptionsSelected = optionGroups.every(group => 
@@ -458,15 +479,13 @@ const MarketProductDetailPage = () => {
 
         <div ref={reformerRef} id="reformer-info" className="scroll-mt-[100px] mx-[7.125rem] pt-[6.25rem]">
           <div className="flex gap-[3.3125rem] items-start">
-            <div className="w-[8.4375rem] h-[8.4375rem] rounded-full bg-[var(--color-gray-20)] flex items-center justify-center">
-              <span className="heading-h4-bd text-[2rem] text-[var(--color-gray-60)]">
-                {owner_nickname.charAt(0)}
-              </span>
+            <div className="w-[8.4375rem] h-[8.4375rem] rounded-full bg-[var(--color-gray-20)] flex items-center justify-center">             
+                 <img src={product.reformer.profile_image} alt="profile" className="w-full h-full object-cover rounded-full" />
             </div>
             <div className="flex-1 flex flex-col gap-[2.625rem]">
               <div className="flex flex-col gap-[0.75rem]">
                 <h2 className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
-                  {owner_nickname}
+                  {product.reformer.nickname}
                 </h2>
                 <div className="flex items-center gap-[0.625rem]">
                   <div className="flex gap-[0.375rem]">
@@ -480,7 +499,7 @@ const MarketProductDetailPage = () => {
                     ))}
                   </div>
                   <span className="body-b1-sb text-[var(--color-black)]">
-                    {star}
+                    {product.reformer.star}
                   </span>
                 </div>
               </div>
@@ -497,8 +516,20 @@ const MarketProductDetailPage = () => {
                     {review_count}개
                   </span>
                 </div>
+               
               </div>
-              <button className="w-full h-[4.625rem] border border-[var(--color-mint-1)] rounded-[0.625rem] flex items-center justify-center">
+              <div className="flex-1 flex flex-col gap-[0.5rem]">
+                  <ol className="flex flex-col gap-[0.5rem]">
+                    <li className="body-b1-rg text-[var(--color-gray-60)]">
+                      - {product.content} 
+                    </li>
+                  </ol>
+                  
+                  </div>
+              <button                
+                className="w-full h-[4.625rem] border border-[var(--color-mint-1)] rounded-[0.625rem] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity"
+                onClick={() => navigate(`/profile/${product.reformer.owner_id}`)}
+              >
                 <span className="body-b0-bd text-[1.25rem] text-[var(--color-mint-1)]">
                   피드 보러가기
                 </span>
