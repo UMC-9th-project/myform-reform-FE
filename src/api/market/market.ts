@@ -32,8 +32,6 @@ export const getMarketProductList = async (
 export const getMarketProductDetail = async (
     params: GetMarketProductDetailParams
 ): Promise<GetMarketProductDetailResponse> => {
-    const response = await api.get<GetMarketProductDetailResponse>('/market/', {
-        params,
-    });
+    const response = await api.get<GetMarketProductDetailResponse>(`/market/${params.item_id}`);
     return response.data;
 };

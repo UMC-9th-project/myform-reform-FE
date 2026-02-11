@@ -68,9 +68,42 @@ export interface GetMarketProductDetailResponse {
         message: string;
     };  
     success: {
-        item: MarketProductItem[];
+        category: {
+            major: string;
+            sub: string;
+        };
+        
+        title: string;
+        content: string;
+        delivery: number;
+        delivery_info: string;
+        images: string[];
+        item_id: string;
+        price: number;
+        is_wished: boolean;
+        option_groups: {
+            option_group_id: string;
+            name: string;
+            option_items: {
+                option_item_id: string;
+                name: string;
+                extra_price: number;
+                quantity: number;
+                is_sold_out: boolean;
+            }[];
+        }[];
+        reformer: {
+            nickname: string;
+            order_count: number;
+            owner_id: string;
+            profile_image: string;
+            star: number;
+            star_recent_3m: number;
+        };     
     };
 }
+
+
 
 
 
