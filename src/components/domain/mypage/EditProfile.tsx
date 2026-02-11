@@ -3,6 +3,7 @@ import star from '../../../assets/icons/star.svg';
 import EmptyStar from '../../../assets/icons/emptyStar.svg';
 import Profile from '../../../assets/icons/profile.svg';
 import { api } from '@/api/axios'
+import useAuthStore from '@/stores/useAuthStore';
 
 // 데이터 구조 정의
 export interface ProfileData {
@@ -22,8 +23,8 @@ const DEFAULT_PROFILE_IMAGE = Profile;
 
 const EditProfile = ({ mode, data }: EditProfileProps) => {
   const navigate = useNavigate();
+  const { role } = useAuthStore();
   const { ownerId } = useParams<{ ownerId: string }>();
-
   if (!data) return <div>프로필 정보를 불러오지 못했습니다.</div>;
 
    const handleStartChat = async () => {
@@ -31,6 +32,7 @@ const EditProfile = ({ mode, data }: EditProfileProps) => {
       alert('채팅을 시작할 수 없습니다. ID가 없습니다.');
       return;
     }
+  
 
     try {
       const response = await api.post('/chat/rooms', {
@@ -45,6 +47,7 @@ const EditProfile = ({ mode, data }: EditProfileProps) => {
       alert('채팅방 생성 중 오류가 발생했습니다.');
     }
   };
+
 
   return (
     <div className="w-full bg-white p-10 rounded-xl font-sans">
@@ -92,6 +95,8 @@ const EditProfile = ({ mode, data }: EditProfileProps) => {
             </button>
             ) : (
             <div className="flex gap-4">
+              {role !== 'reformer' && (
+
               <button className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center border border-teal-500 rounded-full hover:bg-teal-50 transition-colors" title="채팅 아이콘" onClick={handleStartChat}>
                 <svg
                     width="32"
@@ -111,6 +116,7 @@ const EditProfile = ({ mode, data }: EditProfileProps) => {
                     <circle cx="28.5" cy="20.5" r="1.5" fill="var(--color-mint-1)" />
                 </svg>
               </button>
+              )}
 
               <button className="w-10 h-10 md:w-11 md:h-11 flex items-center justify-center border border-teal-500 rounded-full hover:bg-teal-50 transition-colors" title="공유 아이콘">
                 <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
