@@ -12,6 +12,7 @@ import useAuthStore from '@/stores/useAuthStore';
 import { uploadImages } from '@/api/upload';
 import PaymentCard from './PaymentCard';
 import PayFinishCard from './PayFinishCard';
+import ImageViewerModal from '../mypage/ImageViewModal';
 
 interface ChatRoomProps {
   chatId: string;
@@ -29,6 +30,11 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   const queryClient = useQueryClient();
 
   const navigate = useNavigate();
+
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [imageViewerImages, setImageViewerImages] = useState<string[]>([]);
+  const [imageViewerIndex, setImageViewerIndex] = useState(0);
+
 
   /* =========================
    * 1. React Query 무한 스크롤 설정
@@ -717,7 +723,12 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                             {msg.payload.urls.map((url, idx) => (
                               <div
                                 key={idx}
-                                className="relative aspect-square w-full overflow-hidden border border-[var(--color-line-gray-40)] rounded-md"
+                                className="relative aspect-square w-full overflow-hidden border border-[var(--color-line-gray-40)] rounded-md cursor-pointer"
+                                onClick={() => {
+                                  setImageViewerImages(msg.payload.urls);
+                                  setImageViewerIndex(idx);
+                                  setIsImageViewerOpen(true);
+                                }}
                               >
                                 <img
                                   src={url}
@@ -728,6 +739,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                             ))}
                           </div>
                         )}
+
 
                       </div>
                     )}
@@ -828,6 +840,15 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
           </button>
         </div>
       </div>
+      {isImageViewerOpen && (
+      <ImageViewerModal
+        images={imageViewerImages}
+        currentIndex={imageViewerIndex}
+        setCurrentIndex={setImageViewerIndex}
+        onClose={() => setIsImageViewerOpen(false)}
+      />
+    )}
+
     </div>
   );
 };
