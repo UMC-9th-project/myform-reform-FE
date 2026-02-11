@@ -4,7 +4,7 @@ import starGray from '../../../assets/icons/emptyStar.svg';
 import MoreVertical from '../../../assets/icons/morevertical.svg';
 import trash from '../../../assets/icons/trash.svg';
 import profile from '@/assets/icons/profile.svg';
-
+import { formatDateToKorean } from '@/utils/domain/formatDate';
 
 export interface ReviewItem {
   id: string;
@@ -34,6 +34,9 @@ const MyReviewGrid: React.FC<MyReviewGridProps> = ({
 }) => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [previewImages, setPreviewImages] = useState<string[] | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
 
   // 클릭 외부 영역 닫기
   useEffect(() => {
@@ -86,7 +89,7 @@ const MyReviewGrid: React.FC<MyReviewGridProps> = ({
                           />
                         ))}
                       </span>
-                      <span className="body-b3-rg text-[var(--color-gray-50)]">{item.date}</span>
+                      <span className="body-b3-rg text-[var(--color-gray-50)]">{formatDateToKorean(item.date)}</span>
                     </div>
                   </div>
                 </div>
