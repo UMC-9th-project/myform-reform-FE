@@ -56,4 +56,21 @@ export interface GetMarketProductListResponse {
 }
 
 
+// 마켓 상품 상세 조회
+export interface GetMarketProductDetailParams {
+    item_id: string;
+}
+
+export interface GetMarketProductDetailResponse {
+    resultType: 'SUCCESS' | 'ERROR';
+    error: null | {
+        code: string;
+        message: string;
+    };  
+    success: {
+        item: MarketProductItem[];
+    };
+}
+
+
 

@@ -76,7 +76,9 @@ const Market = () => {
             <h1 className="heading-h2-bd text-[2.5rem] mb-[0.875rem]">
               마켓 홈
             </h1>
-            <div className="flex items-center justify-end">
+            
+            <div className="flex items-center justify-between">
+              <div className='body-b1-rg text-[var(--color-gray-60)]'>총 {products.length}개의 작품</div>
               <div className="relative" ref={sortDropdownRef}>
                 <div 
                   className='flex items-center gap-[0.4375rem] cursor-pointer' 

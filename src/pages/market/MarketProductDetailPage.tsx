@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ImageCarousel } from '../../components/common/product/Image';
-import OptionDropdown from '../../components/common/product/option/option-dropdown/OptionDropdown';  
 import OptionQuantity from '../../components/common/product/option/option-quantity-button/OptionQuantity';  
 import ProductInfoToggle from '../../components/common/product/detail/ProductInfoToggle';
 import Review from '../../components/common/product/detail/review/Review';  
@@ -13,58 +12,23 @@ import Button from '../../components/common/button/Button1';
 import LikeButton from '../../components/common/likebutton/LikeButton';
 import cartIcon from '../../assets/icons/shoppingCart.svg';
 import chatIcon from '../../assets/icons/chat.svg';
-import profileImage from '../../components/domain/market/images/profile.png';
 import shareIcon from '../../assets/icons/share.svg';
+import { useMarketProductDetail } from '../../hooks/domain/market/useMarketProductList';
+import type { MarketProductItem } from '../../types/api/market/market';
 import type { OptionItem } from '../../components/common/product/option/option-dropdown/OptionItem';
 import { useWish } from '../../hooks/domain/wishlist/useWish';
 import { getWishList } from '../../api/wishlist';
 import useAuthStore from '../../stores/useAuthStore';  
 
-
-const mockProduct = {
-  id: 1,
-  title: '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
-  price: 75000,
-  rating: 4.94,
-  recentRating: 4.92,
-  reviewCount: 271,
-  seller: {
-    name: '침착한 대머리독수리',
-    profileImage: profileImage,
-    rating: 4.97,
-    orderCount: 415,
-    reviewCount: 271,
-    description: '- 2019년부터 리폼 공방 운영 시작 ✨\n- 6년차 스포츠 의류 리폼 전문 공방',
-  },
-  images: [
-    '/Home/images/p1.jpg',
-    '/Home/images/p1.jpg',
-    '/Home/images/p1.jpg',
-  ],
-  descriptionImages: [
-    '/Home/images/p1.jpg',
-    '/Home/images/p1.jpg',
-    '/Home/images/p1.jpg',
-  ],
-  shipping: {
-    fee: '무료 배송',
-    info: '평균 3일 이내 배송 시작',
-  },
-  options: [
-    {
-      label: '옵션 샘플 테스트 1번',
-      price: 0,
-    },
-    {
-      label: '옵션 2',
-      price: 10000,
-    },
-  ] as OptionItem[],
+const formatPrice = (price: number) => {
+  return price.toLocaleString('ko-KR');
 };
 
 const MarketProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { productDetailResponse } = useMarketProductDetail(id);
+  
   const accessToken = useAuthStore((state) => state.accessToken);
   const userRole = useAuthStore((state) => state.role);
   const isReformer = userRole === 'reformer';
@@ -134,60 +98,98 @@ const MarketProductDetailPage = () => {
   };
 
   const scrollToSection = (section: 'info' | 'reformer' | 'review') => {
-    const refs = {
+    setActiveSection(section);
+    const refMap = {
       info: infoRef,
       reformer: reformerRef,
       review: reviewRef,
     };
-    
-    const targetRef = refs[section];
-    if (targetRef.current) {
-      const offset = 100; 
-      const elementPosition = targetRef.current.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth',
-      });
-      setActiveSection(section);
-    }
+    refMap[section]?.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
   };
 
- 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + 200; 
+      const scrollY = window.scrollY;
+      const infoTop = infoRef.current?.offsetTop || 0;
+      const reformerTop = reformerRef.current?.offsetTop || 0;
+      const reviewTop = reviewRef.current?.offsetTop || 0;
 
-      if (reviewRef.current && reformerRef.current && infoRef.current) {
-        const reviewTop = reviewRef.current.offsetTop;
-        const reformerTop = reformerRef.current.offsetTop;
-        const infoTop = infoRef.current.offsetTop;
-
-        if (scrollPosition >= reviewTop - 100) {
-          setActiveSection('review');
-        } else if (scrollPosition >= reformerTop - 100) {
-          setActiveSection('reformer');
-        } else if (scrollPosition >= infoTop - 100) {
-          setActiveSection('info');
-        }
+      if (scrollY >= reviewTop - 200) {
+        setActiveSection('review');
+      } else if (scrollY >= reformerTop - 200) {
+        setActiveSection('reformer');
+      } else if (scrollY >= infoTop - 200) {
+        setActiveSection('info');
       }
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  if (!productDetailResponse?.success) {
+    return null;
+  }
+
+  // success 객체에서 실제 데이터 필드 찾기
+  const successData = productDetailResponse.success as Record<string, unknown>;
+  
+  // 가능한 필드명들: item, items, product, data 등
+  let itemData: MarketProductItem | MarketProductItem[] | undefined;
+  
+  if ('item' in successData) {
+    itemData = successData.item as MarketProductItem | MarketProductItem[];
+  } else if ('items' in successData && Array.isArray(successData.items)) {
+    itemData = (successData.items as MarketProductItem[])[0];
+  } else if ('product' in successData) {
+    itemData = successData.product as MarketProductItem | MarketProductItem[];
+  } else {
+    // success 객체의 첫 번째 값 사용
+    const keys = Object.keys(successData);
+    if (keys.length > 0) {
+      const firstKey = keys[0];
+      const firstValue = successData[firstKey];
+      if (Array.isArray(firstValue) && firstValue.length > 0) {
+        itemData = firstValue[0] as MarketProductItem;
+      } else if (firstValue && typeof firstValue === 'object') {
+        itemData = firstValue as MarketProductItem;
+      }
+    }
+  }
+
+  if (!itemData) {
+    return null;
+  }
+
+  const product: MarketProductItem = Array.isArray(itemData) 
+    ? itemData[0] 
+    : itemData;
+  const thumbnail = product.thumbnail;
+  const title = product.title;
+  const price = product.price;
+  const star = product.star;
+  const review_count = product.review_count;
+  const owner_nickname = product.owner_nickname;
+  const basePrice = price;
+  const optionPrice = 0;
+  const totalPrice = (basePrice + optionPrice) * quantity;
+
+  
+
+
 
   return (
     <div className=" min-h-screen  mt-[2.75rem]">
     
-      
+       
       <div className="flex mx-[7.125rem] gap-[2.9375rem] mb-[2.75rem]">
         
         <div className="w-150 h-[630px]">
-          <div className="h-[600px] ">   
-           <ImageCarousel images={mockProduct.images} isClosed={false} />
+          <div className="h-[600px]">   
+            <ImageCarousel images={[thumbnail]} isClosed={false} />
           </div>  
         </div>
 
@@ -196,13 +198,13 @@ const MarketProductDetailPage = () => {
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-[0.75rem]">
-              <img
-                src={mockProduct.seller.profileImage}
-                alt={mockProduct.seller.name}
-                className="w-[2.95725rem] h-[2.95725rem] rounded-full object-cover"
-              />
+              <div className="w-[2.95725rem] h-[2.95725rem] rounded-full bg-[var(--color-gray-20)] flex items-center justify-center">
+                <span className="body-b1-rg text-[var(--color-gray-60)]">
+                  {owner_nickname.charAt(0)}
+                </span>
+              </div>
               <span className="body-b1-rg text-[var(--color-gray-60)]">
-                {mockProduct.seller.name}
+                {owner_nickname}
               </span>
             </div>
             <button className="w-10 h-10 flex items-center justify-center">
@@ -210,74 +212,62 @@ const MarketProductDetailPage = () => {
             </button>
           </div>
 
-       
           <div className="flex flex-col mt-[0.5625rem]">
             <h1 className="heading-h5-md">
-              {mockProduct.title}
+              {title}
             </h1>
             <p className="heading-h2-bd mt-[1.125rem]">
-              {formatPrice(mockProduct.price)}원
+              {formatPrice(price)}원
             </p>
           </div>
 
-          
           <div className="flex items-center gap-[0.3125rem] mt-[1.4375rem] mb-[0.8125rem] border-b border-[var(--color-line-gray-40)] pb-[0.8125rem]">
             <img src={starIcon} alt="star" className="w-[1.75rem] h-[1.75rem]" />
             <span className="body-b1-sb">
-              {mockProduct.rating}
+              {star}
             </span>
             <span className="body-b5-rg text-[var(--color-gray-50)]">
-              (최근 3개월 {mockProduct.recentRating})
+              (리뷰 {review_count}개)
             </span>
           </div>
-          
 
-         
           <div className="my-[1.25rem] flex flex-col gap-[0.8125rem] text-[var(--color-gray-60)]">
             <div className="flex gap-[2.8125rem]">
-              <span className="body-b1-sb ">배송비</span>
+              <span className="body-b1-sb">배송비</span>
               <span className="body-b1-rg">
-                {mockProduct.shipping.fee}
+                무료배송
               </span>
             </div>
-
             <div className="flex gap-[1.5rem]">
-              <span className="body-b1-sb ">배송 정보</span>
+              <span className="body-b1-sb">배송 정보</span>
               <span className="body-b1-rg">
-                {mockProduct.shipping.info}
+                일반배송
               </span>
             </div>
           </div>
 
-       
-          <div className='mt-[1.875rem]'>
+          {/* 옵션은 API에서 제공될 때까지 주석 처리 */}
+          {/* <div className='mt-[1.875rem]'>
             <OptionDropdown
-              options={mockProduct.options}
+              options={[]}
               onSelect={(optionLabel) => setSelectedOption(optionLabel)}
               selectedOptionLabel={selectedOption}
             />
-          </div>
+          </div> */}
 
          
-          {selectedOption && (
-            <div className="bg-[var(--color-gray-20)] p-[0.625rem] flex flex-col gap-[1.75rem] mt-[2.25rem]">
-              <ol className="body-b1-rg text-[var(--color-black)] list-decimal list-inside">
-                <li>
-                  옵션 1: {selectedOption} / 옵션 2: 선택 안 함
-                </li>
-              </ol>
-              <div className="flex items-center justify-between">
-                <OptionQuantity
-                  quantity={quantity}
-                  onIncrease={() => setQuantity(quantity + 1)}
-                  onDecrease={() => setQuantity(Math.max(1, quantity - 1))}
-                />
-                <p className="body-b0-bd px-[0.625rem]">
-                  {formatPrice((basePrice + optionPrice) * quantity)}원
-                </p>
-              </div>
+          <div className="bg-[var(--color-gray-20)] p-[0.625rem] flex flex-col gap-[1.75rem] mt-[2.25rem]">
+            <div className="flex items-center justify-between">
+              <OptionQuantity
+                quantity={quantity}
+                onIncrease={() => setQuantity(quantity + 1)}
+                onDecrease={() => setQuantity(Math.max(1, quantity - 1))}
+              />
+              <p className="body-b0-bd px-[0.625rem]">
+                {formatPrice((basePrice + optionPrice) * quantity)}원
+              </p>
             </div>
-          )}
+          </div>
 
           
           <div className="flex flex-col gap-[1.125rem] mt-[2.25rem]">
@@ -314,24 +304,18 @@ const MarketProductDetailPage = () => {
               </div>
               <button 
                 onClick={() => {
-                  const selectedOptionData = selectedOption
-                    ? mockProduct.options.find((opt) => opt.label === selectedOption)
-                    : null;
-                  
                   navigate(`/market/product/${id}/purchase`, {
                     state: {
                       product: {
-                        id: mockProduct.id,
-                        title: mockProduct.title,
-                        seller: mockProduct.seller.name,
-                        image: mockProduct.images[0],
-                        option: selectedOptionData
-                          ? `${selectedOptionData.label}${selectedOptionData.price > 0 ? ` (+${selectedOptionData.price.toLocaleString()}원)` : ' (+0원)'}`
-                          : '옵션 없음',
-                        shipping: mockProduct.shipping.fee,
+                        id: product.item_id,
+                        title: title,
+                        seller: owner_nickname,
+                        image: thumbnail,
+                        option: '옵션 없음',
+                        shipping: '무료배송',
                         quantity: quantity,
-                        price: mockProduct.price,
-                        optionPrice: selectedOptionData?.price || 0,
+                        price: price,
+                        optionPrice: optionPrice,
                       },
                     },
                   });
@@ -387,29 +371,28 @@ const MarketProductDetailPage = () => {
      
         <div ref={infoRef} id="product-info" className="scroll-mt-[100px]">
           <ProductInfoToggle
-            firstImage={mockProduct.descriptionImages[0]}
-            additionalImages={mockProduct.descriptionImages.slice(1)}
+            firstImage={thumbnail}
+            additionalImages={[]}
           />
         </div>
 
-       
         <div ref={reformerRef} id="reformer-info" className="scroll-mt-[100px] mx-[7.125rem] pt-[6.25rem]">
           <div className="flex gap-[3.3125rem] items-start">
-            <img
-              src={mockProduct.seller.profileImage}
-              alt={mockProduct.seller.name}
-              className="w-[8.4375rem] h-[8.4375rem] rounded-full object-cover"
-            />
+            <div className="w-[8.4375rem] h-[8.4375rem] rounded-full bg-[var(--color-gray-20)] flex items-center justify-center">
+              <span className="heading-h4-bd text-[2rem] text-[var(--color-gray-60)]">
+                {owner_nickname.charAt(0)}
+              </span>
+            </div>
             <div className="flex-1 flex flex-col gap-[2.625rem]">
               <div className="flex flex-col gap-[0.75rem]">
                 <h2 className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
-                  {mockProduct.seller.name}
+                  {owner_nickname}
                 </h2>
                 <div className="flex items-center gap-[0.625rem]">
                   <div className="flex gap-[0.375rem]">
-                    {[1, 2, 3, 4, 5].map((star) => (
+                    {[1, 2, 3, 4, 5].map((s) => (
                       <img
-                        key={star}
+                        key={s}
                         src={starIcon}
                         alt="star"
                         className="w-[1.4375rem] h-[1.4375rem]"
@@ -417,7 +400,7 @@ const MarketProductDetailPage = () => {
                     ))}
                   </div>
                   <span className="body-b1-sb text-[var(--color-black)]">
-                    {mockProduct.seller.rating}
+                    {star}
                   </span>
                 </div>
               </div>
@@ -425,13 +408,13 @@ const MarketProductDetailPage = () => {
                 <div className="flex-1 border-t border-b border-[var(--color-line-gray-40)] py-[1.125rem] flex flex-col items-center gap-[0.5rem]">
                   <span className="body-b0-rg text-[var(--color-gray-50)]">주문 건수</span>
                   <span className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
-                    {mockProduct.seller.orderCount}건
+                    -건
                   </span>
                 </div>
                 <div className="flex-1 border-t border-b border-[var(--color-line-gray-40)] py-[1.125rem] flex flex-col items-center gap-[0.5rem]">
                   <span className="body-b0-rg text-[var(--color-gray-50)]">후기</span>
                   <span className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
-                    {mockProduct.seller.reviewCount}개
+                    {review_count}개
                   </span>
                 </div>
               </div>
@@ -444,19 +427,18 @@ const MarketProductDetailPage = () => {
           </div>
         </div>
 
-       
         <div ref={reviewRef} id="review" className="scroll-mt-[100px] pt-[6.25rem] mb-[7.4375rem]">
           <div className="flex flex-col gap-[2.5rem]">
             <div className="flex flex-col gap-[1.4375rem]">
               <div className="flex flex-col gap-[1.4375rem]">
                 <h2 className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
-                  상품 후기 ({mockProduct.reviewCount})
+                  상품 후기 ({review_count})
                 </h2>
                 <div className="flex items-center gap-[1rem]">
                   <div className="flex gap-[0.5625rem]">
-                    {[1, 2, 3, 4, 5].map((star) => (
+                    {[1, 2, 3, 4, 5].map((s) => (
                       <img
-                        key={star}
+                        key={s}
                         src={starIcon}
                         alt="star"
                         className="w-[2.0625rem] h-[2.0625rem]"
@@ -464,7 +446,7 @@ const MarketProductDetailPage = () => {
                     ))}
                   </div>
                   <span className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
-                    {mockProduct.rating}
+                    {star}
                   </span>
                 </div>
               </div>
@@ -524,6 +506,7 @@ const MarketProductDetailPage = () => {
       </div>
     </div>
   );
+  
 };
 
 export default MarketProductDetailPage;
