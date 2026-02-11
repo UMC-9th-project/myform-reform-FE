@@ -5,6 +5,7 @@ import MoreVertical from '../../../assets/icons/morevertical.svg';
 import trash from '../../../assets/icons/trash.svg';
 import profile from '@/assets/icons/profile.svg';
 import { formatDateToKorean } from '@/utils/domain/formatDate';
+import ImageViewerModal from './ImageViewModal';
 
 export interface ReviewItem {
   id: string;
@@ -34,9 +35,11 @@ const MyReviewGrid: React.FC<MyReviewGridProps> = ({
 }) => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const [previewImages, setPreviewImages] = useState<string[] | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [viewerImages, setViewerImages] = useState<string[]>([]);
 
+  
 
   // 클릭 외부 영역 닫기
   useEffect(() => {
@@ -138,11 +141,21 @@ const MyReviewGrid: React.FC<MyReviewGridProps> = ({
                 <div className={`mb-4 grid gap-2 ${item.img.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                   {item.img.map((src, index) => (
                     <div key={index} className="overflow-hidden aspect-square">
-                      <img src={src} alt={`리뷰 이미지 ${index + 1}`} className="w-full h-full object-cover" />
+                      <img
+                        src={src}
+                        alt={`리뷰 이미지 ${index + 1}`}
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={() => {
+                          setViewerImages(item.img!);  // 클릭한 리뷰 이미지 배열 전달
+                          setCurrentIndex(index);      // 클릭한 이미지부터 보여주기
+                          setViewerOpen(true);
+                        }}
+                      />
                     </div>
                   ))}
                 </div>
               )}
+
 
               {/* 상품 정보 */}
               <div className="bg-[var(--color-gray-20)] p-3 flex items-center gap-3">
@@ -157,6 +170,15 @@ const MyReviewGrid: React.FC<MyReviewGridProps> = ({
             </div>
           ))}
         </div>
+        {viewerOpen && (
+        <ImageViewerModal
+          images={viewerImages}
+          currentIndex={currentIndex}
+          setCurrentIndex={setCurrentIndex}
+          onClose={() => setViewerOpen(false)}
+        />
+      )}
+
       </div>
     </div>
   );
