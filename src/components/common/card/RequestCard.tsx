@@ -115,8 +115,8 @@ export default function RequestCard({
   const content = (
     <article className={`w-full ${linkTo ? 'cursor-pointer' : ''} ${className}`}>
       <div
-        className="relative w-full rounded-[0.625rem] overflow-hidden"
-        style={{ aspectRatio: '361/307' }}
+        className="relative w-full rounded-[1.25rem] overflow-hidden"
+        style={{ aspectRatio: '337/307' }}
       >
         <img
           src={imgSrc}
@@ -154,9 +154,9 @@ export default function RequestCard({
           <div className="mt-[0.75rem] heading-h4-bd text-[var(--color-black)] break-words">
             {priceRange.includes('~') ? (
               <>
-                {priceRange.split('~')[0]}
-                {' '}
-                ~{priceRange.split('~')[1]}
+                <span className="whitespace-nowrap">{priceRange.split('~')[0]}</span>
+                {' ~'}
+                <span className="whitespace-nowrap">{priceRange.split('~')[1]}</span>
               </>
             ) : (
               priceRange

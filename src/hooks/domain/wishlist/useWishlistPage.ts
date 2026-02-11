@@ -6,7 +6,8 @@ import { getReformRequestDetail } from '../../../api/order/reformRequest';
 import { getReformProposalDetail } from '../../../api/order/reformProposal';
 import useAuthStore from '../../../stores/useAuthStore';
 import type { WishlistItem } from '@/types/api/wishlist/wishlist';
-import type { WishType, GetWishListResponse } from '@/types/api/wishlist/wish';
+import type { WishType, GetWishListResponse, WishItem } from '@/types/api/wishlist/wish';
+import type { MarketCardItem } from '@/components/common/card/MarketCard';
 import type { WishlistMenu } from '@/types/domain/wishlist/wishlist';
 import type { GetReformRequestDetailResponse } from '@/types/api/order/reformRequest';
 import type { GetReformProposalDetailResponse } from '@/types/api/order/reformProposal';
@@ -169,17 +170,50 @@ export const useWishlistPage = () => {
       return [];
     }
 
-    return combinedWishData.success.list.map((item, index) => ({
-      id: parseInt(item.itemId.replace(/-/g, '').substring(0, 8), 16) || index + 1,
-      itemId: item.itemId,
-      wishType: item.wishType,
-      image: item.content || '',
-      title: item.title,
-      price: item.price,
-      rating: item.avgStar ?? 0,
-      reviewCount: item.reviewCount ?? 0,
-      seller: item.name,
-    }));
+    return combinedWishData.success.list.map((item, index) => {
+      const itemWithImages = item as WishItem & { images?: string[] };
+      const image = itemWithImages.images && Array.isArray(itemWithImages.images) && itemWithImages.images.length > 0
+        ? itemWithImages.images[0]
+        : item.content || '';
+
+      return {
+        id: parseInt(item.itemId.replace(/-/g, '').substring(0, 8), 16) || index + 1,
+        itemId: item.itemId,
+        wishType: item.wishType,
+        image,
+        title: item.title,
+        price: item.price,
+        rating: item.avgStar ?? 0,
+        reviewCount: item.reviewCount ?? 0,
+        seller: item.name,
+      };
+    });
+  };
+
+  const transformMarketItems = (): MarketCardItem[] => {
+    if (!combinedWishData?.success?.list) {
+      return [];
+    }
+
+    return combinedWishData.success.list
+      .filter((item) => item.wishType === 'ITEM')
+      .map((item) => {
+        const itemWithImages = item as WishItem & { images?: string[] };
+        const thumbnail = itemWithImages.images && Array.isArray(itemWithImages.images) && itemWithImages.images.length > 0
+          ? itemWithImages.images[0]
+          : item.content || '';
+
+        return {
+          item_id: item.itemId,
+          thumbnail,
+          title: item.title,
+          price: item.price,
+          star: item.avgStar ?? 0,
+          review_count: item.reviewCount ?? 0,
+          owner_nickname: item.name,
+          is_wished: true,
+        };
+      });
   };
 
   const handleRemoveFromWishlist = (item: WishlistItem & { itemId: string; wishType: WishType }) => {
@@ -199,6 +233,7 @@ export const useWishlistPage = () => {
   };
 
   const currentItems = transformWishItems();
+  const marketItems = transformMarketItems();
 
   return {
     activeMenu,
@@ -206,6 +241,7 @@ export const useWishlistPage = () => {
     isLoading,
     isReformer,
     currentItems,
+    marketItems,
     requestDetailsMap,
     proposalDetailsMap,
     handleMenuChange,

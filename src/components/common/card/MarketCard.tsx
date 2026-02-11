@@ -1,6 +1,11 @@
-import { Link } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import LikeButton from '../likebutton/LikeButton';
 import starIcon from '../../../assets/icons/star.svg';
+import useAuthStore from '../../../stores/useAuthStore';
+import { useWish } from '../../../hooks/domain/wishlist/useWish';
+import { getWishList } from '../../../api/wishlist';
 
 const MARKET_DETAIL_PATH = '/market/product';
 
@@ -50,16 +55,90 @@ const MarketCard = ({
   to,
   hideLikeButton = false,
 }: MarketCardProps) => {
+  const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
   const isMarketItem = isMarketCardItem(item);
   const price = isMarketItem ? item.price : item.min_price;
   const hasRating = item.star !== undefined;
   const isWished = item.is_wished;
 
-  const handleLikeClick = (isLiked: boolean) => {
-    if (isMarketItem) {
-      onLikeClick?.(Number(item.item_id), isLiked);
+  const itemId = isMarketItem ? item.item_id : item.proposal_id;
+  const wishType = isMarketItem ? 'ITEM' : 'PROPOSAL';
+  
+  const { toggleWish } = useWish();
+  const { data: wishData, error: wishError } = useQuery({
+    queryKey: ['wishlist', wishType, accessToken],
+    queryFn: () => getWishList(wishType),
+    enabled: !!accessToken && !isReformer && !hideLikeButton,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (wishError && typeof wishError === 'object' && 'response' in wishError) {
+      const axiosError = wishError as { response?: { status?: number } };
+      if (axiosError.response?.status === 401) {
+        navigate('/login/type');
+      }
+    }
+  }, [wishError, navigate]);
+
+  const isWishedFromServer = useMemo(() => {
+    if (isWished) {
+      return true;
+    }
+    if (wishData === undefined || !itemId) {
+      return undefined;
+    }
+    if (wishData?.success?.list) {
+      return wishData.success.list.some((wishItem) => wishItem.itemId === itemId);
+    }
+    return false;
+  }, [wishData, itemId, isWished]);
+
+  const [localLiked, setLocalLiked] = useState<boolean | null>(null);
+
+  const isLiked = useMemo(() => {
+    if (initialLiked || isWished) {
+      return true;
+    }
+    if (localLiked !== null) {
+      return localLiked;
+    }
+    if (isWishedFromServer === undefined) {
+      return false;
+    }
+    return isWishedFromServer;
+  }, [initialLiked, isWished, localLiked, isWishedFromServer]);
+
+  const handleLikeClick = async (liked: boolean) => {
+    if (!accessToken) {
+      navigate('/login/type');
+      return;
+    }
+
+    if (onLikeClick) {
+      // 기존 onLikeClick prop이 있으면 그것을 사용
+      if (isMarketItem) {
+        onLikeClick(Number(item.item_id), liked);
+      } else {
+        onLikeClick(Number(item.proposal_id), liked);
+      }
     } else {
-      onLikeClick?.(Number(item.proposal_id), isLiked);
+      // 내부 찜 기능 사용
+      try {
+        await toggleWish(wishType, itemId, liked);
+        setLocalLiked(liked);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response?: { status?: number } };
+          if (axiosError.response?.status === 401) {
+            navigate('/login/type');
+          }
+        }
+      }
     }
   };
 
@@ -68,18 +147,18 @@ const MarketCard = ({
     : `/proposal/${item.proposal_id}`);
 
   const content = (
-    <div className="bg-white rounded-[0.625rem] overflow-visible cursor-pointer">
+    <div className="bg-white rounded-[1.25rem] overflow-visible cursor-pointer">
       {/* 상품 이미지 */}
       <div
-        className="relative w-full rounded-[0.625rem] overflow-hidden"
-        style={{ aspectRatio: '361/307' }}
+        className="relative w-full rounded-[1.25rem] overflow-hidden"
+        style={{ aspectRatio: '337/307' }}
       >
         <img
           src={item.thumbnail}
           alt={item.title}
           className="w-full h-full object-cover"
         />
-        {!hideLikeButton && (
+        {!hideLikeButton && !isReformer && (
           <div
             className="absolute bottom-[0.75rem] right-[0.75rem]"
             onClick={(e) => {
@@ -95,7 +174,7 @@ const MarketCard = ({
             role="presentation"
           >
             <LikeButton
-              initialLiked={initialLiked || isWished}
+              initialLiked={isLiked}
               onClick={handleLikeClick}
             />
           </div>

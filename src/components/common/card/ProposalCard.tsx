@@ -116,11 +116,11 @@ export default function ProposalCard({
 
   const content = (
     <div
-      className={`bg-white rounded-[0.625rem] overflow-visible ${linkTo ? 'cursor-pointer' : ''} ${className}`}
+      className={`bg-white rounded-[1.25rem] overflow-visible ${linkTo ? 'cursor-pointer' : ''} ${className}`}
     >
       <div
-        className="relative w-full rounded-[0.625rem] overflow-hidden"
-        style={{ aspectRatio: '361/307' }}
+        className="relative w-full rounded-[1.25rem] overflow-hidden"
+        style={{ aspectRatio: '337/307' }}
       >
         <img
           src={imgSrc}
