@@ -15,7 +15,7 @@ import chatIcon from '../../assets/icons/chat.svg';
 import shareIcon from '../../assets/icons/share.svg';
 import { useMarketProductDetail } from '../../hooks/domain/market/useMarketProductList';
 import type { MarketProductItem } from '../../types/api/market/market';
-import type { OptionItem } from '../../components/common/product/option/option-dropdown/OptionItem';
+// import type { OptionItem } from '../../components/common/product/option/option-dropdown/OptionItem';
 import { useWish } from '../../hooks/domain/wishlist/useWish';
 import { getWishList } from '../../api/wishlist';
 import useAuthStore from '../../stores/useAuthStore';  
@@ -23,6 +23,9 @@ import useAuthStore from '../../stores/useAuthStore';
 const formatPrice = (price: number) => {
   return price.toLocaleString('ko-KR');
 };
+
+
+
 
 const MarketProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -32,7 +35,7 @@ const MarketProductDetailPage = () => {
   const accessToken = useAuthStore((state) => state.accessToken);
   const userRole = useAuthStore((state) => state.role);
   const isReformer = userRole === 'reformer';
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  // const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [activeSection, setActiveSection] = useState<'info' | 'reformer' | 'review'>('info');
   const [localLiked, setLocalLiked] = useState<boolean | null>(null);
@@ -85,16 +88,6 @@ const MarketProductDetailPage = () => {
         }
       }
     }
-  };
-
-  const basePrice = mockProduct.price;
-  const optionPrice = selectedOption
-    ? mockProduct.options.find((opt) => opt.label === selectedOption)?.price || 0
-    : 0;
-  const totalPrice = (basePrice + optionPrice) * quantity;
-
-  const formatPrice = (price: number) => {
-    return price.toLocaleString('ko-KR');
   };
 
   const scrollToSection = (section: 'info' | 'reformer' | 'review') => {
