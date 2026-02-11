@@ -102,6 +102,61 @@ export interface GetMarketProductDetailResponse {
         };     
     };
 }
+// 상품 리뷰 목록 조회 
+export interface MarketProductReviewListRequest {
+    itemId: string;
+    page: number;
+    limit: number;
+    sort: 'latest' | 'star_high' | 'star_low';
+}
+export interface MarketProductReviewListResponse {
+
+    success: {
+        reviews: {
+            review_id: string;
+            user_profile_image: string;
+            user_nickname: string;
+            star: number;
+            created_at: string;
+            content: string;
+            product_thumbnail: string;
+            photos: string[];
+        }[];
+        total_count: number;
+        avg_star: number;
+        page: number;
+        limit: number;
+        total_pages: number;
+        has_next_page: boolean;
+        has_prev_page: boolean;
+    };
+}
+   
+
+
+
+
+//마켓 상품 사진 후기 조회
+export interface MarketProductPhotoReviewRequest {
+    itemId: string;
+    offset: number;
+    limit: number;
+}
+
+export interface MarketProductPhotoReviewResponse {  
+    success: {
+        photos: {
+            photo_index: number;
+            review_id: string;
+            photo_url: string;
+            photo_order: number;
+        }[];
+        has_more: boolean;
+        offset: number;
+        limit: number;
+        total_count: number;     
+    };
+}
 
 
 

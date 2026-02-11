@@ -15,6 +15,8 @@ import cartIcon from '../../assets/icons/shoppingCart.svg';
 import chatIcon from '../../assets/icons/chat.svg';
 import shareIcon from '../../assets/icons/share.svg';
 import { useMarketProductDetail } from '../../hooks/domain/market/useMarketProductList';
+import { useMarketProductPhotoReview } from '../../hooks/domain/market/useMarketProductList';
+import { useMarketProductReviewList } from '../../hooks/domain/market/useMarketProductList';
 import OptionDropdown from '../../components/common/product/option/option-dropdown/OptionDropdown';
 import type { OptionItem as OptionItemType } from '../../components/common/product/option/option-dropdown/OptionItem';
 import { useWish } from '../../hooks/domain/wishlist/useWish';
@@ -32,7 +34,10 @@ const MarketProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { productDetailResponse } = useMarketProductDetail(id);
-  
+  const { photoReviewResponse } = useMarketProductPhotoReview(id);
+  const [reviewPage, setReviewPage] = useState(1);
+  const [reviewSort, setReviewSort] = useState<'latest' | 'star_high' | 'star_low'>('latest');
+  const { reviewListResponse } = useMarketProductReviewList(id, reviewPage, reviewSort);
   const accessToken = useAuthStore((state) => state.accessToken);
   const userRole = useAuthStore((state) => state.role);
   const isReformer = userRole === 'reformer';
@@ -122,6 +127,8 @@ const MarketProductDetailPage = () => {
         setActiveSection('info');
         setSelectedOptions({});
         setLocalLiked(null);
+        setReviewPage(1);
+        setReviewSort('latest');
         window.scrollTo({ top: 0, behavior: 'instant' });
       });
     }
@@ -152,7 +159,10 @@ const MarketProductDetailPage = () => {
   }
 
   const product = productDetailResponse.success;
-  
+  const photoReview = photoReviewResponse?.success.photos || [];
+  const reviewList = reviewListResponse?.success.reviews || [];
+  const reviewCount = reviewListResponse?.success.total_count || 0;
+  const avgStar = reviewListResponse?.success.avg_star || 0;
   const title = product.title;
   const price = product.price;
   const delivery = product.delivery;
@@ -162,9 +172,25 @@ const MarketProductDetailPage = () => {
   const additionalImages = images.slice(1);
   const optionGroups = product.option_groups || [];
   
-  const star = 0;
-  const review_count = 0;
+  const star = avgStar;
+  const review_count = reviewCount;
   const owner_nickname = '';
+
+  // ReviewFilter 옵션 정의
+  const filterOptions = [
+    { value: 'latest', label: '최신순' },
+    { value: 'star_high', label: '평점 높은 순' },
+    { value: 'star_low', label: '평점 낮은 순' },
+  ];
+
+  const sortBy = reviewSort;
+
+  const onSortChange = (value: string) => {
+    if (value === 'latest' || value === 'star_high' || value === 'star_low') {
+      setReviewSort(value);
+      setReviewPage(1); 
+    }
+  };
 
   // 선택된 옵션들의 추가 가격 계산
   const optionPrice = optionGroups.reduce((total, group) => {
@@ -507,7 +533,7 @@ const MarketProductDetailPage = () => {
                 <div className="flex-1 border-t border-b border-[var(--color-line-gray-40)] py-[1.125rem] flex flex-col items-center gap-[0.5rem]">
                   <span className="body-b0-rg text-[var(--color-gray-50)]">주문 건수</span>
                   <span className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
-                    -건
+                    {product.reformer.order_count}건
                   </span>
                 </div>
                 <div className="flex-1 border-t border-b border-[var(--color-line-gray-40)] py-[1.125rem] flex flex-col items-center gap-[0.5rem]">
@@ -566,47 +592,50 @@ const MarketProductDetailPage = () => {
                   사진 후기 (182)
                 </h3>
                 <div className="flex gap-[0.3125rem]">
-                  {Array.from({ length: 7 }, (_, i) => (
-                    <div
-                      key={i}
-                      className="w-[10.625rem] h-[10.625rem] rounded-[0.625rem] overflow-hidden relative"
-                    >
-                      {i === 6 ? (
-                        <>
-                          <img
-                            src="/Home/images/p1.jpg"
-                            alt={`후기 이미지 ${i + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center text-white">
-                            <span className="heading-h4-bd text-[1.875rem]">+ 175</span>
-                            <span className="body-b0-bd text-[1.25rem]">더보기</span>
-                          </div>
-                        </>
-                      ) : (
-                        <img
-                          src="/Home/images/p1.jpg"
-                          alt={`후기 이미지 ${i + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                    </div>
-                  ))}
+                    {photoReview.map((photo: { photo_index: number; photo_url: string; }) => ( 
+                      <img
+                        key={photo.photo_index}
+                        src={photo.photo_url}
+                        alt={`후기 이미지 ${photo.photo_index + 1}`}
+                        className="w-[10.625rem] h-[10.625rem] rounded-[0.625rem] overflow-hidden relative"
+                      />
+                    ))}
                 </div>
               </div>
             </div>
 
-            <ReviewFilter />
+            <ReviewFilter
+              options={filterOptions}
+              selectedValue={sortBy}
+              onSelect={onSortChange}
+            />
 
             <div className="flex flex-col">
-              {[1, 2, 3, 4, 5].map((review) => (
-                <div
-                  key={review}
-                  className="border-b border-[var(--color-gray-30)] py-[2.5rem]"
-                >
-                  <Review />
+              {reviewList.length > 0 ? (
+                reviewList.map((review) => (
+                  <div
+                    key={review.review_id}
+                    className="border-b border-[var(--color-gray-30)] py-[2.5rem]"
+                  >
+                    <Review
+                      userName={review.user_nickname}
+                      rating={review.star}
+                      date={new Date(review.created_at).toLocaleDateString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                      })}
+                      reviewText={review.content}
+                      image={review.photos && review.photos.length > 0 ? review.photos[0] : undefined}
+                      profileImg={review.user_profile_image}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div className="py-[2.5rem] text-center text-[var(--color-gray-60)]">
+                  등록된 후기가 없습니다.
                 </div>
-              ))}
+              )}
             </div>
 
             <div className="flex justify-center">
