@@ -35,6 +35,7 @@ const BuyList = () => {
             isCustomOrder: o.targetType === 'REFORM',
             reviewAvailable: o.reviewAvailable,
             targetId: o.targetId,
+            receiptNumber: o.receiptNumber,
           }));
 
           setOrders(mapped)

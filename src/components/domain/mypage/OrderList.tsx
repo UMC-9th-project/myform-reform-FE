@@ -9,16 +9,17 @@ interface OrderListProps {
 
 // --- 백엔드 통합 타입 ---
 interface ApiOrderItem {
-  orderId: string;          // 주문 번호
-  targetId: string;         // 상품 또는 리폼 제안 ID
-  type: 'ITEM' | 'REFORM';  // ITEM = 마켓판매, REFORM = 주문제작
+  orderId: string;
+  targetId: string;
+  type: 'ITEM' | 'REFORM';
   status: string 
   price: number;
   deliveryFee: number;
-  userName: string;         // 구매자/요청자
+  userName: string;
   createdAt: string;
-  title: string;            // 상품명/리폼 제목
+  title: string;
   thumbnail: string;
+  receiptNumber?: string;
 }
 
 
@@ -51,6 +52,7 @@ const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail 
         const mapped = res.map(item => ({
           ...item,
           type: type as 'ITEM' | 'REFORM',
+          receiptNumber: item.receiptNumber ?? '',
         }));
         setOrders(mapped);
       })
@@ -158,7 +160,7 @@ const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail 
           filteredOrders.map(order => (
             <div key={order.orderId} className="bg-white border border-[var(--color-line-gray-40)] rounded-[1.25rem] p-5">
               <div className="flex justify-between items-center mb-4 text-[var(--color-gray-50)] body-b1-rg">
-                <span>주문번호 {order.orderId}</span>
+                <span>주문번호 {order.receiptNumber}</span>
                 <button
                   className="flex items-center gap-3 hover:text-black cursor-pointer"
                   onClick={() => handleButtonClick(order)}

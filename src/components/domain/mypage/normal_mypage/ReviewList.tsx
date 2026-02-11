@@ -71,6 +71,7 @@ const ReviewList = () => {
         rating: r.star,
         content: r.content,
         img: r.reviewPhotos || [],
+        productType: r.targetType === 'ITEM' || r.targetType === 'PROPOSAL' ? r.targetType : 'ITEM', // 필수값 채우기
       }));
     },
     enabled: activeTab === 'written', // written 탭에서만 fetch

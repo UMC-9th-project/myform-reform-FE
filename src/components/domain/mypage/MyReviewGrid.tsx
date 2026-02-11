@@ -4,6 +4,9 @@ import starGray from '../../../assets/icons/emptyStar.svg';
 import MoreVertical from '../../../assets/icons/morevertical.svg';
 import trash from '../../../assets/icons/trash.svg';
 import profile from '@/assets/icons/profile.svg';
+import { formatDateToKorean } from '@/utils/domain/formatDate';
+import ImageViewerModal from './ImageViewModal';
+import { useNavigate } from 'react-router-dom';
 
 
 export interface ReviewItem {
@@ -17,6 +20,8 @@ export interface ReviewItem {
   productImg: string;
   productName: string;
   productPrice: number;
+  productId?: string;
+  productType: string;
 }
 
 interface MyReviewGridProps {
@@ -34,6 +39,12 @@ const MyReviewGrid: React.FC<MyReviewGridProps> = ({
 }) => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [viewerImages, setViewerImages] = useState<string[]>([]);
+  const navigate = useNavigate();
+
+  
 
   // 클릭 외부 영역 닫기
   useEffect(() => {
@@ -86,7 +97,7 @@ const MyReviewGrid: React.FC<MyReviewGridProps> = ({
                           />
                         ))}
                       </span>
-                      <span className="body-b3-rg text-[var(--color-gray-50)]">{item.date}</span>
+                      <span className="body-b3-rg text-[var(--color-gray-50)]">{formatDateToKorean(item.date)}</span>
                     </div>
                   </div>
                 </div>
@@ -135,25 +146,51 @@ const MyReviewGrid: React.FC<MyReviewGridProps> = ({
                 <div className={`mb-4 grid gap-2 ${item.img.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                   {item.img.map((src, index) => (
                     <div key={index} className="overflow-hidden aspect-square">
-                      <img src={src} alt={`리뷰 이미지 ${index + 1}`} className="w-full h-full object-cover" />
+                      <img
+                        src={src}
+                        alt={`리뷰 이미지 ${index + 1}`}
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={() => {
+                          setViewerImages(item.img!);  // 클릭한 리뷰 이미지 배열 전달
+                          setCurrentIndex(index);      // 클릭한 이미지부터 보여주기
+                          setViewerOpen(true);
+                        }}
+                      />
                     </div>
                   ))}
                 </div>
               )}
 
+
               {/* 상품 정보 */}
-              <div className="bg-[var(--color-gray-20)] p-3 flex items-center gap-3">
+              <div
+                className="bg-[var(--color-gray-20)] p-3 flex items-center gap-3 cursor-pointer"
+                  onClick={() => {
+                    if (item.productType === 'ITEM') {
+                      navigate(`/market/product/${item.productId}`);
+                    } 
+                  }}
+              >
                 <div className="w-12 h-12 bg-white overflow-hidden flex-shrink-0">
                   <img src={item.productImg} alt="상품 이미지" className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-[0.69rem] body-b3-rg line-clamp-2">{item.productName}</div>
-                  <div className="body-b1-sb text-black">{item.productPrice.toLocaleString()}원</div>
+                  <div className="body-b1-sb text-black">{(item.productPrice ?? 0).toLocaleString()}원</div>
                 </div>
               </div>
             </div>
           ))}
         </div>
+        {viewerOpen && (
+        <ImageViewerModal
+          images={viewerImages}
+          currentIndex={currentIndex}
+          setCurrentIndex={setCurrentIndex}
+          onClose={() => setViewerOpen(false)}
+        />
+      )}
+
       </div>
     </div>
   );
