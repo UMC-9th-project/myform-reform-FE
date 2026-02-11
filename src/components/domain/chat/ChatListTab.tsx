@@ -106,31 +106,29 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
           <>
             {chats.map((chat) => (
               chat?.chatRoomId ? (
-              <div
-                key={chat.chatRoomId}
-                className={`flex items-center p-4 cursor-pointer transition-colors ${
-                  selectedChat?.chatRoomId === chat.chatRoomId
-                    ? 'bg-[var(--color-gray-20)]'
-                    : ''
-                }`}
-                onClick={() =>
-                  setSelectedChat({
-                    chatRoomId: chat.chatRoomId,
-                    roomType: chat.roomType as 'FEED' | 'PROPOSAL' | 'REQUEST',
-                  })
-                }
-              >
-                <img
-                  src={chat.image}
-                  alt="thumb"
-                  className="w-14 h-14 rounded-[5px] object-cover bg-gray-200"
-                />
-                <div className="ml-4 flex-1">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="body-b3-sb text-black">{chat.title}</h3>
-                      <p className="body-b3-rg text-[var(--color-gray-60)] mt-1">
-                        <p className="body-b3-rg text-[var(--color-gray-60)] mt-1">
+                <div
+                  key={chat.chatRoomId}
+                  className={`flex items-center p-4 cursor-pointer transition-colors ${
+                    selectedChat?.chatRoomId === chat.chatRoomId ? 'bg-[var(--color-gray-20)]' : ''
+                  }`}
+                  onClick={() =>
+                    setSelectedChat({
+                      chatRoomId: chat.chatRoomId,
+                      roomType: chat.roomType as 'FEED' | 'PROPOSAL' | 'REQUEST',
+                    })
+                  }
+                >
+                  <img
+                    src={chat.image}
+                    alt="thumb"
+                    className="w-14 h-14 rounded-[5px] object-cover bg-gray-200 flex-shrink-0"
+                  />
+                  <div className="ml-4 flex-1 flex flex-col overflow-hidden">
+                    <div className="flex justify-between items-start">
+                      {/* 제목 + 메시지 */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="body-b3-sb text-black truncate">{chat.title}</h3>
+                        <p className="body-b3-rg text-[var(--color-gray-60)] truncate">
                           {chat.lastMessage ??
                             (chat.messageType === 'payment'
                               ? '결제창'
@@ -146,21 +144,23 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
                               ? '결제 완료'
                               : '새로운 메시지')}
                         </p>
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-end">
-                      <span className="body-b5-rg text-[var(--color-gray-50)] mb-2">
-                        {new Date(chat.lastMessageAt).toLocaleDateString()}
-                      </span>
-                      {chat.unreadCount > 0 && (
-                        <span className="bg-[var(--color-red-1)] text-white body-b5-sb px-2 py-0.5 rounded-full">
-                          {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
+                      </div>
+
+                      {/* 날짜 + 읽지 않은 메시지 */}
+                      <div className="flex flex-col items-end ml-4 flex-shrink-0">
+                        <span className="body-b5-rg text-[var(--color-gray-50)] mb-2 whitespace-nowrap">
+                          {new Date(chat.lastMessageAt).toLocaleDateString()}
                         </span>
-                      )}
+                        {chat.unreadCount > 0 && (
+                          <span className="bg-[var(--color-red-1)] text-white body-b5-sb px-2 py-0.5 rounded-full">
+                            {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+
               ) : null
             ))}
 
