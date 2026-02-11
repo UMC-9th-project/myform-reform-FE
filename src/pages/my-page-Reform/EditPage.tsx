@@ -1,18 +1,21 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
+import upload from '@/assets/icons/upload.svg';
 import Option5 from '../../components/domain/mypage/Option5';
 import { type OptionGroup } from '../../components/domain/mypage/Option5';
 import DescriptionEditor from '../../components/domain/mypage/DescriptionEditor';
 import Button from '../../components/common/button/Button1';
 import { uploadImage, uploadImages } from '../../api/upload';
-import { createOrder, createSale } from '../../api/profile/sale';
-import type { SaleOption } from '../../types/domain/mypage/sale';
-import type { CreateOrderRequest } from '../../types/domain/mypage/order';
-import { useNavigate } from 'react-router-dom';
-import upload from '@/assets/icons/upload.svg';
+import { useNavigate, useParams } from 'react-router-dom';
+import { editReformProposal, getReformProposal } from '@/api/mypage/editProposal';
+import type { EditReformProposalRequest } from '@/types/domain/mypage/editProposal';
+import { editSaleItem, type EditSaleItemRequest } from '@/types/domain/mypage/editSaleItem';
+import { getSaleItem } from '@/api/mypage/sale';
+import type { SaleOption } from '@/types/domain/mypage/sale';
+import { getProfileProposal } from '@/api/profile/proposal';
 
 type ImageType = {
-  file: File;
+  file: File | null;
   preview: string;
 };
 
@@ -20,13 +23,13 @@ type CreatePageProps = {
   type: 'order' | 'sale';
 };
 
-const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
+const EditPage: React.FC<CreatePageProps> = ({ type }) => {
   const navigate = useNavigate();
   // --- 상태 관리 (Step 1 이미지용) ---
   const [images, setImages] = useState<ImageType[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-
+  const { id } = useParams<{ id: string }>();
+  console.log('현재 id:', id);
   // Step 2,4,5, 6 상태 추가
   const [title, setTitle] = useState<string>('');
   const [price, setPrice] = useState<string>(''); // string으로 받음
@@ -34,6 +37,11 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
   const [duration, setDuration] = useState<string>('');
   const [category, setCategory] = useState<string>(''); // 선택 안 됐으면 빈 문자열
   const [subCategory, setSubCategory] = useState<string>(''); // 소분류
+  const [description, setDescription] = useState('');
+  const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
+  const optionGroupsIdRef = useRef(1);
+  const subOptionIdRef = useRef(1);
+  const [showEditor, setShowEditor] = useState(false);
 
   const subCategoryMap: Record<string, string[]> = {
   '의류': ['상의', '하의', '아우터', '기타'],
@@ -43,12 +51,95 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
   '기타': []
   };
 
-  const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
-  const optionGroupsIdRef = useRef(1);
-  const subOptionIdRef = useRef(1);
+  useEffect(() => {
+    if (!id) return;
 
-  const [showEditor, setShowEditor] = useState(false);
-  const [description, setDescription] = useState('');
+    const fetchData = async () => {
+      try {
+        if (type === 'sale') {
+          // --- 판매글 조회 ---
+          const res = await getSaleItem(id);
+
+          // 이미지 세팅
+          setImages(res.images.map(url => ({ file: null, preview: url })));
+
+          // 텍스트 세팅
+          setTitle(res.title);
+          setDescription(res.content || '');
+          setPrice(res.price.toString());
+          setShippingFee(res.delivery.toString());
+
+          // 카테고리 세팅
+          setCategory(res.category?.major || '');
+          setSubCategory(res.category?.sub || '');
+
+          // 옵션 그룹 변환
+          if (res.option_groups && res.option_groups.length > 0) {
+            setOptionGroups(
+              res.option_groups.map((group, groupIndex) => ({
+                id: optionGroupsIdRef.current++,
+                apiId: group.option_group_id,
+                name: group.name,
+                sortOrder: groupIndex,
+                subOptions: group.option_items.map((item, subIndex) => ({
+                  id: subOptionIdRef.current++,
+                  apiId: item.option_item_id,
+                  name: item.name,
+                  price: item.extra_price.toString(),
+                  quantity: item.quantity.toString(),
+                  sortOrder: subIndex,
+                })),
+              }))
+            );
+          }
+
+        } else if (type === 'order') {
+          // --- 단일 주문제작 글 조회 ---
+          const res = await getReformProposal(id);
+          const data = res.success;
+          if (!data) throw new Error('주문제작 글 데이터 없음');
+
+          // 이미지 세팅
+          setImages(data.images?.map(img => ({ file: null, preview: img.photo })) || []);
+
+          // 텍스트 세팅
+          setTitle(data.title || '');
+          setDescription(data.content || '');
+          setPrice(data.price?.toString() || '');
+          setShippingFee(data.delivery?.toString() || '');
+          setDuration(data.expectedWorking?.toString() || '');
+
+          // --- 카테고리만 getProfileProposal에서 가져오기 ---
+          if (data.ownerId) {
+            const profileRes = await getProfileProposal({ ownerId: data.ownerId, limit: 20 });
+            const matchedProposal = profileRes.success?.proposals.find(p => p.proposalId === id);
+
+            if (matchedProposal?.category) {
+              setCategory(matchedProposal.category.major || '');
+              setSubCategory(matchedProposal.category.sub || '');
+            } else {
+              // fallback
+              setCategory(data.category?.major || '');
+              setSubCategory(data.category?.sub || '');
+            }
+          } else {
+            // fallback
+            setCategory(data.category?.major || '');
+            setSubCategory(data.category?.sub || '');
+          }
+
+          // 주문제작은 옵션 없음
+          setOptionGroups([]);
+        }
+      } catch (error) {
+        console.error('데이터 불러오기 실패', error);
+        alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 불러오기에 실패했습니다.`);
+      }
+    };
+
+    fetchData();
+  }, [id, type]);
+
 
 
 
@@ -94,13 +185,9 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
 
     const handleSubmit = async () => {
   try {
-    const token = localStorage.getItem('accessToken');
-    console.log('현재 localStorage accessToken:', token);
-
-    // 이미지 업로드
-    const files = images.map(img => img.file);
+    // 1. 이미지 업로드
+    const files = images.map(img => img.file).filter((f): f is File => f !== null);
     let imageUrls: string[] = [];
-
     if (files.length === 1) {
       const res = await uploadImage(files[0]);
       imageUrls = [res.success.url];
@@ -109,24 +196,19 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
       imageUrls = res.success.url;
     }
 
-    let result;
-
     if (type === 'sale') {
-      // --- 판매글 payload ---
-      const saleOptions: SaleOption[] = optionGroups.map(
-        (group, groupIndex) => ({
-          title: group.name,
-          sortOrder: groupIndex,
-          content: group.subOptions.map((sub, subIndex) => ({
-            comment: sub.name,
-            price: Number(sub.price.replace(/,/g, '')),
-            quantity: Number(sub.quantity),
-            sortOrder: subIndex,
-          })),
-        })
-      );
+      const saleOptions: SaleOption[] = optionGroups.map((group, groupIndex) => ({
+        title: group.name,
+        sortOrder: groupIndex,
+        content: group.subOptions.map((sub, subIndex) => ({
+          comment: sub.name,
+          price: Number(sub.price.replace(/,/g, '')),
+          quantity: Number(sub.quantity),
+          sortOrder: subIndex,
+        })),
+      }));
 
-      const payload = {
+      const payload: EditSaleItemRequest = {
         title,
         content: description,
         price: Number(price.replace(/,/g, '')),
@@ -139,40 +221,33 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
         imageUrls,
       };
 
-      result = await createSale(payload);
-
+      await editSaleItem(id!, payload);
     } else {
-      // --- 주문제작 payload ---
-      const payload: CreateOrderRequest = {
+      const payload: EditReformProposalRequest = {
         title,
-        content: description,
+        contents: description,
         price: Number(price.replace(/,/g, '')),
         delivery: Number(shippingFee.replace(/,/g, '')),
-        expected_working: Number(duration),
-        category: {
-          major: category,
-          sub: subCategory,
-        },
-        imageUrls,
+        expectedWorking: Number(duration),
+        category: { major: category, sub: subCategory },
+        images: imageUrls,
       };
 
-      result = await createOrder(payload);
+      await editReformProposal(id!, payload);
     }
 
-    // 공통 성공 처리
-    alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 등록 완료!`);
-    console.log('등록 결과:', result);
-    navigate('/reformer-mypage'); 
-
+    alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 수정 완료!`);
+    navigate('/reformer-mypage');
   } catch (error) {
     console.error(error);
-    alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 등록 실패`);
+    alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 수정 실패`);
   }
 };
 
+
   return (
     <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
-      <h1 className="heading-h2-bd pb-6 border-b mb-8 border-[black]"> {type === 'order' ? '주문제작 글 등록하기' : '판매글 등록하기'}</h1>
+      <h1 className="heading-h2-bd pb-6 border-b mb-8 border-[black]"> {type === 'order' ? '주문제작 글 수정하기' : '판매글 수정하기'}</h1>
 
       {/* Step 1: Image Upload */}
       <section className="mb-10">
@@ -225,7 +300,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                   onClick={() => fileInputRef.current?.click()}
                   className="w-36 h-36 rounded-lg border border-[var(--color-gray-40)] bg-[var(--color-gray-20)] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition"
                 >
-                  <img src={upload} alt="이미지 업로드 아이콘" className="text-gray-400" />
+                  <img src={upload} alt="업로드 아이콘" className="text-gray-400" />
                   <span className="body-b3-rg text-[var(--color-gray-50)] mt-2 text-center">이미지 업로드</span>
                 </div>
               )}
@@ -250,14 +325,10 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
               type="text" 
               placeholder="요청글 제목을 입력해주세요."
               value = {title}
-              onChange={e => {
-                if (e.target.value.length <= 40) {
-                  setTitle(e.target.value);
-                }
-              }} 
+              onChange={e => setTitle(e.target.value)} 
               className="placeholder:text-[var(--color-gray-50)] w-full border border-[var(--color-gray-60)] body-b1-rg p-5 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
-            <span className="absolute right-3 top-10 text-sm text-gray-400">{title.length}/40자</span>
+            <span className="absolute right-3 top-10 text-sm text-gray-400">0/40자</span>
           </div>
         </div>
       </section>
@@ -482,11 +553,11 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
             variant={isButtonEnabled ? 'primary' : 'disabled'}
             onClick={handleSubmit}
             >
-            등록하기
+            수정하기
         </Button>
       </div>
     </div>
   );
 };
 
-export default CreatePage;
+export default EditPage;

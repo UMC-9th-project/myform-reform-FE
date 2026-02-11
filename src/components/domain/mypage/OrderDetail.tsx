@@ -43,6 +43,7 @@ const OrderDetail = () => {
 
   // 드롭다운 옵션 목록
   const statusOptions: OrderDetailType['status'][] = ['결제 완료', '상품준비 중', '발송 완료'];
+  const [isEditingTracking, setIsEditingTracking] = useState(false);
 
   const fullAddress = [
     order?.deliveryAddress.address,
@@ -226,31 +227,46 @@ const OrderDetail = () => {
 
 
               <div className="space-y-2">
-                {/* 운송장 번호 입력 줄 */}
                 <div className="flex justify-between items-center text-[15px]">
                   <span className="body-b0-rg text-[var(--color-gray-50)]">
                     운송장 번호
                   </span>
-                  <input
-                    type="text"
-                    value={order.trackingNumber}
-                    onChange={(e) =>
-                      setOrder({ ...order, trackingNumber: e.target.value })
-                    }
-                    className="w-[22rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[14px]"
-                    title="운송장 번호 입력"
-                  />
+
+                  {isEditingTracking ? (
+                    <input
+                      type="text"
+                      value={order.trackingNumber}
+                      onChange={(e) =>
+                        setOrder({ ...order, trackingNumber: e.target.value })
+                      }
+                      className="w-[22rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[14px]"
+                      title="운송장 번호 입력"
+                      autoFocus
+                    />
+                  ) : (
+                    // 내용이 없으면 '-' 대신 빈 박스 형태로 표시
+                    <div className="w-[22rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[1rem] text-gray-400 flex items-center">
+                      {order.trackingNumber || '입력 필요'}
+                    </div>
+                  )}
                 </div>
 
                 {/* 하단 오른쪽 수정 / 삭제 */}
                 <div className="flex justify-end gap-3 text-[13px]">
-                  <button className="text-[var(--color-gray-50)] body-b2-rg">
+                  <button
+                    className="text-[var(--color-gray-50)] body-b2-rg"
+                    onClick={() => setIsEditingTracking(true)}
+                  >
                     수정
                   </button>
-                  <button className="text-[var(--color-gray-50)] body-b2-rg">
+                  <button
+                    className="text-[var(--color-gray-50)] body-b2-rg"
+                    onClick={() => setOrder({ ...order, trackingNumber: '' })}
+                  >
                     삭제
                   </button>
                 </div>
+
               </div>
             </div>
           </div>
