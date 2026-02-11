@@ -95,6 +95,7 @@ export interface GetMarketProductDetailResponse {
         reformer: {
             nickname: string;
             order_count: number;
+            review_count: number;
             owner_id: string;
             profile_image: string;
             star: number;

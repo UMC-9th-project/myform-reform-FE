@@ -539,7 +539,7 @@ const MarketProductDetailPage = () => {
                 <div className="flex-1 border-t border-b border-[var(--color-line-gray-40)] py-[1.125rem] flex flex-col items-center gap-[0.5rem]">
                   <span className="body-b0-rg text-[var(--color-gray-50)]">후기</span>
                   <span className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
-                    {review_count}개
+                    {product.reformer.review_count}개
                   </span>
                 </div>
                
