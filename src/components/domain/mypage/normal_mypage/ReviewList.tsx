@@ -13,14 +13,13 @@ type ReviewTab = 'writable' | 'written';
 
 const ReviewList = () => {
   const [activeTab, setActiveTab] = useState<ReviewTab>('writable');
-  const { setSelectedOrderId, setActiveTab: setUserTab } = useUserTabStore();
+  const { setSelectedOrderId } = useUserTabStore();
   const [writableReviews, setWritableReviews] = useState<ProductOrder[]>([]);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const handleDetailClick = (id: string) => {
     setSelectedOrderId(id);
-    setUserTab('구매 이력');
   };
 
   const handleWriteReviewClick = (orderId: string) => {

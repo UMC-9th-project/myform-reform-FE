@@ -7,6 +7,7 @@ import MyReformRequest from '../../components/domain/mypage/normal_mypage/MyRefo
 import UserOrderDetail from '../../components/domain/mypage/normal_mypage/UserOrderDetail';
 import ReviewList from '../../components/domain/mypage/normal_mypage/ReviewList';
 import BuyList from '../../components/domain/mypage/normal_mypage/BuyList';
+import { useEffect } from 'react';
 
 
 const USER_TABS: readonly UserTabType[] = [
@@ -17,8 +18,12 @@ const USER_TABS: readonly UserTabType[] = [
 ];
 
 const NormalMyPage = () => {
-  const { activeTab, setActiveTab, selectedOrderId } = useUserTabStore();
-
+  const { activeTab, setActiveTab, setSelectedOrderId, selectedOrderId } = useUserTabStore();
+    useEffect(() => {
+    // 탭이 바뀌면 상세 선택 초기화
+    setSelectedOrderId(null);
+  }, [activeTab, setSelectedOrderId]);
+  
   const { data: userInfo } = useQuery({
     queryKey: ['myUserInfo'],
     queryFn: getMyUserInfo,
