@@ -68,9 +68,99 @@ export interface GetMarketProductDetailResponse {
         message: string;
     };  
     success: {
-        item: MarketProductItem[];
+        category: {
+            major: string;
+            sub: string;
+        };
+        
+        title: string;
+        content: string;
+        delivery: number;
+        delivery_info: string;
+        images: string[];
+        item_id: string;
+        price: number;
+        is_wished: boolean;
+        option_groups: {
+            option_group_id: string;
+            name: string;
+            option_items: {
+                option_item_id: string;
+                name: string;
+                extra_price: number;
+                quantity: number;
+                is_sold_out: boolean;
+            }[];
+        }[];
+        reformer: {
+            nickname: string;
+            order_count: number;
+            review_count: number;
+            owner_id: string;
+            profile_image: string;
+            star: number;
+            star_recent_3m: number;
+            bio: string;
+        };     
     };
 }
+// 상품 리뷰 목록 조회 
+export interface MarketProductReviewListRequest {
+    itemId: string;
+    page: number;
+    limit: number;
+    sort: 'latest' | 'star_high' | 'star_low';
+}
+export interface MarketProductReviewListResponse {
+
+    success: {
+        reviews: {
+            review_id: string;
+            user_profile_image: string;
+            user_nickname: string;
+            star: number;
+            created_at: string;
+            content: string;
+            product_thumbnail: string;
+            photos: string[];
+        }[];
+        total_count: number;
+        avg_star: number;
+        page: number;
+        limit: number;
+        total_pages: number;
+        has_next_page: boolean;
+        has_prev_page: boolean;
+    };
+}
+   
+
+
+
+
+//마켓 상품 사진 후기 조회
+export interface MarketProductPhotoReviewRequest {
+    itemId: string;
+    offset: number;
+    limit: number;
+}
+
+export interface MarketProductPhotoReviewResponse {  
+    success: {
+        photos: {
+            photo_index: number;
+            review_id: string;
+            photo_url: string;
+            photo_order: number;
+        }[];
+        has_more: boolean;
+        offset: number;
+        limit: number;
+        total_count: number;     
+    };
+}
+
+
 
 
 

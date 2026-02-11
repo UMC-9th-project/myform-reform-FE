@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { getMarketProductList } from '../../../api/market/market';
 import type { MarketProductItem } from '../../../types/api/market/market';
 import { getMarketProductDetail } from '../../../api/market/market'; 
-
+import { getMarketProductPhotoReview } from '../../../api/market/market';
+import { getMarketProductReviewList } from '../../../api/market/market';
 
 export type MarketCategorySelection = {
   categoryTitle: string;
@@ -37,7 +38,7 @@ export const useMarketProductList = () => {
     staleTime: 1000 * 30,
   });
 
-  const products: MarketProductItem[] = productListResponse?.success.items ?? [];
+  const products: MarketProductItem[] = productListResponse?.success.items ?? [];  
   const hasNextPage = products.length >= 15;
   const totalPages = currentPage + (hasNextPage ? 1 : 0);
 
@@ -84,16 +85,56 @@ export const useMarketProductDetail = (itemId: string | undefined) => {
   const { data: productDetailResponse } = useQuery({
     queryKey: ['market-product-detail', itemId],
     queryFn: async () => {
-
-       const data = await getMarketProductDetail({ item_id: itemId ?? '' });
-       return data;
+   
+      const data = await getMarketProductDetail({ item_id: itemId ?? '' });
+      return data;
     },
     enabled: !!itemId,
     staleTime: 1000 * 30,
-    retry: 1,
   });
   
   return {
-    productDetailResponse,
+    productDetailResponse
+  };
+};
+
+export const useMarketProductPhotoReview = (itemId: string | undefined) => {
+  const { data: photoReviewResponse } = useQuery({
+    queryKey: ['market-product-photo-review', itemId],
+    queryFn: async () => {
+      const data = await getMarketProductPhotoReview({ itemId: itemId ?? '', offset: 0, limit: 15 });
+      return data;
+    },
+    enabled: !!itemId,
+    staleTime: 1000 * 30,
+  });
+  
+  return {
+    photoReviewResponse
+  };
+};
+
+export const useMarketProductReviewList = (
+  itemId: string | undefined,
+  page: number = 1,
+  sort: 'latest' | 'star_high' | 'star_low' = 'latest'
+) => {
+  const { data: reviewListResponse } = useQuery({
+    queryKey: ['market-product-review-list', itemId, page, sort],
+    queryFn: async () => {
+      const data = await getMarketProductReviewList({ 
+        itemId: itemId ?? '', 
+        page, 
+        limit: 15, 
+        sort 
+      });
+      return data;
+    },
+    enabled: !!itemId,
+    staleTime: 1000 * 30,
+  });
+  
+  return {
+    reviewListResponse
   };
 };
