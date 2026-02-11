@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getMarketProductList } from '../../../api/market/market';
-import type { GetMarketProductDetailResponse } from '../../../types/api/market/market';
+import type { MarketProductItem } from '../../../types/api/market/market';
 import { getMarketProductDetail } from '../../../api/market/market'; 
 import { getMarketProductPhotoReview } from '../../../api/market/market';
 import { getMarketProductReviewList } from '../../../api/market/market';
@@ -38,7 +38,7 @@ export const useMarketProductList = () => {
     staleTime: 1000 * 30,
   });
 
-  const products: GetMarketProductDetailResponse[] = productListResponse?.success.items ?? [];  
+  const products: MarketProductItem[] = productListResponse?.success.items ?? [];  
   const hasNextPage = products.length >= 15;
   const totalPages = currentPage + (hasNextPage ? 1 : 0);
 
