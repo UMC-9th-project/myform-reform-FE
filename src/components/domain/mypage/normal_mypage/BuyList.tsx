@@ -36,6 +36,7 @@ const BuyList = () => {
             reviewAvailable: o.reviewAvailable,
             targetId: o.targetId,
             receiptNumber: o.receiptNumber,
+            chat_room_id: o.chat_room_id,
           }));
 
           setOrders(mapped)

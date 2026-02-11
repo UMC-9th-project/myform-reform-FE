@@ -19,6 +19,7 @@ export interface OrderItem {
   thumbnail: string;
   reviewAvailable: boolean;
   reviewId?: string;
+  chat_room_id?: string;
 }
 
 export interface GetOrdersResponse {
