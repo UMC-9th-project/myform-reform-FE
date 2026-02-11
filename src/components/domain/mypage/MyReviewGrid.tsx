@@ -6,6 +6,8 @@ import trash from '../../../assets/icons/trash.svg';
 import profile from '@/assets/icons/profile.svg';
 import { formatDateToKorean } from '@/utils/domain/formatDate';
 import ImageViewerModal from './ImageViewModal';
+import { useNavigate } from 'react-router-dom';
+
 
 export interface ReviewItem {
   id: string;
@@ -18,6 +20,8 @@ export interface ReviewItem {
   productImg: string;
   productName: string;
   productPrice: number;
+  productId?: string;
+  productType: string;
 }
 
 interface MyReviewGridProps {
@@ -38,6 +42,7 @@ const MyReviewGrid: React.FC<MyReviewGridProps> = ({
   const [viewerOpen, setViewerOpen] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [viewerImages, setViewerImages] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   
 
@@ -158,13 +163,20 @@ const MyReviewGrid: React.FC<MyReviewGridProps> = ({
 
 
               {/* 상품 정보 */}
-              <div className="bg-[var(--color-gray-20)] p-3 flex items-center gap-3">
+              <div
+                className="bg-[var(--color-gray-20)] p-3 flex items-center gap-3 cursor-pointer"
+                  onClick={() => {
+                    if (item.productType === 'ITEM') {
+                      navigate(`/market/product/${item.productId}`);
+                    } 
+                  }}
+              >
                 <div className="w-12 h-12 bg-white overflow-hidden flex-shrink-0">
                   <img src={item.productImg} alt="상품 이미지" className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
                   <div className="text-[0.69rem] body-b3-rg line-clamp-2">{item.productName}</div>
-                  <div className="body-b1-sb text-black">{item.productPrice.toLocaleString()}원</div>
+                  <div className="body-b1-sb text-black">{(item.productPrice ?? 0).toLocaleString()}원</div>
                 </div>
               </div>
             </div>

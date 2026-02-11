@@ -120,15 +120,17 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
 
   const reviews: ReviewItem[] =
   reviewQuery.data?.success.reviews.map((r) => ({
-    id: r.reviewId,                   // API에서 reviewId -> MyReviewGrid id
-    author: r.userNickname,           // userNickname -> author
-    rating: r.star,                   // star -> rating
-    date: r.createdAt,                // createdAt -> date
+    id: r.reviewId,
+    author: r.userNickname,           
+    rating: r.star,                  
+    date: r.createdAt,               
     content: r.content,
-    img: r.photos,                     // photos -> img
-    productImg: r.productPhoto,       // productPhoto -> productImg
-    productName: r.productTitle,      // productTitle -> productName
-    productPrice: r.productPrice,     // productPrice 그대로
+    img: r.photos,                    
+    productImg: r.productPhoto,       
+    productName: r.productTitle,      
+    productPrice: r.productPrice,
+    productId: r.productId, 
+    productType: r.productType, 
   })) ?? [];
 
 
