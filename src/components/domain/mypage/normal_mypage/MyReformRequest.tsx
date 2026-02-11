@@ -4,12 +4,14 @@ import Pencil from '@/assets/icons/pencil.svg';
 import Trash from '@/assets/icons/trash.svg';
 import { getMyReformRequests, deleteReformRequests } from '@/api/mypage/reformRequestApi';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 
 const MyReformRequest: React.FC = () => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
     queryKey: ['myReformRequests'],
@@ -108,16 +110,15 @@ const MyReformRequest: React.FC = () => {
                             shadow-[0px_4px_10.7px_0px_#00000038]
                             overflow-hidden z-10 space-y-1"
                 >
-                  <button
-                    className="w-full px-4 py-2 text-left body-b1-rg flex gap-2 items-center"
-                    onClick={() => {
-                      setOpenMenuId(null);
-                      console.log('수정', item.reformRequestId);
-                    }}
-                  >
-                    <img src={Pencil} alt="수정" className="w-8" />
-                    <span>수정하기</span>
-                  </button>
+                        <button
+                          className="w-full px-4 py-2 text-left body-b1-rg flex gap-2 items-center"
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            // 여기서 navigate로 이동
+                            navigate(`/order/requests/${item.reformRequestId}/edit`);
+                          }}
+                        ><img src={Pencil} alt="수정" className="w-8" />
+                          수정하기</button>
 
                   <button
                     className="w-full px-4 py-2 text-left body-b1-rg flex gap-2 items-center"
