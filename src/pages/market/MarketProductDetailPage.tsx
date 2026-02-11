@@ -547,7 +547,7 @@ const MarketProductDetailPage = () => {
               <div className="flex-1 flex flex-col gap-[0.5rem]">
                   <ol className="flex flex-col gap-[0.5rem]">
                     <li className="body-b1-rg text-[var(--color-gray-60)]">
-                      - {product.content} 
+                      {product.reformer.bio}
                     </li>
                   </ol>
                   

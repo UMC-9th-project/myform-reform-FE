@@ -99,6 +99,7 @@ export interface GetMarketProductDetailResponse {
             profile_image: string;
             star: number;
             star_recent_3m: number;
+            bio: string;
         };     
     };
 }
