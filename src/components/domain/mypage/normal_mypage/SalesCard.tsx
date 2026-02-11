@@ -73,7 +73,7 @@ const SalesCard: React.FC<SalesCardProps> = ({
                     <span className="body-b0-rg text-[var(--color-gray-50)]">결제금액</span>
                     <span className="body-b0-rg text-black">{item.price.toLocaleString()}원</span>
 
-                    <span className="body-b0-rg text-[var(--color-gray-50)]">구매자</span>
+                    <span className="body-b0-rg text-[var(--color-gray-50)]">판매자</span>
                     <span className="body-b0-rg text-black">{item.buyer}</span>
 
                     <span className="body-b0-rg text-[var(--color-gray-50)]">결제 일시</span>

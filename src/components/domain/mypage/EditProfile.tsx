@@ -131,7 +131,7 @@ const EditProfile = ({ mode, data }: EditProfileProps) => {
             ))}
           </div>
 
-          <hr className="border-gray-100 mb-8" />
+          <hr className="border-[var(--color-gray-40)] mb-8" />
 
           <div className="body-b1-rg whitespace-pre-line text-base md:text-lg">
             {data?.bio}

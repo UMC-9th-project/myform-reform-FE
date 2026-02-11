@@ -22,7 +22,6 @@ import ImageViewerModal from './ImageViewModal';
 import mintPlus from '../../../assets/icons/mintPlus.svg';
 import morevertical from '@/assets/icons/morevertical.svg';
 import Pencil from '@/assets/icons/pencil.svg';
-import Trash from '@/assets/icons/trash.svg';
 
 export type ProfileTabType = '피드' | '판매 상품' | '후기';
 export type ProfileMode = 'view' | 'edit';
@@ -78,17 +77,17 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
     setOpenMenuId(openMenuId === id ? null : id);
   };
 
-  const handleEdit = (item: unknown) => {
-    console.log('수정', item);
-  };
-
-  const handleDelete = (item: unknown) => {
-    console.log('삭제', item);
-  };
-
-
-
-
+  const handleEdit = (item: ProfileSaleItem | ProfileProposalItem) => {
+  if (activeSaleSubTab === '마켓 판매') {
+    // 판매 상품 수정
+    const saleItem = item as ProfileSaleItem;
+    navigate(`/sales/${saleItem.itemId}/edit`);
+  } else {
+    // 주문 제작 수정
+    const proposalItem = item as ProfileProposalItem;
+    navigate(`/custom/${proposalItem.proposalId}/edit`);
+  }
+};
   
   // ───────── 프로필 정보 ─────────
   const profileQuery = useQuery<GetProfileResponse, Error>({
@@ -293,7 +292,16 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
             {/* ───────── 상품 리스트 ───────── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10">
               {saleItems.map((item) => (
-                <div key={getItemKey(item)} className="flex flex-col group cursor-pointer">
+                <div key={getItemKey(item)} className="flex flex-col group cursor-pointer"
+                  onClick={() => {
+                    if (activeSaleSubTab === '마켓 판매') {
+                      const saleItem = item as ProfileSaleItem;
+                      navigate(`/market/product/${saleItem.itemId}`);
+                    } else {
+                      const proposalItem = item as ProfileProposalItem;
+                      navigate(`/reformer/order/proposals/${proposalItem.proposalId}`)
+                    }
+                  }}>
                   <div className="relative aspect-square mb-3 overflow-hidden rounded-[1.25rem] bg-white">
                     <img
                       src={item.photo ?? '/images/default.png'}
@@ -338,7 +346,7 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
                     <div className="heading-h4-bd text-black">{item.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원</div>
                     <div className="flex items-center">
                       <span className="text-[#FFCF41] text-[1.125rem] mr-1 relative -translate-y-[0.125rem]"><img src={star} alt="별" /></span>
-                      <span className="body-b3-rg text-black">{item.avgStar ?? '별점이 없습니다'}</span>
+                      <span className="body-b3-rg text-black">{item.avgStar ?? '0'}</span>
                       <span className="ml-1 text-[var(--color-gray-50)]">({item.reviewCount ?? 0})</span>
                     </div>
                     <div className="pt-1 flex justify-between items-center">
@@ -367,15 +375,6 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
                               >
                                 <img src={Pencil} alt="수정하기" className="w-6 h-6" />
                                 <span className="body-b1-rg text-black">수정하기</span>
-                              </button>
-
-                              {/* 삭제하기 버튼 */}
-                              <button
-                                className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--color-gray-20)] transition-colors text-left"
-                                onClick={() => handleDelete(item)}
-                              >
-                                <img src={Trash} alt="삭제하기" className="w-6 h-6" />
-                                <span className="body-b1-rg text-black">삭제하기</span>
                               </button>
                             </div>
                           </div>

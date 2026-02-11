@@ -10,6 +10,7 @@ import MarketPurchaseCompletePage from './pages/market/MarketPurchaseCompletePag
 import Wishlist from './pages/wishlist/Wishlist';
 import ReformerMyPage from './pages/my-page-Reform/ReformerMyPage';
 import CreatePage from './pages/my-page-Reform/CreatePage';
+import EditPage from './pages/my-page-Reform/EditPage';
 import EditProfilePage from './pages/my-page-Reform/EditProfilePage';
 import Profile from './pages/Profile';
 import NormalMyPage from './pages/my-page/NormalMyPage';
@@ -47,6 +48,7 @@ import ChatPage from './pages/chat/ChatPage';
 import ChatQuotationDetailPage from './pages/chat/ChatQuotationDetailPage';
 import ChatQuotationFormPage from './pages/chat/ChatQuotationFormPage';
 import ChatRequestFormPage from './pages/chat/ChatRequestFormPage';
+import ChatProposalDetailPage from './pages/chat/ChatRequestDetail';
 
 import LandingPage from './pages/LandingPage';
 
@@ -147,11 +149,14 @@ function App() {
         <Route path="reformer-mypage" element={<ReformerMyPage />} />
         <Route path="/sales/create" element={<CreatePage type="sale" />} />
         <Route path="/custom/create" element={<CreatePage type="order" />} />
+        <Route path ="/sales/:id/edit" element={<EditPage type="sale" />} />
+        <Route path="/custom/:id/edit" element={<EditPage type="order" />} />
         <Route path="/reformer-profile-edit" element={<EditProfilePage />} />
         <Route path="/normal-mypage" element={<NormalMyPage />} />
         <Route path="/normal-profile-edit" element={<EditProfilePage />} />
         <Route path="/mypage/review/write" element={<ReviewWritePage />} />
-        <Route path="/chat/quotation/detail/:requestId" element={<ChatQuotationDetailPage />} />
+        <Route path="/chat/request/detail/:requestId" element={<ChatQuotationDetailPage />} />
+        <Route path="/chat/quotation/detail/:proposalId" element={<ChatProposalDetailPage />} />
 
         {/* 404 처리 */}
         <Route path="*" element={<div>Not Found</div>} />
@@ -210,7 +215,9 @@ function App() {
         <Route path="/chat/reformer/:chatId?" element={<ChatPage role="REFORMER" />} />
         <Route path="/chat/normal/:chatId?" element={<ChatPage role="USER" />} />
         <Route path="/chat/create/quotation/:chatRoomId" element={<ChatQuotationFormPage />} />
+        <Route path="/chat/create/request/edit/:requestId" element={<ChatRequestFormPage />} />
         <Route path="/chat/create/request/:chatRoomId" element={<ChatRequestFormPage />} />
+        <Route path="/chat/create/quotation/edit/:proposalId" element={<ChatQuotationFormPage />} />
       </Route>
 
 

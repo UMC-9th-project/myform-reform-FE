@@ -13,14 +13,13 @@ type ReviewTab = 'writable' | 'written';
 
 const ReviewList = () => {
   const [activeTab, setActiveTab] = useState<ReviewTab>('writable');
-  const { setSelectedOrderId, setActiveTab: setUserTab } = useUserTabStore();
+  const { setSelectedOrderId } = useUserTabStore();
   const [writableReviews, setWritableReviews] = useState<ProductOrder[]>([]);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const handleDetailClick = (id: string) => {
     setSelectedOrderId(id);
-    setUserTab('구매 이력');
   };
 
   const handleWriteReviewClick = (orderId: string) => {
@@ -43,6 +42,9 @@ const ReviewList = () => {
           image: o.thumbnail || '',
           status: '결제 완료',
           reviewAvailable: o.reviewAvailable,
+
+          targetType: o.targetType === 'ITEM' || o.targetType === 'REQUEST' ? o.targetType : undefined,// "ITEM" | "REQUEST"
+          targetId: o.targetId,
         }));
         setWritableReviews(mapped);
       } catch (err) {
@@ -131,6 +133,8 @@ const ReviewList = () => {
               data={writableReviews}
               onDetailClick={handleDetailClick}
               onWriteReviewClick={handleWriteReviewClick}
+              onChatClick={(targetId: string) => {
+                navigate(`/chat/normal/${targetId}`); }}
             />
           )}
         </div>
@@ -152,6 +156,7 @@ const ReviewList = () => {
               maxWidth="6xl"
               reviews={writtenReviewsData}
               onDelete={(reviewId: string) => deleteMutation.mutate(reviewId)}
+              
             />
           )}
         </div>

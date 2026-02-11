@@ -1,5 +1,5 @@
 import WishlistSidebar from '../../components/domain/wishlist/WishlistSidebar';
-import WishlistItemCard from '../../components/domain/wishlist/WishlistItemCard';
+import MarketCard from '../../components/common/card/MarketCard';
 import RequestCard from '../../components/common/card/RequestCard';
 import ProposalCard from '../../components/common/card/ProposalCard';
 import EmptyWishlist from '../../components/domain/wishlist/EmptyWishlist';
@@ -11,11 +11,10 @@ const Wishlist = () => {
     wishData,
     isLoading,
     isReformer,
-    currentItems,
+    marketItems,
     requestDetailsMap,
     proposalDetailsMap,
     handleMenuChange,
-    handleRemoveFromWishlist,
   } = useWishlistPage();
 
   return (
@@ -88,11 +87,11 @@ const Wishlist = () => {
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-[1.875rem] mt-[3.125rem]">
-                {currentItems.map((item, index) => (
-                  <WishlistItemCard
-                    key={`${item.itemId}-${index}`}
+                {marketItems.map((item) => (
+                  <MarketCard
+                    key={item.item_id}
                     item={item}
-                    onRemove={() => handleRemoveFromWishlist(item)}
+                    hideLikeButton={isReformer}
                   />
                 ))}
               </div>

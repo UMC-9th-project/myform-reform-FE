@@ -8,18 +8,18 @@ interface QuotationCardProps {
   myRole?: 'REFORMER' | 'USER';
   price: number;      // 견적 금액
   delivery: number;   // 배송비
-  expectedWorking?: number;
+  expectedWorking: number;
   nickname: string;
 }
 
 const QuotationCard: React.FC<QuotationCardProps> = ({ 
   type, 
   id, 
-  chatId, 
   price, 
   delivery, 
   expectedWorking,
-  nickname// 기본값 설정 
+  nickname,
+
 }) => {
   const navigate = useNavigate();
   const isSent = type === 'sent';
@@ -35,7 +35,6 @@ const QuotationCard: React.FC<QuotationCardProps> = ({
 
   // 합계 계산
   const totalPrice = price + delivery;
-
   return (
     <div className={`flex w-full h-full mb-1 gap-3 ${isSent ? 'justify-end' : 'justify-start'}`}>
       <div className={`${bgColor} ${borderRadiusClass} p-5 w-full min-w-[23rem] shadow-sm`}>
@@ -67,17 +66,16 @@ const QuotationCard: React.FC<QuotationCardProps> = ({
         
         <button
           className="w-full bg-black text-white py-2.5 rounded-xl body-b4-sb hover:bg-gray-800 transition-colors shadow-md"
-          onClick={() => navigate('/chat/quotation/detail', {
-            state: {
-              myRole: type === 'sent' ? 'REFORMER' : 'USER',
-              isQuotation: true,
-              id: id,
-              chatId: chatId,
+          onClick={() =>
+            navigate(`/chat/quotation/detail/${id}`, {
+              state: {isQuotation: true}
             }
-          })}
+            ) // id = payload.id
+          }
         >
           {btnText}
         </button>
+
       </div>
     </div>
   );

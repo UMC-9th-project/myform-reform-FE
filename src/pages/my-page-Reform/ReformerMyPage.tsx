@@ -6,6 +6,7 @@ import OrderList from '../../components/domain/mypage/OrderList';
 import { useSellerTabStore, type SellerTabType } from '../../stores/tabStore';
 import { useQuery } from '@tanstack/react-query';
 import { getMyReformerInfo } from '../../api/profile/user';
+import { useEffect } from 'react';
 
 const SELLER_TABS: readonly SellerTabType[] = [
   '프로필 관리',
@@ -14,7 +15,10 @@ const SELLER_TABS: readonly SellerTabType[] = [
 
 const ReformerMyPage = () => {
   const { activeTab, setActiveTab, selectedOrderId, setSelectedOrderId } = useSellerTabStore();
-
+  useEffect(() => {
+    // 상위 탭 변경 시 상세 선택 초기화
+    setSelectedOrderId(null);
+  }, [activeTab, setSelectedOrderId]);
   // EditProfileCard가 표시되는 탭인지 확인
   const showEditProfileCard = activeTab === '프로필 관리';
 

@@ -1,3 +1,8 @@
+export interface SaleCategory {
+  major: string;
+  sub: string;
+}
+
 export interface ProfileProposalItem {
   proposalId: string;
   photo: string | null;
@@ -7,6 +12,7 @@ export interface ProfileProposalItem {
   avgStar: number | null;
   reviewCount: number | null;
   sellerName: string;
+  category: SaleCategory;
 }
 
 export interface GetProfileProposalsResponse {

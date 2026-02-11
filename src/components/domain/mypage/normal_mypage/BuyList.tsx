@@ -59,7 +59,6 @@ const BuyList = () => {
   };
 
   const handleChatClick = (targetId: string) => {
-    // 예: 채팅 페이지 URL에 주문 ID 포함
     navigate(`/chat/normal/${targetId}`)
   };
 

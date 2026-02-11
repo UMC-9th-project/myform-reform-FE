@@ -1,5 +1,3 @@
-import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import SearchResultEmpty from '../../components/domain/search-result/SearchResultEmpty';
 import SearchResultSkeleton from '../../components/domain/search-result/SearchResultSkeleton';
 import MarketCard from '../../components/common/card/MarketCard';
@@ -8,14 +6,10 @@ import ProposalCard from '../../components/common/card/ProposalCard';
 import Pagination from '../../components/common/pagination/Pagination';
 import useAuthStore from '../../stores/useAuthStore';
 import { useSearchPage } from '../../hooks/domain/search/useSearchPage';
-import { useWish } from '../../hooks/domain/wishlist/useWish';
 
 export default function Search() {
-  const navigate = useNavigate();
   const userRole = useAuthStore((state) => state.role);
-  const accessToken = useAuthStore((state) => state.accessToken);
   const isReformer = userRole === 'reformer';
-  const { toggleWish } = useWish();
 
   const {
     searchValue,
@@ -34,28 +28,6 @@ export default function Search() {
     handleTabChange,
     handlePageChange,
   } = useSearchPage();
-
-  const handleMarketLikeClick = useCallback(async (id: number, isLiked: boolean) => {
-    if (!accessToken) {
-      navigate('/login/type');
-      return;
-    }
-
-    if (isReformer) {
-      return;
-    }
-
-    try {
-      await toggleWish('ITEM', id.toString(), isLiked);
-    } catch (error: unknown) {
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { status?: number } };
-        if (axiosError.response?.status === 401) {
-          navigate('/login/type');
-        }
-      }
-    }
-  }, [accessToken, navigate, toggleWish, isReformer]);
 
   return (
     <div className="w-full mx-auto py-10">
@@ -118,7 +90,6 @@ export default function Search() {
                     <MarketCard
                       key={item.item_id}
                       item={item}
-                      onLikeClick={handleMarketLikeClick}
                       hideLikeButton={isReformer}
                     />
                   ))}

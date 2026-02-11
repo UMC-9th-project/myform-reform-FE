@@ -26,7 +26,7 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
   const [filter, setFilter] = useState(initialFilter);
   const queryClient = useQueryClient();
   const location = useLocation();
-  const chatRoomIdFromUrl = location.pathname.split('/').pop();
+  const chatRoomIdFromUrl = location.pathname.split('/').pop() || null;
 
   // ✅ React Query로 변경
   const { data, isLoading, error } = useQuery({
@@ -105,6 +105,7 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
         ) : (
           <>
             {chats.map((chat) => (
+              chat?.chatRoomId ? (
               <div
                 key={chat.chatRoomId}
                 className={`flex items-center p-4 cursor-pointer transition-colors ${
@@ -128,7 +129,24 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="body-b3-sb text-black">{chat.title}</h3>
-                      <p className="body-b3-rg text-[var(--color-gray-60)] mt-1">{chat.lastMessage}</p>
+                      <p className="body-b3-rg text-[var(--color-gray-60)] mt-1">
+                        <p className="body-b3-rg text-[var(--color-gray-60)] mt-1">
+                          {chat.lastMessage ??
+                            (chat.messageType === 'payment'
+                              ? '결제창'
+                              : chat.messageType === 'text'
+                              ? '메시지'
+                              : chat.messageType === 'request'
+                              ? '요청서'
+                              : chat.messageType === 'proposal'
+                              ? '견적서'
+                              : chat.messageType === 'image'
+                              ? '사진'
+                              : chat.messageType === 'result'
+                              ? '결제 완료'
+                              : '새로운 메시지')}
+                        </p>
+                      </p>
                     </div>
                     <div className="flex flex-col items-end">
                       <span className="body-b5-rg text-[var(--color-gray-50)] mb-2">
@@ -143,6 +161,7 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
                   </div>
                 </div>
               </div>
+              ) : null
             ))}
 
             {/* 더보기 버튼 */}

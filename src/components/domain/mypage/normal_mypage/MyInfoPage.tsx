@@ -11,6 +11,7 @@ import { updateMyUserInfo, type UpdateMyUserInfoRequest, type UpdateMyUserInfoRe
 import { uploadImage } from '../../../../api/upload';
 import { createAddress, deleteAddress, getAddresses } from '../../../../api/mypage/address';
 import type { CreateAddressRequest, DeleteAddressResponse, GetAddressesResponse } from '../../../../types/domain/mypage/address';
+import formatPhoneNumber from '@/utils/domain/formatPhoneNumber';
 
 type AddressData = {
   zonecode: string;
@@ -107,6 +108,8 @@ const MyInfoPage = () => {
     if (digits.length !== 11) return phone;
     return `${digits.slice(0,3)}-****-${digits.slice(7)}`;
   };
+
+
 
   const handleComplete = (data: AddressData) => {
     console.log('DaumPostcode data:', data);
@@ -465,7 +468,7 @@ const MyInfoPage = () => {
                         </div>
 
                         <p className="body-b1-rg text-[var(--color-gray-60)] mb-1">
-                          {addr.phone}
+                          {formatPhoneNumber(addr.phone)}
                         </p>
                         <p className="body-b1-rg text-[var(--color-gray-60)]">
                           ({addr.postalCode}) {addr.address} {addr.addressDetail}

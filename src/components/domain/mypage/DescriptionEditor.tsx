@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { AlignLeft, ArrowsUpFromLine } from 'lucide-react';
+import { AlignLeft, AlignCenter, AlignRight, ArrowsUpFromLine } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -14,9 +14,10 @@ import Button from '../../common/button/Button1';
 type DescriptionEditorProps = {
   onSubmit: (html: string) => void; // 등록 버튼 클릭 시
   onClose: () => void;
+  initialContent?: string
 };
 
-const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose }) => {
+const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose, initialContent }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -25,24 +26,16 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose
       Underline,
       TextStyle,
       Highlight,
-      Image.configure({
-        inline: false,
-        allowBase64: true,
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      Placeholder.configure({
-        placeholder:'제품의 상세 설명을 입력해주세요!'
-      })
+      Image.configure({ inline: false, allowBase64: true }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Placeholder.configure({ placeholder: '제품의 상세 설명을 입력해주세요!' })
     ],
-    content: '',
+    content: initialContent || '', // 초기 content 반영
     editorProps: {
-      attributes: {
-        class: 'outline-none min-h-[60rem] focus:outline-none',
-      },
+      attributes: { class: 'outline-none min-h-[60rem] focus:outline-none' },
     },
   });
+
 
   if (!editor) return null;
 
@@ -160,11 +153,26 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose
 
           <div className="flex items-center gap-5">
             <button
-              title="오른쪽 정렬"
+              title="왼쪽 정렬"
               onClick={() => editor.chain().focus().setTextAlign('left').run()}
             >
               <AlignLeft size={23} />
             </button>
+
+            <button
+              title="가운데 정렬"
+              onClick={() => editor.chain().focus().setTextAlign('center').run()}
+            >
+              <AlignCenter size={23} />
+            </button>
+
+            <button
+              title="오른쪽 정렬"
+              onClick={() => editor.chain().focus().setTextAlign('right').run()}
+            >
+              <AlignRight size={23} />
+            </button>
+
             <button
               title="줄바꿈" onClick={() => editor.chain().focus().setHardBreak().run()}
             >
