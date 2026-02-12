@@ -9,7 +9,7 @@ export const createReformQuote = async (
   body: CreateReformQuoteRequest
 ): Promise<CreateReformQuoteResponse> => {
   const { data } = await api.post<CreateReformQuoteResponse>(
-    '/reform/quote',
+    '/chat/rooms/request',
     body
   );
   return data;

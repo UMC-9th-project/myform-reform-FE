@@ -2,10 +2,17 @@ import { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Input from '../../components/domain/purchase/Input';
 import Button2 from '../../components/common/button/Button2';
+import useAuthStore from '../../stores/useAuthStore';
+import ReformerPurchaseBlockModal from '../../components/common/Modal/ReformerPurchaseBlockModal';
 import DaumPostcode from 'react-daum-postcode';
 import { usePayment } from '../../hooks/domain/payment/usePayment';
 import { useOrderSheet } from '../../hooks/domain/payment/useOrderSheet';
 import type { DeliveryAddress } from '../../types/payment/payment';
+import { createOrderFromCart } from '../../api/order/cartOrder';
+import { createAddress } from '../../api/mypage/address';
+import { loadPortOneSDK, requestPortonePayment } from '../../services/payment/paymentService';
+import { verifyPayment } from '../../api/chat/orderApi';
+import type { PaymentResponse } from '../../types/payment/payment';
 
 
 const MarketPurchasePage = () => {
@@ -14,8 +21,14 @@ const MarketPurchasePage = () => {
   const { id } = useParams<{ id: string }>();
   
   const product = location.state?.product;
+  const fromCart = location.state?.fromCart;
+  const cartIds = location.state?.cartIds as string[] | undefined;
+  const selectedProducts = location.state?.selectedProducts;
   
   const [activeTab, setActiveTab] = useState<'existing' | 'new'>('existing');
+  const [showReformerModal, setShowReformerModal] = useState(false);
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress>({
     zipcode: '',
@@ -25,6 +38,8 @@ const MarketPurchasePage = () => {
     recipient: '',
     phone: '',
   });
+  const [isProcessingCartPayment, setIsProcessingCartPayment] = useState(false);
+  const [cartPaymentError, setCartPaymentError] = useState<string | null>(null);
   
   // option_item_ids 계산
   const optionItemIds = useMemo(() => {
@@ -37,7 +52,7 @@ const MarketPurchasePage = () => {
       });
     }
     return ids;
-  }, [product?.selectedOptions]);
+  }, [product]);
 
   // 주문서 조회 (배송비 및 총 금액)
   const { shippingFee, totalPrice, isLoading: isOrderSheetLoading } = useOrderSheet({
@@ -107,7 +122,169 @@ const MarketPurchasePage = () => {
     return null;
   }
 
+  // merchant_uid 생성 함수
+  const generateMerchantUid = () => {
+    return `cart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  };
+
+  // 장바구니 결제 처리
+  const handleCartPayment = async () => {
+    if (!cartIds || cartIds.length === 0) {
+      alert('장바구니 정보를 불러올 수 없습니다.');
+      return;
+    }
+
+    setIsProcessingCartPayment(true);
+    setCartPaymentError(null);
+
+    try {
+      // 1. 배송지 정보 검증
+      if (!deliveryAddress.zipcode || !deliveryAddress.address || 
+          !deliveryAddress.recipient || !deliveryAddress.phone) {
+        throw new Error('배송지 정보를 모두 입력해주세요.');
+      }
+
+      // 2. 배송지 생성 또는 기존 배송지 ID 사용
+      let deliveryAddressId: string;
+      
+      if (activeTab === 'new') {
+        // 신규 배송지 생성
+        const addressResponse = await createAddress({
+          postalCode: deliveryAddress.zipcode,
+          address: deliveryAddress.address,
+          addressDetail: deliveryAddress.detailAddress || '',
+          isDefault: false,
+          addressName: deliveryAddress.name || '배송지',
+          recipient: deliveryAddress.recipient,
+          phone: deliveryAddress.phone,
+        });
+
+        if (addressResponse.resultType !== 'SUCCESS' || !addressResponse.success || addressResponse.success.length === 0) {
+          throw new Error('배송지 생성에 실패했습니다.');
+        }
+
+        deliveryAddressId = addressResponse.success[0].addressId;
+      } else {
+        // 기존 배송지 사용 (현재는 신규 생성으로 처리)
+        // TODO: 기존 배송지 선택 기능 구현 필요
+        const addressResponse = await createAddress({
+          postalCode: deliveryAddress.zipcode,
+          address: deliveryAddress.address,
+          addressDetail: deliveryAddress.detailAddress || '',
+          isDefault: false,
+          addressName: deliveryAddress.name || '배송지',
+          recipient: deliveryAddress.recipient,
+          phone: deliveryAddress.phone,
+        });
+
+        if (addressResponse.resultType !== 'SUCCESS' || !addressResponse.success || addressResponse.success.length === 0) {
+          throw new Error('배송지 생성에 실패했습니다.');
+        }
+
+        deliveryAddressId = addressResponse.success[0].addressId;
+      }
+
+      // 3. merchant_uid 생성
+      const merchantUid = generateMerchantUid();
+
+      // 4. 장바구니 주문 생성
+      const orderResponse = await createOrderFromCart({
+        cart_ids: cartIds,
+        delivery_address_id: deliveryAddressId,
+        merchant_uid: merchantUid,
+      });
+
+      if (orderResponse.resultType !== 'SUCCESS' || !orderResponse.success) {
+        throw new Error(orderResponse.error?.reason || '주문 생성에 실패했습니다.');
+      }
+
+      const { order_id, payment_info } = orderResponse.success;
+
+      // 5. Portone SDK 로드
+      await loadPortOneSDK();
+
+      // 6. Portone 결제창 호출
+      requestPortonePayment(
+        {
+          merchant_uid: payment_info.merchant_uid,
+          name: selectedProducts && selectedProducts.length > 0 
+            ? `${selectedProducts[0].title} 외 ${selectedProducts.length - 1}개`
+            : '장바구니 상품',
+          amount: payment_info.amount,
+          buyer_name: deliveryAddress.recipient,
+        },
+        async (rsp: PaymentResponse) => {
+          if (rsp.success) {
+            try {
+              // 7. 결제 검증
+              if (!rsp.imp_uid) {
+                throw new Error('결제 고유번호를 가져올 수 없습니다.');
+              }
+
+              await verifyPayment({
+                order_id,
+                imp_uid: rsp.imp_uid,
+              });
+
+              // 8. 결제 완료 후 완료 페이지로 이동
+              // 장바구니에서 온 경우 첫 번째 상품의 ID를 사용하여 완료 페이지로 이동
+              const firstProductId = selectedProducts && selectedProducts.length > 0 
+                ? selectedProducts[0].itemId 
+                : id;
+              
+              if (firstProductId) {
+                navigate(`/market/product/${firstProductId}/purchase/complete`, {
+                  state: {
+                    order: {
+                      orderNumber: payment_info.merchant_uid,
+                      orderId: order_id,
+                      deliveryInfo: {
+                        name: deliveryAddress.name,
+                        recipient: deliveryAddress.recipient,
+                        phone: deliveryAddress.phone,
+                        address: `(${deliveryAddress.zipcode}) ${deliveryAddress.address} ${deliveryAddress.detailAddress}`,
+                      },
+                      products: selectedProducts,
+                      payment: {
+                        totalAmount: payment_info.amount,
+                        method: '카드 간편결제',
+                        paidAmount: rsp.paid_amount,
+                      },
+                      fromCart: true,
+                    },
+                  },
+                });
+              } else {
+                alert('결제가 완료되었습니다.');
+                navigate('/cart');
+              }
+            } catch (error) {
+              const errorMessage = error instanceof Error 
+                ? error.message 
+                : '결제 검증에 실패했습니다. 고객센터로 문의해주세요.';
+              setCartPaymentError(errorMessage);
+              setIsProcessingCartPayment(false);
+            }
+          } else {
+            setCartPaymentError(rsp.error_msg || '결제에 실패했습니다.');
+            setIsProcessingCartPayment(false);
+          }
+        }
+      );
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '결제 처리에 실패했습니다.';
+      setCartPaymentError(errorMessage);
+      setIsProcessingCartPayment(false);
+      alert(errorMessage);
+    }
+  };
+
   const handlePayment = () => {
+    if (isReformer) {
+      setShowReformerModal(true);
+      return;
+    }
+    
     // 배송지 정보 검증
     if (!deliveryAddress.zipcode || !deliveryAddress.address || 
         !deliveryAddress.recipient || !deliveryAddress.phone) {
@@ -115,6 +292,13 @@ const MarketPurchasePage = () => {
       return;
     }
 
+    // 장바구니에서 온 경우 장바구니 결제 처리
+    if (fromCart && cartIds) {
+      handleCartPayment();
+      return;
+    }
+
+    // 일반 상품 결제 처리
     processPayment();
   };
 
@@ -367,11 +551,15 @@ const MarketPurchasePage = () => {
             
             <button 
               onClick={handlePayment}
-              disabled={isProcessing || isOrderSheetLoading}
+              disabled={isProcessing || isProcessingCartPayment || isOrderSheetLoading}
               className="bg-[var(--color-mint-0)] flex gap-[0.625rem] h-[4.625rem] items-center justify-center px-[1.875rem] py-[0.625rem] rounded-[0.625rem] w-full cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="body-b0-sb text-[1.5rem] text-white">
-                {isProcessing ? '처리 중...' : isOrderSheetLoading ? '로딩 중...' : '결제하기'}
+                {isProcessing || isProcessingCartPayment 
+                  ? '처리 중...' 
+                  : isOrderSheetLoading 
+                    ? '로딩 중...' 
+                    : '결제하기'}
               </span>
             </button>
             {paymentError && (
@@ -379,10 +567,19 @@ const MarketPurchasePage = () => {
                 {paymentError.message}
               </p>
             )}
+            {cartPaymentError && (
+              <p className="body-b2-rg text-[var(--color-red-1)] text-center">
+                {cartPaymentError}
+              </p>
+            )}
           </div>
         </div>
       </div>
 
+      <ReformerPurchaseBlockModal
+        isOpen={showReformerModal}
+        onClose={() => setShowReformerModal(false)}
+      />
       {/* 우편번호 검색 모달 */}
       {isPostcodeOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">

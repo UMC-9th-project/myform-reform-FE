@@ -1,5 +1,12 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logos/logo.svg';
+import AgreementTermsModal from '../../domain/signup/modal/AgreementTermsModal';
+import {
+  SERVICE_TERMS_CONTENT,
+  PRIVACY_TERMS_CONTENT,
+  REFORMER_TERMS_CONTENT,
+} from '../../../constants/agreements';
 
 interface FooterProps {
   variant: 'dark' | 'light';
@@ -8,6 +15,9 @@ interface FooterProps {
 const Footer = ({ variant = 'dark' }: FooterProps) => {
   const navigate = useNavigate();
   const isDark = variant === 'dark';
+  const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
+  const [isReformerModalOpen, setIsReformerModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
   return (
     <footer
@@ -85,9 +95,24 @@ const Footer = ({ variant = 'dark' }: FooterProps) => {
       <div className="mt-[1.6875rem]">
         <div className="flex justify-between items-center">
           <div className="body-b3-sb flex gap-[3.5rem]">
-            <span>서비스 이용약관</span>
-            <span>리폼러 서비스 이용약관</span>
-            <span>개인정보처리방침</span>
+            <span
+              className="cursor-pointer"
+              onClick={() => setIsServiceModalOpen(true)}
+            >
+              서비스 이용약관
+            </span>
+            <span
+              className="cursor-pointer"
+              onClick={() => setIsReformerModalOpen(true)}
+            >
+              리폼러 서비스 이용약관
+            </span>
+            <span
+              className="cursor-pointer"
+              onClick={() => setIsPrivacyModalOpen(true)}
+            >
+              개인정보처리방침
+            </span>
           </div>
 
           <div className="body-b1-sb">
@@ -95,6 +120,28 @@ const Footer = ({ variant = 'dark' }: FooterProps) => {
           </div>
         </div>
       </div>
+
+      {/* 약관 모달 */}
+      <AgreementTermsModal
+        isOpen={isServiceModalOpen}
+        onClose={() => setIsServiceModalOpen(false)}
+        title="서비스 이용약관"
+        content={SERVICE_TERMS_CONTENT}
+      />
+
+      <AgreementTermsModal
+        isOpen={isReformerModalOpen}
+        onClose={() => setIsReformerModalOpen(false)}
+        title="리폼러 서비스 이용약관"
+        content={REFORMER_TERMS_CONTENT}
+      />
+
+      <AgreementTermsModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+        title="개인정보처리방침"
+        content={PRIVACY_TERMS_CONTENT}
+      />
     </footer>
   );
 };
