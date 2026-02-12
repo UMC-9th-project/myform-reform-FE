@@ -49,7 +49,7 @@ const SellerGroup = ({
             onClick={handleSellerClick}
             className="flex items-center gap-[0.6875rem] body-b0-sb cursor-pointer"
           >
-            <span>{seller.name}</span>
+            <span>{seller.name || '판매자'}</span>
             <img src={rightIcon} alt="" className="pb-1 w-10 h-10" />
           </button>
         </div>

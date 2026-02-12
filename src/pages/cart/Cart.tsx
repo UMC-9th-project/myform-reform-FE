@@ -1,9 +1,11 @@
 import { useMemo } from 'react';
+import { useQueries } from '@tanstack/react-query';
 import CartContent from '../../components/domain/cart/CartContent';
 import EmptyCart from '../../components/domain/cart/EmptyCart';
 import { useCart } from '../../hooks/domain/cart/useCart';
 import { useGetCart } from '../../hooks/domain/cart/useGetCart';
 import { useDeleteCart } from '../../hooks/domain/cart/useDeleteCart';
+import { getProfile } from '../../api/profile/user';
 import {
   transformCartOwnersToSellers,
   transformCartItemsToProducts,
@@ -15,13 +17,40 @@ const Cart = () => {
   const { data: cartResponse, isLoading, error } = useGetCart();
   const { deleteCartItems } = useDeleteCart();
 
-  const sellers: CartSeller[] = useMemo(() => {
+  const baseSellers: CartSeller[] = useMemo(() => {
     if (!cartResponse?.success) return [];
-    const transformed = transformCartOwnersToSellers(cartResponse.success);
-    console.log('장바구니 API 응답:', cartResponse.success);
-    console.log('변환된 sellers:', transformed);
-    return transformed;
+    return transformCartOwnersToSellers(cartResponse.success);
   }, [cartResponse]);
+
+  const profileQueries = useQueries({
+    queries: baseSellers
+      .filter((seller) => seller.ownerId)
+      .map((seller) => ({
+        queryKey: ['reformerProfileView', seller.ownerId],
+        queryFn: async () => {
+          const res = await getProfile(seller.ownerId!);
+          if (res.resultType !== 'SUCCESS' || !res.success) {
+            return null;
+          }
+          return { ownerId: seller.ownerId, nickname: res.success.nickname };
+        },
+        enabled: !!seller.ownerId,
+      })),
+  });
+
+  const sellers: CartSeller[] = useMemo(() => {
+    const profileMap = new Map<string, string>();
+    profileQueries.forEach((query) => {
+      if (query.data?.ownerId && query.data.nickname) {
+        profileMap.set(query.data.ownerId, query.data.nickname);
+      }
+    });
+
+    return baseSellers.map((seller) => {
+      const nickname = seller.ownerId ? profileMap.get(seller.ownerId) : null;
+      return nickname ? { ...seller, name: nickname } : seller;
+    });
+  }, [baseSellers, profileQueries]);
 
   const initialProducts: CartProduct[] = useMemo(() => {
     if (!cartResponse?.success) return [];
