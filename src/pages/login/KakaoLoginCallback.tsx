@@ -9,7 +9,6 @@ const KakaoLoginCallback = () => {
 
   useEffect(() => {
     const accessToken = searchParams.get('accessToken');
-    const refreshToken = searchParams.get('refreshToken');
     const redirectUrl = searchParams.get('redirectUrl') || '/';
 
     if (accessToken) {
