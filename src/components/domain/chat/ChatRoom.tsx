@@ -54,8 +54,14 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     if (!data) return [];
     return data.pages
       .flatMap(page => page.messages)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      .sort((a, b) => {
+        const timeDiff = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        if (timeDiff !== 0) return timeDiff;
+        // createdAt 같으면 UUID 기준으로 정렬
+        return a.messageId.localeCompare(b.messageId);
+      });
   }, [data]);
+
 
   const roomInfo = data?.pages[0]?.chatRoomInfo; 
 
@@ -66,7 +72,6 @@ const myUserId = React.useMemo(() => {
     : roomInfo.requester.id;
 }, [roomInfo, myRole]);
 
-const isOwner = myUserId === roomInfo?.owner.id;
 
 // useMemo로 감싸서 변경 감지
 const { opponentLastReadId, myLastReadId } = React.useMemo(() => {
