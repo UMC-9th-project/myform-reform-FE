@@ -27,16 +27,22 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
   const queryClient = useQueryClient();
   const location = useLocation();
   const chatRoomIdFromUrl = location.pathname.split('/').pop() || null;
+  const accessToken = localStorage.getItem('accessToken');
+  const isLoggedIn = !!accessToken;
 
   // ✅ React Query로 변경
   const { data, isLoading, error } = useQuery({
     queryKey: ['chatRooms', filter.type],
     queryFn: () => getChatRooms({ type: filter.type }),
+    enabled: isLoggedIn,
   });
 
   const chats = data?.data || [];
   const hasMore = data?.meta.hasMore || false;
   const nextCursor = data?.meta.nextCursor || null;
+
+
+
 
   // 더보기 함수
   const handleLoadMore = async () => {
@@ -98,7 +104,8 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
 
       {/* Chat List */}
       <div className="flex-1 overflow-y-auto no-scrollbar p-2">
-        {chats.length === 0 ? (
+        {isLoggedIn ? (
+          chats.length === 0 ? (
           <div className="flex-1 flex items-center justify-center text-gray-500 p-4">
             채팅방이 없습니다.
           </div>
@@ -178,6 +185,9 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
               </div>
             )}
           </>
+        )
+        ) : (
+          null
         )}
       </div>
     </div>

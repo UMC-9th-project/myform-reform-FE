@@ -27,6 +27,9 @@ const ChatPage = ({ role }: ChatPageProps) => {
   const basePath = role === 'USER' ? 'normal' : 'reformer';
   const initialFilterType = tabParam === 'order' ? 'ORDER' : undefined;
 
+  const accessToken = localStorage.getItem('accessToken');
+  const isLoggedIn = !!accessToken;
+
   // 1️⃣ 채팅방 리스트 불러오기
   useEffect(() => {
     const fetchRooms = async () => {
@@ -79,8 +82,10 @@ const ChatPage = ({ role }: ChatPageProps) => {
       </div>
 
       {/* 왼쪽 채팅방 */}
-      <div className="flex-1 m-10 flex flex-col bg-white overflow-hidden">
-        {!hasChats ? (
+            <div className="flex-1 m-10 flex flex-col bg-white overflow-hidden">
+        {!isLoggedIn ? (
+          <NoChatYet /> // 로그인 안 됐을 때
+        ) : !hasChats ? (
           <NoChatYet />
         ) : !selectedChat ? (
           <EmptyChatRoom />
