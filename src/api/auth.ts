@@ -81,9 +81,14 @@ export const signupReformer = async (
   const formData = new FormData();
   
   // 일반 유저 가입 정보 + 리폼러 추가 정보를 하나의 객체로 구성
-  const requestBody: SignupRequest & { description: string; businessNumber?: string } = {
+  const requestBody: SignupRequest & { 
+    description: string; 
+    businessNumber?: string;
+    portfolioPhotos: string[]; // URL 배열로 포함
+  } = {
     ...data.data,
     description: data.description,
+    portfolioPhotos: data.portfolioPhotos, // URL 배열 추가
   };
   
   // businessNumber가 undefined가 아닐 때는 항상 포함 (빈 문자열이어도 전송)
@@ -93,11 +98,6 @@ export const signupReformer = async (
   
   // 서버가 요구하는 requestBody 필드에 JSON 문자열로 직렬화하여 전송
   formData.append('requestBody', JSON.stringify(requestBody));
-  
-  // portfolioPhotos 파일들 추가 (배열 형태로 전송)
-  data.portfolioPhotos.forEach((file) => {
-    formData.append('portfolioPhotos', file);
-  });
 
   const response = await api.post<SignupResponse>(
     '/auth/signup/reformer',

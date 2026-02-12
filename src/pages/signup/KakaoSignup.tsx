@@ -75,9 +75,7 @@ const KakaoSignup = () => {
         <h1 className="heading-h4-bd text-center mb-[2.8125rem]">
           {isReformer ? '리폼러 회원가입' : '회원가입'}
         </h1>
-        <p className="body-b1-rg text-center text-[var(--color-gray-60)] mb-[2.8125rem]">
-          카카오 계정으로 로그인하셨습니다. 추가 정보를 입력해주세요.
-        </p>
+       
         <SignupForm 
           initialEmail={email}
           isKakao={true}

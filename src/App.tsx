@@ -231,7 +231,18 @@ function App() {
 
 
       {/* 404 처리 */}
-      <Route path="*" element={<div>Not Found</div>} />
+      <Route
+        element={
+          <Layout
+            showHeader={true}
+            showNavbar={true}
+            showFooter={true}
+            footerVariant="dark"
+          />
+        }
+      >
+        <Route path="*" element={<div>Not Found</div>} />
+      </Route>
     </Routes>
     </>
   );
