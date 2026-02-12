@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSellerTabStore } from '../../../stores/tabStore';
 import { getOrderById } from '../../../api/mypage/sale';
 import formatPhoneNumber from '@/utils/domain/formatPhoneNumber';
+import { updateTrackingNumber } from '@/api/mypage/tracking';
 
 interface DeliveryAddress {
   postalCode: string | null;
@@ -101,6 +102,31 @@ const OrderDetail = () => {
 
   if (!order) return <div className="text-center py-20">로딩 중...</div>;
   
+  const handleSaveTracking = async () => {
+    if (!order) return;
+    try {
+      await updateTrackingNumber(order.orderNo, order.trackingNumber);
+      setIsEditingTracking(false);
+      alert('운송장 번호가 저장되었습니다.');
+    } catch (err) {
+      console.error('운송장 번호 수정 실패', err);
+      alert('운송장 번호 수정 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleDeleteTracking = async () => {
+    if (!order) return;
+    try {
+      await updateTrackingNumber(order.orderNo, ''); // 빈 문자열로 수정 요청
+      setOrder({ ...order, trackingNumber: '' }); // 로컬 상태도 갱신
+      setIsEditingTracking(false);
+      alert('운송장 번호가 삭제되었습니다.');
+    } catch (err) {
+      console.error('운송장 번호 삭제 실패', err);
+      alert('운송장 번호 삭제 중 오류가 발생했습니다.');
+    }
+  };
+
 
   return (
     <div className="w-100% mx-auto p-0 bg-transparent">
@@ -234,24 +260,40 @@ const OrderDetail = () => {
                   <span className="body-b0-rg text-[var(--color-gray-50)] mr-5">
                     운송장 번호
                   </span>
-
                   {isEditingTracking ? (
-                    <input
-                      type="text"
-                      value={order.trackingNumber}
-                      onChange={(e) =>
-                        setOrder({ ...order, trackingNumber: e.target.value })
-                      }
-                      className="w-[22rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[14px]"
-                      title="운송장 번호 입력"
-                      autoFocus
-                    />
+                    <div className="flex items-start gap-2">
+                      <input
+                        type="text"
+                        value={order.trackingNumber}
+                        onChange={(e) =>
+                          setOrder({ ...order, trackingNumber: e.target.value })
+                        }
+                        className="w-[22rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[14px]"
+                        title="운송장 번호 입력"
+                        autoFocus
+                      />
+                      <div className="flex flex-col gap-1">
+                        <button
+                          className="px-2 py-1 bg-[var(--color-mint-6)] text-[var(--color-mint-1)] rounded-md text-sm"
+                          onClick={handleSaveTracking}
+                        >
+                          저장
+                        </button>
+                        <button
+                          className="px-2 py-1 border rounded-md text-sm"
+                          onClick={() => setIsEditingTracking(false)}
+                        >
+                          취소
+                        </button>
+                      </div>
+                    </div>
                   ) : (
-                    // 내용이 없으면 '-' 대신 빈 박스 형태로 표시
                     <div className="w-[27rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[1rem] text-gray-400 flex items-center">
                       {order.trackingNumber || '입력 필요'}
                     </div>
                   )}
+
+
                 </div>
 
                 {/* 하단 오른쪽 수정 / 삭제 */}
@@ -264,10 +306,11 @@ const OrderDetail = () => {
                   </button>
                   <button
                     className="text-[var(--color-gray-50)] body-b2-rg"
-                    onClick={() => setOrder({ ...order, trackingNumber: '' })}
+                    onClick={handleDeleteTracking}
                   >
                     삭제
                   </button>
+
                 </div>
 
               </div>
