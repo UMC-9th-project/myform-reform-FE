@@ -9,7 +9,13 @@ export interface ProductOrder {
   buyer: string;
   date: string;
   image: string;
-  status?: '결제 완료' | '상품준비 중' | '발송 완료';
+    status?: 
+    | '결제 완료' 
+    | '상품준비 중' 
+    | '발송 완료'
+    | '결제 대기'
+    | '거래 완료'
+    | '상태 없음';
   isCustomOrder?: boolean; 
   reviewAvailable?: boolean;
   chat_room_id?: string;

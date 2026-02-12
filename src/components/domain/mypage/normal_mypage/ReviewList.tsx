@@ -40,7 +40,11 @@ const ReviewList = () => {
           buyer: o.ownerNickname,
           date: new Date(o.createdAt).toLocaleString(),
           image: o.thumbnail || '',
-          status: '결제 완료',
+          status:
+            o.status === 'PENDING' ? '결제 대기' :
+            o.status === 'PAID' ? '결제 완료' :
+            o.status === 'COMPLETE' ? '거래 완료' :
+            '상태 없음',
           reviewAvailable: o.reviewAvailable,
 
           targetType: o.targetType === 'ITEM' || o.targetType === 'REQUEST' ? o.targetType : undefined,// "ITEM" | "REQUEST"

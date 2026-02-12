@@ -31,7 +31,7 @@ const BuyList = () => {
             buyer: o.ownerNickname,
             date: new Date(o.createdAt).toLocaleString(),
             image: o.thumbnail || '',
-            status: o.status === 'PENDING' ? '상품준비 중' : o.status === 'SHIPPED' ? '발송 완료' : '결제 완료',
+            status: o.status === 'PENDING' ? '결제 대기' : o.status === 'PAID' ? '결제 완료' : o.status === 'COMPLETE' ? '거래 완료' : '상태 없음',
             isCustomOrder: o.targetType === 'REFORM',
             reviewAvailable: o.reviewAvailable,
             targetId: o.targetId,
