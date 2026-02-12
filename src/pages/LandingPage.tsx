@@ -12,6 +12,13 @@ import list2 from '../assets/landing/list2.svg';
 import orderRequest from '../assets/landing/request.svg';
 import market from '../assets/landing/market.svg';
 import findReform from '../assets/landing/reformerFind.svg';
+import land01 from '../assets/landing/land01.svg';
+import land02 from '../assets/landing/land02.svg';
+import land03 from '../assets/landing/land03.svg';
+import land04 from '../assets/landing/land04.svg';
+import land05 from '../assets/landing/land05.svg';
+import land06 from '../assets/landing/land06.svg';
+import land11 from '../assets/landing/land11.svg';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -70,8 +77,22 @@ const FIFTH_SECTION_TABS = [
 const LandingPage = () => {
     const navigate = useNavigate();
 
-
   const [activeTab, setActiveTab] = useState<string>(FIFTH_SECTION_TABS[0].id);
+  const [currentSlide, setCurrentSlide] = useState<number>(0);
+  
+  const slides = [land01, land02, land03, land04, land05, land06];
+  
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+  
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+  
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
   return (
     <div className="w-full overflow-x-hidden mb-0">
       {/* 첫 번째 섹션 */}
@@ -199,6 +220,123 @@ const LandingPage = () => {
         <img src={list} alt="list" className="w-full h-full pb-20" />
 
 
+      </div>
+
+      {/* 네 번째와 다섯 번째 사이 섹션 - 서비스 화면 소개 슬라이드 */}
+      <div className="w-full min-h-screen bg-white relative py-40 px-40 flex flex-col items-center justify-center">
+        <h2 className="heading-h2-bd text-center mb-12">내폼리폼의 서비스 화면을 소개해요!</h2>
+        
+        <div className="bg-[var(--color-mint-5)] px-8 py-3 rounded-full mb-12">
+          <span className="body-b1-sb">리폼 마켓</span>
+        </div>
+        
+        <p className="body-b0-rg text-[rgba(55,69,83,1)] text-center mb-10 max-w-2xl" style={{ fontSize: '20px', lineHeight: '150%', letterSpacing: '0%' }}>
+          소비자는 원하는 <span className="body-b0-sb">상품을 구매</span>하고,<br />
+          리폼러는 본인 작업물을 판매할 수 있어요.
+        </p>
+
+        {/* 슬라이드 컨테이너 */}
+        <div className="relative w-full max-w-[1400px] mb-10 mx-auto" style={{ paddingTop: '120px', paddingBottom: '120px' }}>
+          {/* 슬라이드 이미지 */}
+          <div className="relative w-full" style={{ overflowX: 'hidden', overflowY: 'visible', minHeight: '800px' }}>
+            <div 
+              className="flex items-center transition-transform duration-500 ease-in-out"
+              style={{ 
+                transform: `translateX(calc(25% - ${currentSlide * 50}%))`
+              }}
+            >
+              {slides.map((slide, index) => {
+                const isActive = index === currentSlide;
+                const isPrev = index === currentSlide - 1;
+                const isNext = index === currentSlide + 1;
+                const isVisible = Math.abs(index - currentSlide) <= 1;
+                
+                return (
+                  <div 
+                    key={index} 
+                    className="flex-shrink-0 flex items-center justify-center transition-all duration-500"
+                    style={{ 
+                      width: '50%',
+                      padding: '0 2%',
+                      opacity: isVisible ? 1 : 0.3,
+                      transform: isActive ? 'scale(1.3)' : (isPrev || isNext) ? 'scale(0.85)' : 'scale(0.8)',
+                      zIndex: isActive ? 10 : 1
+                    }}
+                  >
+                    <img 
+                      src={slide} 
+                      alt={`내폼리폼 서비스 화면 ${index + 1}`} 
+                      className="w-full h-auto object-contain drop-shadow-lg"
+                      style={{ maxHeight: 'none' }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* 페이지네이션 */}
+        <div className="flex items-center gap-6">
+          {/* 왼쪽 화살표 */}
+          <button
+            type="button"
+            onClick={prevSlide}
+            className="text-[var(--color-gray-40)] hover:text-[var(--color-gray-50)] transition-colors cursor-pointer"
+            aria-label="이전 슬라이드"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+
+          {/* 페이지 인디케이터 */}
+          <div className="flex items-center gap-3">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => goToSlide(index)}
+                className={`transition-all ${
+                  currentSlide === index
+                    ? 'w-8 h-2.5 rounded-full bg-[var(--color-mint-0)]'
+                    : 'w-2.5 h-2.5 rounded-full bg-[var(--color-gray-30)] hover:bg-[var(--color-gray-40)]'
+                }`}
+                aria-label={`슬라이드 ${index + 1}로 이동`}
+              />
+            ))}
+          </div>
+
+          {/* 오른쪽 화살표 */}
+          <button
+            type="button"
+            onClick={nextSlide}
+            className="text-[var(--color-gray-40)] hover:text-[var(--color-gray-50)] transition-colors cursor-pointer"
+            aria-label="다음 슬라이드"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* 네 번째와 다섯 번째 사이 섹션 - IA/정보 구조도 */}
+      <div className="w-full min-h-screen bg-white relative py-40 px-40 flex flex-col items-center justify-center">
+        <div className="text-center mb-30">
+          <h2 className="body-b0-rg text-[var(--color-gray-60)] mb-4">IA / 정보 구조도</h2>
+          <p className="heading-h2-bd">
+            내폼리폼의 서비스 구조를 한 눈에 파악해요!
+          </p>
+        </div>
+        
+        <div className="w-full max-w-[1400px] flex items-center justify-center">
+          <img 
+            src={land11} 
+            alt="내폼리폼 정보 구조도" 
+            className="w-full h-auto object-contain"
+          />
+        </div>
       </div>
 
       {/* 다섯 번째 섹션 */}

@@ -86,14 +86,19 @@ export default function Search() {
                   className="px-40 grid gap-x-10 gap-y-20 w-full mt-10"
                   style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}
                 >
-                  {marketItems.map((item) => (
-                    <MarketCard
-                      key={item.item_id}
-                      item={item}
-                      hideLikeButton={isReformer}
-                      ratingDecimals={1}
-                    />
-                  ))}
+                  {marketItems.map((item) => {
+                    const detailUrl = `/market/product/${item.item_id}`;
+                    const urlWithTab = `${detailUrl}?fromSearch=true&tab=${activeTab}${hasQuery ? `&q=${encodeURIComponent(searchValue.trim())}` : ''}`;
+                    return (
+                      <MarketCard
+                        key={item.item_id}
+                        item={item}
+                        hideLikeButton={isReformer}
+                        ratingDecimals={1}
+                        to={urlWithTab}
+                      />
+                    );
+                  })}
                 </div>
               )}
               {activeTab === 'request' && requestItems.length > 0 && (
@@ -101,17 +106,22 @@ export default function Search() {
                   className="px-40 grid gap-x-10 gap-y-34 w-full mt-10"
                   style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}
                 >
-                  {requestItems.map((item) => (
-                    <RequestCard
-                      key={item.key}
-                      id={item.id}
-                      imgSrc={item.imgSrc}
-                      title={item.title}
-                      priceRange={item.priceRange}
-                      variant={isReformer ? 'reformer' : 'order'}
-                      isWished={item.isWished}
-                    />
-                  ))}
+                  {requestItems.map((item) => {
+                    const detailPath = isReformer ? '/reformer/order/requests' : '/order/requests';
+                    const detailUrl = `${detailPath}/${item.id}`;
+                    const urlWithTab = `${detailUrl}?fromSearch=true&tab=${activeTab}${hasQuery ? `&q=${encodeURIComponent(searchValue.trim())}` : ''}`;
+                    return (
+                      <RequestCard
+                        key={item.key}
+                        id={item.id}
+                        imgSrc={item.imgSrc}
+                        title={item.title}
+                        priceRange={item.priceRange}
+                        variant={isReformer ? 'reformer' : 'order'}
+                        to={urlWithTab}
+                      />
+                    );
+                  })}
                 </div>
               )}
               {activeTab === 'proposal' && proposalItems.length > 0 && (
@@ -119,21 +129,26 @@ export default function Search() {
                   className="px-40 grid gap-x-10 gap-y-20 w-full mt-10"
                   style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}
                 >
-                  {proposalItems.map((item) => (
-                    <ProposalCard
-                      key={item.key}
-                      id={item.id}
-                      imgSrc={item.imgSrc}
-                      title={item.title}
-                      price={item.price}
-                      rating={item.rating}
-                      ratingDecimals={1}
-                      reviewCountText={item.reviewCountText}
-                      nickname={item.nickname}
-                      variant={isReformer ? 'reformer' : 'order'}
-                      isWished={item.isWished}
-                    />
-                  ))}
+                  {proposalItems.map((item) => {
+                    const detailPath = isReformer ? '/reformer/order/proposals' : '/order/proposals';
+                    const detailUrl = `${detailPath}/${item.id}`;
+                    const urlWithTab = `${detailUrl}?fromSearch=true&tab=${activeTab}${hasQuery ? `&q=${encodeURIComponent(searchValue.trim())}` : ''}`;
+                    return (
+                      <ProposalCard
+                        key={item.key}
+                        id={item.id}
+                        imgSrc={item.imgSrc}
+                        title={item.title}
+                        price={item.price}
+                        rating={item.rating}
+                        ratingDecimals={1}
+                        reviewCountText={item.reviewCountText}
+                        nickname={item.nickname}
+                        variant={isReformer ? 'reformer' : 'order'}
+                        to={urlWithTab}
+                      />
+                    );
+                  })}
                 </div>
               )}
               {totalPages >= 1 && (
