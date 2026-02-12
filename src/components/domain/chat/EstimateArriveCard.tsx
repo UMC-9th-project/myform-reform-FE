@@ -3,9 +3,10 @@ import React from 'react';
 export interface ArriveCardProps {
   type: 'sent' | 'received';
   onReject: () => void;
+  onAccept: () => void;
 }
 
-const EstimateArriveCard: React.FC<ArriveCardProps> = ({ type, onReject }) => {
+const EstimateArriveCard: React.FC<ArriveCardProps> = ({ type, onReject, onAccept }) => {
   const isSent = type === 'sent';
   
   // 디자인 및 문구 설정
@@ -24,7 +25,7 @@ const EstimateArriveCard: React.FC<ArriveCardProps> = ({ type, onReject }) => {
             <div className="flex gap-3 mb-4">
           <button 
             className="flex-1 bg-black text-white py-3 rounded-[0.625rem] body-b3-sb"
-            onClick={() => console.log('문의하기 클릭')}
+            onClick={onAccept}
           >
             추가 문의하기
           </button>

@@ -80,3 +80,12 @@ export const getChatMessages = async (
     hasMore: success.meta.hasMore,
   };
 };
+
+
+export const getLatestProposalPrice = async (roomId: string) => {
+  const res = await api.get(
+    `/chat/rooms/${roomId}/latest-proposal-price`
+  );
+
+  return res.data.success;
+};

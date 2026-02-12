@@ -190,6 +190,7 @@ export const useSearchPage = () => {
           imgSrc: item.imageUrl || item.thumbnail || '',
           title: item.title,
           priceRange: priceRange || undefined,
+          isWished: item.is_wished || false,
         };
       });
     }
@@ -258,6 +259,7 @@ export const useSearchPage = () => {
         rating,
         reviewCountText: item.reviewCountText || `(${reviewCount})`,
         nickname: item.authorName || item.nickname || item.owner_nickname || item.ownerName || '',
+        isWished: item.is_wished || false,
       };
     });
   }, [filteredProposals, profileResults]);
