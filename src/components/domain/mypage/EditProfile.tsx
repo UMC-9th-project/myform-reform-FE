@@ -93,7 +93,7 @@ const EditProfile = ({ mode, data }: EditProfileProps) => {
                   />
                 );
               })}
-              <span className="ml-1 font-bold text-gray-800">{data.averageRating}</span>
+              <span className="ml-1 font-bold text-gray-800">{Number(data.averageRating).toFixed(2)}</span>
             </div>
 
             </div>

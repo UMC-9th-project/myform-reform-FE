@@ -51,6 +51,12 @@ export interface PaymentResult {
   approvedAt: string | null;
 }
 
+
+export interface AcceptPayload {
+  isAccepted: boolean | null;
+}
+
+
 /* =========================
  * Message Types
  * ========================= */
@@ -61,7 +67,8 @@ export type MessageType =
   | 'request'
   | 'proposal'
   | 'payment'
-  | 'result';
+  | 'result'
+  | 'accept';
 
 /* =========================
  * Chat Message (Discriminated Union)
@@ -121,7 +128,15 @@ export type ChatMessage =
     textContent: null;
     payload: PaymentResult;
     createdAt: string;
-}
+} | {
+      messageId: string;
+      senderId: string;
+      senderType: 'USER' | 'OWNER';
+      messageType: 'accept';
+      textContent: null;
+      payload: AcceptPayload;
+      createdAt: string;
+    };
 
 /* =========================
  * ChatRoom Info (상단 정보)
@@ -130,6 +145,11 @@ export type ChatMessage =
 export interface ChatRoomInfo {
   chatRoomId: string;
   type: RoomType;
+
+  lastMessageId: string;
+  ownerLastReadId: string | null;
+  requesterLastReadId: string | null;
+
   targetPayload: {
     id: string;
     title: string;
@@ -137,17 +157,20 @@ export interface ChatRoomInfo {
     maxBudget: number;
     image: string;
   };
+
   owner: {
     id: string;
     nickname: string;
     profileImage: string | null;
   };
+
   requester: {
     id: string;
     nickname: string;
     profileImage: string | null;
   };
 }
+
 
 /* =========================
  * API Response
