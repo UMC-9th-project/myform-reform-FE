@@ -8,7 +8,10 @@ export interface CartItem {
   cartId: string;
   itemId: string;
   title: string;
-  imageUrl: string;
+  imageUrl?: string;
+  image_url?: string;
+  thumbnail?: string;
+  images?: string[];
   price: number;
   quantity: number;
   delivery: number;

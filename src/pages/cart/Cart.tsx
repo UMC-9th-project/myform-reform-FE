@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import CartContent from '../../components/domain/cart/CartContent';
 import EmptyCart from '../../components/domain/cart/EmptyCart';
 import { useCart } from '../../hooks/domain/cart/useCart';
@@ -14,6 +15,7 @@ import {
 import type { CartProduct, CartSeller } from '@/types/api/cart/cart';
 
 const Cart = () => {
+  const navigate = useNavigate();
   const { data: cartResponse, isLoading, error } = useGetCart();
   const { deleteCartItems } = useDeleteCart();
 
@@ -121,8 +123,39 @@ const Cart = () => {
   };
 
   const handleCheckout = () => {
-    // 결제 페이지로 이동
-    console.log('결제하기');
+    // 선택된 상품이 없으면 알림
+    const selectedProducts = products.filter((_, index) => itemChecked[index]);
+    if (selectedProducts.length === 0) {
+      alert('결제할 상품을 선택해주세요.');
+      return;
+    }
+
+    // 선택된 상품들의 cartId 추출
+    const cartIds = selectedProducts
+      .map((p) => p.cartId)
+      .filter((id): id is string => !!id);
+
+    if (cartIds.length === 0) {
+      alert('장바구니 정보를 불러올 수 없습니다.');
+      return;
+    }
+
+    // 첫 번째 선택된 상품의 itemId를 사용하여 결제 페이지로 이동
+    const firstSelectedProduct = selectedProducts[0];
+    if (firstSelectedProduct.itemId) {
+      navigate(`/market/product/${firstSelectedProduct.itemId}/purchase`, {
+        state: {
+          fromCart: true,
+          cartIds: cartIds,
+          selectedProducts: selectedProducts.map((product) => ({
+            ...product,
+            quantity: quantities[products.findIndex((p) => p.id === product.id)],
+          })),
+        },
+      });
+    } else {
+      alert('상품 정보를 불러올 수 없습니다.');
+    }
   };
 
   if (isLoading) {
