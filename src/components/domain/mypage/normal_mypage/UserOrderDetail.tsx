@@ -8,16 +8,16 @@ const UserOrderDetail = () => {
 
   const [order, setOrder] = useState<
   OrderDetail & { 
-    status: '결제 완료' | '상품준비 중' | '발송 완료' | '상태 없음';
+    status: '결제 대기' | '결제 완료' | '거래 완료' | '상태 없음';
     postalCode: string; 
   } | null
 >(null);
 
   const [loading, setLoading] = useState(true);
 
-  const displayStatusMap: Record<string, '결제 완료' | '상품준비 중' | '발송 완료'> = {
-    PENDING: '상품준비 중',
-    SHIPPED: '발송 완료',
+  const displayStatusMap: Record<string, '결제 대기' | '결제 완료' | '거래 완료'> = {
+    PENDING: '결제 대기',
+    COMPLETE: '거래 완료',
     PAID: '결제 완료', // <-- 여기 수정
   };
 
