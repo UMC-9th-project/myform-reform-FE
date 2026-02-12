@@ -1,42 +1,116 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Input from '../../components/domain/purchase/Input';
 import Button2 from '../../components/common/button/Button2';
 import useAuthStore from '../../stores/useAuthStore';
 import ReformerPurchaseBlockModal from '../../components/common/Modal/ReformerPurchaseBlockModal';
+import DaumPostcode from 'react-daum-postcode';
+import { usePayment } from '../../hooks/domain/payment/usePayment';
+import { useOrderSheet } from '../../hooks/domain/payment/useOrderSheet';
+import type { DeliveryAddress } from '../../types/payment/payment';
 
-const mockProduct = {
-  id: 1,
-  title: '[야구 유니폼 리폼] 내가 제일 좋아하는 선수의 유니폼이 짐색으로 재탄생된다면? 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
-  seller: '침착한 대머리독수리',
-  image: '/Home/images/p1.jpg',
-  option: '옵션 샘플 테스트 1번 (+10,000원)',
-  shipping: '무료 배송',
-  quantity: 1,
-  price: 75000,
-  optionPrice: 10000,
-};
 
 const MarketPurchasePage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   
-  const product = location.state?.product || mockProduct;
+  const product = location.state?.product;
   
   const [activeTab, setActiveTab] = useState<'existing' | 'new'>('existing');
   const [showReformerModal, setShowReformerModal] = useState(false);
   const userRole = useAuthStore((state) => state.role);
   const isReformer = userRole === 'reformer';
+  const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
+  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress>({
+    zipcode: '',
+    address: '',
+    detailAddress: '',
+    name: '',
+    recipient: '',
+    phone: '',
+  });
   
-  const productPrice = product.price;
-  const optionPrice = product.optionPrice || 0;
-  const shippingFee = 0; 
-  const totalPrice = (productPrice + optionPrice) * product.quantity;
+  // option_item_ids 계산
+  const optionItemIds = useMemo(() => {
+    const ids: string[] = [];
+    if (product?.selectedOptions && typeof product.selectedOptions === 'object') {
+      Object.values(product.selectedOptions).forEach((optionItemId) => {
+        if (optionItemId && typeof optionItemId === 'string') {
+          ids.push(optionItemId);
+        }
+      });
+    }
+    return ids;
+  }, [product?.selectedOptions]);
+
+  // 주문서 조회 (배송비 및 총 금액)
+  const { shippingFee, totalPrice, isLoading: isOrderSheetLoading } = useOrderSheet({
+    itemId: id || '',
+    optionItemIds,
+    quantity: product?.quantity || 1,
+    enabled: !!id && !!product,
+  });
+
+  const productPrice = product?.price || 0;
+  const optionPrice = product?.optionPrice || 0;
+
+  // 결제 처리 (early return 전에 호출)
+  const { processPayment, isProcessing, error: paymentError } = usePayment({
+    product: {
+      id: id || '',
+      title: product?.title || '',
+      price: productPrice,
+      optionPrice,
+      quantity: product?.quantity || 1,
+      selectedOptions: product?.selectedOptions,
+      image: product?.image || '',
+      seller: product?.seller || '',
+      option: product?.option,
+    },
+    deliveryAddress,
+    deliveryAddressId: null,
+    onSuccess: (orderData) => {
+      if (id) {
+        navigate(`/market/product/${id}/purchase/complete`, {
+          state: { order: orderData },
+        });
+      }
+    },
+    onError: (error) => {
+      alert(error.message);
+    },
+  });
+
+  // product가 없으면 상품 상세 페이지로 리다이렉트
+  useEffect(() => {
+    if (!product || !id) {
+      navigate(`/market/product/${id || ''}`);
+    }
+  }, [product, id, navigate]);
 
   const formatPrice = (price: number) => {
     return price.toLocaleString('ko-KR');
   };
+
+  // 우편번호 검색 완료 핸들러
+  const handlePostcodeComplete = (data: {
+    zonecode: string;
+    roadAddress: string;
+    jibunAddress?: string;
+    address: string;
+  }) => {
+    setDeliveryAddress((prev) => ({
+      ...prev,
+      zipcode: data.zonecode,
+      address: data.roadAddress || data.address,
+    }));
+    setIsPostcodeOpen(false);
+  };
+
+  if (!product || !id) {
+    return null;
+  }
 
   const handlePayment = () => {
     if (isReformer) {
@@ -80,11 +154,14 @@ const MarketPurchasePage = () => {
         })(),
       },
     };
+    // 배송지 정보 검증
+    if (!deliveryAddress.zipcode || !deliveryAddress.address || 
+        !deliveryAddress.recipient || !deliveryAddress.phone) {
+      alert('배송지 정보를 모두 입력해주세요.');
+      return;
+    }
 
-  
-    navigate(`/market/product/${id}/purchase/complete`, {
-      state: { order: orderData },
-    });
+    processPayment();
   };
 
   return (
@@ -131,71 +208,121 @@ const MarketPurchasePage = () => {
 
              
               <div className="flex flex-col gap-[1.875rem] mt-[2.875rem]">
-                
-                <div className="flex gap-[2rem] items-center">
-                  <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem]">
-                    배송지명
-                  </label>
-                  <div className="w-[29.625rem]">
-                    <Input value="학교" readOnly />
+                {/* 배송지 입력 필드 (기존/신규 공통) */}
+                <div className="flex flex-col gap-[1.875rem]">
+                  <div className="flex gap-[2rem] items-center">
+                    <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem]">
+                      배송지명
+                    </label>
+                    <div className="w-[29.625rem]">
+                      <Input 
+                        value={deliveryAddress.name} 
+                        onChange={(e) => setDeliveryAddress((prev) => ({ ...prev, name: e.target.value }))}
+                        placeholder="배송지명을 입력해주세요"
+                      />
+                    </div>
                   </div>
-                </div>
 
                
-                <div className="flex gap-[2rem] items-center">
-                  <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem]">
-                    <span>수령인</span>
-                    <span className="text-[var(--color-red-1)]"> *</span>
-                  </label>
-                  <div className="w-[29.625rem]">
-                    <Input value="홍길동" readOnly />
+                  <div className="flex gap-[2rem] items-center">
+                    <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem]">
+                      <span>수령인</span>
+                      <span className="text-[var(--color-red-1)]"> *</span>
+                    </label>
+                    <div className="w-[29.625rem]">
+                      <Input 
+                        value={deliveryAddress.recipient} 
+                        onChange={(e) => setDeliveryAddress((prev) => ({ ...prev, recipient: e.target.value }))}
+                        placeholder="수령인을 입력해주세요"
+                      />
+                    </div>
                   </div>
-                </div>
 
               
-                <div className="flex gap-[2rem] items-start">
-                  <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem] pt-[0.8125rem]">
-                    <span>배송지</span>
-                    <span className="text-[var(--color-red-1)]"> *</span>
-                  </label>
-                  <div className="flex flex-col gap-[0.9375rem] w-[41.0625rem]">
-                   
-                    <div className="flex gap-[0.9375rem] items-start">
-                      <div className="w-[29.625rem]">
-                        <Input value="04310" readOnly />
+                  <div className="flex gap-[2rem] items-start">
+                    <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem] pt-[0.8125rem]">
+                      <span>배송지</span>
+                      <span className="text-[var(--color-red-1)]"> *</span>
+                    </label>
+                    <div className="flex flex-col gap-[0.9375rem] w-[41.0625rem]">
+                     
+                      <div className="flex gap-[0.9375rem] items-start">
+                        <div className="w-[29.625rem]">
+                          <Input value={deliveryAddress.zipcode} placeholder="우편번호" readOnly />
+                        </div>
+                        <Button2 
+                          className="w-[10.5rem] h-[3.375rem]"
+                          onClick={() => setIsPostcodeOpen(true)}
+                        >
+                          우편번호 검색
+                        </Button2>
                       </div>
-                      <Button2 className="w-[10.5rem] h-[3.375rem]">
-                        우편번호 검색
-                      </Button2>
-                    </div>
-                   
-                    <div className="w-[29.625rem]">
-                    <Input value="서울 용산구 청파로47길 100" readOnly />
-                    </div>
-                   
-                    <div className="w-[29.625rem]">
-                    <Input value="명신관 302호" readOnly />
+                     
+                      <div className="w-[29.625rem]">
+                      <Input value={deliveryAddress.address} placeholder="주소" readOnly />
+                      </div>
+                     
+                      <div className="w-[29.625rem]">
+                      <Input 
+                        value={deliveryAddress.detailAddress} 
+                        onChange={(e) => setDeliveryAddress((prev) => ({ ...prev, detailAddress: e.target.value }))}
+                        placeholder="상세주소"
+                      />
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                
-                <div className="flex gap-[2rem] items-center">
-                  <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem]">
-                    <span>연락처</span>
-                    <span className="text-[var(--color-red-1)]"> *</span>
-                  </label>
-                  <div className="flex items-center gap-[1.3125rem]">
-                    <div className="w-[7.8125rem]">
-                      <Input value="010" readOnly />
-                    </div>
-                    <span className="body-b0-rg text-black">-</span>
-                    <div className="w-[7.8125rem]">
-                      <Input value="0000" readOnly />
-                    </div>
-                    <span className="body-b0-rg text-black">-</span>
-                    <div className="w-[7.8125rem]">
-                      <Input value="0000" readOnly />
+                  
+                  <div className="flex gap-[2rem] items-center">
+                    <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem]">
+                      <span>연락처</span>
+                      <span className="text-[var(--color-red-1)]"> *</span>
+                    </label>
+                    <div className="flex items-center gap-[1.3125rem]">
+                      <div className="w-[7.8125rem]">
+                        <Input 
+                          value={deliveryAddress.phone.split('-')[0] || ''} 
+                          onChange={(e) => {
+                            const parts = deliveryAddress.phone.split('-');
+                            setDeliveryAddress((prev) => ({ 
+                              ...prev, 
+                              phone: `${e.target.value}-${parts[1] || ''}-${parts[2] || ''}`.replace(/-$/, '')
+                            }));
+                          }}
+                          placeholder="010"
+                          maxLength={3}
+                        />
+                      </div>
+                      <span className="body-b0-rg text-black">-</span>
+                      <div className="w-[7.8125rem]">
+                        <Input 
+                          value={deliveryAddress.phone.split('-')[1] || ''} 
+                          onChange={(e) => {
+                            const parts = deliveryAddress.phone.split('-');
+                            setDeliveryAddress((prev) => ({ 
+                              ...prev, 
+                              phone: `${parts[0] || ''}-${e.target.value}-${parts[2] || ''}`.replace(/-$/, '')
+                            }));
+                          }}
+                          placeholder="0000"
+                          maxLength={4}
+                        />
+                      </div>
+                      <span className="body-b0-rg text-black">-</span>
+                      <div className="w-[7.8125rem]">
+                        <Input 
+                          value={deliveryAddress.phone.split('-')[2] || ''} 
+                          onChange={(e) => {
+                            const parts = deliveryAddress.phone.split('-');
+                            setDeliveryAddress((prev) => ({ 
+                              ...prev, 
+                              phone: `${parts[0] || ''}-${parts[1] || ''}-${e.target.value}`.replace(/-$/, '')
+                            }));
+                          }}
+                          placeholder="0000"
+                          maxLength={4}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -286,12 +413,18 @@ const MarketPurchasePage = () => {
             
             <button 
               onClick={handlePayment}
-              className="bg-[var(--color-mint-0)] flex gap-[0.625rem] h-[4.625rem] items-center justify-center px-[1.875rem] py-[0.625rem] rounded-[0.625rem] w-full cursor-pointer hover:opacity-90 transition-opacity"
+              disabled={isProcessing || isOrderSheetLoading}
+              className="bg-[var(--color-mint-0)] flex gap-[0.625rem] h-[4.625rem] items-center justify-center px-[1.875rem] py-[0.625rem] rounded-[0.625rem] w-full cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="body-b0-sb text-[1.5rem] text-white">
-                결제하기
+                {isProcessing ? '처리 중...' : isOrderSheetLoading ? '로딩 중...' : '결제하기'}
               </span>
             </button>
+            {paymentError && (
+              <p className="body-b2-rg text-[var(--color-red-1)] text-center">
+                {paymentError.message}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -300,6 +433,24 @@ const MarketPurchasePage = () => {
         isOpen={showReformerModal}
         onClose={() => setShowReformerModal(false)}
       />
+      {/* 우편번호 검색 모달 */}
+      {isPostcodeOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white p-6 rounded-lg w-[720px] max-w-[90vw] h-[520px] flex flex-col">
+            <DaumPostcode
+              onComplete={handlePostcodeComplete}
+              autoClose
+            />
+
+            <button
+              className="mt-4 text-sm text-gray-500"
+              onClick={() => setIsPostcodeOpen(false)}
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

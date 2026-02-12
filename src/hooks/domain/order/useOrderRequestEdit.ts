@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { uploadImages } from '../../../api/upload';
 import {
   getReformRequestDetail,
@@ -63,6 +63,7 @@ function parseApiErrorMessage(err: unknown): string {
 export function useOrderRequestEdit() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
   const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
@@ -187,6 +188,10 @@ export function useOrderRequestEdit() {
       if (res.resultType !== 'SUCCESS') {
         throw new Error(res.error?.message ?? '요청서 수정에 실패했어요.');
       }
+      
+      queryClient.invalidateQueries({ queryKey: ['reform-request-detail', id] });
+      queryClient.invalidateQueries({ queryKey: ['requestList'] });
+      
       navigate(`/order/requests/${id}`);
     } catch (err: unknown) {
       setSubmitError(parseApiErrorMessage(err));
