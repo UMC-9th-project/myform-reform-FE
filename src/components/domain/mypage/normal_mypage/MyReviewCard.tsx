@@ -14,6 +14,8 @@ export interface ProductOrder {
 
   targetType?: 'ITEM' | 'REQUEST';
   targetId?: string;
+  orderId?: string,
+  
 }
 
 // 2. props 타입 정의
@@ -43,7 +45,7 @@ const MyReviewCard: React.FC<SalesCardProps> = ({
               {item.targetType === 'ITEM' ? (
                 <button
                   className="flex items-center gap-3 hover:text-black transition-colors"
-                  onClick={() => onDetailClick?.(item.targetId!)}
+                  onClick={() => onDetailClick?.(item.orderId!)}
                 >
                   상세 보기<span>❯</span>
                 </button>
