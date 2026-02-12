@@ -51,8 +51,14 @@ export const useSearchPage = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    setHasAutoSwitchedTab(false);
-  }, [qFromUrl]);
+
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && (tabFromUrl === 'market' || tabFromUrl === 'request' || tabFromUrl === 'proposal')) {
+      setHasAutoSwitchedTab(true); 
+    } else {
+      setHasAutoSwitchedTab(false);
+    }
+  }, [qFromUrl, searchParams]);
 
   useEffect(() => {
     if (hasQuery) {
@@ -191,7 +197,6 @@ export const useSearchPage = () => {
     return [];
   }, [requestSearchData, hasQuery, isRequestSearchLoading, qFromUrl]);
 
-  // 필터링된 제안서 목록 (검색어로 필터링)
   const filteredProposals = useMemo(() => {
     if (!hasQuery || !proposalSearchData?.success) {
       return [];
@@ -210,7 +215,6 @@ export const useSearchPage = () => {
     return [];
   }, [proposalSearchData, hasQuery, qFromUrl]);
 
-  // 각 제안서의 ownerName으로 프로필 조회
   const profileResults = useQueries({
     queries: filteredProposals.map((item: SearchItem) => {
       const ownerName = item.ownerName || item.authorName || item.nickname || item.owner_nickname || '';
@@ -297,7 +301,10 @@ export const useSearchPage = () => {
   }, [setSearchParams]);
 
   useEffect(() => {
-    if (!hasQuery || hasAutoSwitchedTab) {
+    const tabFromUrl = searchParams.get('tab');
+    const hasExplicitTab = tabFromUrl && (tabFromUrl === 'market' || tabFromUrl === 'request' || tabFromUrl === 'proposal');
+    
+    if (!hasQuery || hasAutoSwitchedTab || hasExplicitTab) {
       return;
     }
 
@@ -321,7 +328,7 @@ export const useSearchPage = () => {
     } else if (maxCountTab.count === 0) {
       setHasAutoSwitchedTab(true);
     }
-  }, [marketCount, requestCount, proposalCount, hasQuery, minLoadingTimePassed, isMarketSearchLoading, isRequestSearchLoading, isProposalSearchLoading, activeTab, handleTabChange, hasAutoSwitchedTab]);
+  }, [marketCount, requestCount, proposalCount, hasQuery, minLoadingTimePassed, isMarketSearchLoading, isRequestSearchLoading, isProposalSearchLoading, activeTab, handleTabChange, hasAutoSwitchedTab, searchParams]);
 
   const totalPages = useMemo(() => {
     let count = 0;
