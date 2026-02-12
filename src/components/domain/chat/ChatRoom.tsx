@@ -265,7 +265,6 @@ useEffect(() => {
 
   queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
     if (!oldData) {
-      console.log('❌ oldData 없음');
       return oldData;
     }
 
@@ -839,24 +838,28 @@ useEffect(() => {
                         <div
                           className={`p-3 rounded-[0.625rem] max-w-[400px] ${
                             isMine
-                              ? 'bg-[#FFF7D6] text-[#5A4D2F] rounded-tr-none'
-                              : 'bg-[#FFF7D6] text-[#5A4D2F] rounded-tl-none'
+                              ? 'bg-[#FFF7DD] text-[#725A11] rounded-tr-none'
+                              : 'bg-[#FFF7DD] text-[#725A11] rounded-tl-none'
                           }`}
                         >
                           <p className="text-[1rem] leading-relaxed whitespace-pre-wrap">
-                            안내 메시지: 제안이 거절되었습니다
+                            {myRole === 'REFORMER'
+                              ? `📢 ${roomInfo?.requester.nickname ?? '사용자'}님이 제안을 거절하였습니다.`
+                              : `📢 ${roomInfo?.owner.nickname ?? '리포머'}님의 제안을 거절하였습니다.`}
                           </p>
                         </div>
                       ) : msg.payload?.isAccepted === true ? (
                         <div
                           className={`p-3 rounded-[0.625rem] max-w-[400px] ${
                             isMine
-                              ? 'bg-[#FFF7D6] text-[#5A4D2F] rounded-tr-none'
-                              : 'bg-[#FFF7D6] text-[#5A4D2F] rounded-tl-none'
+                              ? 'bg-[#FFF7DD] text-[#725A11] rounded-tr-none'
+                              : 'bg-[#FFF7DD] text-[#725A11] rounded-tl-none'
                           }`}
                         >
                           <p className="text-[1rem] leading-relaxed whitespace-pre-wrap">
-                            안내 메시지: 계속 문의를 진행해보세요
+                            {myRole === 'REFORMER'
+                              ? `📢 ${roomInfo?.requester.nickname ?? '사용자'}님이 제안을 수락하였습니다.`
+                              : `📢 ${roomInfo?.owner.nickname ?? '리포머'}님의 제안을 수락하였습니다.`}
                           </p>
                         </div>
                       ) : (
@@ -867,6 +870,7 @@ useEffect(() => {
                         />
                       )
                     )}
+
 
 
 
@@ -917,7 +921,7 @@ useEffect(() => {
                   </div>
 
                   <div
-                    className={`flex flex-col justify-end body-b5-rg text-[var(--color-gray-50)] min-w-max pb-0.5 ${
+                    className={`flex flex-col justify-end body-b5-rg text-[var(--color-gray-50)] min-w-max ${
                       isMine ? 'items-end' : 'items-start'
                     }`}
                   >
