@@ -7,12 +7,15 @@ import ProductTabMenu from '../../components/common/product/detail/ProductTabMen
 import ReformerProfileDetailCard from '../../components/common/product/detail/ReformerProfileDetailCard';
 import ProductReviewSection from '../../components/common/product/detail/ProductReviewSection';
 import { useOrderProposalDetail } from '../../hooks/domain/order/useOrderProposalDetail';
+import { api } from '../../api/axios';
+import useAuthStore from '../../stores/useAuthStore';
 
 const ITEMS_PER_PAGE = 5;
 
 const OrderProposalDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const userRole = useAuthStore((state) => state.role);
   const {
     proposalDetail,
     profile,
@@ -75,7 +78,32 @@ const OrderProposalDetailPage = () => {
     );
   }
 
-  const handleRequest = () => {};
+  const handleRequest = async () => {
+    if (!id) {
+      alert('제안 정보를 불러올 수 없습니다.');
+      return;
+    }
+
+    try {
+      const response = await api.post('/chat/rooms', {
+        dto: { id, type: 'PROPOSAL' },
+      });
+
+      const chatRoomId = response.data.success?.id;
+      if (chatRoomId) {
+        // 사용자 역할에 따라 채팅 페이지로 이동
+        const chatPath = userRole === 'reformer' 
+          ? `/chat/reformer/${chatRoomId}`
+          : `/chat/normal/${chatRoomId}`;
+        navigate(chatPath);
+      } else {
+        alert('채팅방 생성에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('채팅방 생성 실패:', error);
+      alert('채팅방 생성에 실패했습니다.');
+    }
+  };
 
 
   const handleMorePhotoReviewsClick = () => {

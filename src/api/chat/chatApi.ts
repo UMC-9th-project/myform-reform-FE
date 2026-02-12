@@ -80,3 +80,40 @@ export const getChatMessages = async (
     hasMore: success.meta.hasMore,
   };
 };
+
+/* =========================
+ * 채팅방 생성
+ * ========================= */
+
+export interface CreateChatRoomRequest {
+  dto: {
+    id: string;
+    type: 'FEED' | 'PROPOSAL' | 'ORDER' | 'INQUIRY';
+  };
+}
+
+export interface CreateChatRoomResponse {
+  resultType: 'SUCCESS' | 'ERROR';
+  success?: {
+    id: string;
+    createdAt: string;
+    isNew: boolean;
+  };
+  error?: {
+    code: string;
+    message: string;
+  } | null;
+}
+
+export const createChatRoom = async (
+  id: string,
+  type: 'FEED' | 'PROPOSAL' | 'ORDER' | 'INQUIRY' = 'FEED'
+): Promise<CreateChatRoomResponse> => {
+  const { data } = await api.post<CreateChatRoomResponse>('/chat/rooms', {
+    dto: {
+      id,
+      type,
+    },
+  });
+  return data;
+};

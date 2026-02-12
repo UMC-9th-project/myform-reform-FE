@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useInfiniteQuery, useQueryClient} from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient, useQuery} from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { getChatMessages } from '@/api/chat/chatApi';
+import { getReformProposalDetail } from '@/api/order/reformProposal';
 import Gallery from '@/assets/chat/gallery.svg';
 import QuotationCard from './QuotationCard';
 import RequireCard from './RequireCard';
@@ -54,6 +55,22 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   myRole === 'REFORMER'
     ? roomInfo?.owner.id
     : roomInfo?.requester.id;
+
+  // PROPOSAL 타입일 때 제안 상세 조회
+  const proposalId = roomType === 'PROPOSAL' ? roomInfo?.targetPayload?.id : null;
+  const { data: proposalDetailData } = useQuery({
+    queryKey: ['proposal-detail', proposalId],
+    queryFn: async () => {
+      if (!proposalId) return null;
+      const response = await getReformProposalDetail(proposalId);
+      if (response.resultType === 'SUCCESS' && response.success) {
+        return response.success;
+      }
+      return null;
+    },
+    enabled: !!proposalId && roomType === 'PROPOSAL',
+    staleTime: 1000 * 60 * 5, // 5분간 캐시
+  });
 
   const handleImageChange = async (
   e: React.ChangeEvent<HTMLInputElement>
@@ -566,7 +583,9 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                   // 배열이 이미 시간순이므로 마지막 proposal 찾기
                   const proposals = messages.filter(msg => msg.messageType === 'proposal');
                   const lastProposal = proposals[proposals.length - 1];
-                  return (lastProposal?.payload?.price ?? 0).toLocaleString() + '원';
+                  // proposal 메시지가 있으면 그것을 사용, 없으면 제안 상세에서 가격 조회
+                  const price = lastProposal?.payload?.price ?? proposalDetailData?.price ?? 0;
+                  return price.toLocaleString() + '원';
                 })()}
               </p>
             )}
