@@ -91,6 +91,7 @@ export default function Search() {
                       key={item.item_id}
                       item={item}
                       hideLikeButton={isReformer}
+                      ratingDecimals={1}
                     />
                   ))}
                 </div>
@@ -125,6 +126,7 @@ export default function Search() {
                       title={item.title}
                       price={item.price}
                       rating={item.rating}
+                      ratingDecimals={1}
                       reviewCountText={item.reviewCountText}
                       nickname={item.nickname}
                       variant={isReformer ? 'reformer' : 'order'}
