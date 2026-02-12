@@ -103,14 +103,9 @@ const ReformerOrderEstimateCreatePage = () => {
   };
 
   const handleCheckQuotation = () => {
-    navigate('/chat/quotation/detail', {
-      state: {
-        myRole: 'REFORMER' as const,
-        isQuotation: true,
-        id: chatRoomId,
-        chatId: chatRoomId,
-      },
-    });
+    if (chatRoomId) {
+      navigate(`/chat/reformer/${chatRoomId}`);
+    }
   };
 
   const handleGoHome = () => {
