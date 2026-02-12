@@ -21,7 +21,8 @@ import OptionDropdown from '../../components/common/product/option/option-dropdo
 import type { OptionItem as OptionItemType } from '../../components/common/product/option/option-dropdown/OptionItem';
 import { useWish } from '../../hooks/domain/wishlist/useWish';
 import { getWishList } from '../../api/wishlist';
-import useAuthStore from '../../stores/useAuthStore';  
+import useAuthStore from '../../stores/useAuthStore';
+import { useAddToCart } from '../../hooks/domain/cart/useAddToCart';  
 
 const formatPrice = (price: number) => {
   return price.toLocaleString('ko-KR');
@@ -51,6 +52,7 @@ const MarketProductDetailPage = () => {
   const reviewRef = useRef<HTMLDivElement>(null);
 
   const { toggleWish } = useWish();
+  const { addToCart, isAdding } = useAddToCart();
   const { data: wishData } = useQuery({
     queryKey: ['wishlist', 'ITEM', accessToken],
     queryFn: () => getWishList('ITEM'),
@@ -383,13 +385,85 @@ const MarketProductDetailPage = () => {
                 </Button>
                 <Button
                   variant="white"
-                  onClick={() => {
-                    navigate(`/market/product/${id}/cart`);
+                  onClick={async () => {
+                    if (!accessToken) {
+                      navigate('/login/type');
+                      return;
+                    }
+
+                    if (!id) {
+                      return;
+                    }
+
+                    // 옵션이 있는 경우 모든 옵션 선택 확인
+                    if (optionGroups.length > 0) {
+                      const allOptionsSelected = optionGroups.every(group => 
+                        selectedOptions[group.option_group_id]
+                      );
+
+                      if (!allOptionsSelected) {
+                        alert('옵션을 선택해주세요.');
+                        return;
+                      }
+                    }
+
+                    // 옵션이 없는 상품은 장바구니에 추가할 수 없음 (API가 빈 배열을 허용하지 않음)
+                    if (optionGroups.length === 0) {
+                      alert('이 상품은 옵션 선택이 필요합니다.');
+                      return;
+                    }
+
+                    try {
+                      // 선택된 옵션 ID들을 배열로 변환
+                      const optionItemIds = Object.values(selectedOptions).filter(Boolean);
+
+                      // quantity 검증
+                      if (quantity < 1) {
+                        alert('수량은 1개 이상이어야 합니다.');
+                        return;
+                      }
+
+                      // optionItemIds는 필수 필드이므로 항상 포함
+                      const requestData = {
+                        quantity: quantity,
+                        optionItemIds: optionItemIds,
+                      };
+
+                      console.log('장바구니 추가 요청 데이터:', requestData);
+
+                      await addToCart({
+                        itemId: id,
+                        data: requestData,
+                      });
+
+                      // 성공 시 장바구니 페이지로 이동
+                      navigate('/cart');
+                    } catch (error: unknown) {
+                      console.error('장바구니 추가 에러:', error);
+                      if (error && typeof error === 'object' && 'response' in error) {
+                        const axiosError = error as { 
+                          response?: { 
+                            status?: number;
+                            data?: unknown;
+                          } 
+                        };
+                        if (axiosError.response?.status === 401) {
+                          navigate('/login/type');
+                        } else {
+                          alert('장바구니 추가에 실패했습니다.');
+                        }
+                      } else {
+                        alert('장바구니 추가에 실패했습니다.');
+                      }
+                    }
                   }}
+                  disabled={isAdding}
                   className="flex items-center justify-center gap-2 flex-1 h-[4.625rem]"
                 >
                   <img src={cartIcon} alt="장바구니" className="w-10 h-10" />
-                  <span className="body-b0-bd text-[1.25rem]">장바구니</span>
+                  <span className="body-b0-bd text-[1.25rem]">
+                    {isAdding ? '추가 중...' : '장바구니'}
+                  </span>
                 </Button>
                  
                <Button
