@@ -27,9 +27,6 @@ const formatPrice = (price: number) => {
   return price.toLocaleString('ko-KR');
 };
 
-
-
-
 const MarketProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -244,7 +241,7 @@ const MarketProductDetailPage = () => {
        
         <div className="flex-1 flex flex-col">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-[0.75rem]">
+            <div className="flex items-center gap-[0.75rem] cursor-pointer" onClick={() => navigate(`/profile/${product.reformer.owner_id}`)}>
               <div className="w-[2.95725rem] h-[2.95725rem] rounded-full bg-[var(--color-gray-20)] flex items-center justify-center">
                 <span className="body-b1-rg text-[var(--color-gray-60)]">
                   <img src={product.reformer.profile_image} alt="profile" className="w-full h-full object-cover rounded-full" />
