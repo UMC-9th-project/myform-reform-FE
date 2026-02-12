@@ -14,6 +14,7 @@ export interface CartSeller {
   name: string;
   shippingFee: number;
   shippingText: string;
+  ownerId?: string;
 }
 
 export interface CartItem {

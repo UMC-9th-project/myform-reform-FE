@@ -15,10 +15,12 @@ const Cart = () => {
   const { data: cartResponse, isLoading, error } = useGetCart();
   const { deleteCartItems } = useDeleteCart();
 
-  // API 응답을 기존 타입으로 변환
   const sellers: CartSeller[] = useMemo(() => {
     if (!cartResponse?.success) return [];
-    return transformCartOwnersToSellers(cartResponse.success);
+    const transformed = transformCartOwnersToSellers(cartResponse.success);
+    console.log('장바구니 API 응답:', cartResponse.success);
+    console.log('변환된 sellers:', transformed);
+    return transformed;
   }, [cartResponse]);
 
   const initialProducts: CartProduct[] = useMemo(() => {

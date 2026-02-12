@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import Checkbox from '../../common/checkbox/Checkbox';
 import type { CartProduct, CartSeller } from '@/types/api/cart/cart';
 import CartItem from './CartItem';
@@ -29,16 +30,28 @@ const SellerGroup = ({
   onQuantityChange,
   onDeleteProduct,
 }: SellerGroupProps) => {
+  const navigate = useNavigate();
+
   if (products.length === 0) return null;
+
+  const handleSellerClick = () => {
+    if (seller.ownerId) {
+      navigate(`/profile/${seller.ownerId}`);
+    }
+  };
 
   return (
     <div className="bg-[var(--color-white)] rounded-[10px] border border-[var(--color-line-gray-40)] flex flex-col">
-      {/* 판매자 헤더 */}
       <div className="px-[1.9375rem] pt-[1.4375rem] pb-[1.125rem] flex items-center justify-between border-b border-[var(--color-line-gray-40)]">
         <div className="flex items-center gap-[0.6875rem]">
           <Checkbox checked={sellerChecked} onChange={onSellerCheck} />
-          <span className="body-b0-sb">{seller.name}</span>
-          <img src={rightIcon} alt="" className="pb-1 w-10 h-10" />
+          <button
+            onClick={handleSellerClick}
+            className="flex items-center gap-[0.6875rem] body-b0-sb cursor-pointer"
+          >
+            <span>{seller.name}</span>
+            <img src={rightIcon} alt="" className="pb-1 w-10 h-10" />
+          </button>
         </div>
         <div className="flex items-center gap-[0.375rem]">
           <img src={truckIcon} alt="배송" className="w-10 h-10" />

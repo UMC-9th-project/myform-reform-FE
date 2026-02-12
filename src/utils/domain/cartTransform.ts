@@ -6,9 +6,10 @@ export const transformCartOwnersToSellers = (
 ): CartSeller[] => {
   return owners.map((owner, index) => ({
     id: index,
-    name: owner.ownerName,
-    shippingFee: owner.deliveryFee,
+    name: owner.ownerName || '판매자',
+    shippingFee: owner.deliveryFee || 0,
     shippingText: owner.deliveryFee === 0 ? '무료 배송' : `${owner.deliveryFee.toLocaleString()}원`,
+    ownerId: owner.ownerId,
   }));
 };
 
