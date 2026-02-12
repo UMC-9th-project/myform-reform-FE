@@ -142,6 +142,8 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
                               ? '사진'
                               : chat.messageType === 'result'
                               ? '결제 완료'
+                              : chat.messageType === 'accept'
+                              ? '거래 진행 여부'
                               : '새로운 메시지')}
                         </p>
                       </div>

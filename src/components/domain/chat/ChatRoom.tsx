@@ -13,6 +13,7 @@ import { uploadImages } from '@/api/upload';
 import PaymentCard from './PaymentCard';
 import PayFinishCard from './PayFinishCard';
 import ImageViewerModal from '../mypage/ImageViewModal';
+import EstimateArriveCard from './EstimateArriveCard';
 
 interface ChatRoomProps {
   chatId: string;
@@ -36,6 +37,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   const [imageViewerIndex, setImageViewerIndex] = useState(0);
 
 
+
   /* =========================
    * 1. React Query 무한 스크롤 설정
    * ========================= */
@@ -56,10 +58,39 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   }, [data]);
 
   const roomInfo = data?.pages[0]?.chatRoomInfo; 
-  const myUserId =
-  myRole === 'REFORMER'
-    ? roomInfo?.owner.id
-    : roomInfo?.requester.id;
+
+const myUserId = React.useMemo(() => {
+  if (!roomInfo) return undefined;
+  return myRole === 'REFORMER'
+    ? roomInfo.owner.id
+    : roomInfo.requester.id;
+}, [roomInfo, myRole]);
+
+const isOwner = myUserId === roomInfo?.owner.id;
+
+// useMemo로 감싸서 변경 감지
+const { opponentLastReadId, myLastReadId } = React.useMemo(() => {
+  if (!roomInfo || !myUserId) {
+    return {
+      opponentLastReadId: null,
+      myLastReadId: null,
+    };
+  }
+  
+  const isOwner = myUserId === roomInfo.owner.id;
+  
+  return {
+    opponentLastReadId: isOwner
+      ? roomInfo.requesterLastReadId
+      : roomInfo.ownerLastReadId,
+    myLastReadId: isOwner
+      ? roomInfo.ownerLastReadId
+      : roomInfo.requesterLastReadId,
+  };
+}, [roomInfo?.ownerLastReadId, roomInfo?.requesterLastReadId, roomInfo?.owner.id, myUserId, data]);
+
+
+
 
   const handleImageChange = async (
   e: React.ChangeEvent<HTMLInputElement>
@@ -152,18 +183,34 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   /* =========================
    * 2. 스크롤 제어
    * ========================= */
-  useEffect(() => {
-    if (messagesContainerRef.current && !isFetchingNextPage) {
-      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-    }
-  }, [messages.length, isFetchingNextPage]);
+    const prevScrollHeight = useRef(0);
+const isFetchingOld = useRef(false);
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const { scrollTop } = e.currentTarget;
-    if (scrollTop === 0 && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  };
+const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const { scrollTop } = e.currentTarget;
+
+  if (scrollTop === 0 && hasNextPage && !isFetchingNextPage) {
+    isFetchingOld.current = true;          // 과거 메시지 로딩 시작
+    prevScrollHeight.current = e.currentTarget.scrollHeight;
+    fetchNextPage();
+  }
+};
+
+useEffect(() => {
+  const container = messagesContainerRef.current;
+  if (!container) return;
+
+  if (isFetchingOld.current) {
+    // 과거 메시지 로딩 후 스크롤 위치 유지
+    container.scrollTop = container.scrollHeight - prevScrollHeight.current;
+    prevScrollHeight.current = 0;
+    isFetchingOld.current = false;
+    return;
+  }
+
+  // 새 메시지가 추가된 경우만 맨 아래로
+  container.scrollTop = container.scrollHeight;
+}, [messages.length]); // messages.length만 의존
 
   /* =========================
    * 3. WebSocket 연결
@@ -202,44 +249,54 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   readerId: string;
   lastReadMessageId: string;
 }) => {
+  console.log('📖 readStatus 받음:', {
+    받은데이터: data,
+    현재chatId: chatId,
+    내ID: myUserId,
+    일치여부: data.chatRoomId === chatId
+  });
+  
   if (data.chatRoomId !== chatId) return;
 
-  // 1️⃣ messages 업데이트 (상대 메시지만 isRead: true)
   queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-    if (!oldData) return oldData;
+    if (!oldData) {
+      console.log('❌ oldData 없음');
+      return oldData;
+    }
 
-    const updatedPages = oldData.pages.map((page: any) => ({
-      ...page,
-      messages: page.messages.map((msg: any) => {
-        const isOther =
-          (myRole === 'REFORMER' && msg.senderType === 'USER') ||
-          (myRole === 'USER' && msg.senderType === 'OWNER');
+    const updatedPages = oldData.pages.map((page: any, idx: number) => {
+      if (idx !== 0) return page;
 
-        if (!String(msg.messageId).startsWith('temp-') && isOther && msg.messageId <= data.lastReadMessageId) {
-          return { ...msg, isRead: true }; // UI 표시 없이도 unreadCount 계산용
-        }
-        return msg;
-      }),
-    }));
+      const isReaderOwner = page.chatRoomInfo.owner.id === data.readerId;
+      
+      console.log('🔍 비교:', {
+        ownerID: page.chatRoomInfo.owner.id,
+        readerID: data.readerId,
+        isReaderOwner,
+        기존ownerLastReadId: page.chatRoomInfo.ownerLastReadId,
+        기존requesterLastReadId: page.chatRoomInfo.requesterLastReadId,
+        새로운lastReadMessageId: data.lastReadMessageId
+      });
 
-    return { ...oldData, pages: updatedPages };
-  });
+      return {
+        ...page,
+        chatRoomInfo: {
+          ...page.chatRoomInfo,
+          ownerLastReadId: isReaderOwner
+            ? data.lastReadMessageId
+            : page.chatRoomInfo.ownerLastReadId,
+          requesterLastReadId: !isReaderOwner
+            ? data.lastReadMessageId
+            : page.chatRoomInfo.requesterLastReadId,
+        },
+      };
+    });
 
-  // 2️⃣ chatRooms의 unreadCount 업데이트 (0으로)
-  queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
-    if (!oldData?.data) return oldData;
-
-    const updatedData = oldData.data.map((room: any) =>
-      room.chatRoomId === chatId
-        ? { ...room, unreadCount: 0 } // 여기서 탭에 표시되는 안읽음 개수 업데이트
-        : room
-    );
-
-    return { ...oldData, data: updatedData };
+    const result = { ...oldData, pages: updatedPages };
+    console.log('✅ 업데이트 완료:', result.pages[0].chatRoomInfo);
+    return result;
   });
 };
-
-
 
 
   const handleNewMessage = (msg: any) => {
@@ -247,32 +304,43 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
 
   // 1️⃣ 현재 채팅방의 메시지만 메시지 목록에 추가
   if (isCurrentRoom) {
-    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-      if (!oldData) return oldData;
+  queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+    if (!oldData) return oldData;
 
-      const exists = oldData.pages
-        .flatMap((p: any) => p.messages)
-        .some((m: any) => m.messageId === msg.messageId);
+    const lastPageIndex = oldData.pages.length - 1;
+    const updatedPages = [...oldData.pages];
 
-      if (exists) return oldData;
+    updatedPages[lastPageIndex] = {
+      ...updatedPages[lastPageIndex],
+      messages: [...updatedPages[lastPageIndex].messages, msg],
+    };
+    
+    const isReaderOwner =
+      oldData.pages[0].chatRoomInfo.owner.id === myUserId;
 
-      const lastPageIndex = oldData.pages.length - 1;
-      const updatedPages = [...oldData.pages];
-      updatedPages[lastPageIndex] = {
-        ...updatedPages[lastPageIndex],
-        messages: [...updatedPages[lastPageIndex].messages, msg],
-      };
+    updatedPages[0] = {
+      ...updatedPages[0],
+      chatRoomInfo: {
+        ...updatedPages[0].chatRoomInfo,
+        ownerLastReadId: isReaderOwner
+          ? msg.messageId
+          : updatedPages[0].chatRoomInfo.ownerLastReadId,
+        requesterLastReadId: !isReaderOwner
+          ? msg.messageId
+          : updatedPages[0].chatRoomInfo.requesterLastReadId,
+      },
+    };
 
-      return {
-        ...oldData,
-        pages: updatedPages,
-      };
-    });
+    return {
+      ...oldData,
+      pages: updatedPages,
+    };
+  });
 
-    // 현재 채팅방이면 읽음 처리
-    const socket = getSocket();
-    socket?.emit('readChatRoom', { roomId: chatId });
-  }
+  // 서버에도 읽음 알림
+  socket?.emit('readChatRoom', { roomId: chatId });
+}
+
 
   // 2️⃣ 모든 채팅방에 대해 탭 목록 업데이트
   const lastMessageText =
@@ -288,6 +356,8 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       ? '(결제창) '
       : msg.messageType === 'result'
       ? '(결제 완료)'
+      : msg.messageType === 'accept'
+      ? '거래 진행 여부'
       : '(새로운 메시지)'
 
   const targetRoomId = msg.chatRoomId || chatId;
@@ -329,7 +399,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     socket.on('connect', handleConnect);
     socket.on('newMessage', handleNewMessage);
     socket.on('readStatus', handleReadStatus);
-
+    
     return () => {
       if (isJoined) socket.emit('leaveRoom', { roomId: chatId });
       socket.off('connect', handleConnect);
@@ -517,11 +587,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     });
   };
 
-
-  
-
-
-
   const handleSendAction = () => {
     if (myRole === 'USER') {
       // USER는 요청서 작성 페이지로 이동
@@ -540,10 +605,66 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     }
   };
 
+  const handleAnswerEstimate = (messageId: string, isAccepted: boolean) => {
+    const socket = getSocket();
+    if (!socket || !socket.connected) return;
+
+    const tempMessage = {
+      messageId: `temp-${isAccepted ? 'accept' : 'reject'}-${Date.now()}`,
+      senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
+      senderId: myUserId,
+      messageType: 'accept',
+      payload: { isAccepted },
+      createdAt: new Date().toISOString(),
+      isRead: false,
+    };
+
+    // 메시지 UI 업데이트
+    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+      if (!oldData) return oldData;
+      const lastPageIndex = oldData.pages.length - 1;
+      const updatedPages = [...oldData.pages];
+      updatedPages[lastPageIndex] = {
+        ...updatedPages[lastPageIndex],
+        messages: [...updatedPages[lastPageIndex].messages, tempMessage],
+      };
+      return { ...oldData, pages: updatedPages };
+    });
+
+    // 채팅 리스트 탭 UI
+    queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
+      if (!oldData?.data) return oldData;
+      const updatedData = oldData.data.map((room: any) => {
+        if (room.chatRoomId !== chatId) return room;
+        return {
+          ...room,
+          lastMessage: isAccepted ? '문의 진행 중' : '제안 거절됨',
+          lastMessageAt: tempMessage.createdAt,
+        };
+      });
+      const targetRoom = updatedData.find((r: any) => r.chatRoomId === chatId);
+      const sortedData = [
+        targetRoom,
+        ...updatedData.filter((r: any) => r.chatRoomId !== chatId),
+      ];
+      return { ...oldData, data: sortedData };
+    });
+
+    // 서버 전송
+    socket.emit('sendMessage', {
+      roomId: chatId,
+      contentType: 'accept',
+      content: { messageId, isAccepted },
+    });
+  };
+
+
+
 
   return (
     <div className="flex flex-col w-full h-[800px] border border-[var(--color-line-gray-40)] bg-white overflow-hidden">
       <PaymentModal 
+        roomId={chatId}
         isOpen={isPaymentModalOpen} 
         onClose={() => setIsPaymentModalOpen(false)} 
         onSend={handlePaymentSend} 
@@ -610,6 +731,14 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
           const showDate = msgDateString !== prevDateString;
 
           const isMine = myUserId ? msg.senderId === myUserId : false;
+          const isRead =
+            (isMine &&
+              opponentLastReadId &&
+              msg.messageId <= opponentLastReadId) ||
+            (!isMine &&
+              myLastReadId &&
+              msg.messageId <= myLastReadId);
+
 
           return (
             <React.Fragment key={msg.messageId}>
@@ -699,6 +828,43 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                         expectedWorking={msg.payload.expectedWorking}
                       />
                     )}
+
+                    {msg.messageType === 'accept' && (
+                      msg.payload?.isAccepted === false ? (
+                        <div
+                          className={`p-3 rounded-[0.625rem] max-w-[400px] ${
+                            isMine
+                              ? 'bg-[#FFF7D6] text-[#5A4D2F] rounded-tr-none'
+                              : 'bg-[#FFF7D6] text-[#5A4D2F] rounded-tl-none'
+                          }`}
+                        >
+                          <p className="text-[1rem] leading-relaxed whitespace-pre-wrap">
+                            안내 메시지: 제안이 거절되었습니다
+                          </p>
+                        </div>
+                      ) : msg.payload?.isAccepted === true ? (
+                        <div
+                          className={`p-3 rounded-[0.625rem] max-w-[400px] ${
+                            isMine
+                              ? 'bg-[#FFF7D6] text-[#5A4D2F] rounded-tr-none'
+                              : 'bg-[#FFF7D6] text-[#5A4D2F] rounded-tl-none'
+                          }`}
+                        >
+                          <p className="text-[1rem] leading-relaxed whitespace-pre-wrap">
+                            안내 메시지: 계속 문의를 진행해보세요
+                          </p>
+                        </div>
+                      ) : (
+                        <EstimateArriveCard
+                          type={isMine ? 'sent' : 'received'}
+                          onReject={() => handleAnswerEstimate(msg.messageId, false)}
+                          onAccept={() => handleAnswerEstimate(msg.messageId, true)}
+                        />
+                      )
+                    )}
+
+
+
                     {(msg.messageType === 'text' || msg.messageType === 'image') && (
                       <div className={`p-3 rounded-[0.625rem] max-w-[400px] ${
                         isMine 
@@ -750,12 +916,12 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                       isMine ? 'items-end' : 'items-start'
                     }`}
                   >
-                    {/* ✅ 읽음 표시 */}
-                     {/*{isMine && isRead && ( /* 여기 추후에 msg.isRead로 변경 필요
-                      <span className="mb-0.5 text-[10px] text-[var(--color-gray-40)]">
+
+                     {isRead && (
+                      <span className="body-b5-rg text-[var(--color-gray-50)]">
                         읽음
                       </span>
-                    )} */}
+                    )}
 
                     <span>
                       {msgDate.toLocaleTimeString('ko-KR', {
