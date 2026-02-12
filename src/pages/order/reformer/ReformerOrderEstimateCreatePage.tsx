@@ -19,7 +19,7 @@ const ReformerOrderEstimateCreatePage = () => {
   const [description, setDescription] = useState('');
   const [workPeriod, setWorkPeriod] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
+  const [chatRoomId, setChatRoomId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const { data: requestDetailResponse, isLoading: isRequestLoading, isError: isRequestError } = useQuery({
@@ -70,7 +70,7 @@ const ReformerOrderEstimateCreatePage = () => {
     },
     onSuccess: (res) => {
       setSubmitError(null);
-      if (res.success?.order_id) setOrderId(res.success.order_id);
+      if (res.success?.id) setChatRoomId(res.success.id);
       setIsSubmitted(true);
     },
     onError: (err: Error) => {
@@ -107,8 +107,8 @@ const ReformerOrderEstimateCreatePage = () => {
       state: {
         myRole: 'REFORMER' as const,
         isQuotation: true,
-        id: orderId,
-        chatId: undefined,
+        id: chatRoomId,
+        chatId: chatRoomId,
       },
     });
   };
