@@ -9,6 +9,9 @@ export const useWish = () => {
     mutationFn: createWish,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+      queryClient.invalidateQueries({ queryKey: ['marketList'] });
+      queryClient.invalidateQueries({ queryKey: ['requestList'] });
+      queryClient.invalidateQueries({ queryKey: ['proposalList'] });
     },
   });
 
@@ -16,6 +19,9 @@ export const useWish = () => {
     mutationFn: deleteWish,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wishlist'] });
+      queryClient.invalidateQueries({ queryKey: ['marketList'] });
+      queryClient.invalidateQueries({ queryKey: ['requestList'] });
+      queryClient.invalidateQueries({ queryKey: ['proposalList'] });
     },
   });
 
@@ -25,10 +31,8 @@ export const useWish = () => {
     isLiked: boolean
   ) => {
     if (isLiked) {
-      // 하트가 채워진 상태 = 찜 추가
       await createWishMutation.mutateAsync({ type, itemId });
     } else {
-      // 하트가 비어있는 상태 = 찜 삭제
       await deleteWishMutation.mutateAsync({ type, itemId });
     }
   };
