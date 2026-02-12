@@ -5,6 +5,8 @@ export interface CartProduct {
   name: string;
   option: string;
   imageUrl?: string;
+  cartId?: string; 
+  itemId?: string; 
 }
 
 export interface CartSeller {
@@ -12,6 +14,7 @@ export interface CartSeller {
   name: string;
   shippingFee: number;
   shippingText: string;
+  ownerId?: string;
 }
 
 export interface CartItem {

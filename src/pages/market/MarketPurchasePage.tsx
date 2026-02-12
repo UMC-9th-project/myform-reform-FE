@@ -2,6 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Input from '../../components/domain/purchase/Input';
 import Button2 from '../../components/common/button/Button2';
+import useAuthStore from '../../stores/useAuthStore';
+import ReformerPurchaseBlockModal from '../../components/common/Modal/ReformerPurchaseBlockModal';
 import DaumPostcode from 'react-daum-postcode';
 import { usePayment } from '../../hooks/domain/payment/usePayment';
 import { useOrderSheet } from '../../hooks/domain/payment/useOrderSheet';
@@ -16,6 +18,9 @@ const MarketPurchasePage = () => {
   const product = location.state?.product;
   
   const [activeTab, setActiveTab] = useState<'existing' | 'new'>('existing');
+  const [showReformerModal, setShowReformerModal] = useState(false);
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
   const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
   const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress>({
     zipcode: '',
@@ -37,7 +42,7 @@ const MarketPurchasePage = () => {
       });
     }
     return ids;
-  }, [product?.selectedOptions]);
+  }, [product]);
 
   // 주문서 조회 (배송비 및 총 금액)
   const { shippingFee, totalPrice, isLoading: isOrderSheetLoading } = useOrderSheet({
@@ -108,6 +113,11 @@ const MarketPurchasePage = () => {
   }
 
   const handlePayment = () => {
+    if (isReformer) {
+      setShowReformerModal(true);
+      return;
+    }
+    
     // 배송지 정보 검증
     if (!deliveryAddress.zipcode || !deliveryAddress.address || 
         !deliveryAddress.recipient || !deliveryAddress.phone) {
@@ -383,6 +393,10 @@ const MarketPurchasePage = () => {
         </div>
       </div>
 
+      <ReformerPurchaseBlockModal
+        isOpen={showReformerModal}
+        onClose={() => setShowReformerModal(false)}
+      />
       {/* 우편번호 검색 모달 */}
       {isPostcodeOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
