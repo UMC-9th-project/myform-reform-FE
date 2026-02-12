@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Plus } from 'lucide-react';
+import { X } from 'lucide-react';
 import Option5 from '../../components/domain/mypage/Option5';
 import { type OptionGroup } from '../../components/domain/mypage/Option5';
 import DescriptionEditor from '../../components/domain/mypage/DescriptionEditor';
@@ -9,6 +9,7 @@ import { createOrder, createSale } from '../../api/profile/sale';
 import type { SaleOption } from '../../types/domain/mypage/sale';
 import type { CreateOrderRequest } from '../../types/domain/mypage/order';
 import { useNavigate } from 'react-router-dom';
+import upload from '@/assets/icons/upload.svg';
 
 type ImageType = {
   file: File;
@@ -224,7 +225,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                   onClick={() => fileInputRef.current?.click()}
                   className="w-36 h-36 rounded-lg border border-[var(--color-gray-40)] bg-[var(--color-gray-20)] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition"
                 >
-                  <Plus size={28} className="text-gray-400" />
+                  <img src={upload} alt="이미지 업로드 아이콘" className="text-gray-400" />
                   <span className="body-b3-rg text-[var(--color-gray-50)] mt-2 text-center">이미지 업로드</span>
                 </div>
               )}
@@ -249,10 +250,14 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
               type="text" 
               placeholder="요청글 제목을 입력해주세요."
               value = {title}
-              onChange={e => setTitle(e.target.value)} 
+              onChange={e => {
+                if (e.target.value.length <= 40) {
+                  setTitle(e.target.value);
+                }
+              }} 
               className="placeholder:text-[var(--color-gray-50)] w-full border border-[var(--color-gray-60)] body-b1-rg p-5 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
-            <span className="absolute right-3 top-10 text-sm text-gray-400">0/40자</span>
+            <span className="absolute right-3 top-10 text-sm text-gray-400">{title.length}/40자</span>
           </div>
         </div>
       </section>
@@ -285,7 +290,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                     />
                     <button
                     onClick={() => setShowEditor(true)}
-                    className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white border border-[var(--color-line-gray-40)] px-4 py-2 rounded-[0.63rem] body-b2-rg hover:bg-gray-50 shadow-md transition"
+                    className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white border border-[var(--color-line-gray-40)] px-4 py-2 rounded-[0.63rem] body-b2-rg shadow-md transition"
                     >
                     <svg width="25" height="25" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M9 31.0755H13.7303L31.0755 13.7303L26.3446 9L9 26.3452V31.0755Z" stroke="#646F7C" stroke-width="2" stroke-linejoin="round"/>
@@ -324,6 +329,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                         setDescription(html);
                         setShowEditor(false);
                       }}
+                      initialContent={description}
                       onClose={() => setShowEditor(false)}
                     />
                 </div>

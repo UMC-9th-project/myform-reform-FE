@@ -9,4 +9,5 @@ export interface orderListItem {
   title: string;
   thumbnail: string;
   type: 'ITEM' | 'REFORM'; // ITEM = 판매, REFORM = 주문제작
+  receiptNumber: string;
 }

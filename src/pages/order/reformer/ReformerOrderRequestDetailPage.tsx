@@ -14,7 +14,7 @@ const ReformerOrderRequestDetailPage = () => {
     isLoading,
     isError,
     isLiked,
-    setIsLiked,
+    handleLikeClick,
     imageUrls,
     isClosed,
     formattedDeadline,
@@ -118,7 +118,7 @@ const ReformerOrderRequestDetailPage = () => {
               {!isClosed && (
                 <Button
                   variant="white"
-                  onClick={() => setIsLiked(!isLiked)}
+                  onClick={handleLikeClick}
                   className="flex items-center justify-center gap-2 flex-1"
                 >
                   <LikeButton initialLiked={isLiked} variant="blackLine" readOnly className="!w-6 !h-6" />

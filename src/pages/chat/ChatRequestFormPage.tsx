@@ -1,11 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { uploadImages } from '@/api/upload';
-import { createChatRequest } from '@/api/chat/chatRequestApi';
+import { createChatRequest, getChatRequestDetail, updateChatRequest } from '@/api/chat/chatRequestApi';
+
+
 
 interface RequestImage {
-  file: File;
+  file: File | null;
   preview: string;
 }
 
@@ -20,22 +22,62 @@ interface ChatRequestFormData {
 const ChatRequestFormPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
-  const { chatRoomId } = useParams<{ chatRoomId: string }>();
+  const { chatRoomId, requestId } = useParams<{ chatRoomId?: string; requestId?: string }>();
 
-  const [mode] = useState<'create' | 'edit'>('create');
-  //const requestData = null; // edit 대비용 (지금은 안 씀)
+  const isEditMode = !!requestId;
+  const location = useLocation();
+  const requestData = location.state?.requestData as ChatRequestFormData | undefined;
+  const [mode] = useState<'create' | 'edit'>(isEditMode ? 'edit' : 'create');
 
   const [formData, setFormData] = useState<ChatRequestFormData>({
-    images: [],
-    title: '',
-    maxBudget: '',
-    minBudget: '',
-    content: '',
+    images: requestData?.images || [],
+    title: requestData?.title || '',
+    minBudget: requestData?.minBudget || '',
+    maxBudget: requestData?.maxBudget || '',
+    content: requestData?.content || '',
   });
+
 
   const MAX_IMAGES = 10;
 
-  // 이미지 업로드
+  useEffect(() => {
+  if (!isEditMode || !requestId) return;
+
+  if (requestData) {
+    setFormData(requestData);
+    return;
+  }
+
+  const fetchRequest = async () => {
+    try {
+      const data = await getChatRequestDetail(requestId); 
+      if (!data) {
+        alert('요청서 정보를 불러오지 못했습니다.');
+        return;
+      }
+
+      const body = data.body;
+
+      setFormData({
+        images: body.images.map(url => ({ file: null, preview: url })),
+        title: body.title,
+        minBudget: body.minBudget.toString(),
+        maxBudget: body.maxBudget.toString(),
+        content: body.content,
+      });
+      } catch (err) {
+        console.error(err);
+        alert('요청서 정보를 불러오지 못했습니다.');
+      }
+    };
+
+    fetchRequest();
+  }, [isEditMode, requestId, requestData]);
+
+
+
+
+  // --- 이미지 업로드 ---
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
@@ -61,10 +103,7 @@ const ChatRequestFormPage: React.FC = () => {
   };
 
   const handleChange = (field: keyof ChatRequestFormData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const isFormComplete =
@@ -74,34 +113,67 @@ const ChatRequestFormPage: React.FC = () => {
     formData.minBudget.trim() !== '' &&
     formData.content.trim() !== '';
 
-  // 제출
   const handleSubmit = async () => {
-    if (!isFormComplete || !chatRoomId) return;
+
+    if (!isFormComplete) return;
 
     try {
-      // 1. 이미지 업로드
-      const files = formData.images.map((img) => img.file);
-      const uploadRes = await uploadImages(files);
+    
+      const existingImageUrls = formData.images
+        .filter(img => img.file === null)
+        .map(img => img.preview);
+
+      const newFiles = formData.images
+        .filter(img => img.file)
+        .map(img => img.file!) as File[];
+
+      const uploadRes =
+        newFiles.length > 0
+          ? await uploadImages(newFiles)
+          : {
+              resultType: 'SUCCESS',
+              success: { url: [] },
+            };
 
       if (uploadRes.resultType !== 'SUCCESS') {
         throw new Error('이미지 업로드 실패');
       }
 
-      const imageUrls = uploadRes.success.url;
-
-      // payload는 flat
-      const payload = {
-        chatRoomId,
-        image: imageUrls,
-        title: formData.title,
-        content: formData.content,
-        minBudget: Number(formData.minBudget),
-        maxBudget: Number(formData.maxBudget),
-      };
+      const imageUrls = [
+        ...existingImageUrls,
+        ...uploadRes.success.url,
+      ];
 
 
+      if (isEditMode && requestId) {
+        const payload = {
+          image: imageUrls,
+          title: formData.title,
+          content: formData.content,
+          minBudget: Number(formData.minBudget),
+          maxBudget: Number(formData.maxBudget),
+        };
 
-      if (mode === 'create') {
+        const res = await updateChatRequest(requestId, payload);
+
+        if (res.data.resultType === 'SUCCESS') {
+          alert('요청서가 수정되었습니다.');
+          navigate(-1); 
+        }
+
+        return;
+      }
+
+      if (chatRoomId) {
+        const payload = {
+          chatRoomId,
+          image: imageUrls,
+          title: formData.title,
+          content: formData.content,
+          minBudget: Number(formData.minBudget),
+          maxBudget: Number(formData.maxBudget),
+        };
+
         const res = await createChatRequest(payload);
 
         if (res.data.resultType === 'SUCCESS') {
@@ -109,17 +181,16 @@ const ChatRequestFormPage: React.FC = () => {
           navigate(`/chat/normal/${chatRoomId}`);
         }
       }
-      // edit 모드 API 호출은 지금 하지 않음
-    } catch (error) {
-      console.error(error);
-      alert('요청서 전송 중 오류가 발생했습니다.');
+    } catch (err) {
+      console.error(err);
+      alert('요청서 처리 중 오류가 발생했습니다.');
     }
   };
 
   return (
     <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
       <h1 className="heading-h2-bd text-black mb-10 pb-6 border-b border-black">
-        {mode === 'edit' ? '리폼 요청서 수정하기' : '리폼 요청서 작성하기'}
+        {isEditMode ? '리폼 요청서 수정하기' : '리폼 요청서 작성하기'}
       </h1>
 
       <div className="space-y-12">
@@ -135,7 +206,7 @@ const ChatRequestFormPage: React.FC = () => {
             <div className="w-3/4">
               <div className="flex flex-wrap gap-4">
                 <input
-                  title="사진 첨부"
+                  title="파일 첨부"
                   type="file"
                   accept="image/*"
                   multiple
@@ -167,10 +238,6 @@ const ChatRequestFormPage: React.FC = () => {
                     onClick={() => fileInputRef.current?.click()}
                     className="w-36 h-36 rounded-lg border border-gray-300 bg-gray-100 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 transition"
                   >
-                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M9 25.5882V28.2941C9 29.0118 9.28973 29.7 9.80546 30.2075C10.3212 30.7149 11.0207 31 11.75 31H28.25C28.9793 31 29.6788 30.7149 30.1945 30.2075C30.7103 29.7 31 29.0118 31 28.2941V25.5882M13.125 14.7647L20 8M20 8L26.875 14.7647M20 8V24.2353" stroke="#646F7C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-
                     <span className="text-gray-500 mt-2 text-center text-sm">이미지 업로드</span>
                   </div>
                 )}
@@ -261,10 +328,9 @@ const ChatRequestFormPage: React.FC = () => {
           disabled={!isFormComplete}
           className={`
             px-10 py-5 rounded-lg body-b0-bd
-            ${
-              isFormComplete
-                ? 'bg-[var(--color-mint-1)] text-white cursor-pointer'
-                : 'bg-[var(--color-line-gray-30)] text-[var(--color-gray-50)] cursor-not-allowed'
+            ${isFormComplete
+              ? 'bg-[var(--color-mint-1)] text-white cursor-pointer'
+              : 'bg-[var(--color-line-gray-30)] text-[var(--color-gray-50)] cursor-not-allowed'
             }
             transition-colors
           `}

@@ -35,6 +35,8 @@ const BuyList = () => {
             isCustomOrder: o.targetType === 'REFORM',
             reviewAvailable: o.reviewAvailable,
             targetId: o.targetId,
+            receiptNumber: o.receiptNumber,
+            chat_room_id: o.chat_room_id,
           }));
 
           setOrders(mapped)
@@ -59,7 +61,6 @@ const BuyList = () => {
   };
 
   const handleChatClick = (targetId: string) => {
-    // 예: 채팅 페이지 URL에 주문 ID 포함
     navigate(`/chat/normal/${targetId}`)
   };
 

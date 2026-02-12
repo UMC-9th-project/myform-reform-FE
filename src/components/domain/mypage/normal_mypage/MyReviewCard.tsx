@@ -11,12 +11,18 @@ export interface ProductOrder {
   image: string;
   status?: '결제 완료' | '상품준비 중' | '발송 완료';
   reviewAvailable?: boolean;
+
+  targetType?: 'ITEM' | 'REQUEST';
+  targetId?: string;
+  orderId?: string,
+  
 }
 
 // 2. props 타입 정의
 interface SalesCardProps {
   data: ProductOrder[];
   onDetailClick?: (id: string) => void; // 일반 상품 상세보기
+  onChatClick?: (chatRoomId: string) => void;
   onWriteReviewClick?: (id: string) => void; // 후기 작성
 }
 
@@ -24,6 +30,7 @@ const MyReviewCard: React.FC<SalesCardProps> = ({
   data,
   onDetailClick,
   onWriteReviewClick,
+  onChatClick,
 }) => {
   return (
     <div className="w-full mx-auto bg-[transparent]">
@@ -35,12 +42,21 @@ const MyReviewCard: React.FC<SalesCardProps> = ({
             <div className="flex justify-between items-center mb-4 text-[var(--color-gray-50)] body-b1-rg">
               <span>주문번호 {item.orderNo}</span>
               
-              <button
+              {item.targetType === 'ITEM' ? (
+                <button
                   className="flex items-center gap-3 hover:text-black transition-colors"
-                  onClick={() => onDetailClick?.(item.id)}
+                  onClick={() => onDetailClick?.(item.orderId!)}
                 >
                   상세 보기<span>❯</span>
                 </button>
+              ) : item.targetType === 'REQUEST' ? (
+                <button
+                  className="flex items-center gap-3 hover:text-black transition-colors"
+                  onClick={() => onChatClick?.(item.targetId!)} // targetId로 이동
+                >
+                  채팅 바로가기<span>❯</span>
+                </button>
+              ) : null}
             </div>
 
             {/* 내용 */}
@@ -59,7 +75,7 @@ const MyReviewCard: React.FC<SalesCardProps> = ({
                     <span className="body-b0-rg text-[var(--color-gray-50)]">결제금액</span>
                     <span className="body-b0-rg text-black">{item.price.toLocaleString()}원</span>
 
-                    <span className="body-b0-rg text-[var(--color-gray-50)]">구매자</span>
+                    <span className="body-b0-rg text-[var(--color-gray-50)]">판매자</span>
                     <span className="body-b0-rg text-black">{item.buyer}</span>
 
                     <span className="body-b0-rg text-[var(--color-gray-50)]">결제 일시</span>

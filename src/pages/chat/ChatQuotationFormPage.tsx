@@ -1,9 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import { createChatProposal, getChatProposalDetail } from '@/api/chat/chatProposalApi';
+import { useNavigate, useParams } from 'react-router-dom'
+import { uploadImages } from '@/api/upload';
+//import type { CreateProposalPayload } from '@/types/api/chat/chatProposal';
+import { updateChatProposal } from '@/api/chat/chatProposalApi';
 
 interface QuotationImage {
-  file: File;
+  file: File | null;
   preview: string;
 }
 
@@ -18,8 +23,9 @@ interface ChatQuotationFormData {
 const ChatQuotationFormPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const location = useLocation();
-  const mode: 'create' | 'edit' = location.state?.mode ?? 'create';
-const quotationData = location.state?.quotationData;
+  const { chatRoomId, proposalId } = useParams<{ chatRoomId?: string; proposalId?: string }>();
+  const mode: 'create' | 'edit' = location.state?.mode ?? (proposalId ? 'edit' : 'create');
+  const quotationData = location.state?.quotationData;
 
   const [formData, setFormData] = useState<ChatQuotationFormData>({
     images: quotationData?.images ?? [],
@@ -28,8 +34,31 @@ const quotationData = location.state?.quotationData;
     content: quotationData?.content ?? '',
     estimatedDays: quotationData?.estimatedDays ?? '',
   });
+  const navigate = useNavigate();
 
   const MAX_IMAGES = 10;
+
+  useEffect(() => {
+    if (mode === 'edit' && !quotationData && proposalId) {
+      getChatProposalDetail(proposalId)
+        .then((data) => {
+          setFormData({
+            images: data.body.images.map((url: string) => ({ file: null, preview: url })),
+            price: data.body.price.toString(),
+            delivery: data.body.delivery.toString(),
+            content: data.body.content,
+            estimatedDays: data.body.expectedWorking.toString(),
+          });
+        })
+        .catch((err) => {
+          console.error(err);
+          alert('견적서 데이터를 불러오는데 실패했습니다.');
+          navigate(-1);
+        });
+    }
+  }, [mode, quotationData, proposalId, navigate]);
+  
+  
 
   // 이미지 업로드
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +75,7 @@ const quotationData = location.state?.quotationData;
       images: [...prev.images, ...newImages].slice(0, MAX_IMAGES),
     }));
 
-    e.target.value = ''; // 재업로드 가능
+    e.target.value = ''; 
   };
 
   const removeImage = (index: number) => {
@@ -65,28 +94,71 @@ const quotationData = location.state?.quotationData;
   };
 
   // 필수 값이 모두 채워졌는지 판단
-const isFormComplete =
-  formData.images.length > 0 &&
-  formData.price.trim() !== '' &&
-  formData.delivery.trim() !== '' &&
-  formData.content.trim() !== '' &&
-  formData.estimatedDays.trim() !== '';
+  const isFormComplete =
+    formData.images.length > 0 &&
+    formData.price.trim() !== '' &&
+    formData.delivery.trim() !== '' &&
+    formData.content.trim() !== '' &&
+    formData.estimatedDays.trim() !== '';
+  
 
 
-  const handleSubmit = () => {
-    // validation 체크
-    if (!formData.images.length) return alert('이미지를 최소 1장 업로드해주세요.');
-    if (!formData.price.trim()) return alert('견적 금액을 입력해주세요.');
-    if (!formData.delivery.trim()) return alert('배송비를 입력해주세요.');
-    if (!formData.content.trim()) return alert('상세 내용을 입력해주세요.');
-    if (!formData.estimatedDays.trim()) return alert('예상 작업 기간을 입력해주세요.');
+  
+  const handleSend = async () => {
+  try {
+    // 1️⃣ 새로 업로드된 파일만 필터링
+    const newFiles = formData.images
+      .map(img => img.file)
+      .filter((file): file is File => file !== null);
 
-    console.log('전송 데이터:', formData);
+    // 2️⃣ 새 파일 업로드
+    let uploadedUrls: string[] = [];
+    if (newFiles.length > 0) {
+      const uploadRes = await uploadImages(newFiles);
+      if (uploadRes.resultType !== 'SUCCESS') throw new Error('이미지 업로드 실패');
+      uploadedUrls = uploadRes.success.url;
+    }
 
-    // TODO: 서버 API 전송 또는 채팅 메시지 전송
-    alert('견적서가 전송되었습니다.');
-  };
+    // 3️⃣ 기존 URL 이미지는 그대로 사용
+    const existingUrls = formData.images
+      .filter(img => !img.file)
+      .map(img => img.preview);
 
+    // 4️⃣ 최종 이미지 URL 배열
+    const imageUrls = [...existingUrls, ...uploadedUrls];
+
+    // 5️⃣ payload 생성
+    const payload = {
+      price: Number(formData.price),
+      delivery: Number(formData.delivery),
+      expectedWorking: Number(formData.estimatedDays),
+      content: formData.content.trim(),
+      image: imageUrls,
+    };
+
+    // 6️⃣ 모드별 처리 - chatRoomId 체크를 여기서!
+    if (mode === 'edit') {
+      // ✅ 수정 모드: chatRoomId 불필요
+      const id = proposalId || quotationData?.proposalId;
+      if (!id) throw new Error('수정할 견적서 ID가 없습니다.');
+      await updateChatProposal(id, payload);
+      alert('견적서가 수정되었습니다.');
+    } else {
+      // ✅ 생성 모드: chatRoomId 필수
+      if (!chatRoomId) {
+        alert('채팅방 정보가 없습니다.');
+        return;
+      }
+      await createChatProposal({ chatRoomId, ...payload });
+      alert('견적서를 전송했습니다.');
+    }
+
+    navigate(-1);
+  } catch (error) {
+    console.error(error);
+    alert('견적서 전송 중 오류가 발생했습니다.');
+  }
+};
 
 
   return (
@@ -247,7 +319,7 @@ const isFormComplete =
         {/* 전송 버튼 */}
         <div className="mt-16 flex justify-end">
           <button
-            onClick={handleSubmit}
+            onClick={handleSend}
             disabled={!isFormComplete}
             className={`
               px-10 py-5 rounded-lg body-b0-bd

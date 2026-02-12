@@ -27,9 +27,11 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [isComposing, setIsComposing] = useState(false);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const recommendedSearches = [
     '야구 유니폼',
@@ -77,9 +79,11 @@ export default function Header() {
     handleSearchSubmit(term);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearchSubmit(searchValue);
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !isComposing) {
+      e.preventDefault();
+      const currentValue = inputRef.current?.value || searchValue;
+      handleSearchSubmit(currentValue);
     }
   };
 
@@ -119,18 +123,28 @@ export default function Header() {
         {/* 검색 */}
         <div className="relative w-[571px]" ref={searchRef}>
           <input
+            ref={inputRef}
             type="text"
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchValue(e.target.value)}
+            onCompositionStart={() => setIsComposing(true)}
+            onCompositionEnd={(e: React.CompositionEvent<HTMLInputElement>) => {
+              setIsComposing(false);
+              const finalValue = e.currentTarget.value;
+              setSearchValue(finalValue);
+            }}
             onClick={handleSearchClick}
             onFocus={handleSearchClick}
-            onKeyDown={handleKeyDown}
+            onKeyPress={handleKeyPress}
             placeholder="어떤 리폼 스타일을 찾으세요?"
             className="body-b1-rg w-full py-[0.875rem] pl-[1.5rem] pr-[3rem] rounded-[6.25rem] border border-[var(--color-mint-1)] text-[var(--color-black)] placeholder:text-[var(--color-gray-40)] focus:outline-none focus:border-[var(--color-mint-1)] transition-colors"
           />
           <div 
             className="absolute right-[1.5rem] top-1/2 -translate-y-1/2 cursor-pointer"
-            onClick={() => handleSearchSubmit(searchValue)}
+            onClick={() => {
+              const currentValue = inputRef.current?.value || searchValue;
+              handleSearchSubmit(currentValue);
+            }}
           >
             <img src={search} alt="search" className="w-6.5 h-6.5" />
           </div>
@@ -199,7 +213,7 @@ export default function Header() {
         <div className="flex items-center gap-[1.625rem] ml-auto">
           <div className="relative">
             <button
-              className="cursor-pointer"
+              className="cursor-pointer translate-y-1"
               onClick={() => setIsNotificationOpen(!isNotificationOpen)}
             >
               <img src={bell} alt="bell" />
@@ -212,83 +226,83 @@ export default function Header() {
           <Link to="/wishlist" className="cursor-pointer">
             <img src={heart} alt="heart" />
           </Link>
-          <Link to="/cart" className="cursor-pointer">
-            <img src={shoppingCart} alt="shopping cart" />
-          </Link>
-          
+          {role !== 'reformer' && (
+            <Link to="/cart" className="cursor-pointer">
+              <img src={shoppingCart} alt="shopping cart" />
+            </Link>
+          )}
           {accessToken && (
-          <div className="relative" ref={profileRef}>
-            <button
-              className="cursor-pointer"
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-            >
-              <img src={profile} alt="profile" />
-            </button>
+            <div className="relative" ref={profileRef}>
+              <button
+                className="cursor-pointer"
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+              >
+                <img src={profile} alt="profile" />
+              </button>
 
-            {/* 리폼러 유저 드롭다운 */}
-            {isProfileOpen && role === 'reformer' && (
-              <div className="absolute top-full right-0 bg-white rounded-[1.875rem] shadow-[0_3px_10.7px_0_rgba(0,0,0,0.22)] z-50 w-[270px]">
-                <div className="pt-[0.875rem] px-[1rem]">
-                  <div className="py-[0.625rem] px-[1.25rem]">
-                    <div className="body-b0-bd text-[var(--color-black)]">침착한 대머리독수리 님</div>
+              {/* 리폼러 유저 드롭다운 */}
+              {isProfileOpen && role === 'reformer' && (
+                <div className="absolute top-full right-0 bg-white rounded-[1.875rem] shadow-[0_3px_10.7px_0_rgba(0,0,0,0.22)] z-50 w-[270px]">
+                  <div className="pt-[0.875rem] px-[1rem]">
+                    <div className="py-[0.625rem] px-[1.25rem]">
+                      <div className="body-b0-bd text-[var(--color-black)]">침착한 대머리독수리 님</div>
+                    </div>
+                    <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]" />
+                    <div className="px-[1.25rem]">
+                      <button
+                        onClick={() => {
+                          setSellerActiveTab('프로필 관리'); 
+                          navigate('/reformer-mypage'); setIsProfileOpen(false); }}
+                        className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
+                      >
+                        프로필 관리
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSellerActiveTab('판매 관리'); // 탭 상태 업데이트
+                          navigate('/reformer-mypage'); // 해당 페이지로 이동
+                          setIsProfileOpen(false); // 드롭다운 닫기
+                        }}
+                        className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
+                      >
+                        판매 관리
+                      </button>
+                      
+                    </div>
                   </div>
-                  <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]" />
-                  <div className="px-[1.25rem]">
-                    <button
-                      onClick={() => {
-                        setSellerActiveTab('프로필 관리'); 
-                        navigate('/reformer-mypage'); setIsProfileOpen(false); }}
-                      className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
-                    >
-                      프로필 관리
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSellerActiveTab('판매 관리'); // 탭 상태 업데이트
-                        navigate('/reformer-mypage'); // 해당 페이지로 이동
-                        setIsProfileOpen(false); // 드롭다운 닫기
-                      }}
-                      className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
-                    >
-                      판매 관리
-                    </button>
-                    
-                  </div>
+                  <button
+                    onClick={logout}
+                    className="w-full py-[0.9375rem] body-b1-sb bg-[var(--color-mint-5)] rounded-b-[1.875rem]"
+                  >
+                    로그아웃
+                  </button>
                 </div>
-                <button
-                  onClick={logout}
-                  className="w-full py-[0.9375rem] body-b1-sb bg-[var(--color-mint-5)] rounded-b-[1.875rem]"
-                >
-                  로그아웃
-                </button>
-              </div>
-            )}
+              )}
 
-            {/* 일반 유저 드롭다운 */}
-            {isProfileOpen && role === 'user' && (
-              <div className="absolute top-full right-0 bg-white rounded-[1.875rem] shadow-[0_3px_10.7px_0_rgba(0,0,0,0.22)] z-50 w-[270px]">
-                <div className="pt-[0.875rem] px-[1rem]">
-                  <div className="py-[0.625rem] px-[1.25rem]">
-                    <div className="body-b0-bd text-[var(--color-black)]">침착한 대머리독수리 님</div>
+              {/* 일반 유저 드롭다운 */}
+              {isProfileOpen && role === 'user' && (
+                <div className="absolute top-full right-0 bg-white rounded-[1.875rem] shadow-[0_3px_10.7px_0_rgba(0,0,0,0.22)] z-50 w-[270px]">
+                  <div className="pt-[0.875rem] px-[1rem]">
+                    <div className="py-[0.625rem] px-[1.25rem]">
+                      <div className="body-b0-bd text-[var(--color-black)]">침착한 대머리독수리 님</div>
+                    </div>
+                    <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]" />
+                    <div className="px-[1.25rem]">
+                      <button onClick={() => handleTabClick('내 정보')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">내 정보</button>
+                      <button onClick={() => handleTabClick('내가 작성한 글')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">내가 작성한 글</button>
+                      <button onClick={() => handleTabClick('구매 이력')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">구매 이력</button>
+                      <button onClick={() => handleTabClick('나의 후기')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">나의 후기</button>
+                    </div>
                   </div>
-                  <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]" />
-                  <div className="px-[1.25rem]">
-                    <button onClick={() => handleTabClick('내 정보')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">내 정보</button>
-                    <button onClick={() => handleTabClick('내가 작성한 글')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">내가 작성한 글</button>
-                    <button onClick={() => handleTabClick('구매 이력')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">구매 이력</button>
-                    <button onClick={() => handleTabClick('나의 후기')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">나의 후기</button>
-                  </div>
+                  <button
+                    onClick={logout}
+                    className="w-full py-[0.9375rem] body-b1-sb bg-[var(--color-mint-5)] rounded-b-[1.875rem]"
+                  >
+                    로그아웃
+                  </button>
                 </div>
-                <button
-                  onClick={logout}
-                  className="w-full py-[0.9375rem] body-b1-sb bg-[var(--color-mint-5)] rounded-b-[1.875rem]"
-                >
-                  로그아웃
-                </button>
-              </div>
-            )}
-
-          </div>
+              )}
+            </div>
           )}
         </div>
       </div>

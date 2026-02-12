@@ -1,6 +1,11 @@
-import { Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import LikeButton from '../likebutton/LikeButton';
 import starIcon from '../../../assets/icons/star.svg';
+import { useWish } from '../../../hooks/domain/wishlist/useWish';
+import { getWishList } from '../../../api/wishlist';
+import useAuthStore from '../../../stores/useAuthStore';
 
 export type ProposalDetailVariant = 'order' | 'reformer';
 
@@ -9,17 +14,14 @@ interface ProposalCardProps {
   title?: string;
   price?: string;
   rating?: number;
-  /** 평점 소수 자리수 (기본 2). OrderPage 등에서는 1 사용 */
   ratingDecimals?: 1 | 2;
   reviewCountText?: string;
   nickname?: string;
   className?: string;
-  /** 상세 페이지로 이동 시 사용할 id (variant와 함께 사용) */
   id?: number | string;
-  /** 상세 경로 구분: order → /order/proposals/:id, reformer → /reformer/order/proposals/:id */
   variant?: ProposalDetailVariant;
-  /** 클릭 시 이동할 상세 페이지 경로 (직접 지정 시 id/variant 대신 사용) */
   to?: string;
+  isWished?: boolean;
 }
 
 const PROPOSAL_DETAIL_PATH: Record<ProposalDetailVariant, string> = {
@@ -28,41 +30,109 @@ const PROPOSAL_DETAIL_PATH: Record<ProposalDetailVariant, string> = {
 };
 
 export default function ProposalCard({
-  imgSrc = '/wsh1.jpg',
-  title = '이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.',
-  price = '75,000원',
-  rating = 4.9,
+  imgSrc,
+  title,
+  price,
+  rating,
   ratingDecimals = 2,
-  reviewCountText = '(271)',
-  nickname = '침착한 대머리독수리',
+  reviewCountText,
+  nickname,
   className = '',
   id,
   variant = 'order',
   to,
+  isWished = false,
 }: ProposalCardProps) {
-  const formattedRating =
-    typeof rating === 'number' && Number.isFinite(rating)
-      ? rating.toFixed(ratingDecimals)
-      : rating;
+  const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
+  const { toggleWish } = useWish();
+  const { data: wishData } = useQuery({
+    queryKey: ['wishlist', 'PROPOSAL', accessToken],
+    queryFn: () => getWishList('PROPOSAL'),
+    enabled: id != null && !!accessToken && variant === 'order' && !isReformer,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const itemId = id ? (typeof id === 'string' ? id : id.toString()) : null;
+  
+  const isWishedFromServer = useMemo(() => {
+    if (isWished) {
+      return true;
+    }
+    if (wishData === undefined || !itemId) {
+      return undefined;
+    }
+    if (wishData?.success?.list) {
+      return wishData.success.list.some((item) => item.itemId === itemId);
+    }
+    return false;
+  }, [wishData, itemId, isWished]);
+
+  const [localLiked, setLocalLiked] = useState<boolean | null>(null);
+
+  const isLiked = useMemo(() => {
+    if (isWished) {
+      return true;
+    }
+    if (localLiked !== null) {
+      return localLiked;
+    }
+    if (isWishedFromServer === undefined) {
+      return false;
+    }
+    return isWishedFromServer;
+  }, [isWished, localLiked, isWishedFromServer]);
+
+  const formattedRating = useMemo(() => {
+    if (rating === undefined || rating === null) {
+      return '0.00';
+    }
+    if (typeof rating === 'number' && Number.isFinite(rating)) {
+      return rating.toFixed(ratingDecimals);
+    }
+    return String(rating);
+  }, [rating, ratingDecimals]);
   const detailTo =
     id != null ? `${PROPOSAL_DETAIL_PATH[variant]}/${id}` : undefined;
   const linkTo = to ?? detailTo;
 
+  const handleLikeClick = async (liked: boolean) => {
+    if (!accessToken) {
+      navigate('/login/type');
+      return;
+    }
+
+    if (itemId) {
+      try {
+        await toggleWish('PROPOSAL', itemId, liked);
+        setLocalLiked(liked);
+      } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response?: { status?: number } };
+          if (axiosError.response?.status === 401) {
+            navigate('/login/type');
+          }
+        }
+      }
+    }
+  };
+
   const content = (
     <div
-      className={`bg-white rounded-[0.625rem] overflow-visible ${linkTo ? 'cursor-pointer' : ''} ${className}`}
+      className={`bg-white rounded-[1.25rem] overflow-visible ${linkTo ? 'cursor-pointer' : ''} ${className}`}
     >
-      {/* 상품 이미지 - MarketCard와 동일 */}
       <div
-        className="relative w-full rounded-[0.625rem] overflow-hidden"
-        style={{ aspectRatio: '361/307' }}
+        className="relative w-full rounded-[1.25rem] overflow-hidden"
+        style={{ aspectRatio: '337/307' }}
       >
         <img
           src={imgSrc}
           alt={title}
           className="w-full h-full object-cover"
         />
-        {variant !== 'reformer' && (
+        {variant === 'order' && (
           <div
             className="absolute bottom-[0.75rem] right-[0.75rem] z-10"
             onClick={(e) => {
@@ -77,12 +147,14 @@ export default function ProposalCard({
             }}
             role="presentation"
           >
-            <LikeButton />
+            <LikeButton
+              initialLiked={isLiked}
+              onClick={handleLikeClick}
+            />
           </div>
         )}
       </div>
 
-      {/* 상품 정보 - MarketCard와 동일 간격 */}
       <div className="pt-[1.25rem] pb-[1.5rem]">
         <h3 className="body-b0-sb text-[var(--color-black)] mb-[0.625rem] line-clamp-2 break-words leading-normal">
           {title}

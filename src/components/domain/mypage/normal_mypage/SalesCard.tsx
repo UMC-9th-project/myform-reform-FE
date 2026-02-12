@@ -12,7 +12,7 @@ export interface ProductOrder {
   status?: '결제 완료' | '상품준비 중' | '발송 완료';
   isCustomOrder?: boolean; 
   reviewAvailable?: boolean;
-
+  chat_room_id?: string;
 }
 
 // 2. props 타입 정의
@@ -40,10 +40,10 @@ const SalesCard: React.FC<SalesCardProps> = ({
             <div className="flex justify-between items-center mb-4 text-[var(--color-gray-50)] body-b1-rg">
               <span>주문번호 {item.orderNo}</span>
               
-              {item.isCustomOrder ? (
+              {item.isCustomOrder && item.chat_room_id ? (
                 <button
                   className="flex items-center gap-3 hover:text-black transition-colors"
-                  onClick={() => onChatClick?.(item.id)}
+                  onClick={() => onChatClick?.(item.chat_room_id!)}
                 >
                   채팅 바로가기<span>❯</span>
                 </button>
@@ -73,7 +73,7 @@ const SalesCard: React.FC<SalesCardProps> = ({
                     <span className="body-b0-rg text-[var(--color-gray-50)]">결제금액</span>
                     <span className="body-b0-rg text-black">{item.price.toLocaleString()}원</span>
 
-                    <span className="body-b0-rg text-[var(--color-gray-50)]">구매자</span>
+                    <span className="body-b0-rg text-[var(--color-gray-50)]">판매자</span>
                     <span className="body-b0-rg text-black">{item.buyer}</span>
 
                     <span className="body-b0-rg text-[var(--color-gray-50)]">결제 일시</span>

@@ -102,7 +102,7 @@ const ReviewWritePage: React.FC = () => {
             maxLength={1000}
             onChange={(e) => setContent(e.target.value)}
           />
-          <div className="absolute bottom-1 -right-20 text-gray-400 body-b2-rg">
+          <div className="absolute bottom-1 -right-23 text-gray-400 body-b2-rg">
             {content.length}/1000자
           </div>
         </div>

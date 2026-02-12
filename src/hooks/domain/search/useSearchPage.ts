@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useQueries } from '@tanstack/react-query';
 import { useSearchQueryParams } from '../../useSearchParams';
 import { useSearchData } from './useSearchData';
+import { getProfile } from '../../../api/profile/user';
 import type { SearchItem } from '../../../types/api/search';
 import type { MarketCardItem } from '../../../components/common/card/MarketCard';
 
@@ -24,6 +26,7 @@ export const useSearchPage = () => {
   const [activeTab, setActiveTab] = useState<SearchTab>(getTabFromUrl(searchParams));
   const [minLoadingTimePassed, setMinLoadingTimePassed] = useState(false);
   const [hasAutoSwitchedTab, setHasAutoSwitchedTab] = useState(false);
+  const [isTabChanging, setIsTabChanging] = useState(false);
 
   useEffect(() => {
     setSearchValue(qFromUrl);
@@ -37,14 +40,25 @@ export const useSearchPage = () => {
   useEffect(() => {
     const tabFromUrl = getTabFromUrl(searchParams);
     if (tabFromUrl !== activeTab) {
+      setIsTabChanging(true);
       setActiveTab(tabFromUrl);
+      setMinLoadingTimePassed(true);
+      requestAnimationFrame(() => {
+        setIsTabChanging(false);
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   useEffect(() => {
-    setHasAutoSwitchedTab(false);
-  }, [qFromUrl]);
+
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && (tabFromUrl === 'market' || tabFromUrl === 'request' || tabFromUrl === 'proposal')) {
+      setHasAutoSwitchedTab(true); 
+    } else {
+      setHasAutoSwitchedTab(false);
+    }
+  }, [qFromUrl, searchParams]);
 
   useEffect(() => {
     if (hasQuery) {
@@ -56,7 +70,8 @@ export const useSearchPage = () => {
     } else {
       setMinLoadingTimePassed(true);
     }
-  }, [qFromUrl, activeTab, hasQuery]);
+     
+  }, [qFromUrl, hasQuery]);
 
   const {
     marketSearchData,
@@ -75,6 +90,10 @@ export const useSearchPage = () => {
       return false;
     }
     
+    if (isTabChanging) {
+      return false;
+    }
+    
     if (!minLoadingTimePassed) {
       return true;
     }
@@ -89,7 +108,7 @@ export const useSearchPage = () => {
       default:
         return false;
     }
-  }, [hasQuery, minLoadingTimePassed, activeTab, isMarketSearchLoading, isRequestSearchLoading, isProposalSearchLoading]);
+  }, [hasQuery, minLoadingTimePassed, activeTab, isMarketSearchLoading, isRequestSearchLoading, isProposalSearchLoading, isTabChanging]);
 
   const marketItems: MarketCardItem[] = useMemo(() => {
     if (!hasQuery || !marketSearchData?.success) {
@@ -171,6 +190,7 @@ export const useSearchPage = () => {
           imgSrc: item.imageUrl || item.thumbnail || '',
           title: item.title,
           priceRange: priceRange || undefined,
+          isWished: item.is_wished || false,
         };
       });
     }
@@ -178,7 +198,7 @@ export const useSearchPage = () => {
     return [];
   }, [requestSearchData, hasQuery, isRequestSearchLoading, qFromUrl]);
 
-  const proposalItems = useMemo(() => {
+  const filteredProposals = useMemo(() => {
     if (!hasQuery || !proposalSearchData?.success) {
       return [];
     }
@@ -186,34 +206,63 @@ export const useSearchPage = () => {
     const searchQuery = qFromUrl.trim().toLowerCase();
     
     if (proposalSearchData.success.results && Array.isArray(proposalSearchData.success.results) && proposalSearchData.success.results.length > 0) {
-      return proposalSearchData.success.results
-        .filter((item: SearchItem) => {
-          const itemTitle = (item.title || '').toLowerCase();
-          const itemContent = (item.content || '').toLowerCase();
-          return itemTitle.includes(searchQuery) || itemContent.includes(searchQuery);
-        })
-        .map((item: SearchItem, index: number) => {
-        const imgSrc = item.imageUrl || item.thumbnail || '';
-        
-        const price = item.price !== undefined && item.price !== null 
-          ? `${item.price.toLocaleString('ko-KR')}원` 
-          : '';
-        
-        return {
-          key: index + 1,
-          id: item.id || '',
-          imgSrc,
-          title: item.title || '',
-          price,
-          rating: item.avgStar || item.rating || item.star || 0,
-          reviewCountText: item.reviewCountText || `(${item.reviewCount || item.review_count || 0})`,
-          nickname: item.authorName || item.nickname || item.owner_nickname || item.ownerName || '',
-        };
+      return proposalSearchData.success.results.filter((item: SearchItem) => {
+        const itemTitle = (item.title || '').toLowerCase();
+        const itemContent = (item.content || '').toLowerCase();
+        return itemTitle.includes(searchQuery) || itemContent.includes(searchQuery);
       });
     }
     
     return [];
   }, [proposalSearchData, hasQuery, qFromUrl]);
+
+  const profileResults = useQueries({
+    queries: filteredProposals.map((item: SearchItem) => {
+      const ownerName = item.ownerName || item.authorName || item.nickname || item.owner_nickname || '';
+      return {
+        queryKey: ['profile', 'by-nickname', ownerName],
+        queryFn: () => getProfile(ownerName),
+        enabled: !!ownerName,
+        staleTime: 1000 * 60,
+      };
+    }),
+  });
+
+  const proposalItems = useMemo(() => {
+    if (filteredProposals.length === 0) {
+      return [];
+    }
+    
+    return filteredProposals.map((item: SearchItem, index: number) => {
+      const imgSrc = item.imageUrl || item.thumbnail || '';
+      
+      const price = item.price !== undefined && item.price !== null 
+        ? `${item.price.toLocaleString('ko-KR')}원` 
+        : '';
+      
+      const profileRes = profileResults[index]?.data;
+      const fromProfile = profileRes?.resultType === 'SUCCESS' && profileRes?.success;
+      const rating = fromProfile 
+        ? (profileRes.success!.avgStar ?? item.avgStar ?? item.rating ?? item.star ?? 0)
+        : (item.avgStar ?? item.rating ?? item.star ?? 0);
+      
+      const reviewCount = fromProfile
+        ? (profileRes.success!.reviewCount ?? item.reviewCount ?? item.review_count ?? 0)
+        : (item.reviewCount ?? item.review_count ?? 0);
+      
+      return {
+        key: index + 1,
+        id: item.id || '',
+        imgSrc,
+        title: item.title || '',
+        price,
+        rating,
+        reviewCountText: item.reviewCountText || `(${reviewCount})`,
+        nickname: item.authorName || item.nickname || item.owner_nickname || item.ownerName || '',
+        isWished: item.is_wished || false,
+      };
+    });
+  }, [filteredProposals, profileResults]);
 
   const marketCount = useMemo(() => {
     if (!hasQuery) {
@@ -237,18 +286,27 @@ export const useSearchPage = () => {
   }, [hasQuery, proposalItems]);
 
   const handleTabChange = useCallback((tab: SearchTab) => {
+    setHasAutoSwitchedTab(true); 
+    setIsTabChanging(true);
     setActiveTab(tab);
     setCurrentPage(1);
+    setMinLoadingTimePassed(true); 
     setSearchParams((prev: URLSearchParams) => {
       const newParams = new URLSearchParams(prev);
       newParams.set('tab', tab);
       newParams.set('page', '1');
       return newParams;
     });
+    requestAnimationFrame(() => {
+      setIsTabChanging(false);
+    });
   }, [setSearchParams]);
 
   useEffect(() => {
-    if (!hasQuery || hasAutoSwitchedTab) {
+    const tabFromUrl = searchParams.get('tab');
+    const hasExplicitTab = tabFromUrl && (tabFromUrl === 'market' || tabFromUrl === 'request' || tabFromUrl === 'proposal');
+    
+    if (!hasQuery || hasAutoSwitchedTab || hasExplicitTab) {
       return;
     }
 
@@ -272,7 +330,7 @@ export const useSearchPage = () => {
     } else if (maxCountTab.count === 0) {
       setHasAutoSwitchedTab(true);
     }
-  }, [marketCount, requestCount, proposalCount, hasQuery, minLoadingTimePassed, isMarketSearchLoading, isRequestSearchLoading, isProposalSearchLoading, activeTab, handleTabChange, hasAutoSwitchedTab]);
+  }, [marketCount, requestCount, proposalCount, hasQuery, minLoadingTimePassed, isMarketSearchLoading, isRequestSearchLoading, isProposalSearchLoading, activeTab, handleTabChange, hasAutoSwitchedTab, searchParams]);
 
   const totalPages = useMemo(() => {
     let count = 0;
@@ -303,6 +361,19 @@ export const useSearchPage = () => {
   const isLoading = getCurrentIsLoading();
   
   const hasResults = useMemo(() => {
+    if (isTabChanging) {
+      switch (activeTab) {
+        case 'market':
+          return marketItems.length > 0;
+        case 'request':
+          return requestItems.length > 0;
+        case 'proposal':
+          return proposalItems.length > 0;
+        default:
+          return false;
+      }
+    }
+    
     if (isLoading) {
       return true;
     }
@@ -317,7 +388,7 @@ export const useSearchPage = () => {
       default:
         return false;
     }
-  }, [activeTab, marketItems.length, requestItems.length, proposalItems, isLoading]);
+  }, [activeTab, marketItems.length, requestItems.length, proposalItems, isLoading, isTabChanging]);
 
   return {
     searchValue,

@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { loginUser } from '../../../api/auth';
 import type { LoginRequest } from '@/types/api/auth';
@@ -13,21 +13,19 @@ interface UseLoginReturn {
 export const useLogin = (): UseLoginReturn => {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const { setAccessToken } = useAuthStore();
 
-  
   const userRole = location.pathname.includes('reformer') ? 'reformer' : 'user';
 
   const { mutate: loginMutation, isPending: isLoading, error: mutationError } = useMutation({
     mutationFn: loginUser,
     onSuccess: (data) => {
       if (data.resultType === 'SUCCESS' && data.success) {
-       
+        queryClient.removeQueries({ queryKey: ['wishlist'] });
         if (data.success.accessToken) {
-         
           setAccessToken(data.success.accessToken, userRole);
         }
-     
         navigate('/');
       }
     },

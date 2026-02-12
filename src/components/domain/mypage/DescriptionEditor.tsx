@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { AlignLeft, ArrowsUpFromLine } from 'lucide-react';
+import { AlignLeft, AlignCenter, AlignRight, ArrowsUpFromLine } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -9,14 +9,15 @@ import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
 import Button from '../../common/button/Button1';
-
+import { uploadImages } from '@/api/upload';
 
 type DescriptionEditorProps = {
   onSubmit: (html: string) => void; // 등록 버튼 클릭 시
   onClose: () => void;
+  initialContent?: string
 };
 
-const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose }) => {
+const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose, initialContent }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -25,47 +26,45 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose
       Underline,
       TextStyle,
       Highlight,
-      Image.configure({
-        inline: false,
-        allowBase64: true,
-      }),
-      TextAlign.configure({
-        types: ['heading', 'paragraph'],
-      }),
-      Placeholder.configure({
-        placeholder:'제품의 상세 설명을 입력해주세요!'
-      })
+      Image.configure({ inline: false, allowBase64: false }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
+      Placeholder.configure({ placeholder: '제품의 상세 설명을 입력해주세요!' })
     ],
-    content: '',
+    content: initialContent || '', // 초기 content 반영
     editorProps: {
-      attributes: {
-        class: 'outline-none min-h-[60rem] focus:outline-none',
-      },
+      attributes: { class: 'outline-none min-h-[60rem] focus:outline-none' },
     },
   });
 
+
   if (!editor) return null;
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      editor
-        .chain()
-        .focus()
-        .setImage({ src: reader.result as string })
-        .run();
-    };
-    reader.readAsDataURL(file);
+  const handleSubmit = () => {
+    if (!editor) return; // editor 준비 안 되었으면 무시
+    const html = editor.getHTML(); // 에디터 내용을 HTML로 가져오기
+    onSubmit(html); // 부모 컴포넌트로 전달
   };
 
-  const handleSubmit = () => {
-  if (!editor) return; // editor 준비 안 되었으면 무시
-  const html = editor.getHTML();
-  onSubmit(html); // 부모에 전달
-};
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      const res = await uploadImages(Array.from(files));
+      const imageUrls = res.success?.url; // string[]
+
+      if (!imageUrls || imageUrls.length === 0) throw new Error('이미지 URL을 받지 못했습니다');
+
+      // 여러 장 삽입
+      imageUrls.forEach(url => {
+        editor.chain().focus().setImage({ src: url }).run();
+      });
+
+    } catch (error) {
+      console.error(error);
+      alert('이미지 업로드 실패');
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto bg-white rounded-lg">
@@ -160,11 +159,26 @@ const DescriptionEditor: React.FC<DescriptionEditorProps> = ({ onSubmit, onClose
 
           <div className="flex items-center gap-5">
             <button
-              title="오른쪽 정렬"
+              title="왼쪽 정렬"
               onClick={() => editor.chain().focus().setTextAlign('left').run()}
             >
               <AlignLeft size={23} />
             </button>
+
+            <button
+              title="가운데 정렬"
+              onClick={() => editor.chain().focus().setTextAlign('center').run()}
+            >
+              <AlignCenter size={23} />
+            </button>
+
+            <button
+              title="오른쪽 정렬"
+              onClick={() => editor.chain().focus().setTextAlign('right').run()}
+            >
+              <AlignRight size={23} />
+            </button>
+
             <button
               title="줄바꿈" onClick={() => editor.chain().focus().setHardBreak().run()}
             >

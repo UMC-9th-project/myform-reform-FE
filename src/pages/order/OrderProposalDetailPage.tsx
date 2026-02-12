@@ -23,7 +23,7 @@ const OrderProposalDetailPage = () => {
     isLoading,
     isError,
     isLiked,
-    setIsLiked,
+    handleLikeClick,
     activeTab,
     setActiveTab,
     sortBy,
@@ -77,9 +77,6 @@ const OrderProposalDetailPage = () => {
 
   const handleRequest = () => {};
 
-  const handleLike = (liked: boolean) => {
-    setIsLiked(liked);
-  };
 
   const handleMorePhotoReviewsClick = () => {
     // 사진 후기 더보기 로직
@@ -114,7 +111,7 @@ const OrderProposalDetailPage = () => {
                 description: proposalDetail.content,
               }}
               isLiked={isLiked}
-              onLikeClick={handleLike}
+              onLikeClick={handleLikeClick}
               onShareClick={handleShare}
               onRequestClick={handleRequest}
             />
