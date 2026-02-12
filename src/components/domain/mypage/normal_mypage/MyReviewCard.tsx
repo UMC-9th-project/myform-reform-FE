@@ -15,6 +15,7 @@ export interface ProductOrder {
   targetType?: 'ITEM' | 'REQUEST';
   targetId?: string;
   orderId?: string,
+  chat_room_id?: string;
   
 }
 
@@ -52,7 +53,7 @@ const MyReviewCard: React.FC<SalesCardProps> = ({
               ) : item.targetType === 'REQUEST' ? (
                 <button
                   className="flex items-center gap-3 hover:text-black transition-colors"
-                  onClick={() => onChatClick?.(item.targetId!)} // targetId로 이동
+                  onClick={() => onChatClick?.(item.chat_room_id!)} // targetId로 이동
                 >
                   채팅 바로가기<span>❯</span>
                 </button>

@@ -46,6 +46,7 @@ const ReviewList = () => {
           targetType: o.targetType === 'ITEM' || o.targetType === 'REQUEST' ? o.targetType : undefined,// "ITEM" | "REQUEST"
           targetId: o.targetId,
           orderId: o.orderId,
+          chat_room_id: o.chat_room_id
         }));
         setWritableReviews(mapped);
       } catch (err) {
@@ -135,8 +136,8 @@ const ReviewList = () => {
               data={writableReviews}
               onDetailClick={handleDetailClick}
               onWriteReviewClick={handleWriteReviewClick}
-              onChatClick={(targetId: string) => {
-                navigate(`/chat/normal/${targetId}`); }}
+              onChatClick={(chatRoomId: string) => {
+                navigate(`/chat/normal/${chatRoomId}`); }}
             />
           )}
         </div>
