@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Input from '../../components/domain/purchase/Input';
 import Button2 from '../../components/common/button/Button2';
+import useAuthStore from '../../stores/useAuthStore';
+import ReformerPurchaseBlockModal from '../../components/common/Modal/ReformerPurchaseBlockModal';
 
 const mockProduct = {
   id: 1,
@@ -23,6 +25,9 @@ const MarketPurchasePage = () => {
   const product = location.state?.product || mockProduct;
   
   const [activeTab, setActiveTab] = useState<'existing' | 'new'>('existing');
+  const [showReformerModal, setShowReformerModal] = useState(false);
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
   
   const productPrice = product.price;
   const optionPrice = product.optionPrice || 0;
@@ -34,6 +39,10 @@ const MarketPurchasePage = () => {
   };
 
   const handlePayment = () => {
+    if (isReformer) {
+      setShowReformerModal(true);
+      return;
+    }
     
     const orderNumber = Date.now().toString().padStart(11, '0');
     
@@ -286,6 +295,11 @@ const MarketPurchasePage = () => {
           </div>
         </div>
       </div>
+
+      <ReformerPurchaseBlockModal
+        isOpen={showReformerModal}
+        onClose={() => setShowReformerModal(false)}
+      />
     </div>
   );
 };

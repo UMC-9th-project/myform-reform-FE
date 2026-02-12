@@ -22,7 +22,8 @@ import type { OptionItem as OptionItemType } from '../../components/common/produ
 import { useWish } from '../../hooks/domain/wishlist/useWish';
 import { getWishList } from '../../api/wishlist';
 import useAuthStore from '../../stores/useAuthStore';
-import { useAddToCart } from '../../hooks/domain/cart/useAddToCart';  
+import { useAddToCart } from '../../hooks/domain/cart/useAddToCart';
+import ReformerPurchaseBlockModal from '../../components/common/Modal/ReformerPurchaseBlockModal';  
 
 const formatPrice = (price: number) => {
   return price.toLocaleString('ko-KR');
@@ -46,6 +47,8 @@ const MarketProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [activeSection, setActiveSection] = useState<'info' | 'reformer' | 'review'>('info');
   const [localLiked, setLocalLiked] = useState<boolean | null>(null);
+  const [showReformerModal, setShowReformerModal] = useState(false);
+  const [modalMessageType, setModalMessageType] = useState<'wish' | 'cart' | 'purchase' | 'chat'>('purchase');
   
   const infoRef = useRef<HTMLDivElement>(null);
   const reformerRef = useRef<HTMLDivElement>(null);
@@ -88,6 +91,8 @@ const MarketProductDetailPage = () => {
     }
 
     if (isReformer) {
+      setModalMessageType('wish');
+      setShowReformerModal(true);
       return;
     }
 
@@ -372,7 +377,6 @@ const MarketProductDetailPage = () => {
                 <Button
                   variant="white"
                   onClick={handleWishClick}
-                  disabled={isReformer}
                   className="flex items-center justify-center gap-2 flex-1 h-[4.625rem]"
                 >
                   <LikeButton
@@ -388,6 +392,12 @@ const MarketProductDetailPage = () => {
                   onClick={async () => {
                     if (!accessToken) {
                       navigate('/login/type');
+                      return;
+                    }
+
+                    if (isReformer) {
+                      setModalMessageType('cart');
+                      setShowReformerModal(true);
                       return;
                     }
 
@@ -469,6 +479,11 @@ const MarketProductDetailPage = () => {
                <Button
                   variant="white"
                   onClick={() => {
+                    if (isReformer) {
+                      setModalMessageType('chat');
+                      setShowReformerModal(true);
+                      return;
+                    }
                     navigate(`/market/product/${id}/chat`);
                   }}
                   className="flex items-center justify-center gap-2 flex-1 h-[4.625rem]"
@@ -482,6 +497,12 @@ const MarketProductDetailPage = () => {
 
               <button 
                 onClick={() => {
+                  if (isReformer) {
+                    setModalMessageType('purchase');
+                    setShowReformerModal(true);
+                    return;
+                  }
+
                   const allOptionsSelected = optionGroups.every(group => 
                     selectedOptions[group.option_group_id]
                   );
@@ -718,6 +739,12 @@ const MarketProductDetailPage = () => {
           </div>
         </div>
       </div>
+
+      <ReformerPurchaseBlockModal
+        isOpen={showReformerModal}
+        onClose={() => setShowReformerModal(false)}
+        messageType={modalMessageType}
+      />
     </div>
   );
   
