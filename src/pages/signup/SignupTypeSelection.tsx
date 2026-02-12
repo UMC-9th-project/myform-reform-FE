@@ -1,5 +1,6 @@
 import UserTypeSelector from '../../components/domain/signup/usertype_selector/UserTypeSelector';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { startKakaoLogin } from '../../api/auth';
 
 import logo2 from '../../assets/logos/logo2.svg';
 import customer from '../../components/domain/signup/usertype_selector/image/customer-icon.png';
@@ -8,12 +9,24 @@ import reformer from '../../components/domain/signup/usertype_selector/image/ref
 const SignupTypeSelection = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const isLoginMode = location.pathname === '/login/type';
+  const isKakaoLogin = searchParams.get('kakao') === 'true';
 
   const handleTypeSelect = (userType: 'user' | 'reformer') => {
+    console.log('타입 선택:', userType);
+    console.log('isLoginMode:', isLoginMode);
+    console.log('isKakaoLogin:', isKakaoLogin);
+    
     if (isLoginMode) {
       navigate(userType === 'user' ?  '/login' : '/login/reformer');
+    } else if (isKakaoLogin) {
+      // 카카오 로그인인 경우 선택한 타입으로 카카오 로그인 시작
+      // 회원가입이 필요한 경우 /kakao/signup으로 리다이렉트
+      console.log('카카오 로그인 시작:', userType);
+      startKakaoLogin(userType, '/kakao/signup');
     } else {
+      // 일반 이메일 회원가입인 경우
       navigate(`/signup/${userType}-form`);
     }
   };

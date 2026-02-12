@@ -25,7 +25,8 @@ const ReformerRegistration = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 회원가입 폼에서 전달받은 회원가입 정보
-  const signupData = (location.state as { signupData?: SignupRequest })?.signupData;
+  const signupData = (location.state as { signupData?: SignupRequest; redirectUrl?: string })?.signupData;
+  const redirectUrl = (location.state as { signupData?: SignupRequest; redirectUrl?: string })?.redirectUrl;
 
   const {
     signup,
@@ -98,7 +99,8 @@ const ReformerRegistration = () => {
       signupData,
       portfolioPhotos: imageFiles, // 스펙에 맞게 필드명 변경
       description: introduction.trim(), // 스펙에 맞게 필드명 변경
-      ...(businessNumber.trim() ? { businessNumber: businessNumber.trim() } : {}),  
+      ...(businessNumber.trim() ? { businessNumber: businessNumber.trim() } : {}),
+      ...(redirectUrl ? { redirectUrl } : {}),
     });
   };
 

@@ -1,19 +1,20 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import LoginForm from '../../components/domain/login/Form/LoginForm';
 import logo2 from '../../assets/logos/logo2.svg';
 import kakaologin from '../../assets/login/kakaologin.svg';
-
-const handleKakaoLogin = () => {
-  window.open(
-    'https://kauth.kakao.com/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code',
-    '_self'
-  );
-};
+import { startKakaoLogin } from '../../api/auth';
 
 const Login = () => {
+  const location = useLocation();
+  const isReformer = location.pathname.includes('reformer');
+  
+  const handleKakaoLogin = () => {
+    const mode = isReformer ? 'reformer' : 'user';
+    startKakaoLogin(mode);
+  };
     return (
         <div className=" w-[543px] mx-auto flex flex-col justify-center items-center h-screen">
-          <div className="mb-[1.5625rem] py-[2.16688rem]">
+          <div className="mb-[1.5625rem] py-[2.16688rem]" >
             <img src={logo2} alt="logo" />
           </div>
     

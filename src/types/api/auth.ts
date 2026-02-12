@@ -36,7 +36,7 @@ export interface SignupRequest {
   email: string;
   nickname: string;
   phoneNumber: string;
-  registration_type: 'LOCAL';
+  registration_type: 'LOCAL' | 'KAKAO';
   oauthId?: string; // 로컬 회원가입 시 선택적
   password: string;
   over14YearsOld: boolean;
