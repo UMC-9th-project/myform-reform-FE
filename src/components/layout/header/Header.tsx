@@ -27,9 +27,11 @@ export default function Header() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [isComposing, setIsComposing] = useState(false);
 
   const searchRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const recommendedSearches = [
     '야구 유니폼',
@@ -77,9 +79,11 @@ export default function Header() {
     handleSearchSubmit(term);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleSearchSubmit(searchValue);
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !isComposing) {
+      e.preventDefault();
+      const currentValue = inputRef.current?.value || searchValue;
+      handleSearchSubmit(currentValue);
     }
   };
 
@@ -119,18 +123,28 @@ export default function Header() {
         {/* 검색 */}
         <div className="relative w-[571px]" ref={searchRef}>
           <input
+            ref={inputRef}
             type="text"
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchValue(e.target.value)}
+            onCompositionStart={() => setIsComposing(true)}
+            onCompositionEnd={(e: React.CompositionEvent<HTMLInputElement>) => {
+              setIsComposing(false);
+              const finalValue = e.currentTarget.value;
+              setSearchValue(finalValue);
+            }}
             onClick={handleSearchClick}
             onFocus={handleSearchClick}
-            onKeyDown={handleKeyDown}
+            onKeyPress={handleKeyPress}
             placeholder="어떤 리폼 스타일을 찾으세요?"
             className="body-b1-rg w-full py-[0.875rem] pl-[1.5rem] pr-[3rem] rounded-[6.25rem] border border-[var(--color-mint-1)] text-[var(--color-black)] placeholder:text-[var(--color-gray-40)] focus:outline-none focus:border-[var(--color-mint-1)] transition-colors"
           />
           <div 
             className="absolute right-[1.5rem] top-1/2 -translate-y-1/2 cursor-pointer"
-            onClick={() => handleSearchSubmit(searchValue)}
+            onClick={() => {
+              const currentValue = inputRef.current?.value || searchValue;
+              handleSearchSubmit(currentValue);
+            }}
           >
             <img src={search} alt="search" className="w-6.5 h-6.5" />
           </div>
