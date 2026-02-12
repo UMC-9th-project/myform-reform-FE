@@ -1,0 +1,250 @@
+import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getWishList, deleteWish } from '../../../api/wishlist';
+import { getReformRequestDetail } from '../../../api/order/reformRequest';
+import { getReformProposalDetail } from '../../../api/order/reformProposal';
+import useAuthStore from '../../../stores/useAuthStore';
+import type { WishlistItem } from '@/types/api/wishlist/wishlist';
+import type { WishType, GetWishListResponse, WishItem } from '@/types/api/wishlist/wish';
+import type { MarketCardItem } from '@/components/common/card/MarketCard';
+import type { WishlistMenu } from '@/types/domain/wishlist/wishlist';
+import type { GetReformRequestDetailResponse } from '@/types/api/order/reformRequest';
+import type { GetReformProposalDetailResponse } from '@/types/api/order/reformProposal';
+
+const getMenuFromUrl = (searchParams: URLSearchParams): WishlistMenu => {
+  const menuParam = searchParams.get('menu');
+  if (menuParam === 'wishlist' || menuParam === 'market' || menuParam === 'custom') {
+    return menuParam;
+  }
+  return 'market';
+};
+
+const getWishType = (menu: WishlistMenu, isReformer: boolean): WishType => {
+  switch (menu) {
+    case 'market':
+      return 'ITEM';
+    case 'custom':
+      return isReformer ? 'REQUEST' : 'PROPOSAL';
+    default:
+      return 'ITEM';
+  }
+};
+
+export const useWishlistPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const userRole = useAuthStore((state) => state.role);
+  const accessToken = useAuthStore((state) => state.accessToken);
+  const isReformer = userRole === 'reformer';
+  const activeMenuFromUrl = getMenuFromUrl(searchParams);
+  const initialMenu = isReformer && activeMenuFromUrl === 'market' ? 'custom' : activeMenuFromUrl;
+  const [activeMenu, setActiveMenu] = useState<WishlistMenu>(initialMenu);
+
+  useEffect(() => {
+    const menuFromUrl = getMenuFromUrl(searchParams);
+    if (isReformer && menuFromUrl === 'market') {
+      setActiveMenu('custom');
+      setSearchParams((prev: URLSearchParams) => {
+        const newParams = new URLSearchParams(prev);
+        newParams.set('menu', 'custom');
+        return newParams;
+      });
+    } else if (menuFromUrl !== activeMenu) {
+      setActiveMenu(menuFromUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, isReformer]);
+
+  const { data: wishData, isLoading, error: wishError } = useQuery({
+    queryKey: ['wishlist', activeMenu, accessToken, isReformer],
+    queryFn: () => getWishList(getWishType(activeMenu, isReformer)),
+    enabled: !!accessToken && !(activeMenu === 'market' && isReformer),
+    placeholderData: (previousData: GetWishListResponse | undefined) => previousData,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (wishError && typeof wishError === 'object' && 'response' in wishError) {
+      const axiosError = wishError as { response?: { status?: number } };
+      if (axiosError.response?.status === 401) {
+        navigate('/login/type');
+      }
+    }
+  }, [wishError, navigate]);
+
+
+  const combinedWishData = useMemo(() => {
+    return wishData;
+  }, [wishData]);
+
+  const requestItemIds = useMemo(() => {
+    if (activeMenu !== 'custom' || !combinedWishData?.success?.list) {
+      return [];
+    }
+    return combinedWishData.success.list
+      .filter((item) => item.wishType === 'REQUEST')
+      .map((item) => item.itemId);
+  }, [combinedWishData, activeMenu]);
+
+  const proposalItemIds = useMemo(() => {
+    if (activeMenu !== 'custom' || !combinedWishData?.success?.list) {
+      return [];
+    }
+    return combinedWishData.success.list
+      .filter((item) => item.wishType === 'PROPOSAL')
+      .map((item) => item.itemId);
+  }, [combinedWishData, activeMenu]);
+
+  const requestDetailsQueries = useQueries({
+    queries: requestItemIds.map((itemId) => ({
+      queryKey: ['reform-request-detail', itemId] as const,
+      queryFn: () => getReformRequestDetail(itemId),
+      enabled: !!itemId && !!accessToken,
+      staleTime: 5 * 60 * 1000,
+      placeholderData: (previousData: GetReformRequestDetailResponse | undefined) => previousData,
+    })),
+  });
+
+  const proposalDetailsQueries = useQueries({
+    queries: proposalItemIds.map((itemId) => ({
+      queryKey: ['reform-proposal-detail', itemId] as const,
+      queryFn: () => getReformProposalDetail(itemId),
+      enabled: !!itemId && !!accessToken,
+      staleTime: 5 * 60 * 1000,
+      placeholderData: (previousData: GetReformProposalDetailResponse | undefined) => previousData,
+    })),
+  });
+
+  const requestDetailsMap = useMemo(() => {
+    const map = new Map<string, { minBudget: number; maxBudget: number; firstImage?: string }>();
+    requestDetailsQueries.forEach((query, index) => {
+      const itemId = requestItemIds[index];
+      if (itemId && query.data?.success) {
+        const images = query.data.success.images || [];
+        const sortedImages = [...images].sort((a, b) => a.photo_order - b.photo_order);
+        const firstImage = sortedImages.length > 0 ? sortedImages[0].photo : undefined;
+        
+        map.set(itemId, {
+          minBudget: query.data.success.minBudget,
+          maxBudget: query.data.success.maxBudget,
+          firstImage,
+        });
+      }
+    });
+    return map;
+  }, [requestDetailsQueries, requestItemIds]);
+
+  const proposalDetailsMap = useMemo(() => {
+    const map = new Map<string, { avgStar: number; reviewCount: number; firstImage?: string }>();
+    proposalDetailsQueries.forEach((query, index) => {
+      const itemId = proposalItemIds[index];
+      if (itemId && query.data?.success) {
+        const profile = query.data.success.profile;
+        const images = query.data.success.images || [];
+        const sortedImages = [...images].sort((a, b) => a.photo_order - b.photo_order);
+        const firstImage = sortedImages.length > 0 ? sortedImages[0].photo : undefined;
+        
+        map.set(itemId, {
+          avgStar: profile?.avgStar ?? 0,
+          reviewCount: profile?.reviewCount ?? 0,
+          firstImage,
+        });
+      }
+    });
+    return map;
+  }, [proposalDetailsQueries, proposalItemIds]);
+
+  const queryClient = useQueryClient();
+
+  const deleteWishMutation = useMutation({
+    mutationFn: deleteWish,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['wishlist', activeMenu] });
+    },
+  });
+
+  const transformWishItems = (): (WishlistItem & { itemId: string; wishType: WishType })[] => {
+    if (!combinedWishData?.success?.list) {
+      return [];
+    }
+
+    return combinedWishData.success.list.map((item, index) => {
+      const itemWithImages = item as WishItem & { images?: string[] };
+      const image = itemWithImages.images && Array.isArray(itemWithImages.images) && itemWithImages.images.length > 0
+        ? itemWithImages.images[0]
+        : item.content || '';
+
+      return {
+        id: parseInt(item.itemId.replace(/-/g, '').substring(0, 8), 16) || index + 1,
+        itemId: item.itemId,
+        wishType: item.wishType,
+        image,
+        title: item.title,
+        price: item.price,
+        rating: item.avgStar ?? 0,
+        reviewCount: item.reviewCount ?? 0,
+        seller: item.name,
+      };
+    });
+  };
+
+  const transformMarketItems = (): MarketCardItem[] => {
+    if (!combinedWishData?.success?.list) {
+      return [];
+    }
+
+    return combinedWishData.success.list
+      .filter((item) => item.wishType === 'ITEM')
+      .map((item) => {
+        const itemWithImages = item as WishItem & { images?: string[] };
+        const thumbnail = itemWithImages.images && Array.isArray(itemWithImages.images) && itemWithImages.images.length > 0
+          ? itemWithImages.images[0]
+          : item.content || '';
+
+        return {
+          item_id: item.itemId,
+          thumbnail,
+          title: item.title,
+          price: item.price,
+          star: item.avgStar ?? 0,
+          review_count: item.reviewCount ?? 0,
+          owner_nickname: item.name,
+          is_wished: true,
+        };
+      });
+  };
+
+  const handleRemoveFromWishlist = (item: WishlistItem & { itemId: string; wishType: WishType }) => {
+    deleteWishMutation.mutate({
+      type: item.wishType,
+      itemId: item.itemId,
+    });
+  };
+
+  const handleMenuChange = (menu: WishlistMenu) => {
+    setActiveMenu(menu);
+    setSearchParams((prev: URLSearchParams) => {
+      const newParams = new URLSearchParams(prev);
+      newParams.set('menu', menu);
+      return newParams;
+    });
+  };
+
+  const currentItems = transformWishItems();
+  const marketItems = transformMarketItems();
+
+  return {
+    activeMenu,
+    wishData: combinedWishData,
+    isLoading,
+    isReformer,
+    currentItems,
+    marketItems,
+    requestDetailsMap,
+    proposalDetailsMap,
+    handleMenuChange,
+    handleRemoveFromWishlist,
+  };
+};
