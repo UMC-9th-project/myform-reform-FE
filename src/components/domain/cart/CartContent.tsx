@@ -46,7 +46,7 @@ const CartContent = ({
 }: CartContentProps) => {
   return (
     <div className="px-[3.125rem] flex gap-[1.25rem] flex-row">
-      <div className="flex-1 h-[56.875rem] pt-[1.125rem] flex flex-col gap-[0.75rem] overflow-hidden">
+      <div className="flex-1 h-[56.875rem] pt-[1.125rem] flex flex-col gap-[0.75rem]  overflow-hidden">
         <CartHeader
           isAllChecked={isAllChecked}
           checkedCount={checkedCount}
