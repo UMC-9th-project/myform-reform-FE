@@ -226,23 +226,83 @@ const LandingPage = () => {
       <div className="w-full min-h-screen bg-white relative py-40 px-40 flex flex-col items-center justify-center">
         <h2 className="heading-h2-bd text-center mb-12">내폼리폼의 서비스 화면을 소개해요!</h2>
         
-        <div className="bg-[var(--color-mint-5)] px-8 py-3 rounded-full mb-12">
-          <span className="body-b1-sb">리폼 마켓</span>
-        </div>
-        
-        <p className="body-b0-rg text-[rgba(55,69,83,1)] text-center mb-10 max-w-2xl" style={{ fontSize: '20px', lineHeight: '150%', letterSpacing: '0%' }}>
-          소비자는 원하는 <span className="body-b0-sb">상품을 구매</span>하고,<br />
-          리폼러는 본인 작업물을 판매할 수 있어요.
-        </p>
+        {currentSlide === 1 ? (
+          <>
+            <div className="bg-[var(--color-mint-5)] px-8 py-3 rounded-full mb-12">
+              <span className="body-b1-sb">주문제작 (소비자)</span>
+            </div>
+            
+            <p className="body-b0-rg text-[rgba(55,69,83,1)] text-center mb-10 max-w-2xl" style={{ fontSize: '20px', lineHeight: '150%', letterSpacing: '0%' }}>
+              소비자는 원하는 리폼 작업(사진·설명)을 등록하여<br />
+              리폼러에게 견적을 받을 수 있습니다.
+            </p>
+          </>
+        ) : currentSlide === 2 ? (
+          <>
+            <div className="bg-[var(--color-mint-5)] px-8 py-3 rounded-full mb-12">
+              <span className="body-b1-sb">주문제작 (리폼러)</span>
+            </div>
+            
+            <p className="body-b0-rg text-[rgba(55,69,83,1)] text-center mb-10 max-w-2xl" style={{ fontSize: '20px', lineHeight: '150%', letterSpacing: '0%' }}>
+              주문제작 판매글 게시 및 요청글에 맞는 견적서 제안을 할 수 있습니다.<br />
+              판매 외 추가수익 창출이 가능한 기회로 활용됩니다.
+            </p>
+          </>
+        ) : currentSlide === 3 ? (
+          <>
+            <div className="bg-[var(--color-mint-5)] px-8 py-3 rounded-full mb-12">
+              <span className="body-b1-sb">리폼러 찾기</span>
+            </div>
+            
+            <p className="body-b0-rg text-[rgba(55,69,83,1)] text-center mb-10 max-w-2xl" style={{ fontSize: '20px', lineHeight: '150%', letterSpacing: '0%' }}>
+              리폼러를 직접 검색해서 찾고,<br />
+              피드 탐색을 통해 내 취향에 맞는 리폼러를 찾을 수 있어요.
+            </p>
+          </>
+        ) : currentSlide === 4 ? (
+          <>
+            <div className="bg-[var(--color-mint-5)] px-8 py-3 rounded-full mb-12">
+              <span className="body-b1-sb">리폼러 프로필</span>
+            </div>
+            
+            <p className="body-b0-rg text-[rgba(55,69,83,1)] text-center mb-10 max-w-2xl" style={{ fontSize: '20px', lineHeight: '150%', letterSpacing: '0%' }}>
+              작업물, 판매 상품, 후기를 아카이빙할 수 있는 공간을 제공합니다.<br />
+              소비자는 리폼러의 실력, 후기 확인이 가능합니다.
+            </p>
+          </>
+        ) : currentSlide === 5 ? (
+          <>
+            <div className="bg-[var(--color-mint-5)] px-8 py-3 rounded-full mb-12">
+              <span className="body-b1-sb">실시간 채팅</span>
+            </div>
+            
+            <p className="body-b0-rg text-[rgba(55,69,83,1)] text-center mb-10 max-w-2xl" style={{ fontSize: '20px', lineHeight: '150%', letterSpacing: '0%' }}>
+              리폼러-구매자 간 원활한 소통 창구를 제공합니다.<br />
+              상담 및 리폼 진행 상황을 확인할 수 있습니다.
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="bg-[var(--color-mint-5)] px-8 py-3 rounded-full mb-12">
+              <span className="body-b1-sb">리폼 마켓</span>
+            </div>
+            
+            <p className="body-b0-rg text-[rgba(55,69,83,1)] text-center mb-10 max-w-2xl" style={{ fontSize: '20px', lineHeight: '150%', letterSpacing: '0%' }}>
+              소비자는 원하는 <span className="body-b0-sb">상품을 구매</span>하고,<br />
+              리폼러는 본인 작업물을 판매할 수 있어요.
+            </p>
+          </>
+        )}
 
         {/* 슬라이드 컨테이너 */}
-        <div className="relative w-full max-w-[1400px] mb-10 mx-auto" style={{ paddingTop: '120px', paddingBottom: '120px' }}>
+        <div className="relative w-full max-w-[1400px] mb-6 mx-auto" style={{ paddingTop: '20px', paddingBottom: '40px' }}>
           {/* 슬라이드 이미지 */}
-          <div className="relative w-full" style={{ overflowX: 'hidden', overflowY: 'visible', minHeight: '800px' }}>
+          <div className="relative w-full flex items-center justify-center" style={{ overflowX: 'hidden', overflowY: 'visible', minHeight: '600px' }}>
             <div 
               className="flex items-center transition-transform duration-500 ease-in-out"
               style={{ 
-                transform: `translateX(calc(25% - ${currentSlide * 50}%))`
+                transform: `translateX(calc(25% - ${currentSlide * 50}%))`,
+                height: '100%'
               }}
             >
               {slides.map((slide, index) => {
@@ -257,7 +317,8 @@ const LandingPage = () => {
                     className="flex-shrink-0 flex items-center justify-center transition-all duration-500"
                     style={{ 
                       width: '50%',
-                      padding: '0 2%',
+                      padding: '0 1%',
+                      height: '100%',
                       opacity: isVisible ? 1 : 0.3,
                       transform: isActive ? 'scale(1.3)' : (isPrev || isNext) ? 'scale(0.85)' : 'scale(0.8)',
                       zIndex: isActive ? 10 : 1
@@ -266,8 +327,8 @@ const LandingPage = () => {
                     <img 
                       src={slide} 
                       alt={`내폼리폼 서비스 화면 ${index + 1}`} 
-                      className="w-full h-auto object-contain drop-shadow-lg"
-                      style={{ maxHeight: 'none' }}
+                      className="h-auto object-contain drop-shadow-lg"
+                      style={{ maxHeight: 'none', margin: '0 auto', display: 'block' }}
                     />
                   </div>
                 );
