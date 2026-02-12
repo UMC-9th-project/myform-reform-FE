@@ -123,11 +123,7 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ type, nickname, payload, onFi
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 mt-4 mb-4 body-b4-sb">
-          <span>수수료 별도안내</span>
-          <div className="w-3.5 h-3.5 text-white bg-[var(--color-gray-50)] rounded-full etc-c2-bd flex items-center justify-center cursor-pointer">
-            ?
-          </div>
+        <div className="flex items-center mt-2 mb-2 body-b4-sb">
         </div>
 
         <button
