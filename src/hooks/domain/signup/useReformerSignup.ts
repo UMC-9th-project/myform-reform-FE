@@ -9,7 +9,8 @@ interface UseReformerSignupReturn {
     signupData: SignupRequest;
     portfolioPhotos: File[];
     description: string;
-    businessNumber: string;
+    businessNumber?: string;
+    redirectUrl?: string;
   }) => void;
   isLoading: boolean;
   error: string | null;
@@ -25,36 +26,53 @@ export const useReformerSignup = (): UseReformerSignupReturn => {
       portfolioPhotos: File[];
       description: string;
       businessNumber?: string;
+      redirectUrl?: string;
     }) => {
       const requestData: ReformerSignupRequest = {
         data: data.signupData,
         portfolioPhotos: data.portfolioPhotos,
         description: data.description,
-        ...(data.businessNumber ? { businessNumber: data.businessNumber } : {}),
+        ...(data.businessNumber !== undefined ? { businessNumber: data.businessNumber } : {}),
       };
       return signupReformer(requestData);
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       if (data.resultType === 'SUCCESS' && data.success) {
         // 회원가입 성공 시 accessToken 저장
         if (data.success.accessToken) {
           setAccessToken(data.success.accessToken, 'reformer');
         }
-        // 리폼러 회원가입 완료 페이지로 이동
-        navigate('/signup/reformer-complete');
+        // redirectUrl이 있으면 해당 URL로 이동, 없으면 완료 페이지로 이동
+        if (variables.redirectUrl) {
+          navigate(variables.redirectUrl);
+        } else {
+          navigate('/signup/reformer-complete');
+        }
       }
     },
     onError: (err) => {
       console.error('리폼러 회원가입 실패:', err);
+      const axiosError = err as {
+        response?: {
+          status?: number;
+          data?: {
+            message?: string;
+            error?: {
+              message?: string;
+              code?: string;
+            };
+          };
+        };
+      };
+      console.error('에러 상세:', JSON.stringify(axiosError.response?.data, null, 2));
+      if (axiosError.response?.data?.error) {
+        console.error('에러 메시지:', axiosError.response.data.error.message);
+        console.error('에러 코드:', axiosError.response.data.error.code);
+      }
     },
   });
 
-  const signup = (data: {
-    signupData: SignupRequest;
-    portfolioPhotos: File[];
-    description: string;
-    businessNumber?: string;
-  }) => {
+  const signup: UseReformerSignupReturn['signup'] = (data) => {
     signupMutation(data);
   };
 
