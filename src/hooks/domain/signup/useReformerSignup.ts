@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { signupReformer } from '../../../api/auth';
+import { uploadImage, uploadImages } from '../../../api/upload';
 import type { ReformerSignupRequest, SignupRequest } from '../../../types/api/auth';
 import useAuthStore from '../../../stores/useAuthStore';
 
@@ -11,7 +12,7 @@ interface UseReformerSignupReturn {
     description: string;
     businessNumber?: string;
     redirectUrl?: string;
-  }) => void;
+  }) => Promise<void>;
   isLoading: boolean;
   error: string | null;
 }
@@ -21,16 +22,45 @@ export const useReformerSignup = (): UseReformerSignupReturn => {
   const { setAccessToken } = useAuthStore();
 
   const { mutate: signupMutation, isPending: isLoading, error: mutationError } = useMutation({
-    mutationFn: (data: {
+    mutationFn: async (data: {
       signupData: SignupRequest;
       portfolioPhotos: File[];
       description: string;
       businessNumber?: string;
       redirectUrl?: string;
     }) => {
+      // 1. 먼저 이미지 파일들을 업로드하여 URL 배열을 받아옴
+      let portfolioPhotoUrls: string[] = [];
+      
+      if (data.portfolioPhotos.length > 0) {
+        try {
+          if (data.portfolioPhotos.length === 1) {
+            // 단일 이미지 업로드
+            const uploadResult = await uploadImage(data.portfolioPhotos[0]);
+            if (uploadResult.resultType === 'SUCCESS' && uploadResult.success) {
+              portfolioPhotoUrls = [uploadResult.success.url];
+            } else {
+              throw new Error('이미지 업로드 실패');
+            }
+          } else {
+            // 여러 이미지 업로드
+            const uploadResult = await uploadImages(data.portfolioPhotos);
+            if (uploadResult.resultType === 'SUCCESS' && uploadResult.success) {
+              portfolioPhotoUrls = uploadResult.success.url;
+            } else {
+              throw new Error('이미지 업로드 실패');
+            }
+          }
+        } catch (error) {
+          console.error('이미지 업로드 중 오류:', error);
+          throw new Error('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+        }
+      }
+
+      // 2. 업로드된 URL 배열을 사용하여 회원가입 요청
       const requestData: ReformerSignupRequest = {
         data: data.signupData,
-        portfolioPhotos: data.portfolioPhotos,
+        portfolioPhotos: portfolioPhotoUrls, // URL 배열로 전달
         description: data.description,
         ...(data.businessNumber !== undefined ? { businessNumber: data.businessNumber } : {}),
       };
@@ -72,8 +102,17 @@ export const useReformerSignup = (): UseReformerSignupReturn => {
     },
   });
 
-  const signup: UseReformerSignupReturn['signup'] = (data) => {
-    signupMutation(data);
+  const signup: UseReformerSignupReturn['signup'] = async (data) => {
+    return new Promise((resolve, reject) => {
+      signupMutation(data, {
+        onSuccess: () => {
+          resolve();
+        },
+        onError: (error) => {
+          reject(error);
+        },
+      });
+    });
   };
 
   const error = mutationError

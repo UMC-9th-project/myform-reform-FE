@@ -73,7 +73,7 @@ const ReformerRegistration = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!agreementChecked) {
       alert('이용약관에 동의해주세요.');
       return;
@@ -94,14 +94,20 @@ const ReformerRegistration = () => {
       return;
     }
 
-    // 리폼러 회원가입 API 호출 (회원가입 정보 + 포트폴리오 + 자기소개)
-    signup({
-      signupData,
-      portfolioPhotos: imageFiles, // 스펙에 맞게 필드명 변경
-      description: introduction.trim(), // 스펙에 맞게 필드명 변경
-      ...(businessNumber.trim() ? { businessNumber: businessNumber.trim() } : {}),
-      ...(redirectUrl ? { redirectUrl } : {}),
-    });
+    try {
+      // 리폼러 회원가입 API 호출 (회원가입 정보 + 포트폴리오 + 자기소개)
+      // signup 함수 내부에서 이미지 업로드 후 URL로 변환하여 전송
+      await signup({
+        signupData,
+        portfolioPhotos: imageFiles,
+        description: introduction.trim(),
+        ...(businessNumber.trim() ? { businessNumber: businessNumber.trim() } : {}),
+        ...(redirectUrl ? { redirectUrl } : {}),
+      });
+    } catch (error) {
+      // 에러는 useReformerSignup 훅에서 처리됨
+      console.error('회원가입 실패:', error);
+    }
   };
 
   const isNextButtonEnabled = currentStep === 1 ? images.length > 0 : currentStep === 2 ? introduction.trim().length > 0 : true;
