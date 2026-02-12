@@ -47,9 +47,7 @@ const SignupTypeSelection = () => {
         />
       </div>
 
-      <div className="body-b1-rg flex my-[1.8125rem] text-[var(--color-gray-60)]">
-        <p>가입 이후에도 원하는 상태로 언제든 변경 가능해요!</p>
-      </div>
+      
     </div>
   );
 };

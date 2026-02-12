@@ -9,7 +9,7 @@ interface UseReformerSignupReturn {
     signupData: SignupRequest;
     portfolioPhotos: File[];
     description: string;
-    businessNumber: string;
+    businessNumber?: string;
   }) => void;
   isLoading: boolean;
   error: string | null;
@@ -49,12 +49,7 @@ export const useReformerSignup = (): UseReformerSignupReturn => {
     },
   });
 
-  const signup = (data: {
-    signupData: SignupRequest;
-    portfolioPhotos: File[];
-    description: string;
-    businessNumber?: string;
-  }) => {
+  const signup: UseReformerSignupReturn['signup'] = (data) => {
     signupMutation(data);
   };
 

@@ -20,7 +20,7 @@ const Login = () => {
           <div className="text-center heading-h4-bd mb-[2.8125rem]">
             <p>로그인</p>
           </div>
-    
+          
           <LoginForm />
           <button
             type="button"

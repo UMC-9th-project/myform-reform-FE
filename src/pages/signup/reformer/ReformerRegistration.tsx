@@ -85,14 +85,20 @@ const ReformerRegistration = () => {
     }
 
     // 이미지 파일 배열 추출
-    const imageFiles = images.map((img) => img.file);
+    const imageFiles = images.map((img) => img.file).filter((file): file is File => file instanceof File);
+    
+    // 이미지가 없는 경우 체크
+    if (imageFiles.length === 0) {
+      alert('리폼 작업물 사진을 업로드해주세요.');
+      return;
+    }
 
     // 리폼러 회원가입 API 호출 (회원가입 정보 + 포트폴리오 + 자기소개)
     signup({
       signupData,
       portfolioPhotos: imageFiles, // 스펙에 맞게 필드명 변경
       description: introduction.trim(), // 스펙에 맞게 필드명 변경
-      businessNumber: businessNumber.trim() || '',  
+      ...(businessNumber.trim() ? { businessNumber: businessNumber.trim() } : {}),  
     });
   };
 
