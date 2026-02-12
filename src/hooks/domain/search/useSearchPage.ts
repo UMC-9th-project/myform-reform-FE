@@ -173,6 +173,7 @@ export const useSearchPage = () => {
           imgSrc: item.imageUrl || item.thumbnail || '',
           title: item.title,
           priceRange: priceRange || undefined,
+          isWished: item.is_wished || false,
         };
       });
     }
@@ -180,7 +181,6 @@ export const useSearchPage = () => {
     return [];
   }, [requestSearchData, hasQuery, isRequestSearchLoading, qFromUrl]);
 
-  // 필터링된 제안서 목록 (검색어로 필터링)
   const filteredProposals = useMemo(() => {
     if (!hasQuery || !proposalSearchData?.success) {
       return [];
@@ -199,7 +199,6 @@ export const useSearchPage = () => {
     return [];
   }, [proposalSearchData, hasQuery, qFromUrl]);
 
-  // 각 제안서의 ownerName으로 프로필 조회
   const profileResults = useQueries({
     queries: filteredProposals.map((item: SearchItem) => {
       const ownerName = item.ownerName || item.authorName || item.nickname || item.owner_nickname || '';
@@ -224,7 +223,6 @@ export const useSearchPage = () => {
         ? `${item.price.toLocaleString('ko-KR')}원` 
         : '';
       
-      // 프로필에서 가져온 별점 사용, 없으면 API의 avgStar 사용
       const profileRes = profileResults[index]?.data;
       const fromProfile = profileRes?.resultType === 'SUCCESS' && profileRes?.success;
       const rating = fromProfile 
@@ -244,6 +242,7 @@ export const useSearchPage = () => {
         rating,
         reviewCountText: item.reviewCountText || `(${reviewCount})`,
         nickname: item.authorName || item.nickname || item.owner_nickname || item.ownerName || '',
+        isWished: item.is_wished || false,
       };
     });
   }, [filteredProposals, profileResults]);

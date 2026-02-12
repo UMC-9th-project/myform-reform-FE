@@ -109,6 +109,7 @@ export default function Search() {
                       title={item.title}
                       priceRange={item.priceRange}
                       variant={isReformer ? 'reformer' : 'order'}
+                      isWished={item.isWished}
                     />
                   ))}
                 </div>
@@ -130,6 +131,7 @@ export default function Search() {
                       reviewCountText={item.reviewCountText}
                       nickname={item.nickname}
                       variant={isReformer ? 'reformer' : 'order'}
+                      isWished={item.isWished}
                     />
                   ))}
                 </div>

@@ -45,6 +45,7 @@ const ReviewList = () => {
 
           targetType: o.targetType === 'ITEM' || o.targetType === 'REQUEST' ? o.targetType : undefined,// "ITEM" | "REQUEST"
           targetId: o.targetId,
+          orderId: o.orderId,
         }));
         setWritableReviews(mapped);
       } catch (err) {
