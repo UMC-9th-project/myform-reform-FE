@@ -140,17 +140,52 @@ const Cart = () => {
       return;
     }
 
-    // 첫 번째 선택된 상품의 itemId를 사용하여 결제 페이지로 이동
+    // 첫 번째 선택된 상품의 itemId를 사용하여 결제 페이지(MarketPurchasePage)로 이동
     const firstSelectedProduct = selectedProducts[0];
     if (firstSelectedProduct.itemId) {
+      const productIndex = products.findIndex((p) => p.id === firstSelectedProduct.id);
+      const productQuantity = quantities[productIndex] || 1;
+      
+      // 판매자 정보 찾기
+      const seller = cartSellers.find((s) => s.id === firstSelectedProduct.sellerId);
+      const sellerName = seller?.name || '판매자';
+      const shippingText = seller?.shippingText || '무료 배송';
+      
       navigate(`/market/product/${firstSelectedProduct.itemId}/purchase`, {
         state: {
+          product: {
+            id: firstSelectedProduct.itemId,
+            title: firstSelectedProduct.name,
+            price: firstSelectedProduct.price,
+            optionPrice: 0, // 옵션 가격은 옵션 정보에서 계산 필요
+            quantity: productQuantity,
+            selectedOptions: {}, // 옵션 정보는 추후 필요시 추가
+            image: firstSelectedProduct.imageUrl || '',
+            seller: sellerName,
+            option: firstSelectedProduct.option,
+            shipping: shippingText,
+          },
           fromCart: true,
           cartIds: cartIds,
-          selectedProducts: selectedProducts.map((product) => ({
-            ...product,
-            quantity: quantities[products.findIndex((p) => p.id === product.id)],
-          })),
+          selectedProducts: selectedProducts.map((product) => {
+            const prodIndex = products.findIndex((p) => p.id === product.id);
+            const prodSeller = cartSellers.find((s) => s.id === product.sellerId);
+            return {
+              id: product.id,
+              itemId: product.itemId,
+              cartId: product.cartId,
+              name: product.name,
+              title: product.name,
+              price: product.price,
+              option: product.option,
+              imageUrl: product.imageUrl,
+              image: product.imageUrl || '',
+              sellerId: product.sellerId,
+              seller: prodSeller?.name || '판매자',
+              shipping: prodSeller?.shippingText || '무료 배송',
+              quantity: quantities[prodIndex],
+            };
+          }),
         },
       });
     } else {

@@ -40,9 +40,11 @@ import SignupFormPage from './pages/signup/SignupFormPage';
 import SignupComplete from './pages/signup/SignupComplete';
 import ReformerRegistration from './pages/signup/reformer/ReformerRegistration';
 import ReformerRegistrationComplete from './pages/signup/reformer/ReformerRegistrationComplete';
+import KakaoSignup from './pages/signup/KakaoSignup';
 
  {/* 로그인 페이지 */}
 import Login from './pages/login/Login';
+import KakaoLoginCallback from './pages/login/KakaoLoginCallback';
 
 import ChatPage from './pages/chat/ChatPage';
 import ChatQuotationDetailPage from './pages/chat/ChatQuotationDetailPage';
@@ -65,7 +67,18 @@ function App() {
     <>
       <ScrollToTop />
       <Routes>
-
+      {/* 카카오 회원가입 페이지 - 최우선 매칭 (헤더/네비게이션 없음) */}
+      <Route
+        element={
+          <Layout
+            showHeader={false}
+            showNavbar={false}
+            showFooter={false}
+          />
+        }
+      >
+        <Route path="/kakao/signup" element={<KakaoSignup />} />
+      </Route>
 
       <Route
       element={
@@ -157,9 +170,6 @@ function App() {
         <Route path="/mypage/review/write" element={<ReviewWritePage />} />
         <Route path="/chat/request/detail/:requestId" element={<ChatQuotationDetailPage />} />
         <Route path="/chat/quotation/detail/:proposalId" element={<ChatProposalDetailPage />} />
-
-        {/* 404 처리 */}
-        <Route path="*" element={<div>Not Found</div>} />
       </Route>
 
       <Route
@@ -186,7 +196,6 @@ function App() {
           />
         }
       >
-
         {/* 회원가입 페이지 */}
         <Route path='/signup' element={<SignupPage />} />
         <Route path="/signup/type" element={<SignupTypeSelection />} />
@@ -196,11 +205,11 @@ function App() {
         <Route path="/signup/reformer-complete" element={<ReformerRegistrationComplete />} />
         <Route path="/signup/complete" element={<SignupComplete />} />
 
-
         {/* 로그인 페이지 */}
         <Route path="/login" element={<Login />} />
         <Route path="/login/reformer" element={<Login />} />
         <Route path="/login/type" element={<SignupTypeSelection />} />
+        <Route path="/login/callback" element={<KakaoLoginCallback />} />
       </Route>
 
       {/*채팅 창 푸터 없음 */}
@@ -222,7 +231,18 @@ function App() {
 
 
       {/* 404 처리 */}
-      <Route path="*" element={<div>Not Found</div>} />
+      <Route
+        element={
+          <Layout
+            showHeader={true}
+            showNavbar={true}
+            showFooter={true}
+            footerVariant="dark"
+          />
+        }
+      >
+        <Route path="*" element={<div>Not Found</div>} />
+      </Route>
     </Routes>
     </>
   );
