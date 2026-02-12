@@ -85,10 +85,15 @@ export default function ProposalCard({
     return isWishedFromServer;
   }, [isWished, localLiked, isWishedFromServer]);
 
-  const formattedRating =
-    typeof rating === 'number' && Number.isFinite(rating)
-      ? rating.toFixed(ratingDecimals)
-      : rating;
+  const formattedRating = useMemo(() => {
+    if (rating === undefined || rating === null) {
+      return '0.00';
+    }
+    if (typeof rating === 'number' && Number.isFinite(rating)) {
+      return rating.toFixed(ratingDecimals);
+    }
+    return String(rating);
+  }, [rating, ratingDecimals]);
   const detailTo =
     id != null ? `${PROPOSAL_DETAIL_PATH[variant]}/${id}` : undefined;
   const linkTo = to ?? detailTo;

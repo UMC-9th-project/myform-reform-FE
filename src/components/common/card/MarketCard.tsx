@@ -40,8 +40,8 @@ interface MarketCardProps {
   initialLiked?: boolean;
   onLikeClick?: (id: number, isLiked: boolean) => void;
   to?: string;
-  /** 찜 버튼 숨김 여부 */
   hideLikeButton?: boolean;
+  ratingDecimals?: 1 | 2;
 }
 
 const formatPrice = (price: number) => {
@@ -54,6 +54,7 @@ const MarketCard = ({
   onLikeClick,
   to,
   hideLikeButton = false,
+  ratingDecimals = 2,
 }: MarketCardProps) => {
   const navigate = useNavigate();
   const accessToken = useAuthStore((state) => state.accessToken);
@@ -199,7 +200,7 @@ const MarketCard = ({
               className="w-[0.8125rem] h-[0.75rem]"
             />
             <span className="body-b3-rg">
-              <span className="text-[var(--color-black)]">{isMarketItem ? item.star.toFixed(2) : (item.star ?? 0).toFixed(2)}</span>{' '}
+              <span className="text-[var(--color-black)]">{isMarketItem ? item.star.toFixed(ratingDecimals) : (item.star ?? 0).toFixed(ratingDecimals)}</span>{' '}
               <span className="text-[var(--color-gray-50)]">
                 ({isMarketItem ? item.review_count : (item.review_count ?? 0)})
             </span>
