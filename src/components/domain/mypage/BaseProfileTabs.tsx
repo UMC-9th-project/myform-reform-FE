@@ -73,9 +73,11 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
     setShowModal(false);
   };
 
-  const handleMenuToggle = (id: string) => {
+  const handleMenuToggle = (id: string, e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation(); // 부모 클릭 이벤트 막기
     setOpenMenuId(openMenuId === id ? null : id);
   };
+
 
   const handleEdit = (item: ProfileSaleItem | ProfileProposalItem) => {
   if (activeSaleSubTab === '마켓 판매') {
@@ -118,15 +120,17 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
 
   const reviews: ReviewItem[] =
   reviewQuery.data?.success.reviews.map((r) => ({
-    id: r.reviewId,                   // API에서 reviewId -> MyReviewGrid id
-    author: r.userNickname,           // userNickname -> author
-    rating: r.star,                   // star -> rating
-    date: r.createdAt,                // createdAt -> date
+    id: r.reviewId,
+    author: r.userNickname,           
+    rating: r.star,                  
+    date: r.createdAt,               
     content: r.content,
-    img: r.photos,                     // photos -> img
-    productImg: r.productPhoto,       // productPhoto -> productImg
-    productName: r.productTitle,      // productTitle -> productName
-    productPrice: r.productPrice,     // productPrice 그대로
+    img: r.photos,                    
+    productImg: r.productPhoto,       
+    productName: r.productTitle,      
+    productPrice: r.productPrice,
+    productId: r.productId, 
+    productType: r.productType, 
   })) ?? [];
 
 
@@ -358,20 +362,25 @@ const BaseProfileTabs = ({ mode = 'view', ownerId, isEditable = false, showHeart
                     {mode === 'edit' && (
                       <div className="relative">
                         <button
-                          onClick={() => handleMenuToggle(getItemKey(item))}
+                          onClick={(e) => handleMenuToggle(getItemKey(item), e)}
                           className="p-1 hover:bg-gray-20 rounded-full transition-colors"
                         >
                           <img src={morevertical} alt="더보기" className="w-8 h-8 opacity-40" />
                         </button>
+
 
                         {/* 드롭다운 메뉴 */}
                         {openMenuId === getItemKey(item) && (
                           <div className="absolute right-0 mt-2 w-[9rem] bg-white rounded-[1.25rem] shadow-[0_4px_20px_rgba(0,0,0,0.1)] z-10 overflow-hidden">
                             <div className="flex flex-col py-2">
                               {/* 수정하기 버튼 */}
+                              {/* 수정하기 버튼 */}
                               <button
                                 className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--color-gray-20)] transition-colors text-left"
-                                onClick={() => handleEdit(item)}
+                                onClick={(e) => {
+                                  e.stopPropagation(); // 부모 클릭 이벤트 막기
+                                  handleEdit(item);
+                                }}
                               >
                                 <img src={Pencil} alt="수정하기" className="w-6 h-6" />
                                 <span className="body-b1-rg text-black">수정하기</span>

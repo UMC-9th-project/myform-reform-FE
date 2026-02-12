@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSellerTabStore } from '../../../stores/tabStore';
 import { getOrderById } from '../../../api/mypage/sale';
+import formatPhoneNumber from '@/utils/domain/formatPhoneNumber';
 
 interface DeliveryAddress {
   postalCode: string | null;
@@ -26,6 +27,7 @@ interface OrderDetailType {
   deliveryAddress: DeliveryAddress;
   status: '결제 완료' | '상품준비 중' | '발송 완료';
   trackingNumber: string;
+  receiptNumber: string;
 }
 
 const statusMap: Record<string, OrderDetailType['status']> = {
@@ -91,6 +93,7 @@ const OrderDetail = () => {
             },
             status: statusMap[data.status] || '결제 완료',
             trackingNumber: data.billNumber || '',
+            receiptNumber: data.receiptNumber,
           });
         })
         .catch(err => console.error('주문 상세 조회 실패', err));
@@ -111,7 +114,7 @@ const OrderDetail = () => {
       </div>
       <div className="bg-white body-b1-rg border border-[var(--color-line-gray-40)] rounded-[1.25rem] p-5 shadow-sm space-y-12">
         <div className="text-[var(--color-gray-50)] body-b1-rg mb-6">
-          주문번호 {order.orderNo}
+          주문번호 {order.receiptNumber}
         </div>
         
         {/* --- 섹션 1: 상품 정보 --- */}
@@ -161,7 +164,7 @@ const OrderDetail = () => {
               <span className="body-b0-rg text-black">{order.buyer}</span>
 
               <span className="body-b0-rg text-[var(--color-gray-50)]">연락처</span>
-              <span className="text-black body-b0-rg">{order.phone}</span>
+              <span className="text-black body-b0-rg">{formatPhoneNumber(order.phone)}</span>
 
               <span className="body-b0-rg text-[var(--color-gray-50)]">배송정보</span>
               <span className="text-black leading-relaxed body-b0-rg">
@@ -227,8 +230,8 @@ const OrderDetail = () => {
 
 
               <div className="space-y-2">
-                <div className="flex justify-between items-center text-[15px]">
-                  <span className="body-b0-rg text-[var(--color-gray-50)]">
+                <div className="flex items-center text-[15px]">
+                  <span className="body-b0-rg text-[var(--color-gray-50)] mr-5">
                     운송장 번호
                   </span>
 
@@ -245,7 +248,7 @@ const OrderDetail = () => {
                     />
                   ) : (
                     // 내용이 없으면 '-' 대신 빈 박스 형태로 표시
-                    <div className="w-[22rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[1rem] text-gray-400 flex items-center">
+                    <div className="w-[27rem] h-[2.5rem] border border-[var(--color-line-gray-40)] px-4 py-2 text-[1rem] text-gray-400 flex items-center">
                       {order.trackingNumber || '입력 필요'}
                     </div>
                   )}

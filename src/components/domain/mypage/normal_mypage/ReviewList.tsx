@@ -45,6 +45,7 @@ const ReviewList = () => {
 
           targetType: o.targetType === 'ITEM' || o.targetType === 'REQUEST' ? o.targetType : undefined,// "ITEM" | "REQUEST"
           targetId: o.targetId,
+          orderId: o.orderId,
         }));
         setWritableReviews(mapped);
       } catch (err) {
@@ -71,6 +72,7 @@ const ReviewList = () => {
         rating: r.star,
         content: r.content,
         img: r.reviewPhotos || [],
+        productType: r.targetType === 'ITEM' || r.targetType === 'PROPOSAL' ? r.targetType : 'ITEM', // 필수값 채우기
       }));
     },
     enabled: activeTab === 'written', // written 탭에서만 fetch

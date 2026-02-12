@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useQueries } from '@tanstack/react-query';
 import { useSearchQueryParams } from '../../useSearchParams';
 import { useSearchData } from './useSearchData';
+import { getProfile } from '../../../api/profile/user';
 import type { SearchItem } from '../../../types/api/search';
 import type { MarketCardItem } from '../../../components/common/card/MarketCard';
 
@@ -178,7 +180,8 @@ export const useSearchPage = () => {
     return [];
   }, [requestSearchData, hasQuery, isRequestSearchLoading, qFromUrl]);
 
-  const proposalItems = useMemo(() => {
+  // 필터링된 제안서 목록 (검색어로 필터링)
+  const filteredProposals = useMemo(() => {
     if (!hasQuery || !proposalSearchData?.success) {
       return [];
     }
@@ -186,34 +189,64 @@ export const useSearchPage = () => {
     const searchQuery = qFromUrl.trim().toLowerCase();
     
     if (proposalSearchData.success.results && Array.isArray(proposalSearchData.success.results) && proposalSearchData.success.results.length > 0) {
-      return proposalSearchData.success.results
-        .filter((item: SearchItem) => {
-          const itemTitle = (item.title || '').toLowerCase();
-          const itemContent = (item.content || '').toLowerCase();
-          return itemTitle.includes(searchQuery) || itemContent.includes(searchQuery);
-        })
-        .map((item: SearchItem, index: number) => {
-        const imgSrc = item.imageUrl || item.thumbnail || '';
-        
-        const price = item.price !== undefined && item.price !== null 
-          ? `${item.price.toLocaleString('ko-KR')}원` 
-          : '';
-        
-        return {
-          key: index + 1,
-          id: item.id || '',
-          imgSrc,
-          title: item.title || '',
-          price,
-          rating: item.avgStar || item.rating || item.star || 0,
-          reviewCountText: item.reviewCountText || `(${item.reviewCount || item.review_count || 0})`,
-          nickname: item.authorName || item.nickname || item.owner_nickname || item.ownerName || '',
-        };
+      return proposalSearchData.success.results.filter((item: SearchItem) => {
+        const itemTitle = (item.title || '').toLowerCase();
+        const itemContent = (item.content || '').toLowerCase();
+        return itemTitle.includes(searchQuery) || itemContent.includes(searchQuery);
       });
     }
     
     return [];
   }, [proposalSearchData, hasQuery, qFromUrl]);
+
+  // 각 제안서의 ownerName으로 프로필 조회
+  const profileResults = useQueries({
+    queries: filteredProposals.map((item: SearchItem) => {
+      const ownerName = item.ownerName || item.authorName || item.nickname || item.owner_nickname || '';
+      return {
+        queryKey: ['profile', 'by-nickname', ownerName],
+        queryFn: () => getProfile(ownerName),
+        enabled: !!ownerName,
+        staleTime: 1000 * 60,
+      };
+    }),
+  });
+
+  const proposalItems = useMemo(() => {
+    if (filteredProposals.length === 0) {
+      return [];
+    }
+    
+    return filteredProposals.map((item: SearchItem, index: number) => {
+      const imgSrc = item.imageUrl || item.thumbnail || '';
+      
+      const price = item.price !== undefined && item.price !== null 
+        ? `${item.price.toLocaleString('ko-KR')}원` 
+        : '';
+      
+      // 프로필에서 가져온 별점 사용, 없으면 API의 avgStar 사용
+      const profileRes = profileResults[index]?.data;
+      const fromProfile = profileRes?.resultType === 'SUCCESS' && profileRes?.success;
+      const rating = fromProfile 
+        ? (profileRes.success!.avgStar ?? item.avgStar ?? item.rating ?? item.star ?? 0)
+        : (item.avgStar ?? item.rating ?? item.star ?? 0);
+      
+      const reviewCount = fromProfile
+        ? (profileRes.success!.reviewCount ?? item.reviewCount ?? item.review_count ?? 0)
+        : (item.reviewCount ?? item.review_count ?? 0);
+      
+      return {
+        key: index + 1,
+        id: item.id || '',
+        imgSrc,
+        title: item.title || '',
+        price,
+        rating,
+        reviewCountText: item.reviewCountText || `(${reviewCount})`,
+        nickname: item.authorName || item.nickname || item.owner_nickname || item.ownerName || '',
+      };
+    });
+  }, [filteredProposals, profileResults]);
 
   const marketCount = useMemo(() => {
     if (!hasQuery) {

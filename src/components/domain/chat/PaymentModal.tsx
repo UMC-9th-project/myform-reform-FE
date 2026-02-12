@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import { getLatestProposalPrice } from '@/api/chat/chatApi';
+import React, { useEffect, useState } from 'react';
 
 export interface PaymentRequestData {
   price: number;
@@ -8,14 +9,33 @@ export interface PaymentRequestData {
 
 interface PaymentModalProps {
   isOpen: boolean;
+  roomId: string;
   onClose: () => void;
   onSend: (data: PaymentRequestData) => void;
 }
 
-const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSend }) => {
+const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, onSend, roomId }) => {
   const [price, setPrice] = useState('');
   const [delivery, setDelivery] = useState('');
   const [days, setDays] = useState('');
+
+  useEffect(() => {
+    if (!isOpen || !roomId) return;
+
+    const fetchLatest = async () => {
+      try {
+        const data = await getLatestProposalPrice(roomId);
+
+        setPrice(String(data.price ?? ''));
+        setDelivery(String(data.delivery ?? ''));
+        setDays(String(data.expectedWorking ?? ''));
+      } catch (err) {
+        console.error('최신 제안서 조회 실패', err);
+      }
+    };
+
+    fetchLatest();
+  }, [isOpen, roomId]);
 
   if (!isOpen) return null;
 
