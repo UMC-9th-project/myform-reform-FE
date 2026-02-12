@@ -26,6 +26,7 @@ export const useSearchPage = () => {
   const [activeTab, setActiveTab] = useState<SearchTab>(getTabFromUrl(searchParams));
   const [minLoadingTimePassed, setMinLoadingTimePassed] = useState(false);
   const [hasAutoSwitchedTab, setHasAutoSwitchedTab] = useState(false);
+  const [isTabChanging, setIsTabChanging] = useState(false);
 
   useEffect(() => {
     setSearchValue(qFromUrl);
@@ -39,7 +40,12 @@ export const useSearchPage = () => {
   useEffect(() => {
     const tabFromUrl = getTabFromUrl(searchParams);
     if (tabFromUrl !== activeTab) {
+      setIsTabChanging(true);
       setActiveTab(tabFromUrl);
+      setMinLoadingTimePassed(true);
+      requestAnimationFrame(() => {
+        setIsTabChanging(false);
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
@@ -58,7 +64,8 @@ export const useSearchPage = () => {
     } else {
       setMinLoadingTimePassed(true);
     }
-  }, [qFromUrl, activeTab, hasQuery]);
+     
+  }, [qFromUrl, hasQuery]);
 
   const {
     marketSearchData,
@@ -77,6 +84,10 @@ export const useSearchPage = () => {
       return false;
     }
     
+    if (isTabChanging) {
+      return false;
+    }
+    
     if (!minLoadingTimePassed) {
       return true;
     }
@@ -91,7 +102,7 @@ export const useSearchPage = () => {
       default:
         return false;
     }
-  }, [hasQuery, minLoadingTimePassed, activeTab, isMarketSearchLoading, isRequestSearchLoading, isProposalSearchLoading]);
+  }, [hasQuery, minLoadingTimePassed, activeTab, isMarketSearchLoading, isRequestSearchLoading, isProposalSearchLoading, isTabChanging]);
 
   const marketItems: MarketCardItem[] = useMemo(() => {
     if (!hasQuery || !marketSearchData?.success) {
@@ -224,7 +235,6 @@ export const useSearchPage = () => {
         ? `${item.price.toLocaleString('ko-KR')}원` 
         : '';
       
-      // 프로필에서 가져온 별점 사용, 없으면 API의 avgStar 사용
       const profileRes = profileResults[index]?.data;
       const fromProfile = profileRes?.resultType === 'SUCCESS' && profileRes?.success;
       const rating = fromProfile 
@@ -270,13 +280,19 @@ export const useSearchPage = () => {
   }, [hasQuery, proposalItems]);
 
   const handleTabChange = useCallback((tab: SearchTab) => {
+    setHasAutoSwitchedTab(true); 
+    setIsTabChanging(true);
     setActiveTab(tab);
     setCurrentPage(1);
+    setMinLoadingTimePassed(true); 
     setSearchParams((prev: URLSearchParams) => {
       const newParams = new URLSearchParams(prev);
       newParams.set('tab', tab);
       newParams.set('page', '1');
       return newParams;
+    });
+    requestAnimationFrame(() => {
+      setIsTabChanging(false);
     });
   }, [setSearchParams]);
 
@@ -336,6 +352,19 @@ export const useSearchPage = () => {
   const isLoading = getCurrentIsLoading();
   
   const hasResults = useMemo(() => {
+    if (isTabChanging) {
+      switch (activeTab) {
+        case 'market':
+          return marketItems.length > 0;
+        case 'request':
+          return requestItems.length > 0;
+        case 'proposal':
+          return proposalItems.length > 0;
+        default:
+          return false;
+      }
+    }
+    
     if (isLoading) {
       return true;
     }
@@ -350,7 +379,7 @@ export const useSearchPage = () => {
       default:
         return false;
     }
-  }, [activeTab, marketItems.length, requestItems.length, proposalItems, isLoading]);
+  }, [activeTab, marketItems.length, requestItems.length, proposalItems, isLoading, isTabChanging]);
 
   return {
     searchValue,
