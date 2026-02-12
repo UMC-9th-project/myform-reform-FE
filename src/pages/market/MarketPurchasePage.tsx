@@ -42,7 +42,7 @@ const MarketPurchasePage = () => {
       });
     }
     return ids;
-  }, [product?.selectedOptions]);
+  }, [product]);
 
   // 주문서 조회 (배송비 및 총 금액)
   const { shippingFee, totalPrice, isLoading: isOrderSheetLoading } = useOrderSheet({
@@ -118,42 +118,6 @@ const MarketPurchasePage = () => {
       return;
     }
     
-    const orderNumber = Date.now().toString().padStart(11, '0');
-    
-   
-    const orderData = {
-      orderNumber,
-      deliveryInfo: {
-        name: '학교',
-        recipient: '홍길동',
-        phone: '010-0000-0000',
-        address: '(04310) 서울 용산구 청파구47길 100 명신관 302호',
-      },
-      product: {
-        image: product.image,
-        title: product.title,
-        option: product.option || '옵션 없음',
-        seller: product.seller,
-        additionalItems: 3, // 임시 값
-      },
-      payment: {
-        totalAmount: totalPrice,
-        productAmount: productPrice + optionPrice,
-        shippingFee: shippingFee,
-        method: '카드 간편결제',
-        bank: '신한은행',
-        cardNumber: '0000-****-****-0000',
-        approvedAt: (() => {
-          const now = new Date();
-          const year = now.getFullYear();
-          const month = String(now.getMonth() + 1).padStart(2, '0');
-          const day = String(now.getDate()).padStart(2, '0');
-          const hour = String(now.getHours()).padStart(2, '0');
-          const minute = String(now.getMinutes()).padStart(2, '0');
-          return `${year}.${month}.${day} ${hour}.${minute}`;
-        })(),
-      },
-    };
     // 배송지 정보 검증
     if (!deliveryAddress.zipcode || !deliveryAddress.address || 
         !deliveryAddress.recipient || !deliveryAddress.phone) {
