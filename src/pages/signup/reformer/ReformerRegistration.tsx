@@ -30,8 +30,6 @@ const ReformerRegistration = () => {
 
   const {
     signup,
-    isLoading: isRegistering,
-    error: registrationError,
   } = useReformerSignup();
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -296,17 +294,15 @@ const ReformerRegistration = () => {
             </div>
           </div>
 
-          {registrationError && (
-            <div className="text-red-500 text-sm mb-4">{registrationError}</div>
-          )}
+         
           <Button
-            variant={isRegistering ? 'disabled' : 'primary'}
+            variant={agreementChecked ? 'primary' : 'disabled'}
             size="big"
             onClick={handleSubmit}
-            disabled={isRegistering}
+            disabled={!agreementChecked}
             className="w-[33.9375rem] h-[4.625rem]"
           >
-            {isRegistering ? '제출 중...' : '제출하기'}
+        
           </Button>
         </div>
       )}
