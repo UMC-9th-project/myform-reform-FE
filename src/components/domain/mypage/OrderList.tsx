@@ -20,6 +20,7 @@ interface ApiOrderItem {
   title: string;
   thumbnail: string;
   receiptNumber?: string;
+  chatRoomId?: string | null;
 }
 
 
@@ -66,9 +67,15 @@ const OrderList: React.FC<OrderListProps> = ({ mode = 'reformer', onClickDetail 
       // 마켓 판매 → 상세보기
       if (onClickDetail) onClickDetail(order.orderId);
     } else {
-      navigate(`/chat/reformer/${order.targetId}`);
+      // 주문 제작 → chatRoomId로 이동
+      if (!order.chatRoomId) {
+        console.warn('채팅방이 없습니다.');
+        return;
+      }
+      navigate(`/chat/reformer/${order.chatRoomId}`);
     }
   };
+
 
 
   // --- 필터링 ---
