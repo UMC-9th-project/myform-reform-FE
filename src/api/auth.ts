@@ -74,12 +74,10 @@ export const startKakaoLogin = (mode: 'user' | 'reformer', redirectUrl?: string)
   window.location.href = kakaoLoginUrl;
 };
 
-// 리폼러 회원가입 API (multipart/form-data)
+// 리폼러 회원가입 API
 export const signupReformer = async (
   data: ReformerSignupRequest
 ): Promise<SignupResponse> => {
-  const formData = new FormData();
-  
   // 일반 유저 가입 정보 + 리폼러 추가 정보를 하나의 객체로 구성
   const requestBody: SignupRequest & { 
     description: string; 
@@ -95,13 +93,10 @@ export const signupReformer = async (
   if (data.businessNumber !== undefined) {
     requestBody.businessNumber = data.businessNumber.trim();
   }
-  
-  // 서버가 요구하는 requestBody 필드에 JSON 문자열로 직렬화하여 전송
-  formData.append('requestBody', JSON.stringify(requestBody));
 
   const response = await api.post<SignupResponse>(
     '/auth/signup/reformer',
-    formData
+    requestBody
   );
   return response.data;
 };
