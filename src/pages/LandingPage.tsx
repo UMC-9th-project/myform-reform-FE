@@ -454,6 +454,7 @@ const LandingPage = () => {
           </div>
         </div>
       </div>
+      
 
       {/* 여섯 번째 섹션 */}
       <div className="w-full min-h-screen bg-[var(--color-mint-5)] relative overflow-hidden">
