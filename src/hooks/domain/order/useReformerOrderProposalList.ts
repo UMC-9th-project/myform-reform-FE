@@ -86,6 +86,7 @@ export const useReformerOrderProposalList = () => {
       profileRes?.resultType === 'SUCCESS' && profileRes?.success;
     return {
       ...p,
+      ownerName: fromProfile ? profileRes.success!.nickname : p.ownerName,
       avgStar: fromProfile ? profileRes.success!.avgStar : p.avgStar,
       reviewCount: fromProfile ? profileRes.success!.reviewCount : p.reviewCount,
     };
