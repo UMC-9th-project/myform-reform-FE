@@ -100,4 +100,17 @@ export interface ReformerSignupRequest {
   businessNumber?: string;
 }
 
+// Access Token 재발급 응답 타입
+export interface ReissueAccessTokenResponse {
+  resultType: 'SUCCESS' | 'FAIL';
+  error: null | {
+    errorCode: number;
+    reason: string;
+    data?: unknown;
+  };
+  success: {
+    accessToken: string;
+  } | null;
+}
+
 
