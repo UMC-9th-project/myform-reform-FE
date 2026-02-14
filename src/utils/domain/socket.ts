@@ -1,66 +1,49 @@
 import { io, Socket } from 'socket.io-client';
 
-export let socket: Socket | null = null;
+let socket: Socket | null = null;
 
-export const connectSocket = (token: string) => {
-  if (!token) {
-    console.error("❌ 토큰이 없어 소켓 연결 불가");
+export const connectSocket = (accessToken: string) => {
+  if (!accessToken) {
+    console.error('토큰이 없어 소켓 연결 불가');
     return null;
   }
 
-  if (socket?.connected) {
-    console.log('♻️ 기존 소켓 재사용', socket.id);
+  // 이미 연결되어 있으면 재사용
+  if (socket && socket.connected) {
     return socket;
   }
 
+  // 기존 소켓 정리
   if (socket) {
-    console.log('🗑️ 기존 소켓 제거');
     socket.removeAllListeners();
     socket.disconnect();
-    socket = null;
   }
 
-  console.log('🔑 토큰으로 소켓 연결 시도');
+  console.log('소켓 연결 시도');
 
-  // 🔥 polling을 먼저 시도하여 handshake (여기서 extraHeaders 작동)
-  // 그 다음 자동으로 WebSocket으로 업그레이드됨
-  socket = io("https://api.myform-reform.p-e.kr", {
-    path: "/socket.io",
-    transports: ["polling", "websocket"], // 🔥 순서 중요: polling 먼저
-    extraHeaders: {
-      auth: token // 🔥 백엔드가 기대하는 헤더명
+  socket = io('https://seoki.cloud', {
+    path: '/test/socket.io',
+    transports: ['websocket', 'polling'],
+    auth: {
+      token: `Bearer ${accessToken}`,
     },
     reconnection: true,
-    reconnectionDelay: 1000,
-    reconnectionAttempts: 5,
-    upgrade: true, // polling → websocket 업그레이드 허용
   });
 
   socket.on('connect', () => {
-    console.log('✅ 웹소켓 연결 성공', {
-      socketId: socket?.id,
-      transport: socket?.io.engine.transport.name // 현재 전송 방식 확인
-    });
-  });
-
-  socket.on('upgrade', (transport) => {
-    console.log('⬆️ 전송 방식 업그레이드:', transport.name);
-  });
-
-  socket.on('disconnect', (reason) => {
-    console.log('❌ 웹소켓 연결 끊김:', reason);
+    console.log('소켓 연결 성공:', socket?.id);
   });
 
   socket.on('connect_error', (err) => {
-    console.error('🔥 소켓 연결 에러:', err.message, err);
+    console.error('소켓 연결 에러:', err.message);
   });
 
-  socket.onAny((event, ...args) => {
-    console.log(`📩 수신 [${event}]`, args);
+  socket.on('disconnect', (reason) => {
+    console.log('소켓 연결 종료:', reason);
   });
 
-  socket.onAnyOutgoing((event, ...args) => {
-    console.log(`📤 발신 [${event}]`, args);
+  socket.on('token_expired', (data) => {
+    console.warn('토큰 만료:', data.message);
   });
 
   return socket;
