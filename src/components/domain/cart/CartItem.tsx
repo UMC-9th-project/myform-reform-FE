@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Checkbox from '../../common/checkbox/Checkbox';
 import OptionQuantity from '../../common/product/option/option-quantity-button/OptionQuantity';
 import type { CartProduct } from '@/types/api/cart/cart';
@@ -8,6 +10,7 @@ interface CartItemProps {
   quantity: number;
   isChecked: boolean;
   isFirst: boolean;
+  isImageLoading?: boolean;
   onCheck: (checked: boolean) => void;
   onQuantityChange: (newQuantity: number) => void;
   onDelete: () => void;
@@ -18,32 +21,67 @@ const CartItem = ({
   quantity,
   isChecked,
   isFirst,
+  isImageLoading = false,
   onCheck,
   onQuantityChange,
   onDelete,
 }: CartItemProps) => {
+  const navigate = useNavigate();
+  const [imageError, setImageError] = useState(false);
+
+  const handleProductClick = () => {
+    if (product.itemId) {
+      navigate(`/market/product/${product.itemId}`);
+    }
+  };
+
   return (
     <div
       className={`px-[1.9375rem] pt-[1.4375rem] pb-[1.875rem] flex gap-[1.25rem] items-start ${
         !isFirst ? 'border-t border-[var(--color-line-gray-40)]' : ''
       }`}
     >
-      <div className="pt-[0.125rem]">
+      <div className="pt-[0.125rem]" onClick={(e) => e.stopPropagation()}>
         <Checkbox checked={isChecked} onChange={onCheck} />
       </div>
-      <img
-        src={product.imageUrl || '/placeholder-image.png'}
-        alt="상품 이미지"
-        className="w-[9.375rem] h-[9.375rem] object-cover flex-shrink-0"
-        onError={(e) => {
-          const target = e.target as HTMLImageElement;
-          target.src = '/placeholder-image.png';
-        }}
-      />
-      <div className="flex-1 flex flex-col gap-[0.75rem]">
+      {isImageLoading ? (
+        <div 
+          className="w-[9.375rem] h-[9.375rem] bg-[var(--color-gray-30)] flex items-center justify-center cursor-pointer animate-pulse"
+          onClick={handleProductClick}
+        >
+          <span className="text-[var(--color-gray-50)] text-sm">로딩 중...</span>
+        </div>
+      ) : product.imageUrl && !imageError ? (
+        <img
+          src={product.imageUrl}
+          alt="상품 이미지"
+          className="w-[9.375rem] h-[9.375rem] object-cover flex-shrink-0 cursor-pointer bg-[var(--color-gray-30)]"
+          onClick={handleProductClick}
+          onError={() => {
+            setImageError(true);
+          }}
+        />
+      ) : (
+        <div 
+          className="w-[9.375rem] h-[9.375rem] bg-[var(--color-gray-30)] flex items-center justify-center cursor-pointer"
+          onClick={handleProductClick}
+        >
+          <span className="text-[var(--color-gray-50)] text-sm">이미지 없음</span>
+        </div>
+      )}
+      <div 
+        className="flex-1 flex flex-col gap-[0.75rem] cursor-pointer"
+        onClick={handleProductClick}
+      >
         <div className="flex items-start justify-between gap-[0.75rem]">
           <div className="body-b1-rg flex-1">{product.name}</div>
-          <button className="cursor-pointer flex-shrink-0" onClick={onDelete}>
+          <button 
+            className="cursor-pointer flex-shrink-0" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+          >
             <img
               src={xIcon}
               alt="삭제"
@@ -58,7 +96,10 @@ const CartItem = ({
         <div className="body-b1-rg text-[var(--color-gray-50)]">
           {product.option}
         </div>
-        <div className="flex items-center justify-between mt-auto">
+        <div 
+          className="flex items-center justify-between mt-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
           <OptionQuantity
             quantity={quantity}
             onIncrease={() => onQuantityChange(quantity + 1)}

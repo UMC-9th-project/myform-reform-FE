@@ -7,6 +7,7 @@ import { useCart } from '../../hooks/domain/cart/useCart';
 import { useGetCart } from '../../hooks/domain/cart/useGetCart';
 import { useDeleteCart } from '../../hooks/domain/cart/useDeleteCart';
 import { getProfile } from '../../api/profile/user';
+import { getMarketProductDetail } from '../../api/market/market';
 import useAuthStore from '../../stores/useAuthStore';
 import {
   transformCartOwnersToSellers,
@@ -17,43 +18,19 @@ import type { CartProduct, CartSeller } from '@/types/api/cart/cart';
 
 const Cart = () => {
   const navigate = useNavigate();
-  const user = useAuthStore((state) => state.user);
   const accessToken = useAuthStore((state) => state.accessToken);
   const { data: cartResponse, isLoading, error, refetch } = useGetCart();
   
   // 로그인 상태가 변경되면 장바구니 다시 조회
   useEffect(() => {
     if (accessToken && !isLoading && !cartResponse) {
-      console.log('장바구니 다시 조회 시도');
       refetch();
     }
   }, [accessToken, isLoading, cartResponse, refetch]);
   const { deleteCartItems } = useDeleteCart();
 
-  // 디버깅: API 응답 확인
-  console.log('장바구니 응답:', cartResponse);
-  console.log('로딩 상태:', isLoading);
-  console.log('에러:', error);
-  console.log('사용자:', user);
-  console.log('토큰 존재 여부:', !!accessToken);
-  console.log('사용자:', user);
-  console.log('토큰:', accessToken ? '있음' : '없음');
-
   const baseSellers: CartSeller[] = useMemo(() => {
-    if (!cartResponse) {
-      console.log('cartResponse가 없습니다');
-      return [];
-    }
-    if (cartResponse.resultType !== 'SUCCESS') {
-      console.log('장바구니 조회 실패:', cartResponse.error);
-      return [];
-    }
-    if (!cartResponse.success || !Array.isArray(cartResponse.success)) {
-      console.log('success가 배열이 아닙니다:', cartResponse.success);
-      return [];
-    }
-    if (cartResponse.success.length === 0) {
-      console.log('장바구니가 비어있습니다');
+    if (!cartResponse || cartResponse.resultType !== 'SUCCESS' || !cartResponse.success || !Array.isArray(cartResponse.success)) {
       return [];
     }
     return transformCartOwnersToSellers(cartResponse.success);
@@ -89,10 +66,82 @@ const Cart = () => {
     });
   }, [baseSellers, profileQueries]);
 
+  // 이미지가 없는 상품들의 상세 정보를 가져오기 위한 쿼리
+  const productsWithoutImages = useMemo(() => {
+    if (!cartResponse || cartResponse.resultType !== 'SUCCESS' || !cartResponse.success) return [];
+    
+    const itemsWithoutImages: Array<{ itemId: string; ownerIndex: number; itemIndex: number }> = [];
+    cartResponse.success.forEach((owner, ownerIndex) => {
+      owner.items.forEach((item, itemIndex) => {
+        const hasImage = 
+          item.imageUrl ||
+          (item.images && Array.isArray(item.images) && item.images.length > 0) ||
+          item.image_url ||
+          item.thumbnail;
+        
+        if (!hasImage && item.itemId) {
+          itemsWithoutImages.push({ itemId: item.itemId, ownerIndex, itemIndex });
+        }
+      });
+    });
+    return itemsWithoutImages;
+  }, [cartResponse]);
+
+  const productDetailQueries = useQueries({
+    queries: productsWithoutImages.map(({ itemId }) => ({
+      queryKey: ['market-product-detail', itemId],
+      queryFn: () => getMarketProductDetail({ item_id: itemId }),
+      enabled: !!itemId && productsWithoutImages.length > 0,
+      staleTime: 1000 * 60 * 5, // 5분간 캐시
+    })),
+  });
+
+  // 상품 상세 정보에서 이미지 가져오기
+  const productImageMap = useMemo(() => {
+    const map = new Map<string, string>();
+    
+    productDetailQueries.forEach((query, index) => {
+      const { itemId } = productsWithoutImages[index];
+      
+      if (query.data?.resultType === 'SUCCESS' && query.data.success?.images) {
+        const images = query.data.success.images;
+        if (Array.isArray(images) && images.length > 0) {
+          map.set(itemId, images[0]);
+        }
+      }
+    });
+    
+    return map;
+  }, [productDetailQueries, productsWithoutImages]);
+
+  // 각 상품의 이미지 로딩 상태 추적
+  const productImageLoadingMap = useMemo(() => {
+    const map = new Map<string, boolean>();
+    productDetailQueries.forEach((query, index) => {
+      const { itemId } = productsWithoutImages[index];
+      map.set(itemId, query.isLoading);
+    });
+    return map;
+  }, [productDetailQueries, productsWithoutImages]);
+
   const initialProducts: CartProduct[] = useMemo(() => {
     if (!cartResponse || cartResponse.resultType !== 'SUCCESS' || !cartResponse.success) return [];
-    return transformCartItemsToProducts(cartResponse.success);
-  }, [cartResponse]);
+    
+    const products = transformCartItemsToProducts(cartResponse.success);
+    
+    // 상품 상세에서 가져온 이미지로 업데이트
+    const updatedProducts = products.map((product) => {
+      if (!product.imageUrl && product.itemId) {
+        const imageFromDetail = productImageMap.get(product.itemId);
+        if (imageFromDetail) {
+          return { ...product, imageUrl: imageFromDetail };
+        }
+      }
+      return product;
+    });
+    
+    return updatedProducts;
+  }, [cartResponse, productImageMap]);
 
   const initialQuantities: number[] = useMemo(() => {
     if (!cartResponse || cartResponse.resultType !== 'SUCCESS' || !cartResponse.success) return [];
@@ -132,7 +181,6 @@ const Cart = () => {
       await deleteCartItems({ cartIds: [product.cartId] });
       deleteProductLocal(productId);
     } catch (error) {
-      console.error('장바구니 삭제 실패:', error);
       alert('장바구니 삭제에 실패했습니다.');
     }
   };
@@ -152,7 +200,6 @@ const Cart = () => {
       await deleteCartItems({ cartIds });
       deleteSelectedLocal();
     } catch (error) {
-      console.error('장바구니 삭제 실패:', error);
       alert('장바구니 삭제에 실패했습니다.');
     }
   };
@@ -257,7 +304,6 @@ const Cart = () => {
   }
 
   if (error) {
-    console.error('장바구니 조회 에러:', error);
     return (
       <div className="bg-[var(--color-gray-20)] pb-[7.4375rem]">
         <div className="px-[3.125rem] pt-[1.875rem]">
@@ -287,6 +333,7 @@ const Cart = () => {
           checkedCount={checkedCount}
           isAllChecked={isAllChecked}
           payment={payment}
+          productImageLoadingMap={productImageLoadingMap}
           onAllCheck={handleAllCheck}
           onSellerCheck={handleSellerCheck}
           onItemCheck={handleItemCheck}
