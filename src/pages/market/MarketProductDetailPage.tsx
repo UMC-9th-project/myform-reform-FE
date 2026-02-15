@@ -736,9 +736,12 @@ const MarketProductDetailPage = () => {
                             className="w-[170px] h-[170px]  object-cover"
                           />
                           {isLast &&  (
-                            <div className="absolute inset-0 bg-black/50  flex items-center justify-center">
-                              <span className="text-white text-[1rem] font-medium">
-                                + {remainingCount} 더보기
+                            <div className="absolute inset-0 bg-black/50  text-white flex flex-col items-center justify-center">
+                              <span className=" heading-h4-bd">
+                                + {remainingCount}  
+                              </span>
+                              <span className='body-b0-bd'>
+                              더보기
                               </span>
                             </div>
                           )}
