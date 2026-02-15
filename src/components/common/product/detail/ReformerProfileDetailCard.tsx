@@ -1,7 +1,6 @@
-
-import profile from '../../../domain/market/images/profile.png';
 import Button from '../../button/Button1';
 import starIcon from '../../../../assets/icons/star.svg';
+import profileIcon from '../../../../assets/icons/profile.svg';
 import ProfileTextAccordion from '../ProfileTextAccordion';
 
 interface ReformerProfileDetailCardProps {
@@ -31,11 +30,17 @@ const ReformerProfileDetailCard = ({
     <div className={`bg-white rounded-[1.25rem] p-6 flex gap-15 ${className}`}>
       {/* 왼쪽: 프로필 이미지 */}
       <div className="flex-shrink-0">
-        <img
-          src={profileImg || profile}
-          alt={name}
-          className="w-35 h-35 rounded-full object-cover border border-[rgba(0,0,0,0.15)]"
-        />
+        {profileImg && profileImg.trim() !== '' ? (
+          <img
+            src={profileImg}
+            alt={name}
+            className="w-35 h-35 rounded-full object-cover border border-[rgba(0,0,0,0.15)]"
+          />
+        ) : (
+          <div className="w-35 h-35 rounded-full bg-[var(--color-gray-30)] border border-[rgba(0,0,0,0.15)] overflow-hidden">
+            <img src={profileIcon} alt={name} className="w-full h-full object-cover scale-150" />
+          </div>
+        )}
       </div>
 
       {/* 오른쪽: 정보 섹션 */}
