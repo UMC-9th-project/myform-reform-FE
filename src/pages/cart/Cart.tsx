@@ -1,23 +1,14 @@
-import { useMemo, useEffect } from 'react';
-import { useQueries } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import CartContent from '../../components/domain/cart/CartContent';
 import EmptyCart from '../../components/domain/cart/EmptyCart';
 import { useCart } from '../../hooks/domain/cart/useCart';
 import { useGetCart } from '../../hooks/domain/cart/useGetCart';
-import { useDeleteCart } from '../../hooks/domain/cart/useDeleteCart';
-import { getProfile } from '../../api/profile/user';
-import { getMarketProductDetail } from '../../api/market/market';
+import { useCartSellers } from '../../hooks/domain/cart/useCartSellers';
+import { useCartProducts } from '../../hooks/domain/cart/useCartProducts';
+import { useCartActions } from '../../hooks/domain/cart/useCartActions';
 import useAuthStore from '../../stores/useAuthStore';
-import {
-  transformCartOwnersToSellers,
-  transformCartItemsToProducts,
-  extractQuantities,
-} from '../../utils/domain/cartTransform';
-import type { CartProduct, CartSeller } from '@/types/api/cart/cart';
 
 const Cart = () => {
-  const navigate = useNavigate();
   const accessToken = useAuthStore((state) => state.accessToken);
   const { data: cartResponse, isLoading, error, refetch } = useGetCart();
   
@@ -27,126 +18,12 @@ const Cart = () => {
       refetch();
     }
   }, [accessToken, isLoading, cartResponse, refetch]);
-  const { deleteCartItems } = useDeleteCart();
 
-  const baseSellers: CartSeller[] = useMemo(() => {
-    if (!cartResponse || cartResponse.resultType !== 'SUCCESS' || !cartResponse.success || !Array.isArray(cartResponse.success)) {
-      return [];
-    }
-    return transformCartOwnersToSellers(cartResponse.success);
-  }, [cartResponse]);
+  // 판매자 정보 조회
+  const sellers = useCartSellers(cartResponse);
 
-  const profileQueries = useQueries({
-    queries: baseSellers
-      .filter((seller) => seller.ownerId)
-      .map((seller) => ({
-        queryKey: ['reformerProfileView', seller.ownerId],
-        queryFn: async () => {
-          const res = await getProfile(seller.ownerId!);
-          if (res.resultType !== 'SUCCESS' || !res.success) {
-            return null;
-          }
-          return { ownerId: seller.ownerId, nickname: res.success.nickname };
-        },
-        enabled: !!seller.ownerId,
-      })),
-  });
-
-  const sellers: CartSeller[] = useMemo(() => {
-    const profileMap = new Map<string, string>();
-    profileQueries.forEach((query) => {
-      if (query.data?.ownerId && query.data.nickname) {
-        profileMap.set(query.data.ownerId, query.data.nickname);
-      }
-    });
-
-    return baseSellers.map((seller) => {
-      const nickname = seller.ownerId ? profileMap.get(seller.ownerId) : null;
-      return nickname ? { ...seller, name: nickname } : seller;
-    });
-  }, [baseSellers, profileQueries]);
-
-  // 이미지가 없는 상품들의 상세 정보를 가져오기 위한 쿼리
-  const productsWithoutImages = useMemo(() => {
-    if (!cartResponse || cartResponse.resultType !== 'SUCCESS' || !cartResponse.success) return [];
-    
-    const itemsWithoutImages: Array<{ itemId: string; ownerIndex: number; itemIndex: number }> = [];
-    cartResponse.success.forEach((owner, ownerIndex) => {
-      owner.items.forEach((item, itemIndex) => {
-        const hasImage = 
-          item.imageUrl ||
-          (item.images && Array.isArray(item.images) && item.images.length > 0) ||
-          item.image_url ||
-          item.thumbnail;
-        
-        if (!hasImage && item.itemId) {
-          itemsWithoutImages.push({ itemId: item.itemId, ownerIndex, itemIndex });
-        }
-      });
-    });
-    return itemsWithoutImages;
-  }, [cartResponse]);
-
-  const productDetailQueries = useQueries({
-    queries: productsWithoutImages.map(({ itemId }) => ({
-      queryKey: ['market-product-detail', itemId],
-      queryFn: () => getMarketProductDetail({ item_id: itemId }),
-      enabled: !!itemId && productsWithoutImages.length > 0,
-      staleTime: 1000 * 60 * 5, // 5분간 캐시
-    })),
-  });
-
-  // 상품 상세 정보에서 이미지 가져오기
-  const productImageMap = useMemo(() => {
-    const map = new Map<string, string>();
-    
-    productDetailQueries.forEach((query, index) => {
-      const { itemId } = productsWithoutImages[index];
-      
-      if (query.data?.resultType === 'SUCCESS' && query.data.success?.images) {
-        const images = query.data.success.images;
-        if (Array.isArray(images) && images.length > 0) {
-          map.set(itemId, images[0]);
-        }
-      }
-    });
-    
-    return map;
-  }, [productDetailQueries, productsWithoutImages]);
-
-  // 각 상품의 이미지 로딩 상태 추적
-  const productImageLoadingMap = useMemo(() => {
-    const map = new Map<string, boolean>();
-    productDetailQueries.forEach((query, index) => {
-      const { itemId } = productsWithoutImages[index];
-      map.set(itemId, query.isLoading);
-    });
-    return map;
-  }, [productDetailQueries, productsWithoutImages]);
-
-  const initialProducts: CartProduct[] = useMemo(() => {
-    if (!cartResponse || cartResponse.resultType !== 'SUCCESS' || !cartResponse.success) return [];
-    
-    const products = transformCartItemsToProducts(cartResponse.success);
-    
-    // 상품 상세에서 가져온 이미지로 업데이트
-    const updatedProducts = products.map((product) => {
-      if (!product.imageUrl && product.itemId) {
-        const imageFromDetail = productImageMap.get(product.itemId);
-        if (imageFromDetail) {
-          return { ...product, imageUrl: imageFromDetail };
-        }
-      }
-      return product;
-    });
-    
-    return updatedProducts;
-  }, [cartResponse, productImageMap]);
-
-  const initialQuantities: number[] = useMemo(() => {
-    if (!cartResponse || cartResponse.resultType !== 'SUCCESS' || !cartResponse.success) return [];
-    return extractQuantities(cartResponse.success);
-  }, [cartResponse]);
+  // 상품 정보 및 이미지 로딩
+  const { initialProducts, initialQuantities, productImageLoadingMap } = useCartProducts(cartResponse);
 
   const {
     products,
@@ -170,110 +47,15 @@ const Cart = () => {
     initialQuantities,
   });
 
-  const deleteProduct = async (productId: number) => {
-    const product = products.find((p) => p.id === productId);
-    if (!product?.cartId) {
-      deleteProductLocal(productId);
-      return;
-    }
-
-    try {
-      await deleteCartItems({ cartIds: [product.cartId] });
-      deleteProductLocal(productId);
-    } catch (error) {
-      alert('장바구니 삭제에 실패했습니다.');
-    }
-  };
-
-  const deleteSelected = async () => {
-    const selectedProducts = products.filter((_, index) => itemChecked[index]);
-    const cartIds = selectedProducts
-      .map((p) => p.cartId)
-      .filter((id): id is string => !!id);
-
-    if (cartIds.length === 0) {
-      deleteSelectedLocal();
-      return;
-    }
-
-    try {
-      await deleteCartItems({ cartIds });
-      deleteSelectedLocal();
-    } catch (error) {
-      alert('장바구니 삭제에 실패했습니다.');
-    }
-  };
-
-  const handleCheckout = () => {
-    // 선택된 상품이 없으면 알림
-    const selectedProducts = products.filter((_, index) => itemChecked[index]);
-    if (selectedProducts.length === 0) {
-      alert('결제할 상품을 선택해주세요.');
-      return;
-    }
-
-    // 선택된 상품들의 cartId 추출
-    const cartIds = selectedProducts
-      .map((p) => p.cartId)
-      .filter((id): id is string => !!id);
-
-    if (cartIds.length === 0) {
-      alert('장바구니 정보를 불러올 수 없습니다.');
-      return;
-    }
-
-    // 첫 번째 선택된 상품의 itemId를 사용하여 결제 페이지(MarketPurchasePage)로 이동
-    const firstSelectedProduct = selectedProducts[0];
-    if (firstSelectedProduct.itemId) {
-      const productIndex = products.findIndex((p) => p.id === firstSelectedProduct.id);
-      const productQuantity = quantities[productIndex] || 1;
-      
-      // 판매자 정보 찾기
-      const seller = cartSellers.find((s) => s.id === firstSelectedProduct.sellerId);
-      const sellerName = seller?.name || '판매자';
-      const shippingText = seller?.shippingText || '무료 배송';
-      
-      navigate(`/market/product/${firstSelectedProduct.itemId}/purchase`, {
-        state: {
-          product: {
-            id: firstSelectedProduct.itemId,
-            title: firstSelectedProduct.name,
-            price: firstSelectedProduct.price,
-            optionPrice: 0, // 옵션 가격은 옵션 정보에서 계산 필요
-            quantity: productQuantity,
-            selectedOptions: {}, // 옵션 정보는 추후 필요시 추가
-            image: firstSelectedProduct.imageUrl || '',
-            seller: sellerName,
-            option: firstSelectedProduct.option,
-            shipping: shippingText,
-          },
-          fromCart: true,
-          cartIds: cartIds,
-          selectedProducts: selectedProducts.map((product) => {
-            const prodIndex = products.findIndex((p) => p.id === product.id);
-            const prodSeller = cartSellers.find((s) => s.id === product.sellerId);
-            return {
-              id: product.id,
-              itemId: product.itemId,
-              cartId: product.cartId,
-              name: product.name,
-              title: product.name,
-              price: product.price,
-              option: product.option,
-              imageUrl: product.imageUrl,
-              image: product.imageUrl || '',
-              sellerId: product.sellerId,
-              seller: prodSeller?.name || '판매자',
-              shipping: prodSeller?.shippingText || '무료 배송',
-              quantity: quantities[prodIndex],
-            };
-          }),
-        },
-      });
-    } else {
-      alert('상품 정보를 불러올 수 없습니다.');
-    }
-  };
+  // 장바구니 액션 (삭제, 결제, 수량 변경)
+  const { deleteProduct, deleteSelected, handleCheckout, handleQuantityChange: handleQuantityChangeAPI } = useCartActions({
+    products,
+    quantities,
+    itemChecked,
+    deleteProductLocal,
+    deleteSelectedLocal,
+    handleQuantityChangeLocal: handleQuantityChange,
+  });
 
   // 비로그인 상태면 빈 장바구니 표시 (토큰만 체크, user는 persist되지 않을 수 있음)
   const isNotLoggedIn = !accessToken;
@@ -337,7 +119,7 @@ const Cart = () => {
           onAllCheck={handleAllCheck}
           onSellerCheck={handleSellerCheck}
           onItemCheck={handleItemCheck}
-          onQuantityChange={handleQuantityChange}
+          onQuantityChange={handleQuantityChangeAPI}
           onDeleteProduct={deleteProduct}
           onDeleteSelected={deleteSelected}
           onCheckout={handleCheckout}
