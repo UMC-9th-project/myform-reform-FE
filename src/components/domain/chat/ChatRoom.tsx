@@ -1013,13 +1013,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
             <div className="flex items-center gap-3">
               {myRole === 'REFORMER' && (
                 <>
-                  <button
-                    onClick={() => setIsPaymentModalOpen(true)}
-                    className="px-3 py-1 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
-                  >
-                    결제창 보내기
-                  </button>
-
                   {roomType !== 'PROPOSAL' && (
                     <button
                       onClick={handleSendAction}
@@ -1028,6 +1021,12 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                       견적서 보내기
                     </button>
                   )}
+                  <button
+                    onClick={() => setIsPaymentModalOpen(true)}
+                    className="px-3 py-1 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
+                  >
+                    결제창 보내기
+                  </button>
                 </>
               )}
               {myRole === 'USER' && roomType !== 'PROPOSAL' && (

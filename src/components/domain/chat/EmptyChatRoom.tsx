@@ -1,9 +1,13 @@
 import Gallery from '../../../assets/chat/gallery.svg';
 
-const EmptyChatRoom = () => {
+interface EmptyChatRoomProps {
+  role: 'USER' | 'REFORMER';
+}
+
+const EmptyChatRoom = ({ role }: EmptyChatRoomProps) => {
+  const isReformer = role === 'REFORMER';
   return (
     <div className="flex flex-col w-full h-full border border-[var(--color-line-gray-40)] bg-white">
-
       {/* 중앙 안내 문구 */}
       <div className="flex-1 flex items-center justify-center text-[var(--color-gray-60)] text-lg">
         채팅 목록에서 대화 내역을 선택해주세요
@@ -22,12 +26,29 @@ const EmptyChatRoom = () => {
             <button disabled>
               <img src={Gallery} alt="갤러리" />
             </button>
-            <button
-              disabled
-              className="px-3 py-1.5 border rounded-full body-b5-rg"
-            >
-              요청서 보내기
-            </button>
+            {isReformer ? (
+              <>
+                <button
+                  disabled
+                  className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg"
+                >
+                  견적서 보내기
+                </button>
+                <button
+                  disabled
+                  className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg"
+                >
+                  결제창 보내기
+                </button>
+              </>
+            ) : (
+              <button
+                disabled
+                className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg"
+              >
+                요청서 보내기
+              </button>
+            )}
           </div>
 
           <button

@@ -94,7 +94,7 @@ const ChatPage = ({ role }: ChatPageProps) => {
         ) : !hasChats ? (
           <NoChatYet />
         ) : !selectedChat ? (
-          <EmptyChatRoom />
+          <EmptyChatRoom role={role} />
         ) : (
           <ChatRoomCom
             chatId={selectedChat.chatRoomId}
