@@ -44,7 +44,7 @@ export const getMarketProductDetail = async (
 export const getMarketProductReviewList = async (
     params: MarketProductReviewListRequest
 ): Promise<MarketProductReviewListResponse> => {
-    const response = await api.get<MarketProductReviewListResponse>(`/market/${params.itemId}/reviews`, {
+    const response = await api.get<MarketProductReviewListResponse>(`/reviews/target/ITEM/${params.itemId}/reviews`, {
         params: {
             page: params.page,
             limit: params.limit,
@@ -59,7 +59,7 @@ export const getMarketProductReviewList = async (
 export const getMarketProductPhotoReview = async (
     params: MarketProductPhotoReviewRequest
 ): Promise<MarketProductPhotoReviewResponse> => {
-    const response = await api.get<MarketProductPhotoReviewResponse>(`/market/${params.itemId}/reviews/photos`, {
+    const response = await api.get<MarketProductPhotoReviewResponse>(`/reviews/target/ITEM/${params.itemId}/reviews/photos`, {
         params: {
             offset: params.offset,
             limit: params.limit,
