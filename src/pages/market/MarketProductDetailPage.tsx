@@ -189,9 +189,9 @@ const MarketProductDetailPage = () => {
 
   const product = productDetailResponse.success;
   const photoReview = photoReviewResponse?.success?.photos || [];
-  const reviewList = reviewListResponse?.success.reviews || [];
-  const reviewCount = reviewListResponse?.success.total_count || 0;
-  const avgStar = reviewListResponse?.success.avg_star || 0;
+  const reviewList = reviewListResponse?.success?.reviews || [];
+  const reviewCount = reviewListResponse?.success?.total_count || 0;
+  const avgStar = reviewListResponse?.success?.avg_star || 0;
   const title = product.title;
   const price = product.price;
   const delivery = product.delivery;
@@ -708,7 +708,7 @@ const MarketProductDetailPage = () => {
                     ))}
                   </div>
                   <span className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
-                    {star}
+                    {star.toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -757,10 +757,10 @@ const MarketProductDetailPage = () => {
 
             <div className="flex flex-col">
               {reviewList.length > 0 ? (
-                reviewList.map((review) => (
+                reviewList.slice(0, 4).map((review) => (
                   <div
                     key={review.review_id}
-                    className="border-b border-[var(--color-gray-30)] py-[2.5rem]"
+                    className="py-[2.5rem]"
                   >
                     <Review
                       userName={review.user_nickname}
