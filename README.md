@@ -17,16 +17,69 @@
 ├─ public/                 # 정적 파일
 ├─ src/
 │   ├─ api/                # API 호출 및 Axios 설정
+│   │   ├─ cart/           # 장바구니 API
+│   │   ├─ chat/           # 채팅 API
+│   │   ├─ market/         # 마켓 API
+│   │   ├─ mypage/         # 마이페이지 API
+│   │   ├─ order/          # 주문 API
+│   │   └─ profile/        # 프로필 API
 │   ├─ assets/             # 이미지, 아이콘 등 리소스
-│   ├─ components/         # 공용 UI 컴포넌트
+│   │   ├─ chat/           # 채팅 관련 이미지
+│   │   ├─ home/           # 홈 관련 이미지
+│   │   ├─ icons/          # 아이콘
+│   │   ├─ landing/       # 랜딩 페이지 이미지
+│   │   ├─ logos/         # 로고
+│   │   └─ signup/        # 회원가입 관련 이미지
+│   ├─ components/         # 컴포넌트
+│   │   ├─ common/         # 공용 UI 컴포넌트
+│   │   │   ├─ button/     # 버튼 컴포넌트
+│   │   │   ├─ card/       # 카드 컴포넌트
+│   │   │   ├─ Modal/      # 모달 컴포넌트
+│   │   │   └─ ...         # 기타 공용 컴포넌트
+│   │   ├─ domain/         # 도메인별 컴포넌트
+│   │   │   ├─ cart/       # 장바구니 컴포넌트
+│   │   │   ├─ chat/       # 채팅 컴포넌트
+│   │   │   ├─ market/     # 마켓 컴포넌트
+│   │   │   ├─ mypage/     # 마이페이지 컴포넌트
+│   │   │   └─ ...         # 기타 도메인 컴포넌트
+│   │   └─ layout/         # 레이아웃 컴포넌트
+│   │       ├─ header/     # 헤더
+│   │       └─ footer/    # 푸터
+│   ├─ constants/          # 상수 정의
 │   ├─ hooks/              # 커스텀 훅
+│   │   └─ domain/         # 도메인별 훅
+│   │       ├─ auth/       # 인증 관련 훅
+│   │       ├─ cart/       # 장바구니 관련 훅
+│   │       ├─ order/     # 주문 관련 훅
+│   │       └─ ...         # 기타 도메인 훅
 │   ├─ pages/              # 페이지 단위 컴포넌트
-│   ├─ stores/             # 전역 상태 관리
+│   │   ├─ cart/           # 장바구니 페이지
+│   │   ├─ chat/           # 채팅 페이지
+│   │   ├─ market/         # 마켓 페이지
+│   │   ├─ order/          # 주문 페이지
+│   │   │   └─ reformer/   # 리폼러 주문 페이지
+│   │   ├─ my-page/        # 일반 유저 마이페이지
+│   │   ├─ my-page-Reform/ # 리폼러 마이페이지
+│   │   ├─ signup/         # 회원가입 페이지
+│   │   └─ ...             # 기타 페이지
+│   ├─ schemas/            # 스키마 정의 (zod 등)
+│   ├─ services/           # 서비스 레이어
+│   │   └─ payment/       # 결제 서비스
+│   ├─ stores/             # 전역 상태 관리 (Zustand)
+│   ├─ stories/            # Storybook 스토리
 │   ├─ types/              # TypeScript 타입 정의
+│   │   ├─ api/            # API 응답 타입
+│   │   ├─ domain/         # 도메인별 타입
+│   │   └─ payment/        # 결제 관련 타입
 │   ├─ utils/              # 공통 유틸 함수
+│   │   ├─ common/         # 공통 유틸
+│   │   ├─ domain/         # 도메인별 유틸
+│   │   └─ payment/        # 결제 유틸
 │   ├─ App.tsx             # 루트 컴포넌트
 │   ├─ index.css           # 전역 스타일
-│   └─ main.tsx            # 엔트리 포인트
+│   ├─ main.tsx            # 엔트리 포인트
+│   ├─ colors.css          # 색상 변수
+│   └─ typography.css      # 타이포그래피 스타일
 ├─ .env                    # 환경 변수
 ├─ .gitignore              # Git 추적 제외 파일
 ├─ .prettierrc             # Prettier 설정

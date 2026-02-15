@@ -9,13 +9,19 @@ export interface ProductOrder {
   buyer: string;
   date: string;
   image: string;
-  status?: '결제 완료' | '상품준비 중' | '발송 완료';
+  status?:
+    | '결제 완료'
+    | '상품준비 중'
+    | '발송 완료'
+    | '결제 대기'
+    | '거래 완료'
+    | '상태 없음';
   reviewAvailable?: boolean;
 
-  targetType?: 'ITEM' | 'REQUEST';
+  targetType?: 'ITEM' | 'PROPOSAL';
   targetId?: string;
-  orderId?: string,
-  
+  orderId?: string;
+  chat_room_id?: string;
 }
 
 // 2. props 타입 정의
@@ -36,12 +42,14 @@ const MyReviewCard: React.FC<SalesCardProps> = ({
     <div className="w-full mx-auto bg-[transparent]">
       <div className="space-y-4">
         {data.map((item) => (
-          <div key={item.id} className="bg-white border border-[var(--color-line-gray-40)] rounded-[1.25rem] p-5">
-            
+          <div
+            key={item.id}
+            className="bg-white border border-[var(--color-line-gray-40)] rounded-[1.25rem] p-5"
+          >
             {/* 상단: 주문번호 및 상세보기 / 채팅 버튼 */}
             <div className="flex justify-between items-center mb-4 text-[var(--color-gray-50)] body-b1-rg">
               <span>주문번호 {item.orderNo}</span>
-              
+
               {item.targetType === 'ITEM' ? (
                 <button
                   className="flex items-center gap-3 hover:text-black transition-colors"
@@ -49,10 +57,10 @@ const MyReviewCard: React.FC<SalesCardProps> = ({
                 >
                   상세 보기<span>❯</span>
                 </button>
-              ) : item.targetType === 'REQUEST' ? (
+              ) : item.targetType === 'PROPOSAL' ? (
                 <button
                   className="flex items-center gap-3 hover:text-black transition-colors"
-                  onClick={() => onChatClick?.(item.targetId!)} // targetId로 이동
+                  onClick={() => onChatClick?.(item.chat_room_id!)} // targetId로 이동
                 >
                   채팅 바로가기<span>❯</span>
                 </button>
@@ -64,25 +72,47 @@ const MyReviewCard: React.FC<SalesCardProps> = ({
               <div className="flex gap-4">
                 {/* 이미지 */}
                 <div className="w-40 h-40 bg-gray-100 flex-shrink-0 overflow-hidden">
-                  {item.image && <img src={item.image} alt="" className="w-full h-full object-cover" />}
+                  {item.image && (
+                    <img
+                      src={item.image}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  )}
                 </div>
 
                 {/* 텍스트 */}
                 <div className="flex flex-col gap-1 overflow-hidden">
-                  <h4 className="body-b0-md text-black truncate">{item.title}</h4>
+                  <h4 className="body-b0-md text-black truncate">
+                    {item.title}
+                  </h4>
 
                   <div className="grid grid-cols-[5rem_1fr] text-[14px] mt-1 gap-y-0.5 gap-x-4">
-                    <span className="body-b0-rg text-[var(--color-gray-50)]">결제금액</span>
-                    <span className="body-b0-rg text-black">{item.price.toLocaleString()}원</span>
+                    <span className="body-b0-rg text-[var(--color-gray-50)]">
+                      결제금액
+                    </span>
+                    <span className="body-b0-rg text-black">
+                      {item.price.toLocaleString()}원
+                    </span>
 
-                    <span className="body-b0-rg text-[var(--color-gray-50)]">판매자</span>
+                    <span className="body-b0-rg text-[var(--color-gray-50)]">
+                      판매자
+                    </span>
                     <span className="body-b0-rg text-black">{item.buyer}</span>
 
-                    <span className="body-b0-rg text-[var(--color-gray-50)]">결제 일시</span>
-                    <span className="body-b0-rg text-[#4B5563]">{item.date}</span>
+                    <span className="body-b0-rg text-[var(--color-gray-50)]">
+                      결제 일시
+                    </span>
+                    <span className="body-b0-rg text-[#4B5563]">
+                      {item.date}
+                    </span>
 
-                    <span className="body-b0-rg text-[var(--color-gray-50)]">진행 상태</span>
-                    <span className="body-b0-rg text-[var(--color-mint-1)]">{item.status}</span>
+                    <span className="body-b0-rg text-[var(--color-gray-50)]">
+                      진행 상태
+                    </span>
+                    <span className="body-b0-rg text-[var(--color-mint-1)]">
+                      {item.status}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -95,13 +125,14 @@ const MyReviewCard: React.FC<SalesCardProps> = ({
                       ? 'bg-[var(--color-mint-6)] border border-[var(--color-mint-3)] text-[var(--color-mint-1)] hover:bg-[#76D2CC]/5'
                       : 'bg-[var(--color-gray-30)] border border-[var(--color-gray-40)] text-[var(--color-gray-50)] cursor-not-allowed'
                   }`}
-                onClick={() => item.reviewAvailable && onWriteReviewClick?.(item.id)}
+                onClick={() =>
+                  item.reviewAvailable && onWriteReviewClick?.(item.id)
+                }
                 disabled={!item.reviewAvailable}
               >
                 {item.reviewAvailable ? '후기 작성하기' : '후기를 작성했어요'}
               </button>
             </div>
-
           </div>
         ))}
       </div>

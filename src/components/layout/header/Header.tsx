@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import bell from '../../../assets/icons/bell.svg';
 import heart from '../../../assets/icons/heart.svg';
 import shoppingCart from '../../../assets/icons/shoppingCart.svg';
@@ -13,6 +14,7 @@ import { useSellerTabStore, useUserTabStore, type UserTabType } from '../../../s
 import useAuthStore from '../../../stores/useAuthStore';
 import { useLogout } from '../../../hooks/domain/auth/useLogout';
 import NotificationPanel from '../../common/Modal/NotificationPanel';
+import { getMyUserInfo, getMyReformerInfo } from '../../../api/profile/user';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -21,6 +23,25 @@ export default function Header() {
 
   const { accessToken, role } = useAuthStore(); // role 기준으로 드롭다운 분기
   const { logout } = useLogout();
+
+  // 프로필 정보 가져오기
+  const { data: userInfo } = useQuery({
+    queryKey: ['my-user-info', accessToken],
+    queryFn: getMyUserInfo,
+    enabled: !!accessToken && role === 'user',
+    staleTime: 1000 * 60 * 5, // 5분
+  });
+
+  const { data: reformerInfo } = useQuery({
+    queryKey: ['my-reformer-info', accessToken],
+    queryFn: getMyReformerInfo,
+    enabled: !!accessToken && role === 'reformer',
+    staleTime: 1000 * 60 * 5, // 5분
+  });
+
+  const nickname = role === 'reformer' 
+    ? (reformerInfo?.success?.nickname || '')
+    : (userInfo?.success?.nickname || '');
 
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -245,7 +266,9 @@ export default function Header() {
                 <div className="absolute top-full right-0 bg-white rounded-[1.875rem] shadow-[0_3px_10.7px_0_rgba(0,0,0,0.22)] z-50 w-[270px]">
                   <div className="pt-[0.875rem] px-[1rem]">
                     <div className="py-[0.625rem] px-[1.25rem]">
-                      <div className="body-b0-bd text-[var(--color-black)]">침착한 대머리독수리 님</div>
+                      <div className="body-b0-bd text-[var(--color-black)]">
+                        {nickname || '사용자'} 님
+                      </div>
                     </div>
                     <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]" />
                     <div className="px-[1.25rem]">
@@ -284,7 +307,9 @@ export default function Header() {
                 <div className="absolute top-full right-0 bg-white rounded-[1.875rem] shadow-[0_3px_10.7px_0_rgba(0,0,0,0.22)] z-50 w-[270px]">
                   <div className="pt-[0.875rem] px-[1rem]">
                     <div className="py-[0.625rem] px-[1.25rem]">
-                      <div className="body-b0-bd text-[var(--color-black)]">침착한 대머리독수리 님</div>
+                      <div className="body-b0-bd text-[var(--color-black)]">
+                        {nickname || '사용자'} 님
+                      </div>
                     </div>
                     <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]" />
                     <div className="px-[1.25rem]">

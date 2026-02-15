@@ -6,11 +6,19 @@ export interface PaymentCardProps {
   nickname: string;
   type: 'sent' | 'received';
   payload: PaymentPayload;
+  role: 'USER' | 'REFORMER';
   onFinish?: (payload: PaymentPayload) => void;
 }
 
-const PaymentCard: React.FC<PaymentCardProps> = ({ type, nickname, payload, onFinish }) => {
+const PaymentCard: React.FC<PaymentCardProps> = ({
+  type,
+  nickname,
+  payload,
+  onFinish,
+  role,
+}) => {
   const isSent = type === 'sent';
+  const isReformer = role === 'REFORMER';
   const displayNickname = nickname || '심심한 리본';
 
   const { price, delivery, expectedWorking: days, receiptNumber } = payload;
@@ -42,9 +50,10 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ type, nickname, payload, onFi
     });
   };
 
-  
   const handlePaymentClick = async () => {
-    if (!receiptNumber) return alert('결제 정보를 불러오지 못했습니다.');
+    if (role === 'REFORMER') {
+      return alert('리폼러는 결제를 진행할 수 없습니다.');
+    }
 
     try {
       await loadPortOne();
@@ -62,8 +71,10 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ type, nickname, payload, onFi
         },
         (rsp: any) => {
           if (rsp.success) {
-            alert(`결제가 완료되었습니다.\n결제 금액: ${rsp.paid_amount.toLocaleString()}원`);
-            
+            alert(
+              `결제가 완료되었습니다.\n결제 금액: ${rsp.paid_amount.toLocaleString()}원`
+            );
+
             // ✅ 결제 완료 시 콜백
             if (onFinish) {
               onFinish({
@@ -74,7 +85,10 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ type, nickname, payload, onFi
 
             // 서버 검증
             if (payload.orderId) {
-              verifyPayment({ order_id: payload.orderId, imp_uid: rsp.imp_uid }).then(() => {});
+              verifyPayment({
+                order_id: payload.orderId,
+                imp_uid: rsp.imp_uid,
+              }).then(() => {});
             }
           } else {
             alert(`결제 실패: ${rsp.error_msg}`);
@@ -86,12 +100,15 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ type, nickname, payload, onFi
     }
   };
 
-
   return (
-    <div className={`flex w-full gap-2 ${isSent ? 'justify-end' : 'justify-start'}`}>
-      <div className={`${isSent ? 'bg-[var(--color-mint-5)] rounded-2xl rounded-tr-none' : 'bg-[var(--color-gray-20)] rounded-2xl rounded-tl-none'} p-5 min-w-[23rem] shadow-sm`}>
+    <div
+      className={`flex w-full gap-2 ${isSent ? 'justify-end' : 'justify-start'}`}
+    >
+      <div
+        className={`${isSent ? 'bg-[var(--color-mint-5)] rounded-2xl rounded-tr-none' : 'bg-[var(--color-gray-20)] rounded-2xl rounded-tl-none'} p-5 min-w-[23rem] shadow-sm`}
+      >
         <h2 className="heading-h5-sb mb-3 text-black">내폼리폼 안전 결제</h2>
-        <p className="body-b4-sb mb-5">
+        <p className="body-b4-sb mb-5 text-[var(--color-gray-70)]">
           {isSent ? (
             <>
               {displayNickname}님께 <br />
@@ -104,33 +121,34 @@ const PaymentCard: React.FC<PaymentCardProps> = ({ type, nickname, payload, onFi
             </>
           )}
         </p>
-        <div className="bg-white rounded-xl p-4 space-y-3 shadow-sm text-sm">
-          <div className="flex justify-between body-b4-sb">
+        <div className="bg-white rounded-xl p-4 space-y-2 shadow-sm text-sm">
+          <div className="flex justify-between body-b4-sb text-[var(--color-gray-70)]">
             <span>견적 금액</span>
             <span className="body-b4-sb">{price.toLocaleString()}원</span>
           </div>
-          <div className="flex justify-between body-b4-sb">
+          <div className="flex justify-between body-b4-sb text-[var(--color-gray-70)]">
             <span>배송비</span>
             <span className="body-b4-sb">{delivery.toLocaleString()}원</span>
           </div>
-          <div className="flex justify-between body-b4-sb">
-            <span>예상 작업 소요일</span>
+          <div className="flex justify-between body-b4-sb text-[var(--color-gray-70)]">
+            <span>예상 작업 이내</span>
             <span className="body-b4-sb">{days}일 이내</span>
           </div>
           <div className="border-t border-[var(--color-gray-40)] pt-3 flex justify-between items-center">
             <span className="body-b4-sb">총 예상 금액</span>
-            <span className="body-b4-sb">{totalPrice.toLocaleString()}원</span>
+            <span className="body-b4-sb text-[var(--color-mint-1)]">
+              {totalPrice.toLocaleString()}원
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center mt-2 mb-2 body-b4-sb">
-        </div>
+        <div className="flex items-center mt-2 mb-2 body-b4-sb"></div>
 
         <button
           onClick={handlePaymentClick}
           className="w-full bg-black text-white py-3 rounded-xl body-b4-sb transition-colors cursor-pointer"
         >
-          결제창으로 이동하기
+          {isReformer ? '리폼러는 결제할 수 없습니다' : '결제창으로 이동하기'}
         </button>
       </div>
     </div>

@@ -7,14 +7,19 @@ export interface CreateOrderFromCartRequest {
 }
 
 export interface CreateOrderFromCartResponse {
-  resultType: 'SUCCESS' | 'ERROR';
+  resultType: 'SUCCESS' | 'FAIL';
   success?: {
-    orderId: string;
-    merchant_uid: string;
+    order_id: string;
+    payment_required: boolean;
+    payment_info: {
+      amount: number;
+      merchant_uid: string;
+    };
   };
   error?: {
-    code: string;
-    message: string;
+    errorCode: string;
+    reason: string;
+    data?: unknown;
   };
 }
 

@@ -1,5 +1,5 @@
-import { api } from './axios';
-import type { SignupRequest, SignupResponse, LoginRequest, LoginResponse, LogoutResponse, SmsSendRequest, SmsSendResponse, SmsVerifyRequest, SmsVerifyResponse, ReformerSignupRequest } from '../types/api/auth';
+import { api, refreshApi } from './axios';
+import type { SignupRequest, SignupResponse, LoginRequest, LoginResponse, LogoutResponse, SmsSendRequest, SmsSendResponse, SmsVerifyRequest, SmsVerifyResponse, ReformerSignupRequest, ReissueAccessTokenResponse } from '../types/api/auth';
 
 
 // 일반 사용자 회원가입 API
@@ -51,40 +51,55 @@ export const verifySmsCode = async (
   return response.data;
 };
 
-// 리폼러 회원가입 API (multipart/form-data)
+// 카카오 로그인 시작
+// API: GET /myform_reform/api/v1/auth/kakao?mode={user|reformer}&redirectUrl={로그인 후 이동할 상대 주소}
+export const startKakaoLogin = (mode: 'user' | 'reformer', redirectUrl?: string) => {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const params = new URLSearchParams({
+    mode,
+  });
+  // redirectUrl은 선택 사항 (API 문서에 따르면 선택 사항)
+  if (redirectUrl) {
+    params.append('redirectUrl', redirectUrl);
+  }
+  
+  const kakaoLoginUrl = `${baseUrl}/auth/kakao?${params.toString()}`;
+  
+  window.location.href = kakaoLoginUrl;
+};
+
+// 리폼러 회원가입 API
 export const signupReformer = async (
   data: ReformerSignupRequest
 ): Promise<SignupResponse> => {
-  const formData = new FormData();
-  
-  // data를 JSON 문자열로 직렬화
-  // description과 businessNumber를 data 객체에 포함
-  // businessNumber가 빈 값이거나 undefined면 포함하지 않음
-  const signupData: SignupRequest & { description: string; businessNumber?: string } = {
+  // 일반 유저 가입 정보 + 리폼러 추가 정보를 하나의 객체로 구성
+  const requestBody: SignupRequest & { 
+    description: string; 
+    businessNumber?: string;
+    portfolioPhotos: string[]; // URL 배열로 포함
+  } = {
     ...data.data,
     description: data.description,
+    portfolioPhotos: data.portfolioPhotos, // URL 배열 추가
   };
   
-  // businessNumber가 있고 빈 문자열이 아닐 때만 추가 (- 포함 형식)
-  if (data.businessNumber && data.businessNumber.trim().length > 0) {
-    signupData.businessNumber = data.businessNumber.trim();
+  // businessNumber가 undefined가 아닐 때는 항상 포함 (빈 문자열이어도 전송)
+  if (data.businessNumber !== undefined) {
+    requestBody.businessNumber = data.businessNumber.trim();
   }
-  
-  formData.append('data', JSON.stringify(signupData));
-  
-  // portfolioPhotos 파일들 추가 (스펙에 맞게 필드명 변경)
-  data.portfolioPhotos.forEach((file) => {
-    formData.append('portfolioPhotos', file);
-  });
 
   const response = await api.post<SignupResponse>(
     '/auth/signup/reformer',
-    formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    }
+    requestBody
+  );
+  return response.data;
+};
+
+// Access Token 재발급 API
+// refreshApi 사용으로 순환 참조 방지 (interceptor 없이 직접 호출)
+export const reissueAccessToken = async (): Promise<ReissueAccessTokenResponse> => {
+  const response = await refreshApi.post<ReissueAccessTokenResponse>(
+    '/auth/reissue/accessToken'
   );
   return response.data;
 };

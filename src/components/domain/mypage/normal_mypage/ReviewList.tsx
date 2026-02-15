@@ -7,7 +7,11 @@ import MyReviewCard, { type ProductOrder } from './MyReviewCard';
 import { useUserTabStore } from '../../../../stores/tabStore';
 import alertCircle from '@/assets/mypage/alertCircle.svg';
 import { getUserOrders, type OrderItem } from '@/api/mypage/orderApi';
-import { getMyReviews, deleteReview, type MyReviewItem } from '@/api/mypage/reviewApi';
+import {
+  getMyReviews,
+  deleteReview,
+  type MyReviewItem,
+} from '@/api/mypage/reviewApi';
 
 type ReviewTab = 'writable' | 'written';
 
@@ -31,7 +35,10 @@ const ReviewList = () => {
   React.useEffect(() => {
     const fetchReviewableOrders = async () => {
       try {
-        const data = await getUserOrders({ type: 'ALL', onlyReviewAvailable: true });
+        const data = await getUserOrders({
+          type: 'ALL',
+          onlyReviewAvailable: true,
+        });
         const mapped: ProductOrder[] = data.orders.map((o: OrderItem) => ({
           id: o.orderId,
           orderNo: o.receiptNumber,
@@ -40,12 +47,23 @@ const ReviewList = () => {
           buyer: o.ownerNickname,
           date: new Date(o.createdAt).toLocaleString(),
           image: o.thumbnail || '',
-          status: '결제 완료',
+          status:
+            o.status === 'PENDING'
+              ? '결제 대기'
+              : o.status === 'PAID'
+                ? '결제 완료'
+                : o.status === 'COMPLETE'
+                  ? '거래 완료'
+                  : '상태 없음',
           reviewAvailable: o.reviewAvailable,
 
-          targetType: o.targetType === 'ITEM' || o.targetType === 'REQUEST' ? o.targetType : undefined,// "ITEM" | "REQUEST"
+          targetType:
+            o.targetType === 'ITEM' || o.targetType === 'PROPOSAL'
+              ? o.targetType
+              : undefined, // "ITEM" | "REQUEST"
           targetId: o.targetId,
           orderId: o.orderId,
+          chat_room_id: o.chat_room_id,
         }));
         setWritableReviews(mapped);
       } catch (err) {
@@ -57,7 +75,9 @@ const ReviewList = () => {
   }, [activeTab]);
 
   // 작성한 후기 조회 (React Query)
-  const { data: writtenReviewsData, isLoading: loadingWritten } = useQuery<ReviewItem[]>({
+  const { data: writtenReviewsData, isLoading: loadingWritten } = useQuery<
+    ReviewItem[]
+  >({
     queryKey: ['myReviews'],
     queryFn: async () => {
       const res = await getMyReviews({ limit: 20, order: 'desc' });
@@ -72,7 +92,10 @@ const ReviewList = () => {
         rating: r.star,
         content: r.content,
         img: r.reviewPhotos || [],
-        productType: r.targetType === 'ITEM' || r.targetType === 'PROPOSAL' ? r.targetType : 'ITEM', // 필수값 채우기
+        productType:
+          r.targetType === 'ITEM' || r.targetType === 'PROPOSAL'
+            ? r.targetType
+            : 'ITEM', // 필수값 채우기
       }));
     },
     enabled: activeTab === 'written', // written 탭에서만 fetch
@@ -135,8 +158,9 @@ const ReviewList = () => {
               data={writableReviews}
               onDetailClick={handleDetailClick}
               onWriteReviewClick={handleWriteReviewClick}
-              onChatClick={(targetId: string) => {
-                navigate(`/chat/normal/${targetId}`); }}
+              onChatClick={(chatRoomId: string) => {
+                navigate(`/chat/normal/${chatRoomId}?tab=order`);
+              }}
             />
           )}
         </div>
@@ -146,7 +170,9 @@ const ReviewList = () => {
       {activeTab === 'written' && (
         <div className="space-y-4">
           {loadingWritten ? (
-            <div className="text-center py-20 text-gray-400 body-b1-rg">로딩중...</div>
+            <div className="text-center py-20 text-gray-400 body-b1-rg">
+              로딩중...
+            </div>
           ) : !writtenReviewsData || writtenReviewsData.length === 0 ? (
             <div className="flex flex-col items-center space-y-4 text-black body-b1-sb py-20">
               <img src={alertCircle} alt="안내 모달" className="w-12 h-12" />
@@ -158,7 +184,6 @@ const ReviewList = () => {
               maxWidth="6xl"
               reviews={writtenReviewsData}
               onDelete={(reviewId: string) => deleteMutation.mutate(reviewId)}
-              
             />
           )}
         </div>

@@ -88,6 +88,13 @@ const ReformerOrderProposalDetailPage = () => {
     // 사진 후기 더보기 로직
   };
 
+  const handleEdit = () => {
+    if (proposalDetail.reformProposalId) {
+      // 주문제작 글 수정 페이지로 이동
+      navigate(`/custom/${proposalDetail.reformProposalId}/edit`);
+    }
+  };
+
   const firstImage = imageUrls[0];
   const additionalImages = imageUrls.length > 1 ? imageUrls.slice(1) : [];
 
@@ -124,7 +131,7 @@ const ReformerOrderProposalDetailPage = () => {
             />
             {isMyProposal && (
               <div className="mt-7">
-                <Button variant="white"  className="w-full">
+                <Button variant="white" className="w-full" onClick={handleEdit}>
                   글 수정하기
                 </Button>
               </div>

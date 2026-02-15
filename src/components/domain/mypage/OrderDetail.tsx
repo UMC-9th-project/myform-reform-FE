@@ -42,10 +42,6 @@ const OrderDetail = () => {
   const { selectedOrderId, setSelectedOrderId } = useSellerTabStore();
   const [order, setOrder] = useState<OrderDetailType | null>(null);
    // 드롭다운 열림/닫힘 상태 추가
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  // 드롭다운 옵션 목록
-  const statusOptions: OrderDetailType['status'][] = ['결제 완료', '상품준비 중', '발송 완료'];
   const [isEditingTracking, setIsEditingTracking] = useState(false);
 
   const fullAddress = [
@@ -201,60 +197,10 @@ const OrderDetail = () => {
             {/* 오른쪽: 진행 상태 및 운송장 입력 */}
             <div className="flex flex-col gap-4">
               
-              {/* 진행 상태 커스텀 드롭다운 (기존 select 대체) */}
               <div className="grid grid-cols-[100px_1fr] items-center">
                 <span className="body-b0-rg text-[var(--color-gray-50)]">진행 상태</span>
-                
-                <div className="relative">
-                  {/* 클릭 버튼 */}
-                  <button 
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className="flex items-center gap-2 body-b0-rg text-[var(--color-mint-1)] bg-transparent outline-none"
-                  >
-                    {order.status}
-                    <span className={`transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}>
-                      <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-                        <path d="M1 1L6 6L11 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </span>
-                  </button>
-
-                  {/* 드롭다운 메뉴 (라디오 버튼 스타일) */}
-                  {isDropdownOpen && (
-                    <div className="absolute top-full mt-2 w-[10rem] bg-white rounded-[1.25rem] p-4 z-50 shadow-[1px_3px_11.7px_0px_#00000026]">
-                      <ul className="flex flex-col gap-4">
-                        {statusOptions.map((option) => (
-                          <li 
-                            key={option}
-                            onClick={() => {
-                              setOrder({ ...order, status:option})
-                              setIsDropdownOpen(false);
-                            }}
-                            className="flex items-center gap-3 cursor-pointer group"
-                          >
-                            {/* 라디오 버튼 UI */}
-                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all
-                              ${order.status === option ? 'border-black' : 'border-gray-300'}`}
-                            >
-                              {order.status === option && (
-                                <div className="w-2.5 h-2.5 bg-black rounded-full" />
-                              )}
-                            </div>
-                            {/* 텍스트 */}
-                            <span className={`body-b1-sb ${order.status === option ? 'text-black' : 'text-gray-600'}`}>
-                              {option}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
+                <span className="body-b0-rg text-[var(--color-mint-1)] ml-2">{order.status}</span>
               </div>
-              {/* 드롭다운 닫기용 배경 레이어 */}
-              {isDropdownOpen && <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />}
-
-
               <div className="space-y-2">
                 <div className="flex items-center text-[15px]">
                   <span className="body-b0-rg text-[var(--color-gray-50)] mr-5">

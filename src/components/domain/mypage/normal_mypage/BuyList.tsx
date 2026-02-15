@@ -23,23 +23,30 @@ const BuyList = () => {
         const type = localTab === 'market' ? 'ITEM' : 'REFORM';
         const data = await getUserOrders({ type });
 
-          const mapped: ProductOrder[] = data.orders.map((o: OrderItem) => ({
-            id: o.orderId,
-            orderNo: o.receiptNumber,
-            title: o.title,
-            price: o.price,
-            buyer: o.ownerNickname,
-            date: new Date(o.createdAt).toLocaleString(),
-            image: o.thumbnail || '',
-            status: o.status === 'PENDING' ? '상품준비 중' : o.status === 'SHIPPED' ? '발송 완료' : '결제 완료',
-            isCustomOrder: o.targetType === 'REFORM',
-            reviewAvailable: o.reviewAvailable,
-            targetId: o.targetId,
-            receiptNumber: o.receiptNumber,
-            chat_room_id: o.chat_room_id,
-          }));
+        const mapped: ProductOrder[] = data.orders.map((o: OrderItem) => ({
+          id: o.orderId,
+          orderNo: o.receiptNumber,
+          title: o.title,
+          price: o.price,
+          buyer: o.ownerNickname,
+          date: new Date(o.createdAt).toLocaleString(),
+          image: o.thumbnail || '',
+          status:
+            o.status === 'PENDING'
+              ? '결제 대기'
+              : o.status === 'PAID'
+                ? '결제 완료'
+                : o.status === 'COMPLETE'
+                  ? '거래 완료'
+                  : '상태 없음',
+          isCustomOrder: o.targetType === 'REFORM',
+          reviewAvailable: o.reviewAvailable,
+          targetId: o.targetId,
+          receiptNumber: o.receiptNumber,
+          chat_room_id: o.chat_room_id,
+        }));
 
-          setOrders(mapped)
+        setOrders(mapped);
       } catch (err) {
         console.error('구매 목록 API 실패', err);
       } finally {
@@ -47,7 +54,7 @@ const BuyList = () => {
       }
     };
     fetchOrders();
-  }, [localTab])
+  }, [localTab]);
 
   // 상세보기 클릭
   const handleDetailClick = (id: string) => {
@@ -60,8 +67,8 @@ const BuyList = () => {
     navigate('/mypage/review/write');
   };
 
-  const handleChatClick = (targetId: string) => {
-    navigate(`/chat/normal/${targetId}`)
+  const handleChatClick = (chatRoomId: string) => {
+    navigate(`/chat/normal/${chatRoomId}?tab=order`);
   };
 
   return (
@@ -87,17 +94,19 @@ const BuyList = () => {
 
       {/* 카드 리스트 */}
       {loading ? (
-        <div className="text-center py-20 text-gray-400 body-b1-rg">내역이 없습니다.</div>
+        <div className="text-center py-20 text-gray-400 body-b1-rg">
+          내역이 없습니다.
+        </div>
       ) : (
-        <SalesCard 
-          data={orders.map(o => ({
+        <SalesCard
+          data={orders.map((o) => ({
             ...o,
-            isCustomOrder: localTab === 'reform' || o.isCustomOrder // 주문 제작이거나 리폼 탭이면 true
+            isCustomOrder: localTab === 'reform' || o.isCustomOrder, // 주문 제작이거나 리폼 탭이면 true
           }))}
-          tab={localTab} 
+          tab={localTab}
           onDetailClick={handleDetailClick}
           onWriteReviewClick={handleWriteReviewClick}
-          onChatClick={handleChatClick} 
+          onChatClick={handleChatClick}
         />
       )}
     </div>

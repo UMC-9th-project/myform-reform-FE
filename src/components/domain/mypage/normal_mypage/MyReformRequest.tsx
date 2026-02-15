@@ -1,16 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import moreVertical from '@/assets/icons/morevertical.svg';
 import Pencil from '@/assets/icons/pencil.svg';
-import Trash from '@/assets/icons/trash.svg';
-import { getMyReformRequests, deleteReformRequests } from '@/api/mypage/reformRequestApi';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getMyReformRequests } from '@/api/mypage/reformRequestApi';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 
 const MyReformRequest: React.FC = () => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
-
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
@@ -18,22 +15,7 @@ const MyReformRequest: React.FC = () => {
     queryFn: () => getMyReformRequests(),
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteReformRequests(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myReformRequests']});
-    },
-    onError: () => {
-      alert('삭제에 실패했습니다. 다시 시도해주세요.');
-    }
-  })
 
-  const handleDelete = (id: string) => {
-    const confirmDelete = window.confirm('정말 이 리폼 요청을 삭제할까요?');
-    if (!confirmDelete) return;
-
-    deleteMutation.mutate(id);
-  };
 
     useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -119,18 +101,6 @@ const MyReformRequest: React.FC = () => {
                           }}
                         ><img src={Pencil} alt="수정" className="w-8" />
                           수정하기</button>
-
-                  <button
-                    className="w-full px-4 py-2 text-left body-b1-rg flex gap-2 items-center"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setOpenMenuId(null);
-                      handleDelete(item.reformRequestId);
-                    }}
-                  >
-                    <img src={Trash} alt="삭제" className="w-8" />
-                    <span>삭제하기</span>
-                  </button>
                 </div>
               )}
             </div>
