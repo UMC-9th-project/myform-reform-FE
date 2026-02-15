@@ -175,8 +175,14 @@ const ReformerOrderProposalDetailPage = () => {
               bio={profile?.bio}
               onFeedClick={() => {
                 const ownerId = profile?.ownerId ?? proposalDetail.ownerId;
-                if (ownerId) navigate(`/profile/${ownerId}`);
-                else navigate('/profile');
+                // 제안글 작성자가 본인이면 마이페이지로 이동
+                if (isMyProposal) {
+                  navigate('/reformer-mypage');
+                } else if (ownerId) {
+                  navigate(`/profile/${ownerId}`);
+                } else {
+                  navigate('/profile');
+                }
               }}
             />
           </div>

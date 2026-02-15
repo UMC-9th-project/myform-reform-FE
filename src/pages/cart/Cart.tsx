@@ -7,6 +7,7 @@ import { useCart } from '../../hooks/domain/cart/useCart';
 import { useGetCart } from '../../hooks/domain/cart/useGetCart';
 import { useDeleteCart } from '../../hooks/domain/cart/useDeleteCart';
 import { getProfile } from '../../api/profile/user';
+import useAuthStore from '../../stores/useAuthStore';
 import {
   transformCartOwnersToSellers,
   transformCartItemsToProducts,
@@ -16,6 +17,8 @@ import type { CartProduct, CartSeller } from '@/types/api/cart/cart';
 
 const Cart = () => {
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
   const { data: cartResponse, isLoading, error } = useGetCart();
   const { deleteCartItems } = useDeleteCart();
 
@@ -193,6 +196,9 @@ const Cart = () => {
     }
   };
 
+  // 비로그인 상태면 빈 장바구니 표시
+  const isNotLoggedIn = !user || !user.id || !accessToken;
+
   if (isLoading) {
     return (
       <div className="bg-[var(--color-gray-20)] pb-[7.4375rem]">
@@ -206,17 +212,14 @@ const Cart = () => {
     );
   }
 
-  if (error) {
+  // 비로그인 상태거나 에러 발생 시 빈 장바구니 표시
+  if (isNotLoggedIn || error) {
     return (
       <div className="bg-[var(--color-gray-20)] pb-[7.4375rem]">
         <div className="px-[3.125rem] pt-[1.875rem]">
           <h1 className="pt-[0.625rem] pb-[1.375rem] heading-h4-bd">장바구니</h1>
         </div>
-        <div className="flex items-center justify-center py-[10rem]">
-          <span className="body-b1-rg text-[var(--color-gray-60)]">
-            장바구니를 불러오는 중 오류가 발생했습니다.
-          </span>
-        </div>
+        <EmptyCart />
       </div>
     );
   }

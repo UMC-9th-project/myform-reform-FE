@@ -1,5 +1,6 @@
 // api/chat.ts
 import { api } from '../axios';
+import type { AxiosError } from 'axios';
 import type { ChatMessage, ChatRoomInfo, ChatMessagesResponse } from '@/types/api/chat/chatMessages';
 export type ChatRoomType = 'INQUIRY' | 'ORDER';
 export type ChatRoomFilter = ChatRoomType | 'UNREAD';
@@ -88,4 +89,41 @@ export const getLatestProposalPrice = async (roomId: string) => {
   );
 
   return res.data.success;
+};
+
+// 채팅방 생성
+export interface CreateChatRoomRequest {
+  dto: {
+    id: string;
+    type: 'FEED' | 'PROPOSAL' | 'REQUEST';
+  };
+}
+
+export interface CreateChatRoomResponse {
+  resultType: 'SUCCESS' | 'FAIL';
+  error: { reason: string } | null;
+  success: {
+    id: string;
+    createdAt: string;
+    isNew: boolean;
+  } | null;
+}
+
+export const createChatRoom = async (
+  payload: CreateChatRoomRequest
+): Promise<CreateChatRoomResponse> => {
+  try {
+    const { data } = await api.post<CreateChatRoomResponse>('/chat/rooms', payload);
+    return data;
+  } catch (error: unknown) {
+    console.error('createChatRoom API 에러:', error);
+    // 에러 응답이 있으면 그대로 반환, 없으면 에러 던지기
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as AxiosError<CreateChatRoomResponse>;
+      if (axiosError.response?.data) {
+        return axiosError.response.data;
+      }
+    }
+    throw error;
+  }
 };

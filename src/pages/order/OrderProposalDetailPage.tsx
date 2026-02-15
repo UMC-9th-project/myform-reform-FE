@@ -7,12 +7,16 @@ import ProductTabMenu from '../../components/common/product/detail/ProductTabMen
 import ReformerProfileDetailCard from '../../components/common/product/detail/ReformerProfileDetailCard';
 import ProductReviewSection from '../../components/common/product/detail/ProductReviewSection';
 import { useOrderProposalDetail } from '../../hooks/domain/order/useOrderProposalDetail';
+import { createChatRoom } from '../../api/chat/chatApi';
+import useAuthStore from '../../stores/useAuthStore';
 
 const ITEMS_PER_PAGE = 5;
 
 const OrderProposalDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
   const {
     proposalDetail,
     profile,
@@ -75,7 +79,73 @@ const OrderProposalDetailPage = () => {
     );
   }
 
-  const handleRequest = () => {};
+  const handleRequest = async () => {
+    // 비로그인 상태면 로그인 타입 선택 페이지로 이동
+    if (!user || !user.id || !accessToken) {
+      navigate('/login/type');
+      return;
+    }
+
+    if (!proposalDetail || !id) return;
+    
+    // 제안글 ID를 사용 (PROPOSAL 타입일 때는 제안글 ID를 사용)
+    const proposalId = proposalDetail.reformProposalId || id;
+    const targetId = proposalId;
+    
+    if (!targetId) {
+      alert('제안글 정보를 불러올 수 없습니다.');
+      return;
+    }
+
+    try {
+      // 채팅방 생성 - PROPOSAL 타입일 때는 제안글 ID 사용
+      const requestPayload = {
+        dto: {
+          id: targetId,
+          type: 'PROPOSAL' as const,
+        },
+      };
+      
+      const roomRes = await createChatRoom(requestPayload);
+
+      if (roomRes.resultType !== 'SUCCESS' || !roomRes.success) {
+        const errorMessage = roomRes.error?.reason || '채팅방 생성 실패';
+        
+        // 토큰 관련 에러면 alert 없이 바로 로그인 페이지로 이동
+        const tokenErrorKeywords = ['토큰', 'Access Token', '유효하지 않은', '존재하지 않거나', '인증'];
+        const isTokenError = tokenErrorKeywords.some(keyword => errorMessage.includes(keyword));
+        
+        if (isTokenError) {
+          navigate('/login/type');
+          return;
+        }
+        
+        alert(`채팅방 생성에 실패했습니다: ${errorMessage}`);
+        return;
+      }
+
+      const chatRoomId = roomRes.success.id;
+      
+      // 채팅 페이지로 이동
+      navigate(`/chat/normal/${chatRoomId}`);
+    } catch (error) {
+      console.error('채팅방 생성 에러:', error);
+      const errorMessage = (error as { response?: { data?: { error?: { reason?: string } } }; message?: string })?.response?.data?.error?.reason || 
+                           (error as { message?: string })?.message || 
+                           '알 수 없는 오류가 발생했습니다.';
+      
+      // 토큰 관련 에러면 alert 없이 바로 로그인 페이지로 이동
+      const tokenErrorKeywords = ['토큰', 'Access Token', '유효하지 않은', '존재하지 않거나', '인증'];
+      const isTokenError = tokenErrorKeywords.some(keyword => errorMessage.includes(keyword));
+      
+      if (isTokenError) {
+        navigate('/login/type');
+        return;
+      }
+      
+      alert(`채팅방 생성에 실패했습니다: ${errorMessage}`);
+    }
+  };
 
 
   const handleMorePhotoReviewsClick = () => {
