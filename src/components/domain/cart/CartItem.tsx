@@ -70,11 +70,31 @@ const CartItem = ({
         </div>
       )}
       <div 
-        className="flex-1 flex flex-col gap-[0.75rem] cursor-pointer"
+        className="flex-1 flex flex-col h-full cursor-pointer"
         onClick={handleProductClick}
       >
-        <div className="flex items-start justify-between gap-[0.75rem]">
-          <div className="body-b1-rg flex-1">{product.name}</div>
+        <div className="flex items-start justify-between gap-[0.75rem] h-full">
+          <div className="flex-1 flex flex-col gap-[0.75rem] h-full justify-between">
+            <div className="flex flex-col gap-[0.75rem]">
+              <div className="body-b1-rg">{product.name}</div>
+              <div className="body-b1-rg text-[var(--color-gray-50)]">
+                {product.option}
+              </div>
+            </div>
+            <div 
+              className="flex items-center justify-between"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <OptionQuantity
+                quantity={quantity}
+                onIncrease={() => onQuantityChange(quantity + 1)}
+                onDecrease={() => onQuantityChange(Math.max(1, quantity - 1))}
+              />
+              <div className="body-b0-bd">
+                {(product.price * quantity).toLocaleString()}원
+              </div>
+            </div>
+          </div>
           <button 
             className="cursor-pointer flex-shrink-0" 
             onClick={(e) => {
@@ -92,22 +112,6 @@ const CartItem = ({
               }}
             />
           </button>
-        </div>
-        <div className="body-b1-rg text-[var(--color-gray-50)]">
-          {product.option}
-        </div>
-        <div 
-          className="flex items-center justify-between mt-auto"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <OptionQuantity
-            quantity={quantity}
-            onIncrease={() => onQuantityChange(quantity + 1)}
-            onDecrease={() => onQuantityChange(Math.max(1, quantity - 1))}
-          />
-          <div className="body-b0-bd">
-            {(product.price * quantity).toLocaleString()}원
-          </div>
         </div>
       </div>
     </div>
