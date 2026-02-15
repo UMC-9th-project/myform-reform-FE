@@ -18,7 +18,7 @@ const DeliveryAddressForm = () => {
               : 'bg-[var(--color-white)] text-[var(--color-gray-60)] border border-[var(--color-line-gray-40)] border-b-0'
           }`}
         >
-          기존 배송지
+          기본 배송지
         </button>
         <button
           type="button"

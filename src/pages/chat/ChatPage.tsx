@@ -27,7 +27,12 @@ const ChatPage = ({ role }: ChatPageProps) => {
   const [chatList, setChatList] = useState<ChatRoom[]>([]);
 
   const basePath = role === 'USER' ? 'normal' : 'reformer';
-  const initialFilterType = tabParam === 'order' ? 'ORDER' : undefined;
+  const initialFilterType =
+    tabParam === 'order'
+      ? 'ORDER'
+      : tabParam === 'inquiry'
+        ? 'INQUIRY'
+        : undefined;
 
   const { accessToken } = useAuthStore();
   const isLoggedIn = !!accessToken;
@@ -89,7 +94,7 @@ const ChatPage = ({ role }: ChatPageProps) => {
         ) : !hasChats ? (
           <NoChatYet />
         ) : !selectedChat ? (
-          <EmptyChatRoom />
+          <EmptyChatRoom role={role} />
         ) : (
           <ChatRoomCom
             chatId={selectedChat.chatRoomId}
