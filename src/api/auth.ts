@@ -1,5 +1,5 @@
-import { api } from './axios';
-import type { SignupRequest, SignupResponse, LoginRequest, LoginResponse, LogoutResponse, SmsSendRequest, SmsSendResponse, SmsVerifyRequest, SmsVerifyResponse, ReformerSignupRequest } from '../types/api/auth';
+import { api, refreshApi } from './axios';
+import type { SignupRequest, SignupResponse, LoginRequest, LoginResponse, LogoutResponse, SmsSendRequest, SmsSendResponse, SmsVerifyRequest, SmsVerifyResponse, ReformerSignupRequest, ReissueAccessTokenResponse } from '../types/api/auth';
 
 
 // 일반 사용자 회원가입 API
@@ -54,7 +54,7 @@ export const verifySmsCode = async (
 // 카카오 로그인 시작
 // API: GET /myform_reform/api/v1/auth/kakao?mode={user|reformer}&redirectUrl={로그인 후 이동할 상대 주소}
 export const startKakaoLogin = (mode: 'user' | 'reformer', redirectUrl?: string) => {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
   const params = new URLSearchParams({
     mode,
   });
@@ -65,21 +65,13 @@ export const startKakaoLogin = (mode: 'user' | 'reformer', redirectUrl?: string)
   
   const kakaoLoginUrl = `${baseUrl}/auth/kakao?${params.toString()}`;
   
-  // 디버깅: 실제 이동할 URL 확인
-  console.log('카카오 로그인 URL:', kakaoLoginUrl);
-  console.log('Base URL:', baseUrl);
-  console.log('Mode:', mode);
-  console.log('Redirect URL:', redirectUrl || '(없음)');
-  
   window.location.href = kakaoLoginUrl;
 };
 
-// 리폼러 회원가입 API (multipart/form-data)
+// 리폼러 회원가입 API
 export const signupReformer = async (
   data: ReformerSignupRequest
 ): Promise<SignupResponse> => {
-  const formData = new FormData();
-  
   // 일반 유저 가입 정보 + 리폼러 추가 정보를 하나의 객체로 구성
   const requestBody: SignupRequest & { 
     description: string; 
@@ -95,13 +87,19 @@ export const signupReformer = async (
   if (data.businessNumber !== undefined) {
     requestBody.businessNumber = data.businessNumber.trim();
   }
-  
-  // 서버가 요구하는 requestBody 필드에 JSON 문자열로 직렬화하여 전송
-  formData.append('requestBody', JSON.stringify(requestBody));
 
   const response = await api.post<SignupResponse>(
     '/auth/signup/reformer',
-    formData
+    requestBody
+  );
+  return response.data;
+};
+
+// Access Token 재발급 API
+// refreshApi 사용으로 순환 참조 방지 (interceptor 없이 직접 호출)
+export const reissueAccessToken = async (): Promise<ReissueAccessTokenResponse> => {
+  const response = await refreshApi.post<ReissueAccessTokenResponse>(
+    '/auth/reissue/accessToken'
   );
   return response.data;
 };
