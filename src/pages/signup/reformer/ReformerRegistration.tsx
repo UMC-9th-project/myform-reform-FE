@@ -25,7 +25,8 @@ const ReformerRegistration = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 회원가입 폼에서 전달받은 회원가입 정보
-  const signupData = (location.state as { signupData?: SignupRequest })?.signupData;
+  const signupData = (location.state as { signupData?: SignupRequest; redirectUrl?: string })?.signupData;
+  const redirectUrl = (location.state as { signupData?: SignupRequest; redirectUrl?: string })?.redirectUrl;
 
   const {
     signup,
@@ -72,7 +73,7 @@ const ReformerRegistration = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!agreementChecked) {
       alert('이용약관에 동의해주세요.');
       return;
@@ -85,15 +86,28 @@ const ReformerRegistration = () => {
     }
 
     // 이미지 파일 배열 추출
-    const imageFiles = images.map((img) => img.file);
+    const imageFiles = images.map((img) => img.file).filter((file): file is File => file instanceof File);
+    
+    // 이미지가 없는 경우 체크
+    if (imageFiles.length === 0) {
+      alert('리폼 작업물 사진을 업로드해주세요.');
+      return;
+    }
 
-    // 리폼러 회원가입 API 호출 (회원가입 정보 + 포트폴리오 + 자기소개)
-    signup({
-      signupData,
-      portfolioPhotos: imageFiles, // 스펙에 맞게 필드명 변경
-      description: introduction.trim(), // 스펙에 맞게 필드명 변경
-      businessNumber: businessNumber.trim() || '',  
-    });
+    try {
+      // 리폼러 회원가입 API 호출 (회원가입 정보 + 포트폴리오 + 자기소개)
+      // signup 함수 내부에서 이미지 업로드 후 URL로 변환하여 전송
+      await signup({
+        signupData,
+        portfolioPhotos: imageFiles,
+        description: introduction.trim(),
+        ...(businessNumber.trim() ? { businessNumber: businessNumber.trim() } : {}),
+        ...(redirectUrl ? { redirectUrl } : {}),
+      });
+    } catch (error) {
+      // 에러는 useReformerSignup 훅에서 처리됨
+      console.error('회원가입 실패:', error);
+    }
   };
 
   const isNextButtonEnabled = currentStep === 1 ? images.length > 0 : currentStep === 2 ? introduction.trim().length > 0 : true;

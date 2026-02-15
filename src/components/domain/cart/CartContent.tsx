@@ -46,8 +46,7 @@ const CartContent = ({
 }: CartContentProps) => {
   return (
     <div className="px-[3.125rem] flex gap-[1.25rem] flex-row">
-      <div className="flex-1 h-[56.875rem] pt-[1.125rem] flex flex-col gap-[0.75rem]">
-        {/* 선택 바 영역 */}
+      <div className="flex-1 h-[56.875rem] pt-[1.125rem] flex flex-col gap-[0.75rem]  overflow-hidden">
         <CartHeader
           isAllChecked={isAllChecked}
           checkedCount={checkedCount}
@@ -56,8 +55,7 @@ const CartContent = ({
           onDeleteSelected={onDeleteSelected}
         />
 
-        {/* 박스 영역 */}
-        <div className="flex flex-col gap-[1.3125rem]">
+        <div className="flex flex-col gap-[1.3125rem] overflow-y-auto flex-1 min-h-0 pr-2 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-[var(--color-gray-40)] [&::-webkit-scrollbar-thumb]:rounded-full">
           {sellers.map((seller) => {
             const sellerProducts = products.filter(
               (p) => p.sellerId === seller.id
@@ -83,7 +81,6 @@ const CartContent = ({
         </div>
       </div>
 
-      {/* 옆에 결제 영역 */}
       <PaymentSummaryCard payment={payment} onCheckout={onCheckout} />
     </div>
   );

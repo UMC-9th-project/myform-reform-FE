@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import bell from '../../../assets/icons/bell.svg';
 import heart from '../../../assets/icons/heart.svg';
 import shoppingCart from '../../../assets/icons/shoppingCart.svg';
@@ -13,6 +14,7 @@ import { useSellerTabStore, useUserTabStore, type UserTabType } from '../../../s
 import useAuthStore from '../../../stores/useAuthStore';
 import { useLogout } from '../../../hooks/domain/auth/useLogout';
 import NotificationPanel from '../../common/Modal/NotificationPanel';
+import { getMyUserInfo, getMyReformerInfo } from '../../../api/profile/user';
 
 export default function Header() {
   const navigate = useNavigate();
@@ -21,6 +23,25 @@ export default function Header() {
 
   const { accessToken, role } = useAuthStore(); // role 기준으로 드롭다운 분기
   const { logout } = useLogout();
+
+  // 프로필 정보 가져오기
+  const { data: userInfo } = useQuery({
+    queryKey: ['my-user-info', accessToken],
+    queryFn: getMyUserInfo,
+    enabled: !!accessToken && role === 'user',
+    staleTime: 1000 * 60 * 5, // 5분
+  });
+
+  const { data: reformerInfo } = useQuery({
+    queryKey: ['my-reformer-info', accessToken],
+    queryFn: getMyReformerInfo,
+    enabled: !!accessToken && role === 'reformer',
+    staleTime: 1000 * 60 * 5, // 5분
+  });
+
+  const nickname = role === 'reformer' 
+    ? (reformerInfo?.success?.nickname || '')
+    : (userInfo?.success?.nickname || '');
 
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
@@ -213,7 +234,7 @@ export default function Header() {
         <div className="flex items-center gap-[1.625rem] ml-auto">
           <div className="relative">
             <button
-              className="cursor-pointer"
+              className="cursor-pointer translate-y-1"
               onClick={() => setIsNotificationOpen(!isNotificationOpen)}
             >
               <img src={bell} alt="bell" />
@@ -226,83 +247,87 @@ export default function Header() {
           <Link to="/wishlist" className="cursor-pointer">
             <img src={heart} alt="heart" />
           </Link>
-          <Link to="/cart" className="cursor-pointer">
-            <img src={shoppingCart} alt="shopping cart" />
-          </Link>
-          
+          {role !== 'reformer' && (
+            <Link to="/cart" className="cursor-pointer">
+              <img src={shoppingCart} alt="shopping cart" />
+            </Link>
+          )}
           {accessToken && (
-          <div className="relative" ref={profileRef}>
-            <button
-              className="cursor-pointer"
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-            >
-              <img src={profile} alt="profile" />
-            </button>
+            <div className="relative" ref={profileRef}>
+              <button
+                className="cursor-pointer"
+                onClick={() => setIsProfileOpen(!isProfileOpen)}
+              >
+                <img src={profile} alt="profile" />
+              </button>
 
-            {/* 리폼러 유저 드롭다운 */}
-            {isProfileOpen && role === 'reformer' && (
-              <div className="absolute top-full right-0 bg-white rounded-[1.875rem] shadow-[0_3px_10.7px_0_rgba(0,0,0,0.22)] z-50 w-[270px]">
-                <div className="pt-[0.875rem] px-[1rem]">
-                  <div className="py-[0.625rem] px-[1.25rem]">
-                    <div className="body-b0-bd text-[var(--color-black)]">침착한 대머리독수리 님</div>
+              {/* 리폼러 유저 드롭다운 */}
+              {isProfileOpen && role === 'reformer' && (
+                <div className="absolute top-full right-0 bg-white rounded-[1.875rem] shadow-[0_3px_10.7px_0_rgba(0,0,0,0.22)] z-50 w-[270px]">
+                  <div className="pt-[0.875rem] px-[1rem]">
+                    <div className="py-[0.625rem] px-[1.25rem]">
+                      <div className="body-b0-bd text-[var(--color-black)]">
+                        {nickname || '사용자'} 님
+                      </div>
+                    </div>
+                    <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]" />
+                    <div className="px-[1.25rem]">
+                      <button
+                        onClick={() => {
+                          setSellerActiveTab('프로필 관리'); 
+                          navigate('/reformer-mypage'); setIsProfileOpen(false); }}
+                        className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
+                      >
+                        프로필 관리
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSellerActiveTab('판매 관리'); // 탭 상태 업데이트
+                          navigate('/reformer-mypage'); // 해당 페이지로 이동
+                          setIsProfileOpen(false); // 드롭다운 닫기
+                        }}
+                        className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
+                      >
+                        판매 관리
+                      </button>
+                      
+                    </div>
                   </div>
-                  <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]" />
-                  <div className="px-[1.25rem]">
-                    <button
-                      onClick={() => {
-                        setSellerActiveTab('프로필 관리'); 
-                        navigate('/reformer-mypage'); setIsProfileOpen(false); }}
-                      className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
-                    >
-                      프로필 관리
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSellerActiveTab('판매 관리'); // 탭 상태 업데이트
-                        navigate('/reformer-mypage'); // 해당 페이지로 이동
-                        setIsProfileOpen(false); // 드롭다운 닫기
-                      }}
-                      className="body-b1-md w-full text-left px-2 py-[1.125rem] text-[var(--color-gray-50)] hover:text-[var(--color-black)]"
-                    >
-                      판매 관리
-                    </button>
-                    
-                  </div>
+                  <button
+                    onClick={logout}
+                    className="w-full py-[0.9375rem] body-b1-sb bg-[var(--color-mint-5)] rounded-b-[1.875rem]"
+                  >
+                    로그아웃
+                  </button>
                 </div>
-                <button
-                  onClick={logout}
-                  className="w-full py-[0.9375rem] body-b1-sb bg-[var(--color-mint-5)] rounded-b-[1.875rem]"
-                >
-                  로그아웃
-                </button>
-              </div>
-            )}
+              )}
 
-            {/* 일반 유저 드롭다운 */}
-            {isProfileOpen && role === 'user' && (
-              <div className="absolute top-full right-0 bg-white rounded-[1.875rem] shadow-[0_3px_10.7px_0_rgba(0,0,0,0.22)] z-50 w-[270px]">
-                <div className="pt-[0.875rem] px-[1rem]">
-                  <div className="py-[0.625rem] px-[1.25rem]">
-                    <div className="body-b0-bd text-[var(--color-black)]">침착한 대머리독수리 님</div>
+              {/* 일반 유저 드롭다운 */}
+              {isProfileOpen && role === 'user' && (
+                <div className="absolute top-full right-0 bg-white rounded-[1.875rem] shadow-[0_3px_10.7px_0_rgba(0,0,0,0.22)] z-50 w-[270px]">
+                  <div className="pt-[0.875rem] px-[1rem]">
+                    <div className="py-[0.625rem] px-[1.25rem]">
+                      <div className="body-b0-bd text-[var(--color-black)]">
+                        {nickname || '사용자'} 님
+                      </div>
+                    </div>
+                    <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]" />
+                    <div className="px-[1.25rem]">
+                      <button onClick={() => handleTabClick('내 정보')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">내 정보</button>
+                      <button onClick={() => handleTabClick('내가 작성한 글')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">내가 작성한 글</button>
+                      <button onClick={() => handleTabClick('구매 이력')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">구매 이력</button>
+                      <button onClick={() => handleTabClick('나의 후기')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">나의 후기</button>
+                    </div>
                   </div>
-                  <div className="my-[0.625rem] border-b border-[var(--color-gray-40)]" />
-                  <div className="px-[1.25rem]">
-                    <button onClick={() => handleTabClick('내 정보')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">내 정보</button>
-                    <button onClick={() => handleTabClick('내가 작성한 글')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">내가 작성한 글</button>
-                    <button onClick={() => handleTabClick('구매 이력')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">구매 이력</button>
-                    <button onClick={() => handleTabClick('나의 후기')} className="body-b1-md w-full text-left px-2 py-[1.125rem]">나의 후기</button>
-                  </div>
+                  <button
+                    onClick={logout}
+                    className="w-full py-[0.9375rem] body-b1-sb bg-[var(--color-mint-5)] rounded-b-[1.875rem]"
+                  >
+                    로그아웃
+                  </button>
                 </div>
-                <button
-                  onClick={logout}
-                  className="w-full py-[0.9375rem] body-b1-sb bg-[var(--color-mint-5)] rounded-b-[1.875rem]"
-                >
-                  로그아웃
-                </button>
-              </div>
-            )}
-
-          </div>
+              )}
+            </div>
           )}
         </div>
       </div>

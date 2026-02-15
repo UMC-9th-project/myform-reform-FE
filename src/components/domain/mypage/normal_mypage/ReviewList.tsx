@@ -40,12 +40,17 @@ const ReviewList = () => {
           buyer: o.ownerNickname,
           date: new Date(o.createdAt).toLocaleString(),
           image: o.thumbnail || '',
-          status: '결제 완료',
+          status:
+            o.status === 'PENDING' ? '결제 대기' :
+            o.status === 'PAID' ? '결제 완료' :
+            o.status === 'COMPLETE' ? '거래 완료' :
+            '상태 없음',
           reviewAvailable: o.reviewAvailable,
 
           targetType: o.targetType === 'ITEM' || o.targetType === 'REQUEST' ? o.targetType : undefined,// "ITEM" | "REQUEST"
           targetId: o.targetId,
           orderId: o.orderId,
+          chat_room_id: o.chat_room_id
         }));
         setWritableReviews(mapped);
       } catch (err) {
@@ -135,8 +140,8 @@ const ReviewList = () => {
               data={writableReviews}
               onDetailClick={handleDetailClick}
               onWriteReviewClick={handleWriteReviewClick}
-              onChatClick={(targetId: string) => {
-                navigate(`/chat/normal/${targetId}`); }}
+              onChatClick={(chatRoomId: string) => {
+                navigate(`/chat/normal/${chatRoomId}`); }}
             />
           )}
         </div>

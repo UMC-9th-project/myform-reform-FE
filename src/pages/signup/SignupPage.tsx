@@ -4,15 +4,13 @@ import Button1 from '../../components/common/button/Button1';
 import logo2 from '../../assets/logos/logo2.svg';
 import kakao from '../../assets/signup/kakao.svg';
 
-const KakaoLogin = () => {
-  const kakaoLoginWindow = window.open(
-    'https://kauth.kakao.com/oauth/authorize?client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&response_type=code'
-  );
-  return kakaoLoginWindow;
-};
-
 const SignupIndex = () => {
   const navigate = useNavigate();
+
+  const handleKakaoLogin = () => {
+    // 카카오 로그인인 경우 타입 선택 페이지로 이동
+    navigate('/signup/type?kakao=true');
+  };
 
   return (
     <div className=" w-[543px] mx-auto flex flex-col justify-center items-center h-screen">
@@ -28,7 +26,7 @@ const SignupIndex = () => {
       <Button1
         variant="kakao"
         size="default"
-        onClick={KakaoLogin}
+        onClick={handleKakaoLogin}
         className="body-b0-md w-full mb-[1.25rem] rounded-[0.9375rem]"
       >
         <img src={kakao} alt="kakao" />

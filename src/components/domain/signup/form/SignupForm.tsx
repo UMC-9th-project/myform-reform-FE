@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Input from '../../../common/input/Input';
 import Button from '../../../common/button/Button1';
 import AgreementSection from '../AgreementSection';
@@ -13,10 +13,17 @@ import { validateField } from '../../../../utils/domain/formValidation';
 import { usePhoneVerification } from '../../../../hooks/domain/signup/usePhoneVerification';
 import { useNicknameDuplicate } from '../../../../hooks/domain/signup/useNicknameDuplicate';
 import { useSignup } from '../../../../hooks/domain/signup/useSignup';
+import type { SignupRequest } from '../../../../types/api/auth';
 
-export default function SignupForm() {
+interface SignupFormProps {
+  initialEmail?: string;
+  isKakao?: boolean;
+  onSubmit?: (data: SignupRequest) => void;
+}
+
+export default function SignupForm({ initialEmail, isKakao = false, onSubmit }: SignupFormProps = {}) {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail || '');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [nickname, setNickname] = useState('');
@@ -66,6 +73,12 @@ export default function SignupForm() {
     error: signupError,
   } = useSignup();
 
+  useEffect(() => {
+    if (initialEmail) {
+      setEmail(initialEmail);
+    }
+  }, [initialEmail]);
+
   const validateForm = () => {
     let isValid = true;
 
@@ -78,16 +91,19 @@ export default function SignupForm() {
       isValid = false;
     }
 
-    if (!validateField(password, passwordSchema, setPasswordError, true)) {
-      isValid = false;
-    }
+    // 카카오 로그인 시 비밀번호는 필수 아님
+    if (!isKakao) {
+      if (!validateField(password, passwordSchema, setPasswordError, true)) {
+        isValid = false;
+      }
 
-    if (!passwordConfirm.trim()) {
-      setPasswordConfirmError('비밀번호를 한번 더 입력해주세요.');
-      isValid = false;
-    } else if (password !== passwordConfirm) {
-      setPasswordConfirmError('비밀번호를 동일하게 입력해주세요.');
-      isValid = false;
+      if (!passwordConfirm.trim()) {
+        setPasswordConfirmError('비밀번호를 한번 더 입력해주세요.');
+        isValid = false;
+      } else if (password !== passwordConfirm) {
+        setPasswordConfirmError('비밀번호를 동일하게 입력해주세요.');
+        isValid = false;
+      }
     }
 
     if (!validateField(nickname, nicknameSchema, setNicknameError, true)) {
@@ -231,32 +247,36 @@ export default function SignupForm() {
       return;
     }
 
-    // 회원가입 API 호출
-    signup({
+    const signupData: SignupRequest = {
       name,
       email,
       nickname,
       phoneNumber: phone,
-      registration_type: 'LOCAL',
-      password,
+      registration_type: isKakao ? 'KAKAO' : 'LOCAL',
+      password: isKakao ? '' : password,
       over14YearsOld: agreeAge,
       termsOfService: agreeServiceTerms,
       privacyPolicy: agreePrivacy,
-    });
+    };
+
+    // onSubmit prop이 있으면 사용, 없으면 기본 signup 사용
+    if (onSubmit) {
+      onSubmit(signupData);
+    } else {
+      signup(signupData);
+    }
   };
 
   const isFormValid =
     !nameError &&
     !emailError &&
-    !passwordError &&
-    !passwordConfirmError &&
+    (isKakao ? true : !passwordError && !passwordConfirmError) &&
     !nicknameError &&
     !phoneError &&
     isNicknameVerified &&
     name &&
     email &&
-    password &&
-    passwordConfirm &&
+    (isKakao ? true : password && passwordConfirm) &&
     nickname &&
     phone &&
     agreeAge &&
@@ -276,31 +296,34 @@ export default function SignupForm() {
           value={email}
           error={emailError}
           onChange={handleEmailChange}
+          disabled={isKakao && !!initialEmail}
         />
 
-        <div className="flex flex-col gap-[0.6875rem]">
-          <Input
-            type="password"
-            variant="signup"
-            label="비밀번호"
-            required
-            placeholder="영문, 숫자, 특수문자가 들어간 8자 이상으로 조합해주세요."
-            value={password}
-            error={passwordError}
-            showPasswordToggle
-            onChange={handlePasswordChange}
-          />
+        {!isKakao && (
+          <div className="flex flex-col gap-[0.6875rem]">
+            <Input
+              type="password"
+              variant="signup"
+              label="비밀번호"
+              required
+              placeholder="영문, 숫자, 특수문자가 들어간 8자 이상으로 조합해주세요."
+              value={password}
+              error={passwordError}
+              showPasswordToggle
+              onChange={handlePasswordChange}
+            />
 
-          <Input
-            type="password"
-            variant="signup"
-            placeholder="비밀번호를 한번 더 입력해주세요."
-            value={passwordConfirm}
-            error={passwordConfirmError}
-            showPasswordToggle
-            onChange={handlePasswordConfirmChange}
-          />
-        </div>
+            <Input
+              type="password"
+              variant="signup"
+              placeholder="비밀번호를 한번 더 입력해주세요."
+              value={passwordConfirm}
+              error={passwordConfirmError}
+              showPasswordToggle
+              onChange={handlePasswordConfirmChange}
+            />
+          </div>
+        )}
         <Input
           type="text"
           variant="signup"

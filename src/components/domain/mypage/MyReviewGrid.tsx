@@ -168,6 +168,12 @@ const MyReviewGrid: React.FC<MyReviewGridProps> = ({
                   onClick={() => {
                     if (item.productType === 'ITEM') {
                       navigate(`/market/product/${item.productId}`);
+                    }
+                    if (item.productType === 'REQUEST') {
+                      navigate(`/reformer/order/requests/${item.productId}`) 
+                    }
+                    if (item.productType === 'PROPOSAL') {
+                      navigate(`/reformer/order/proposals/${item.productId}`)
                     } 
                   }}
               >

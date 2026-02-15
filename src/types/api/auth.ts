@@ -36,7 +36,7 @@ export interface SignupRequest {
   email: string;
   nickname: string;
   phoneNumber: string;
-  registration_type: 'LOCAL';
+  registration_type: 'LOCAL' | 'KAKAO';
   oauthId?: string; // 로컬 회원가입 시 선택적
   password: string;
   over14YearsOld: boolean;
@@ -95,7 +95,7 @@ export interface SmsVerifyResponse {
 // 리폼러 회원가입 요청 타입 (multipart/form-data)
 export interface ReformerSignupRequest {
   data: SignupRequest; // JSON 문자열로 직렬화될 데이터
-  portfolioPhotos: File[]; // 포트폴리오 이미지 파일 배열
+  portfolioPhotos: string[]; // 포트폴리오 이미지 URL 배열
   description: string; // 리폼러 소개
   businessNumber?: string;
 }

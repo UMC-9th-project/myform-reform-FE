@@ -8,7 +8,7 @@ export interface ReviewItem {
   createdAt: string;
   content: string;
   productId: string;
-  productType: 'ITEM' | 'CUSTOM';
+  productType: 'ITEM' | 'REQUEST' | 'PROPOSAL' | 'FEED';
   productTitle: string;
   productPhoto: string;
   productPrice: number;

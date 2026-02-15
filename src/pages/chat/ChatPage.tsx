@@ -6,7 +6,7 @@ import EmptyChatRoom from '../../components/domain/chat/EmptyChatRoom';
 import NoChatYet from '../../components/domain/chat/NoChatYet';
 import type { RoomType, SelectedChat } from '../../types/api/chat/chatMessages';
 import { getChatRooms } from '@/api/chat/chatApi';
-import type { ChatRoom } from '@/api/chat/chatApi';
+import type { ChatRoom } from '@/api/chat/chatApi'; //챗룸
 
 type Role = 'USER' | 'REFORMER';
 
@@ -51,7 +51,7 @@ const ChatPage = ({ role }: ChatPageProps) => {
     if (!isLoggedIn) return;
 
     if (chatRoomId && chatList.length > 0 && !selectedChat) {
-      const chat = chatList.find(c => c.chatRoomId === chatRoomId);
+      const chat = chatList.find((c) => c.chatRoomId === chatRoomId);
       if (chat) {
         const roomTypeMap: Record<string, RoomType> = {
           FEED: 'FEED',
@@ -67,20 +67,19 @@ const ChatPage = ({ role }: ChatPageProps) => {
     }
   }, [chatRoomId, chatList, selectedChat, isLoggedIn]);
 
-
   return (
     <div className="flex flex-row-reverse w-full h-screen bg-[var(--color-gray-20)] overflow-hidden">
       {/* 오른쪽 채팅 목록 */}
       <div className="w-[24rem] ml-3 m-10 border-[var(--color-line-gray-40)] bg-white">
-          <ChatListTab
-            initialFilterType={initialFilterType}
-            selectedChat={selectedChat}
-            setSelectedChat={(chat) => {
-              setSelectedChat(chat);
-              navigate(`/chat/${basePath}/${chat.chatRoomId}`);
-            }}
-            onChatsLoaded={(chatCount) => setHasChats(chatCount > 0)}
-          />
+        <ChatListTab
+          initialFilterType={initialFilterType}
+          selectedChat={selectedChat}
+          setSelectedChat={(chat) => {
+            setSelectedChat(chat);
+            navigate(`/chat/${basePath}/${chat.chatRoomId}`);
+          }}
+          onChatsLoaded={(chatCount) => setHasChats(chatCount > 0)}
+        />
       </div>
 
       {/* 왼쪽 채팅방 */}
@@ -102,6 +101,5 @@ const ChatPage = ({ role }: ChatPageProps) => {
     </div>
   );
 };
-
 
 export default ChatPage;

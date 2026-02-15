@@ -863,13 +863,26 @@ useEffect(() => {
                           </p>
                         </div>
                       ) : (
-                        <EstimateArriveCard
-                          type={isMine ? 'sent' : 'received'}
-                          onReject={() => handleAnswerEstimate(msg.messageId, false)}
-                          onAccept={() => handleAnswerEstimate(msg.messageId, true)}
-                        />
+                        // payload가 없으면 OWNER 입장에서는 그냥 메시지
+                        myRole === 'REFORMER' ? (
+                          <div
+                            className="p-3 rounded-[0.625rem] max-w-[400px] bg-[#FFF7DD] text-[#725A11] rounded-tr-none"
+                          >
+                            <p className="text-[1rem] leading-relaxed whitespace-pre-wrap">
+                              📢 거래 진행여부를 전송했습니다.
+                            </p>
+                          </div>
+                        ) : (
+                          // USER 입장에서는 카드 그대로 보여주기
+                          <EstimateArriveCard
+                            type={isMine ? 'sent' : 'received'}
+                            onReject={() => handleAnswerEstimate(msg.messageId, false)}
+                            onAccept={() => handleAnswerEstimate(msg.messageId, true)}
+                          />
+                        )
                       )
                     )}
+
 
 
 

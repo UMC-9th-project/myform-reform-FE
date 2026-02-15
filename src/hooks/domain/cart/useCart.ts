@@ -8,12 +8,13 @@ import type {
 interface UseCartProps {
   initialProducts: CartProduct[];
   sellers: CartSeller[];
+  initialQuantities?: number[];
 }
 
-export const useCart = ({ initialProducts, sellers }: UseCartProps) => {
+export const useCart = ({ initialProducts, sellers, initialQuantities }: UseCartProps) => {
   const [products, setProducts] = useState<CartProduct[]>(initialProducts);
   const [quantities, setQuantities] = useState<number[]>(
-    new Array(initialProducts.length).fill(1)
+    initialQuantities || new Array(initialProducts.length).fill(1)
   );
   const [sellerChecked, setSellerChecked] = useState<boolean[]>(
     new Array(sellers.length).fill(false)
@@ -22,12 +23,18 @@ export const useCart = ({ initialProducts, sellers }: UseCartProps) => {
     new Array(initialProducts.length).fill(false)
   );
 
-  // 전체 선택 상태 계산
+  if (products.length !== initialProducts.length || 
+      products.some((p, i) => p.id !== initialProducts[i]?.id)) {
+    setProducts(initialProducts);
+    setQuantities(initialQuantities || new Array(initialProducts.length).fill(1));
+    setSellerChecked(new Array(sellers.length).fill(false));
+    setItemChecked(new Array(initialProducts.length).fill(false));
+  }
+
   const totalItems = products.length;
   const checkedCount = itemChecked.filter(Boolean).length;
   const isAllChecked = checkedCount === totalItems && totalItems > 0;
 
-  // 결제 금액 계산
   const payment: PaymentSummary = useMemo(() => {
     let productTotal = 0;
     products.forEach((product, index) => {
@@ -58,7 +65,6 @@ export const useCart = ({ initialProducts, sellers }: UseCartProps) => {
     };
   }, [products, itemChecked, quantities, sellers]);
 
-  // 전체 선택 핸들러
   const handleAllCheck = useCallback(
     (checked: boolean) => {
       setItemChecked(new Array(products.length).fill(checked));
@@ -67,14 +73,12 @@ export const useCart = ({ initialProducts, sellers }: UseCartProps) => {
     [products.length, sellers.length]
   );
 
-  // 개별 아이템 체크박스 핸들러
   const handleItemCheck = useCallback(
     (index: number, checked: boolean) => {
       const newItemChecked = [...itemChecked];
       newItemChecked[index] = checked;
       setItemChecked(newItemChecked);
 
-      // 판매자별 체크박스 상태 업데이트
       const product = products[index];
       const sellerProducts = products.filter(
         (p) => p.sellerId === product.sellerId
@@ -95,7 +99,6 @@ export const useCart = ({ initialProducts, sellers }: UseCartProps) => {
     [itemChecked, products, sellerChecked, sellers]
   );
 
-  // 판매자 체크박스 핸들러
   const handleSellerCheck = useCallback(
     (sellerId: number, checked: boolean) => {
       const sellerIndex = sellers.findIndex((s) => s.id === sellerId);
@@ -105,7 +108,6 @@ export const useCart = ({ initialProducts, sellers }: UseCartProps) => {
       newSellerChecked[sellerIndex] = checked;
       setSellerChecked(newSellerChecked);
 
-      // 해당 판매자의 모든 아이템 체크박스 업데이트
       const newItemChecked = [...itemChecked];
       products.forEach((product, index) => {
         if (product.sellerId === sellerId) {
@@ -117,7 +119,6 @@ export const useCart = ({ initialProducts, sellers }: UseCartProps) => {
     [sellerChecked, sellers, itemChecked, products]
   );
 
-  // 수량 변경 핸들러
   const handleQuantityChange = useCallback(
     (index: number, newQuantity: number) => {
       const newQuantities = [...quantities];
@@ -127,7 +128,6 @@ export const useCart = ({ initialProducts, sellers }: UseCartProps) => {
     [quantities]
   );
 
-  // 상품 삭제 핸들러
   const deleteProduct = useCallback(
     (productId: number) => {
       const productIndex = products.findIndex((p) => p.id === productId);
@@ -138,7 +138,6 @@ export const useCart = ({ initialProducts, sellers }: UseCartProps) => {
       setQuantities(quantities.filter((_, idx) => idx !== productIndex));
       setItemChecked(itemChecked.filter((_, idx) => idx !== productIndex));
 
-      // 판매자 체크박스 상태 업데이트
       const remainingSellers = new Set(newProducts.map((p) => p.sellerId));
       const newSellerChecked = sellers.map((seller) => {
         if (!remainingSellers.has(seller.id)) return false;
@@ -160,7 +159,6 @@ export const useCart = ({ initialProducts, sellers }: UseCartProps) => {
     [products, quantities, itemChecked, sellers]
   );
 
-  // 선택 삭제 핸들러
   const deleteSelected = useCallback(() => {
     const indicesToDelete = itemChecked
       .map((checked, index) => (checked ? index : -1))
