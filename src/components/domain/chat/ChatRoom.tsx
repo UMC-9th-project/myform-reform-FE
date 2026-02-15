@@ -809,6 +809,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                     )}
                     {msg.messageType === 'payment' && (
                       <PaymentCard
+                        role={myRole}
                         type={isMine ? 'sent' : 'received'}
                         nickname={
                           isMine

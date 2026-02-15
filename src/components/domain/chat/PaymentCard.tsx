@@ -6,6 +6,7 @@ export interface PaymentCardProps {
   nickname: string;
   type: 'sent' | 'received';
   payload: PaymentPayload;
+  role: 'USER' | 'REFORMER';
   onFinish?: (payload: PaymentPayload) => void;
 }
 
@@ -14,8 +15,10 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
   nickname,
   payload,
   onFinish,
+  role,
 }) => {
   const isSent = type === 'sent';
+  const isReformer = role === 'REFORMER';
   const displayNickname = nickname || '심심한 리본';
 
   const { price, delivery, expectedWorking: days, receiptNumber } = payload;
@@ -48,7 +51,9 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
   };
 
   const handlePaymentClick = async () => {
-    if (!receiptNumber) return alert('결제 정보를 불러오지 못했습니다.');
+    if (role === 'REFORMER') {
+      return alert('리폼러는 결제를 진행할 수 없습니다.');
+    }
 
     try {
       await loadPortOne();
@@ -143,7 +148,7 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
           onClick={handlePaymentClick}
           className="w-full bg-black text-white py-3 rounded-xl body-b4-sb transition-colors cursor-pointer"
         >
-          결제창으로 이동하기
+          {isReformer ? '리폼러는 결제할 수 없습니다' : '결제창으로 이동하기'}
         </button>
       </div>
     </div>
