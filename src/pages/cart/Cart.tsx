@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useQueries } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import CartContent from '../../components/domain/cart/CartContent';
@@ -19,11 +19,43 @@ const Cart = () => {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
   const accessToken = useAuthStore((state) => state.accessToken);
-  const { data: cartResponse, isLoading, error } = useGetCart();
+  const { data: cartResponse, isLoading, error, refetch } = useGetCart();
+  
+  // 로그인 상태가 변경되면 장바구니 다시 조회
+  useEffect(() => {
+    if (accessToken && !isLoading && !cartResponse) {
+      console.log('장바구니 다시 조회 시도');
+      refetch();
+    }
+  }, [accessToken, isLoading, cartResponse, refetch]);
   const { deleteCartItems } = useDeleteCart();
 
+  // 디버깅: API 응답 확인
+  console.log('장바구니 응답:', cartResponse);
+  console.log('로딩 상태:', isLoading);
+  console.log('에러:', error);
+  console.log('사용자:', user);
+  console.log('토큰 존재 여부:', !!accessToken);
+  console.log('사용자:', user);
+  console.log('토큰:', accessToken ? '있음' : '없음');
+
   const baseSellers: CartSeller[] = useMemo(() => {
-    if (!cartResponse?.success) return [];
+    if (!cartResponse) {
+      console.log('cartResponse가 없습니다');
+      return [];
+    }
+    if (cartResponse.resultType !== 'SUCCESS') {
+      console.log('장바구니 조회 실패:', cartResponse.error);
+      return [];
+    }
+    if (!cartResponse.success || !Array.isArray(cartResponse.success)) {
+      console.log('success가 배열이 아닙니다:', cartResponse.success);
+      return [];
+    }
+    if (cartResponse.success.length === 0) {
+      console.log('장바구니가 비어있습니다');
+      return [];
+    }
     return transformCartOwnersToSellers(cartResponse.success);
   }, [cartResponse]);
 
@@ -58,12 +90,12 @@ const Cart = () => {
   }, [baseSellers, profileQueries]);
 
   const initialProducts: CartProduct[] = useMemo(() => {
-    if (!cartResponse?.success) return [];
+    if (!cartResponse || cartResponse.resultType !== 'SUCCESS' || !cartResponse.success) return [];
     return transformCartItemsToProducts(cartResponse.success);
   }, [cartResponse]);
 
   const initialQuantities: number[] = useMemo(() => {
-    if (!cartResponse?.success) return [];
+    if (!cartResponse || cartResponse.resultType !== 'SUCCESS' || !cartResponse.success) return [];
     return extractQuantities(cartResponse.success);
   }, [cartResponse]);
 
@@ -196,8 +228,8 @@ const Cart = () => {
     }
   };
 
-  // 비로그인 상태면 빈 장바구니 표시
-  const isNotLoggedIn = !user || !user.id || !accessToken;
+  // 비로그인 상태면 빈 장바구니 표시 (토큰만 체크, user는 persist되지 않을 수 있음)
+  const isNotLoggedIn = !accessToken;
 
   if (isLoading) {
     return (
@@ -213,7 +245,19 @@ const Cart = () => {
   }
 
   // 비로그인 상태거나 에러 발생 시 빈 장바구니 표시
-  if (isNotLoggedIn || error) {
+  if (isNotLoggedIn) {
+    return (
+      <div className="bg-[var(--color-gray-20)] pb-[7.4375rem]">
+        <div className="px-[3.125rem] pt-[1.875rem]">
+          <h1 className="pt-[0.625rem] pb-[1.375rem] heading-h4-bd">장바구니</h1>
+        </div>
+        <EmptyCart />
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('장바구니 조회 에러:', error);
     return (
       <div className="bg-[var(--color-gray-20)] pb-[7.4375rem]">
         <div className="px-[3.125rem] pt-[1.875rem]">
