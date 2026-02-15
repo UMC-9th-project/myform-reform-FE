@@ -476,7 +476,11 @@ const MarketProductDetailPage = () => {
                <Button
                   variant="white"
                   onClick={() => {
-                    if (isReformer) {
+                    if (!accessToken) {
+                      navigate('/login/type');
+                      return;
+                    }
+                    else if (isReformer) {
                       setModalMessageType('chat');
                       setShowReformerModal(true);
                       return;
@@ -494,7 +498,12 @@ const MarketProductDetailPage = () => {
 
               <button 
                 onClick={() => {
-                  if (isReformer) {
+                  if (!accessToken) {
+                    navigate('/login/type');
+                    return;
+                  }
+
+                  else if (isReformer) {
                     setModalMessageType('purchase');
                     setShowReformerModal(true);
                     return;
