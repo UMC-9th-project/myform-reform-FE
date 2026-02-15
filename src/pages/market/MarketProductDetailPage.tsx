@@ -1,29 +1,41 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { createPortal } from 'react-dom';
+
+import useAuthStore from '../../stores/useAuthStore';
+
+// 아이콘
 import xIcon from '../../assets/icons/x.svg';
+import cartIcon from '../../assets/icons/shoppingCart.svg';
+import chatIcon from '../../assets/icons/chat.svg';
+import shareIcon from '../../assets/icons/share.svg';
+import starIcon from '../../assets/icons/star.svg';
+
+// 컴포넌트
 import { ImageCarousel } from '../../components/common/product/Image';
 import OptionQuantity from '../../components/common/product/option/option-quantity-button/OptionQuantity';  
 import ProductInfoToggle from '../../components/common/product/detail/ProductInfoToggle';
 import Review from '../../components/common/product/detail/review/Review';  
 import ReviewFilter from '../../components/common/product/detail/review/ReviewFilter';    
 import PageNumber from '../../components/common/product/PageNumber';  
-import starIcon from '../../assets/icons/star.svg';
 import Button from '../../components/common/button/Button1';
 import LikeButton from '../../components/common/likebutton/LikeButton';
-import cartIcon from '../../assets/icons/shoppingCart.svg';
-import chatIcon from '../../assets/icons/chat.svg';
-import shareIcon from '../../assets/icons/share.svg';
+import ReformerPurchaseBlockModal from '../../components/common/Modal/ReformerPurchaseBlockModal'; 
+import OptionDropdown from '../../components/common/product/option/option-dropdown/OptionDropdown';
+
+import type { OptionItem as OptionItemType } from '../../components/common/product/option/option-dropdown/OptionItem';
+
 import { useMarketProductDetail } from '../../hooks/domain/market/useMarketProductList';
 import { useMarketProductPhotoReview } from '../../hooks/domain/market/useMarketProductList';
 import { useMarketProductReviewList } from '../../hooks/domain/market/useMarketProductList';
-import OptionDropdown from '../../components/common/product/option/option-dropdown/OptionDropdown';
-import type { OptionItem as OptionItemType } from '../../components/common/product/option/option-dropdown/OptionItem';
-import { useWish } from '../../hooks/domain/wishlist/useWish';
-import { getWishList } from '../../api/wishlist';
-import useAuthStore from '../../stores/useAuthStore';
 import { useAddToCart } from '../../hooks/domain/cart/useAddToCart';
-import ReformerPurchaseBlockModal from '../../components/common/Modal/ReformerPurchaseBlockModal';  
+import { useWish } from '../../hooks/domain/wishlist/useWish';
+
+import { getWishList } from '../../api/wishlist';
+
+
+ 
 
 const formatPrice = (price: number) => {
   return price.toLocaleString('ko-KR');
@@ -46,6 +58,19 @@ const MarketProductDetailPage = () => {
   const [localLiked, setLocalLiked] = useState<boolean | null>(null);
   const [showReformerModal, setShowReformerModal] = useState(false);
   const [modalMessageType, setModalMessageType] = useState<'wish' | 'cart' | 'purchase' | 'chat'>('purchase');
+  const [showPhotoReviewModal, setShowPhotoReviewModal] = useState(false);
+
+  // 모달 열림 시 body 스크롤 막기
+  useEffect(() => {
+    if (showPhotoReviewModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showPhotoReviewModal]);
   
   const infoRef = useRef<HTMLDivElement>(null);
   const reformerRef = useRef<HTMLDivElement>(null);
@@ -163,7 +188,7 @@ const MarketProductDetailPage = () => {
   }
 
   const product = productDetailResponse.success;
-  const photoReview = photoReviewResponse?.success.photos || [];
+  const photoReview = photoReviewResponse?.success?.photos || [];
   const reviewList = reviewListResponse?.success.reviews || [];
   const reviewCount = reviewListResponse?.success.total_count || 0;
   const avgStar = reviewListResponse?.success.avg_star || 0;
@@ -236,9 +261,7 @@ const MarketProductDetailPage = () => {
 
   return (
     <div className=" min-h-screen  mt-[2.75rem]">
-    
       <div className="flex mx-[7.125rem] gap-[2.9375rem] mb-[2.75rem]">
-        
         <div className="w-150 h-[630px]">
           <div className="h-[600px]">   
             <ImageCarousel images={images.length > 0 ? images : [thumbnail]} isClosed={false} />
@@ -609,6 +632,7 @@ const MarketProductDetailPage = () => {
             <div className="w-[8.4375rem] h-[8.4375rem] rounded-full bg-[var(--color-gray-20)] flex items-center justify-center">             
                  <img src={product.reformer.profile_image} alt="profile" className="w-full h-full object-cover rounded-full" />
             </div>
+            
             <div className="flex-1 flex flex-col gap-[2.625rem]">
               <div className="flex flex-col gap-[0.75rem]">
                 <h2 className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
@@ -688,19 +712,39 @@ const MarketProductDetailPage = () => {
                   </span>
                 </div>
               </div>
+
+              
               <div className="border-b border-[var(--color-line-gray-40)] pb-[2.6875rem]">
                 <h3 className="body-b0-bd text-[1.25rem] text-[var(--color-black)] mb-[0.75rem]">
-                  사진 후기 (182)
+                  사진 후기 ({photoReviewResponse?.success?.total_count})
                 </h3>
-                <div className="flex gap-[0.3125rem]">
-                    {photoReview.map((photo: { photo_index: number; photo_url: string; }) => ( 
-                      <img
-                        key={photo.photo_index}
-                        src={photo.photo_url}
-                        alt={`후기 이미지 ${photo.photo_index + 1}`}
-                        className="w-[10.625rem] h-[10.625rem] rounded-[0.625rem] overflow-hidden relative"
-                      />
-                    ))}
+                <div className="flex justify-between">
+                    {photoReview.slice(0, 7).map((photo: { photo_index: number; photo_url: string; }, index: number) => {
+                      const totalCount = photoReviewResponse?.success?.total_count || 0;
+                      const remainingCount = totalCount - 7;
+                      const isLast = index === 6 && remainingCount > 0;
+                      
+                      return (
+                        <div 
+                          key={photo.photo_index} 
+                          className="relative flex-shrink-0 cursor-pointer"
+                          onClick={() => isLast && setShowPhotoReviewModal(true)}
+                        >
+                          <img
+                            src={photo.photo_url}
+                            alt={`후기 이미지 ${photo.photo_index + 1}`}
+                            className="w-[170px] h-[170px]  object-cover"
+                          />
+                          {isLast &&  (
+                            <div className="absolute inset-0 bg-black/50  flex items-center justify-center">
+                              <span className="text-white text-[1rem] font-medium">
+                                + {remainingCount} 더보기
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             </div>
@@ -751,6 +795,50 @@ const MarketProductDetailPage = () => {
         onClose={() => setShowReformerModal(false)}
         messageType={modalMessageType}
       />
+
+      {showPhotoReviewModal && createPortal(
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setShowPhotoReviewModal(false)}
+        >
+          <div
+            className="relative bg-white rounded-[1.875rem] max-w-[1125px] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            
+            <div className="relative flex items-center justify-center p-6">
+              <h2 className="heading-h5-md">
+                사진 후기 ({photoReviewResponse?.success?.total_count || 0})
+              </h2>
+              <button
+                onClick={() => setShowPhotoReviewModal(false)}
+                className="absolute right-6  cursor-pointer"
+              >
+                <img src={xIcon} alt="닫기" className="w-10 h-10" />
+              </button>
+            </div>
+
+        
+            <div className="overflow-y-auto px-6 pb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-[0.375rem]">
+                {photoReview.map((photo: { photo_index: number; photo_url: string; }) => (
+                  <div
+                    key={photo.photo_index}
+                    className="relative aspect-square overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                  >
+                    <img
+                      src={photo.photo_url}
+                      alt={`후기 이미지 ${photo.photo_index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
   

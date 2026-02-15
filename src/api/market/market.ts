@@ -59,7 +59,7 @@ export const getMarketProductReviewList = async (
 export const getMarketProductPhotoReview = async (
     params: MarketProductPhotoReviewRequest
 ): Promise<MarketProductPhotoReviewResponse> => {
-    const response = await api.get<MarketProductPhotoReviewResponse>(`/market/${params.itemId}/reviews/photos`, {
+    const response = await api.get<MarketProductPhotoReviewResponse>(`/reviews/target/ITEM/${params.itemId}/reviews/photos`, {
         params: {
             offset: params.offset,
             limit: params.limit,
