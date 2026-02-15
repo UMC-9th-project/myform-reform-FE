@@ -46,6 +46,14 @@ export const useOrderProposalDetail = () => {
         throw new Error(data.error?.message || '제안서 상세 조회 실패');
       }
 
+  
+      if (!data.success.price || data.success.price === 0) {
+        const retryData = await getReformProposalDetail(id);
+        if (retryData.resultType === 'SUCCESS' && retryData.success) {
+          return retryData;
+        }
+      }
+
       return data;
     },
     enabled: !!id,
@@ -179,8 +187,11 @@ export const useOrderProposalDetail = () => {
           .map((img) => img.photo)
       : [];
 
-  const formattedPrice =
-    proposalDetail != null ? formatWon(proposalDetail.price) : '';
+  const formattedPrice = useMemo(() => {
+    if (proposalDetail == null) return '';
+    const price = proposalDetail.price ?? 0;
+    return formatWon(price);
+  }, [proposalDetail]);
   const formattedShippingFee =
     proposalDetail != null ? formatShippingFee(proposalDetail.delivery) : '';
   const formattedEstimatedPeriod =

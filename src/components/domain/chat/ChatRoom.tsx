@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { getChatMessages } from '@/api/chat/chatApi';
+import { getReformProposalDetail } from '@/api/order/reformProposal';
+import type { ReformProposalDetail } from '@/types/api/order/reformProposal';
 import Gallery from '@/assets/chat/gallery.svg';
 import QuotationCard from './QuotationCard';
 import RequireCard from './RequireCard';
@@ -66,6 +68,42 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
 
   const roomInfo = data?.pages[0]?.chatRoomInfo;
 
+  // PROPOSAL 타입일 때 제안서 상세 조회
+  const proposalId = roomInfo?.type === 'PROPOSAL' ? roomInfo.targetPayload?.id : null;
+
+  const { data: proposalDetailResponse } = useQuery({
+    queryKey: ['reform-proposal-detail', proposalId],
+    queryFn: async () => {
+      if (!proposalId) {
+        return null;
+      }
+      const data = await getReformProposalDetail(proposalId);
+      if (data.resultType !== 'SUCCESS' || !data.success) {
+        return null;
+      }
+      return data.success;
+    },
+    enabled: !!proposalId,
+    staleTime: 1000 * 60 * 5, 
+  });
+
+  const proposalDetail = React.useMemo((): ReformProposalDetail | null => {
+    if (!proposalDetailResponse) return null;
+    
+    if ('resultType' in proposalDetailResponse && proposalDetailResponse.resultType === 'SUCCESS') {
+      const response = proposalDetailResponse as unknown as { resultType: string; success: ReformProposalDetail | null; error: { code: string; message: string } | null };
+      if (response.success && 'price' in response.success) {
+        return response.success;
+      }
+    }
+    
+    if ('price' in proposalDetailResponse) {
+      return proposalDetailResponse as ReformProposalDetail;
+    }
+    
+    return null;
+  }, [proposalDetailResponse]);
+
   const myUserId = React.useMemo(() => {
     if (!roomInfo) return undefined;
     return myRole === 'REFORMER' ? roomInfo.owner.id : roomInfo.requester.id;
@@ -95,7 +133,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     roomInfo?.requesterLastReadId,
     roomInfo?.owner.id,
     myUserId,
-    data,
+    roomInfo,
   ]);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -255,13 +293,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       readerId: string;
       lastReadMessageId: string;
     }) => {
-      console.log('📖 readStatus 받음:', {
-        받은데이터: data,
-        현재chatId: chatId,
-        내ID: myUserId,
-        일치여부: data.chatRoomId === chatId,
-      });
-
       if (data.chatRoomId !== chatId) return;
 
       queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
@@ -273,15 +304,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
           if (idx !== 0) return page;
 
           const isReaderOwner = page.chatRoomInfo.owner.id === data.readerId;
-
-          console.log('🔍 비교:', {
-            ownerID: page.chatRoomInfo.owner.id,
-            readerID: data.readerId,
-            isReaderOwner,
-            기존ownerLastReadId: page.chatRoomInfo.ownerLastReadId,
-            기존requesterLastReadId: page.chatRoomInfo.requesterLastReadId,
-            새로운lastReadMessageId: data.lastReadMessageId,
-          });
 
           return {
             ...page,
@@ -298,7 +320,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
         });
 
         const result = { ...oldData, pages: updatedPages };
-        console.log('✅ 업데이트 완료:', result.pages[0].chatRoomInfo);
         return result;
       });
     };
@@ -415,7 +436,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       socket.off('newMessage', handleNewMessage);
       socket.off('readStatus', handleReadStatus);
     };
-  }, [accessToken, chatId, queryClient]);
+  }, [accessToken, chatId, queryClient, myUserId]);
 
   /* =========================
    * 4. 핸들러 함수
@@ -704,14 +725,19 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
             ) : (
               <p className="text-[14px] font-bold text-black">
                 {(() => {
-                  // 배열이 이미 시간순이므로 마지막 proposal 찾기
+                  // 제안서 상세에서 금액 가져오기
+                  if (proposalDetail?.price) {
+                    return proposalDetail.price.toLocaleString('ko-KR') + '원';
+                  }
+                  // 제안서 상세가 없으면 메시지에서 찾기
                   const proposals = messages.filter(
                     (msg) => msg.messageType === 'proposal'
                   );
                   const lastProposal = proposals[proposals.length - 1];
-                  return (
-                    (lastProposal?.payload?.price ?? 0).toLocaleString() + '원'
-                  );
+                  if (lastProposal?.payload?.price) {
+                    return lastProposal.payload.price.toLocaleString('ko-KR') + '원';
+                  }
+                  return '0원';
                 })()}
               </p>
             )}
@@ -1030,7 +1056,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                   </button>
                 </>
               )}
-              {myRole === 'USER' && roomType !== 'PROPOSAL' && (
+              {myRole === 'USER' && roomType === 'PROPOSAL' && (
                 <button
                   onClick={handleSendAction}
                   className="px-3 py-1 border border-[var(--color-gray-50)] rounded-full body-b5-rg text-[var(--color-gray-50)]"
