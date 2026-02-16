@@ -511,6 +511,7 @@ const MarketPurchasePage = () => {
            
             <div className="border-b border-[var(--color-line-gray-40)] pb-[4.125rem] relative">
              
+              {/* 탭 버튼들 */}
               <div className="flex border-b border-[var(--color-line-gray-40)]">
                 <button
                   type="button"
@@ -558,66 +559,7 @@ const MarketPurchasePage = () => {
                 </button>
               </div>
 
-             
               <div className="flex flex-col gap-[1.875rem] mt-[2.875rem]">
-                {/* 기존 배송지 목록 */}
-                {activeTab === 'existing' && (
-                  <div className="flex flex-col gap-[0.9375rem] mb-[1.875rem]">
-                    {isAddressesLoading ? (
-                      <div className="body-b1-rg text-[var(--color-gray-60)] py-4">
-                        주소를 불러오는 중...
-                      </div>
-                    ) : addressesData?.success && addressesData.success.length > 0 ? (
-                      <div className="flex flex-col gap-[0.9375rem]">
-                        {addressesData.success.map((address) => (
-                          <button
-                            key={address.addressId}
-                            type="button"
-                            onClick={() => {
-                              setSelectedAddressId(address.addressId);
-                              setDeliveryAddress({
-                                zipcode: address.postalCode,
-                                address: address.address,
-                                detailAddress: address.addressDetail,
-                                name: address.addressName,
-                                recipient: address.recipient,
-                                phone: address.phone,
-                              });
-                            }}
-                            className={`border rounded-[0.625rem] p-4 text-left transition-colors ${
-                              selectedAddressId === address.addressId
-                                ? 'border-[var(--color-mint-0)] bg-[var(--color-mint-0)]/10'
-                                : 'border-[var(--color-line-gray-40)] hover:border-[var(--color-gray-50)]'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="body-b1-sb text-black">
-                                {address.addressName}
-                                {address.isDefault && (
-                                  <span className="ml-2 body-b2-rg text-[var(--color-mint-0)]">
-                                    [기본]
-                                  </span>
-                                )}
-                              </span>
-                            </div>
-                            <div className="body-b1-rg text-[var(--color-gray-60)]">
-                              <div>{address.recipient}</div>
-                              <div>{address.phone}</div>
-                              <div>
-                                ({address.postalCode}) {address.address} {address.addressDetail}
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="body-b1-rg text-[var(--color-gray-60)] py-4">
-                        등록된 배송지가 없습니다.
-                      </div>
-                    )}
-                  </div>
-                )}
-                
                 {/* 배송지 입력 필드 (기존/신규 공통) */}
                 <div className="flex flex-col gap-[1.875rem]">
                   <div className="flex gap-[2rem] items-center">
@@ -736,6 +678,64 @@ const MarketPurchasePage = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* 기존 배송지 목록 */}
+                {activeTab === 'existing' && (
+                  <div className="flex flex-col gap-[0.9375rem]">
+                    {isAddressesLoading ? (
+                      <div className="body-b1-rg text-[var(--color-gray-60)] py-4">
+                        주소를 불러오는 중...
+                      </div>
+                    ) : addressesData?.success && addressesData.success.length > 0 ? (
+                      <div className="flex flex-col gap-[0.9375rem]">
+                        {addressesData.success.map((address) => (
+                          <button
+                            key={address.addressId}
+                            type="button"
+                            onClick={() => {
+                              setSelectedAddressId(address.addressId);
+                              setDeliveryAddress({
+                                zipcode: address.postalCode,
+                                address: address.address,
+                                detailAddress: address.addressDetail,
+                                name: address.addressName,
+                                recipient: address.recipient,
+                                phone: address.phone,
+                              });
+                            }}
+                            className={`border rounded-[0.625rem] p-4 text-left transition-colors ${
+                              selectedAddressId === address.addressId
+                                ? 'border-[var(--color-mint-0)] bg-[var(--color-mint-0)]/10'
+                                : 'border-[var(--color-line-gray-40)] hover:border-[var(--color-gray-50)]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="body-b1-sb text-black">
+                                {address.addressName}
+                                {address.isDefault && (
+                                  <span className="ml-2 body-b2-rg text-[var(--color-mint-0)]">
+                                    [기본]
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+                            <div className="body-b1-rg text-[var(--color-gray-60)]">
+                              <div>{address.recipient}</div>
+                              <div>{address.phone}</div>
+                              <div>
+                                ({address.postalCode}) {address.address} {address.addressDetail}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="body-b1-rg text-[var(--color-gray-60)] py-4">
+                        등록된 배송지가 없습니다.
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
