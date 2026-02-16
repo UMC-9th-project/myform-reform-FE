@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { getChatMessages } from '@/api/chat/chatApi';
 import { getReformProposalDetail } from '@/api/order/reformProposal';
@@ -8,7 +13,14 @@ import Gallery from '@/assets/chat/gallery.svg';
 import QuotationCard from './QuotationCard';
 import RequireCard from './RequireCard';
 import PaymentModal, { type PaymentRequestData } from './PaymentModal';
-import type { PaymentPayload, RoomType } from '@/types/api/chat/chatMessages';
+import type {
+  ChatMessage,
+  ChatMessagesPage,
+  ChatRoomInfo,
+  ChatRoomWithUnread,
+  PaymentPayload,
+  RoomType,
+} from '@/types/api/chat/chatMessages';
 import { connectSocket, getSocket } from '@/utils/domain/socket';
 import useAuthStore from '@/stores/useAuthStore';
 import { uploadImages } from '@/api/upload';
@@ -42,14 +54,52 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
    * 1. React Query 무한 스크롤 설정
    * ========================= */
   // select 제거
+
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery({
+    useInfiniteQuery<ChatMessagesPage, Error>({
       queryKey: ['chatMessages', chatId],
-      queryFn: ({ pageParam }) =>
-        getChatMessages(chatId, { cursor: pageParam as string }),
-      initialPageParam: null as string | null,
+      queryFn: async ({ pageParam }: { pageParam?: unknown }) => {
+        // pageParam이 null이면 undefined로 바꿔주기
+        const cursor = pageParam == null ? undefined : (pageParam as string);
+
+        const res = await getChatMessages(chatId, { cursor });
+
+        const chatRoomInfo = res.chatRoomInfo
+          ? {
+              owner: {
+                ...res.chatRoomInfo.owner,
+                profileImage: res.chatRoomInfo.owner.profileImage ?? null,
+              },
+              requester: {
+                ...res.chatRoomInfo.requester,
+                profileImage: res.chatRoomInfo.requester.profileImage ?? null,
+              },
+              ownerLastReadId: res.chatRoomInfo.ownerLastReadId,
+              requesterLastReadId: res.chatRoomInfo.requesterLastReadId,
+              type: res.chatRoomInfo.type,
+              targetPayload: res.chatRoomInfo.targetPayload
+                ? {
+                    ...res.chatRoomInfo.targetPayload,
+                    minBudget:
+                      res.chatRoomInfo.targetPayload.minBudget ?? undefined,
+                    maxBudget:
+                      res.chatRoomInfo.targetPayload.maxBudget ?? undefined,
+                    image: res.chatRoomInfo.targetPayload.image ?? undefined,
+                  }
+                : undefined,
+            }
+          : undefined;
+
+        return {
+          messages: res.messages,
+          nextCursor: res.nextCursor,
+          hasMore: res.hasMore,
+          chatRoomInfo,
+        };
+      },
       getNextPageParam: (lastPage) =>
         lastPage.hasMore ? lastPage.nextCursor : undefined,
+      initialPageParam: null, // 무시 가능, pageParam = null이면 undefined 처리
     });
 
   // messages를 useMemo로 계산
@@ -69,7 +119,8 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   const roomInfo = data?.pages[0]?.chatRoomInfo;
 
   // PROPOSAL 타입일 때 제안서 상세 조회
-  const proposalId = roomInfo?.type === 'PROPOSAL' ? roomInfo.targetPayload?.id : null;
+  const proposalId =
+    roomInfo?.type === 'PROPOSAL' ? roomInfo.targetPayload?.id : null;
 
   const { data: proposalDetailResponse } = useQuery({
     queryKey: ['reform-proposal-detail', proposalId],
@@ -84,23 +135,30 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       return data.success;
     },
     enabled: !!proposalId,
-    staleTime: 1000 * 60 * 5, 
+    staleTime: 1000 * 60 * 5,
   });
 
   const proposalDetail = React.useMemo((): ReformProposalDetail | null => {
     if (!proposalDetailResponse) return null;
-    
-    if ('resultType' in proposalDetailResponse && proposalDetailResponse.resultType === 'SUCCESS') {
-      const response = proposalDetailResponse as unknown as { resultType: string; success: ReformProposalDetail | null; error: { code: string; message: string } | null };
+
+    if (
+      'resultType' in proposalDetailResponse &&
+      proposalDetailResponse.resultType === 'SUCCESS'
+    ) {
+      const response = proposalDetailResponse as unknown as {
+        resultType: string;
+        success: ReformProposalDetail | null;
+        error: { code: string; message: string } | null;
+      };
       if (response.success && 'price' in response.success) {
         return response.success;
       }
     }
-    
+
     if ('price' in proposalDetailResponse) {
       return proposalDetailResponse as ReformProposalDetail;
     }
-    
+
     return null;
   }, [proposalDetailResponse]);
 
@@ -165,60 +223,67 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       return;
     }
 
-    const tempMessage = {
+    const tempMessage: ChatMessage = {
       messageId: `temp-${Date.now()}`,
       senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
-      senderId: myUserId,
+      senderId: myUserId!,
       messageType: 'image',
+      textContent: null, // 필수
       payload: { urls: imageUrls },
       createdAt: new Date().toISOString(),
-      isRead: false,
     };
 
-    /** 1️⃣ 채팅 메시지 낙관적 UI */
-    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-      if (!oldData) return oldData;
+    // 1️⃣ 채팅 메시지 낙관적 업데이트
+    queryClient.setQueryData<InfiniteData<ChatMessagesPage>>(
+      ['chatMessages', chatId],
+      (oldData) => {
+        if (!oldData) return oldData;
 
-      const lastPageIndex = oldData.pages.length - 1;
-      const updatedPages = [...oldData.pages];
-      updatedPages[lastPageIndex] = {
-        ...updatedPages[lastPageIndex],
-        messages: [...updatedPages[lastPageIndex].messages, tempMessage],
-      };
+        const lastPageIndex = oldData.pages.length - 1;
+        const updatedPages = [...oldData.pages];
+        updatedPages[lastPageIndex] = {
+          ...updatedPages[lastPageIndex],
+          messages: [...updatedPages[lastPageIndex].messages, tempMessage],
+        };
 
-      return { ...oldData, pages: updatedPages };
-    });
+        return { ...oldData, pages: updatedPages };
+      }
+    );
 
-    /** 2️⃣ 모든 채팅 탭 UI 낙관적 업데이트 */
+    // 2️⃣ 채팅방 리스트 낙관적 업데이트
+    type ChatRoomsQuery = { data: ChatRoomInfo[] };
     [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach((filterType) => {
-      queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
-        if (!oldData?.data) return oldData;
+      queryClient.setQueryData<ChatRoomsQuery>(
+        ['chatRooms', filterType],
+        (oldData) => {
+          if (!oldData?.data) return oldData;
 
-        const updatedData = oldData.data.map((room: any) =>
-          room.chatRoomId === chatId
-            ? {
-                ...room,
-                lastMessage: '사진',
-                lastMessageAt: tempMessage.createdAt,
-              }
-            : room
-        );
+          const updatedData = oldData.data.map((room) =>
+            room.chatRoomId === chatId
+              ? {
+                  ...room, // 기존 필드 유지
+                  lastMessage: inputText,
+                  lastMessageAt: tempMessage.createdAt,
+                }
+              : room
+          );
 
-        const targetRoom = updatedData.find(
-          (room: any) => room.chatRoomId === chatId
-        );
-        if (!targetRoom) return oldData; // 안전 체크
+          const targetRoom = updatedData.find(
+            (room) => room.chatRoomId === chatId
+          );
+          if (!targetRoom) return oldData;
 
-        const sortedData = [
-          targetRoom,
-          ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
-        ];
+          const sortedData = [
+            targetRoom,
+            ...updatedData.filter((room) => room.chatRoomId !== chatId),
+          ];
 
-        return { ...oldData, data: sortedData };
-      });
+          return { ...oldData, data: sortedData };
+        }
+      );
     });
 
-    /** 3️⃣ 서버 전송 */
+    // 3️⃣ 서버 전송
     socket.emit('sendMessage', {
       roomId: chatId,
       contentType: 'image',
@@ -275,16 +340,19 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
         socket.emit('readChatRoom', { roomId: chatId });
         isJoined = true;
 
-        // ✅ 방 입장 시 탭의 unreadCount 바로 0 처리
-        queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
-          if (!oldData?.data) return oldData;
+        // ✅ 채팅방 목록 낙관적 업데이트
+        queryClient.setQueryData<{ data: ChatRoomInfo[] }>(
+          ['chatRooms', undefined],
+          (oldData) => {
+            if (!oldData?.data) return oldData;
 
-          const updatedData = oldData.data.map((room: any) =>
-            room.chatRoomId === chatId ? { ...room, unreadCount: 0 } : room
-          );
+            const updatedData = oldData.data.map((room) =>
+              room.chatRoomId === chatId ? { ...room, unreadCount: 0 } : room
+            );
 
-          return { ...oldData, data: updatedData };
-        });
+            return { ...oldData, data: updatedData };
+          }
+        );
       }
     };
 
@@ -295,78 +363,89 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     }) => {
       if (data.chatRoomId !== chatId) return;
 
-      queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-        if (!oldData) {
-          return oldData;
-        }
-
-        const updatedPages = oldData.pages.map((page: any, idx: number) => {
-          if (idx !== 0) return page;
-
-          const isReaderOwner = page.chatRoomInfo.owner.id === data.readerId;
-
-          return {
-            ...page,
-            chatRoomInfo: {
-              ...page.chatRoomInfo,
-              ownerLastReadId: isReaderOwner
-                ? data.lastReadMessageId
-                : page.chatRoomInfo.ownerLastReadId,
-              requesterLastReadId: !isReaderOwner
-                ? data.lastReadMessageId
-                : page.chatRoomInfo.requesterLastReadId,
-            },
-          };
-        });
-
-        const result = { ...oldData, pages: updatedPages };
-        return result;
-      });
-    };
-
-    const handleNewMessage = (msg: any) => {
-      const isCurrentRoom = !msg.chatRoomId || msg.chatRoomId === chatId;
-
-      // 1️⃣ 현재 채팅방의 메시지만 메시지 목록에 추가
-      if (isCurrentRoom) {
-        queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+      queryClient.setQueryData<InfiniteData<ChatMessagesPage>>(
+        ['chatMessages', chatId],
+        (oldData) => {
           if (!oldData) return oldData;
 
-          const lastPageIndex = oldData.pages.length - 1;
-          const updatedPages = [...oldData.pages];
+          const updatedPages = oldData.pages.map((page, idx) => {
+            if (idx !== 0) return page;
 
-          updatedPages[lastPageIndex] = {
-            ...updatedPages[lastPageIndex],
-            messages: [...updatedPages[lastPageIndex].messages, msg],
-          };
+            const owner = page.chatRoomInfo!.owner; // 절대 undefined 아님
+            const requester = page.chatRoomInfo!.requester;
 
-          const isReaderOwner =
-            oldData.pages[0].chatRoomInfo.owner.id === myUserId;
+            const isReaderOwner = owner.id === data.readerId;
 
-          updatedPages[0] = {
-            ...updatedPages[0],
-            chatRoomInfo: {
-              ...updatedPages[0].chatRoomInfo,
-              ownerLastReadId: isReaderOwner
-                ? msg.messageId
-                : updatedPages[0].chatRoomInfo.ownerLastReadId,
-              requesterLastReadId: !isReaderOwner
-                ? msg.messageId
-                : updatedPages[0].chatRoomInfo.requesterLastReadId,
-            },
-          };
+            return {
+              ...page,
+              chatRoomInfo: {
+                ...page.chatRoomInfo!,
+                ownerLastReadId: isReaderOwner
+                  ? data.lastReadMessageId
+                  : page.chatRoomInfo!.ownerLastReadId,
+                requesterLastReadId: !isReaderOwner
+                  ? data.lastReadMessageId
+                  : page.chatRoomInfo!.requesterLastReadId,
+                owner,
+                requester,
+                type: page.chatRoomInfo!.type,
+                targetPayload: page.chatRoomInfo!.targetPayload ?? null,
+              },
+            };
+          });
 
-          return {
-            ...oldData,
-            pages: updatedPages,
-          };
-        });
+          return { ...oldData, pages: updatedPages };
+        }
+      );
+    };
 
-        // 서버에도 읽음 알림
+    const handleNewMessage = (msg: ChatMessage) => {
+      const isCurrentRoom = true;
+
+      // 1️⃣ 현재 채팅방 메시지 추가
+      if (isCurrentRoom) {
+        queryClient.setQueryData<InfiniteData<ChatMessagesPage>>(
+          ['chatMessages', chatId],
+          (oldData) => {
+            if (!oldData) return oldData;
+
+            const lastPageIndex = oldData.pages.length - 1;
+            const updatedPages = [...oldData.pages];
+
+            updatedPages[lastPageIndex] = {
+              ...updatedPages[lastPageIndex],
+              messages: [...updatedPages[lastPageIndex].messages, msg],
+            };
+
+            const isReaderOwner =
+              oldData.pages[0].chatRoomInfo?.owner.id === myUserId;
+
+            updatedPages[0] = {
+              ...updatedPages[0],
+              chatRoomInfo: {
+                ...updatedPages[0].chatRoomInfo!,
+                ownerLastReadId: isReaderOwner
+                  ? msg.messageId
+                  : updatedPages[0].chatRoomInfo!.ownerLastReadId,
+                requesterLastReadId: !isReaderOwner
+                  ? msg.messageId
+                  : updatedPages[0].chatRoomInfo!.requesterLastReadId,
+                // owner / requester / type / targetPayload는 그대로 유지
+                owner: updatedPages[0].chatRoomInfo!.owner,
+                requester: updatedPages[0].chatRoomInfo!.requester,
+                type: updatedPages[0].chatRoomInfo!.type,
+                targetPayload:
+                  updatedPages[0].chatRoomInfo!.targetPayload ?? null,
+              },
+            };
+            return { ...oldData, pages: updatedPages };
+          }
+        );
+
         socket?.emit('readChatRoom', { roomId: chatId });
       }
 
-      // 2️⃣ 모든 채팅방에 대해 탭 목록 업데이트
+      // 2️⃣ 모든 채팅방 목록 업데이트
       const lastMessageText =
         msg.messageType === 'text'
           ? msg.textContent
@@ -377,54 +456,50 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
               : msg.messageType === 'request'
                 ? '(요청서)'
                 : msg.messageType === 'payment'
-                  ? '(결제창) '
+                  ? '(결제창)'
                   : msg.messageType === 'result'
                     ? '(결제 완료)'
                     : msg.messageType === 'accept'
                       ? '거래 진행 여부'
                       : '(새로운 메시지)';
 
-      const targetRoomId = msg.chatRoomId || chatId;
-
       [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach((filterType) => {
-        queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
-          if (!oldData?.data) return oldData;
+        queryClient.setQueryData<{ data: ChatRoomWithUnread[] }>(
+          ['chatRooms', filterType],
+          (oldData) => {
+            if (!oldData?.data) return oldData;
 
-          const updatedData = oldData.data.map((room: any) => {
-            if (room.chatRoomId !== targetRoomId) return room;
+            const updatedData = oldData.data.map((room) => {
+              if (room.chatRoomId !== chatId) return room;
 
-            // 현재 채팅방이면 unreadCount 0, 다른 채팅방이면 +1
-            const newUnreadCount = isCurrentRoom
-              ? 0
-              : (room.unreadCount || 0) + 1;
+              const newUnreadCount = isCurrentRoom
+                ? 0
+                : (room.unreadCount ?? 0) + 1;
 
-            return {
-              ...room,
-              lastMessage: lastMessageText,
-              lastMessageAt: msg.createdAt,
-              unreadCount: newUnreadCount,
-            };
-          });
+              return {
+                ...room,
+                lastMessage: lastMessageText,
+                lastMessageAt: msg.createdAt,
+                unreadCount: newUnreadCount,
+              };
+            });
 
-          // 메시지가 온 채팅방을 맨 위로
-          const targetRoom = updatedData.find(
-            (room: any) => room.chatRoomId === targetRoomId
-          );
-          if (!targetRoom) return { ...oldData, data: updatedData };
+            const targetRoom = updatedData.find(
+              (room) => room.chatRoomId === chatId
+            );
+            if (!targetRoom) return { ...oldData, data: updatedData };
 
-          const sortedData = [
-            targetRoom,
-            ...updatedData.filter(
-              (room: any) => room.chatRoomId !== targetRoomId
-            ),
-          ];
+            const sortedData = [
+              targetRoom,
+              ...updatedData.filter((r) => r.chatRoomId !== chatId),
+            ];
 
-          return { ...oldData, data: sortedData };
-        });
+            return { ...oldData, data: sortedData };
+          }
+        );
       });
     };
 
-    // 소켓 이벤트 등록
     if (socket.connected) handleConnect();
     socket.on('connect', handleConnect);
     socket.on('newMessage', handleNewMessage);
@@ -442,7 +517,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
    * 4. 핸들러 함수
    * ========================= */
   const handleSend = () => {
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || !myUserId) return;
 
     const socket = getSocket();
     if (!socket || !socket.connected) {
@@ -450,7 +525,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       return;
     }
 
-    const tempMessage = {
+    const tempMessage: ChatMessage & { isRead: boolean } = {
       messageId: `temp-${Date.now()}`, // 임시 ID
       senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
       senderId: myUserId, // 임시
@@ -462,46 +537,53 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     };
 
     //text 낙관적 UI
-    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-      if (!oldData) return oldData;
+    queryClient.setQueryData<InfiniteData<ChatMessagesPage>>(
+      ['chatMessages', chatId],
+      (oldData) => {
+        if (!oldData) return oldData;
 
-      const lastPageIndex = oldData.pages.length - 1;
-      const updatedPages = [...oldData.pages];
-      updatedPages[lastPageIndex] = {
-        ...updatedPages[lastPageIndex],
-        messages: [...updatedPages[lastPageIndex].messages, tempMessage],
-      };
+        const lastPageIndex = oldData.pages.length - 1;
+        const updatedPages = [...oldData.pages];
+        updatedPages[lastPageIndex] = {
+          ...updatedPages[lastPageIndex],
+          messages: [...updatedPages[lastPageIndex].messages, tempMessage],
+        };
 
-      return { ...oldData, pages: updatedPages };
-    });
+        return { ...oldData, pages: updatedPages };
+      }
+    );
 
     // 2️⃣ 모든 채팅 탭 UI 낙관적 업데이트
     [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach((filterType) => {
-      queryClient.setQueryData(['chatRooms', filterType], (oldData: any) => {
-        if (!oldData?.data) return oldData;
+      queryClient.setQueryData<{ data: ChatRoomWithUnread[] }>(
+        ['chatRooms', filterType],
+        (oldData) => {
+          if (!oldData?.data) return oldData;
 
-        const updatedData = oldData.data.map((room: any) =>
-          room.chatRoomId === chatId
-            ? {
-                ...room,
-                lastMessage: inputText,
-                lastMessageAt: tempMessage.createdAt,
-              }
-            : room
-        );
+          const updatedData = oldData.data.map((room) =>
+            room.chatRoomId === chatId
+              ? {
+                  ...room,
+                  lastMessage: inputText,
+                  lastMessageAt: tempMessage.createdAt,
+                }
+              : room
+          );
 
-        // 메시지가 온 채팅방 맨 위로
-        const targetRoom = updatedData.find(
-          (room: any) => room.chatRoomId === chatId
-        );
-        if (!targetRoom) return oldData;
-        const sortedData = [
-          targetRoom,
-          ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
-        ];
+          // 메시지가 온 채팅방 맨 위로
+          const targetRoom = updatedData.find(
+            (room) => room.chatRoomId === chatId
+          );
+          if (!targetRoom) return oldData;
 
-        return { ...oldData, data: sortedData };
-      });
+          const sortedData = [
+            targetRoom,
+            ...updatedData.filter((room) => room.chatRoomId !== chatId),
+          ];
+
+          return { ...oldData, data: sortedData };
+        }
+      );
     });
 
     // 서버로 전송
@@ -516,54 +598,72 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   };
 
   const handlePaymentSend = (paymentData: PaymentRequestData) => {
+    if (!myUserId) return;
+
     const socket = getSocket();
     if (!socket || !socket.connected) return;
 
-    const tempMessage = {
+    const tempMessage: ChatMessage & { isRead: boolean } = {
       messageId: `temp-${Date.now()}`,
       senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
       senderId: myUserId,
-      messageType: 'payment', // 여기 중요
+      messageType: 'payment',
+      textContent: null,
       payload: {
         price: paymentData.price,
         delivery: paymentData.delivery,
         expectedWorking: paymentData.expectedWorking,
-      },
+        orderId: '', // 임시 값
+        receiptNumber: '', // 임시 값
+      } as PaymentPayload,
       createdAt: new Date().toISOString(),
       isRead: false,
     };
 
     // 1️⃣ 낙관적 UI
-    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-      if (!oldData) return oldData;
-      const lastPageIndex = oldData.pages.length - 1;
-      const updatedPages = [...oldData.pages];
-      updatedPages[lastPageIndex] = {
-        ...updatedPages[lastPageIndex],
-        messages: [...updatedPages[lastPageIndex].messages, tempMessage],
-      };
-      return { ...oldData, pages: updatedPages };
-    });
+    queryClient.setQueryData<InfiniteData<ChatMessagesPage>>(
+      ['chatMessages', chatId],
+      (oldData) => {
+        if (!oldData) return oldData;
+        const lastPageIndex = oldData.pages.length - 1;
+        const updatedPages = [...oldData.pages];
+        updatedPages[lastPageIndex] = {
+          ...updatedPages[lastPageIndex],
+          messages: [...updatedPages[lastPageIndex].messages, tempMessage],
+        };
+        return { ...oldData, pages: updatedPages };
+      }
+    );
 
     // 2️⃣ 채팅 탭 UI
-    queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
-      if (!oldData?.data) return oldData;
-      const updatedData = oldData.data.map((room: any) =>
-        room.chatRoomId === chatId
-          ? {
-              ...room,
-              lastMessage: '결제 요청',
-              lastMessageAt: tempMessage.createdAt,
-            }
-          : room
-      );
-      const sortedData = [
-        updatedData.find((room: any) => room.chatRoomId === chatId)!,
-        ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
-      ];
-      return { ...oldData, data: sortedData };
-    });
+    queryClient.setQueryData<{ data: ChatRoomWithUnread[] }>(
+      ['chatRooms', undefined],
+      (oldData) => {
+        if (!oldData?.data) return oldData;
 
+        const updatedData = oldData.data.map((room) =>
+          room.chatRoomId === chatId
+            ? {
+                ...room,
+                lastMessage: '결제 요청',
+                lastMessageAt: tempMessage.createdAt,
+              }
+            : room
+        );
+
+        const targetRoom = updatedData.find(
+          (room) => room.chatRoomId === chatId
+        )!;
+        const sortedData = [
+          targetRoom,
+          ...updatedData.filter((r) => r.chatRoomId !== chatId),
+        ];
+
+        return { ...oldData, data: sortedData };
+      }
+    );
+
+    // 서버 전송
     socket.emit('sendMessage', {
       roomId: chatId,
       contentType: 'payment',
@@ -575,12 +675,14 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   };
 
   const handlePaymentFinishOptimistic = (payload: PaymentPayload) => {
-    const tempResultMessage = {
+    const tempResultMessage: ChatMessage & { isRead: boolean } = {
       messageId: `temp-result-${Date.now()}`,
       senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
-      senderId: myUserId,
+      senderId: myUserId!,
       messageType: 'result',
+      textContent: null,
       payload: {
+        currency: 'KRW',
         totalAmount: payload.price,
         receiptNumber: '-', // 서버에서 채워줄 예정
         approvedAt: new Date().toISOString(),
@@ -594,34 +696,50 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       isRead: false,
     };
 
-    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-      if (!oldData) return oldData;
-      const lastPageIndex = oldData.pages.length - 1;
-      const updatedPages = [...oldData.pages];
-      updatedPages[lastPageIndex] = {
-        ...updatedPages[lastPageIndex],
-        messages: [...updatedPages[lastPageIndex].messages, tempResultMessage],
-      };
-      return { ...oldData, pages: updatedPages };
-    });
+    // 1️⃣ 메시지 낙관적 UI
+    queryClient.setQueryData<InfiniteData<ChatMessagesPage>>(
+      ['chatMessages', chatId],
+      (oldData) => {
+        if (!oldData) return oldData;
 
-    queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
-      if (!oldData?.data) return oldData;
-      const updatedData = oldData.data.map((room: any) =>
-        room.chatRoomId === chatId
-          ? {
-              ...room,
-              lastMessage: '결제 완료',
-              lastMessageAt: tempResultMessage.createdAt,
-            }
-          : room
-      );
-      const sortedData = [
-        updatedData.find((room: any) => room.chatRoomId === chatId)!,
-        ...updatedData.filter((room: any) => room.chatRoomId !== chatId),
-      ];
-      return { ...oldData, data: sortedData };
-    });
+        const lastPageIndex = oldData.pages.length - 1;
+        const updatedPages = [...oldData.pages];
+        updatedPages[lastPageIndex] = {
+          ...updatedPages[lastPageIndex],
+          messages: [
+            ...updatedPages[lastPageIndex].messages,
+            tempResultMessage,
+          ],
+        };
+
+        return { ...oldData, pages: updatedPages };
+      }
+    );
+
+    // 2️⃣ 채팅방 UI 낙관적 업데이트
+    queryClient.setQueryData<{ data: ChatRoomWithUnread[] }>(
+      ['chatRooms', undefined],
+      (oldData) => {
+        if (!oldData?.data) return oldData;
+
+        const updatedData = oldData.data.map((room) =>
+          room.chatRoomId === chatId
+            ? {
+                ...room,
+                lastMessage: '결제 완료',
+                lastMessageAt: tempResultMessage.createdAt,
+              }
+            : room
+        );
+
+        const sortedData = [
+          updatedData.find((room) => room.chatRoomId === chatId)!,
+          ...updatedData.filter((room) => room.chatRoomId !== chatId),
+        ];
+
+        return { ...oldData, data: sortedData };
+      }
+    );
   };
 
   const handleSendAction = () => {
@@ -644,48 +762,60 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
 
   const handleAnswerEstimate = (messageId: string, isAccepted: boolean) => {
     const socket = getSocket();
-    if (!socket || !socket.connected) return;
+    if (!socket || !socket.connected || !myUserId) return;
 
-    const tempMessage = {
+    const tempMessage: ChatMessage & { isRead: boolean } = {
       messageId: `temp-${isAccepted ? 'accept' : 'reject'}-${Date.now()}`,
       senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
-      senderId: myUserId,
+      senderId: myUserId!,
       messageType: 'accept',
+      textContent: null,
       payload: { isAccepted },
       createdAt: new Date().toISOString(),
       isRead: false,
     };
 
     // 메시지 UI 업데이트
-    queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-      if (!oldData) return oldData;
-      const lastPageIndex = oldData.pages.length - 1;
-      const updatedPages = [...oldData.pages];
-      updatedPages[lastPageIndex] = {
-        ...updatedPages[lastPageIndex],
-        messages: [...updatedPages[lastPageIndex].messages, tempMessage],
-      };
-      return { ...oldData, pages: updatedPages };
-    });
+    queryClient.setQueryData<InfiniteData<ChatMessagesPage>>(
+      ['chatMessages', chatId],
+      (oldData) => {
+        if (!oldData) return oldData;
+
+        const lastPageIndex = oldData.pages.length - 1;
+        const updatedPages = [...oldData.pages];
+        updatedPages[lastPageIndex] = {
+          ...updatedPages[lastPageIndex],
+          messages: [...updatedPages[lastPageIndex].messages, tempMessage],
+        };
+        return { ...oldData, pages: updatedPages };
+      }
+    );
 
     // 채팅 리스트 탭 UI
-    queryClient.setQueryData(['chatRooms', undefined], (oldData: any) => {
-      if (!oldData?.data) return oldData;
-      const updatedData = oldData.data.map((room: any) => {
-        if (room.chatRoomId !== chatId) return room;
-        return {
-          ...room,
-          lastMessage: isAccepted ? '문의 진행 중' : '제안 거절됨',
-          lastMessageAt: tempMessage.createdAt,
-        };
-      });
-      const targetRoom = updatedData.find((r: any) => r.chatRoomId === chatId);
-      const sortedData = [
-        targetRoom,
-        ...updatedData.filter((r: any) => r.chatRoomId !== chatId),
-      ];
-      return { ...oldData, data: sortedData };
-    });
+    queryClient.setQueryData<{ data: ChatRoomWithUnread[] }>(
+      ['chatRooms', undefined],
+      (oldData) => {
+        if (!oldData?.data) return oldData;
+
+        const updatedData = oldData.data.map((room) =>
+          room.chatRoomId === chatId
+            ? {
+                ...room,
+                lastMessage: isAccepted ? '문의 진행 중' : '제안 거절됨',
+                lastMessageAt: tempMessage.createdAt,
+              }
+            : room
+        );
+
+        const targetRoom = updatedData.find((r) => r.chatRoomId === chatId)!;
+        const sortedData = [
+          targetRoom,
+          ...updatedData.filter((r) => r.chatRoomId !== chatId),
+        ];
+
+        return { ...oldData, data: sortedData };
+      }
+    );
 
     // 서버 전송
     socket.emit('sendMessage', {
@@ -735,7 +865,9 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                   );
                   const lastProposal = proposals[proposals.length - 1];
                   if (lastProposal?.payload?.price) {
-                    return lastProposal.payload.price.toLocaleString('ko-KR') + '원';
+                    return (
+                      lastProposal.payload.price.toLocaleString('ko-KR') + '원'
+                    );
                   }
                   return '0원';
                 })()}
