@@ -36,7 +36,7 @@ export const connectSocket = (accessToken: string) => {
     console.error('소켓 연결 에러:', err.message);
   });
 
-  socket.on('disconnect', (reason) => {
+  socket.on('disconnect', (_reason) => {
     // 소켓 연결 종료
   });
 

@@ -106,8 +106,6 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
       imageUrls = res.success.url;
     }
 
-    let result;
-
     if (type === 'sale') {
       // --- 판매글 payload ---
       const saleOptions: SaleOption[] = optionGroups.map(
@@ -136,7 +134,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
         imageUrls,
       };
 
-      result = await createSale(payload);
+      await createSale(payload);
 
     } else {
       // --- 주문제작 payload ---
@@ -153,7 +151,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
         imageUrls,
       };
 
-      result = await createOrder(payload);
+      await createOrder(payload);
     }
 
     // 공통 성공 처리
