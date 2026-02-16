@@ -1,11 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import LoginForm from '../../components/domain/login/Form/LoginForm';
+import { useNavigate } from 'react-router-dom';
 import logo2 from '../../assets/logos/logo2.svg';
 import kakaologin from '../../assets/login/kakaologin.svg';
 import { startKakaoLogin } from '../../api/auth';
 
 const Login = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isReformer = location.pathname.includes('reformer');
   
   const handleKakaoLogin = () => {
@@ -14,7 +16,7 @@ const Login = () => {
   };
     return (
         <div className=" w-[543px] mx-auto flex flex-col justify-center items-center h-screen">
-          <div className="mb-[1.5625rem] py-[2.16688rem]" >
+          <div className="mb-[1.5625rem] py-[2.16688rem] cursor-pointer" onClick={() => navigate('/home')}>
             <img src={logo2} alt="logo" />
           </div>
     
