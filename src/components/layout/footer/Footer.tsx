@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../../assets/logos/logo.svg';
 import AgreementTermsModal from '../../domain/signup/modal/AgreementTermsModal';
+import FooterModal from './FooterModal';
 import {
   SERVICE_TERMS_CONTENT,
   PRIVACY_TERMS_CONTENT,
@@ -18,6 +19,7 @@ const Footer = ({ variant = 'dark' }: FooterProps) => {
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false);
   const [isReformerModalOpen, setIsReformerModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [isFooterModalOpen, setIsFooterModalOpen] = useState(false);
 
   return (
     <footer
@@ -89,7 +91,7 @@ const Footer = ({ variant = 'dark' }: FooterProps) => {
           </ul>
         </div>
       </div>
-      <button className="body-b0-sb w-39 h-[54px] mt-[1.5rem] rounded-[0.625rem] cursor-pointer hover:scale-95 text-[var(--color-black)] bg-[var(--color-white)]">
+      <button className="body-b0-sb w-39 h-[54px] mt-[1.5rem] rounded-[0.625rem] cursor-pointer hover:scale-95 text-[var(--color-black)] bg-[var(--color-white)]" onClick={() => setIsFooterModalOpen(true)}>
         문의하기
       </button>
       <div className="mt-[1.6875rem]">
@@ -141,6 +143,11 @@ const Footer = ({ variant = 'dark' }: FooterProps) => {
         onClose={() => setIsPrivacyModalOpen(false)}
         title="개인정보처리방침"
         content={PRIVACY_TERMS_CONTENT}
+      />
+
+      <FooterModal
+        isOpen={isFooterModalOpen} 
+        onClose={() => setIsFooterModalOpen(false)}
       />
     </footer>
   );

@@ -147,6 +147,7 @@ function App() {
         <Route path="/market" element={<Market />} />
         <Route path="/market/product/:id" element={<MarketProductDetailPage />} />
         <Route path="/market/product/:id/purchase" element={<MarketPurchasePage />} />
+        <Route path="/market/purchase" element={<MarketPurchasePage />} />
         <Route path="/market/product/:id/purchase/complete" element={<MarketPurchaseCompletePage />} />
         
 

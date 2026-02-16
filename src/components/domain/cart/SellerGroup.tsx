@@ -12,6 +12,7 @@ interface SellerGroupProps {
   quantities: number[];
   itemChecked: boolean[];
   sellerChecked: boolean;
+  productImageLoadingMap?: Map<string, boolean>;
   onSellerCheck: (checked: boolean) => void;
   onItemCheck: (productIndex: number, checked: boolean) => void;
   onQuantityChange: (productIndex: number, newQuantity: number) => void;
@@ -25,6 +26,7 @@ const SellerGroup = ({
   quantities,
   itemChecked,
   sellerChecked,
+  productImageLoadingMap,
   onSellerCheck,
   onItemCheck,
   onQuantityChange,
@@ -65,6 +67,7 @@ const SellerGroup = ({
         const productIndexInAll = allProducts.findIndex(
           (p) => p.id === product.id
         );
+        const isImageLoading = product.itemId ? (productImageLoadingMap?.get(product.itemId) ?? false) : false;
         return (
           <CartItem
             key={product.id}
@@ -72,6 +75,7 @@ const SellerGroup = ({
             quantity={quantities[productIndexInAll] || 1}
             isChecked={itemChecked[productIndexInAll] || false}
             isFirst={productIndex === 0}
+            isImageLoading={isImageLoading}
             onCheck={(checked) => onItemCheck(productIndexInAll, checked)}
             onQuantityChange={(newQuantity) =>
               onQuantityChange(productIndexInAll, newQuantity)

@@ -34,7 +34,7 @@ const ReformerOrderRequestDetailPage = () => {
     return <div className="p-8">요청서를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</div>;
   }
 
-  const { title, content, name, profile } = requestDetail;
+  const { title, content, nickname, profile } = requestDetail;
 
   const breadcrumbItems = [
     { label: '홈', path: '/' },
@@ -70,14 +70,14 @@ const ReformerOrderRequestDetailPage = () => {
                   {profile ? (
                     <img
                       src={profile}
-                      alt={name}
+                      alt={nickname}
                       className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="w-full h-full bg-[var(--color-gray-30)]" />
                   )}
                 </div>
-                <span className="body-b1-rg text-[var(--color-gray-60)]">{name}</span>
+                <span className="body-b1-rg text-[var(--color-gray-60)]">{nickname}</span>
               </div>
               <button
                 onClick={handleShare}

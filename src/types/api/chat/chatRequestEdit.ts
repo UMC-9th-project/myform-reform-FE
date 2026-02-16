@@ -3,8 +3,8 @@ export interface UpdateChatRequestPayload {
   image: string[];
   title: string;
   content: string;
-  minBudget: number;
-  maxBudget: number;
+  minBudget: number | null;
+  maxBudget: number | null;
 }
 
 // 수정 성공 응답

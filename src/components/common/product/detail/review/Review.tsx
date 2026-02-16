@@ -1,4 +1,5 @@
 import { Star } from 'lucide-react';
+import profileIcon from '../../../../../assets/icons/profile.svg';
 
 interface ReviewProps {
   userName?: string;
@@ -22,11 +23,11 @@ const Review = ({
       {/* 상단: 프로필 정보 */}
       <div className="w-[341px] flex items-start gap-4 mb-4">
         {/* 프로필 사진 */}
-        <div className="w-[58px] h-[58px] rounded-full bg-pink-200 flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-300">
-          {profileImg ? (
+        <div className="w-[58px] h-[58px] rounded-full bg-[var(--color-gray-30)] flex-shrink-0 flex items-center justify-center overflow-hidden border border-gray-300">
+          {profileImg && profileImg.trim() !== '' ? (
             <img src={profileImg} alt={userName} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-pink-200 to-pink-300" />
+            <img src={profileIcon} alt={userName} className="w-full h-full object-cover scale-150" />
           )}
         </div>
 

@@ -30,13 +30,21 @@ export const transformCartItemsToProducts = (
         .split('')
         .reduce((acc, char) => acc + char.charCodeAt(0), 0) % 1000000;
       
+      // 이미지 우선순위: imageUrl > images 배열의 첫 번째 > image_url > thumbnail
+      const imageUrl = 
+        item.imageUrl ||
+        (item.images && Array.isArray(item.images) && item.images.length > 0 ? item.images[0] : undefined) ||
+        item.image_url ||
+        item.thumbnail ||
+        undefined;
+      
       products.push({
         id: cartIdHash,
         sellerId: ownerIndex,
         price: item.price,
         name: item.title,
         option: optionText,
-        imageUrl: item.imageUrl,
+        imageUrl: imageUrl,
         cartId: item.cartId,
         itemId: item.itemId,
       });

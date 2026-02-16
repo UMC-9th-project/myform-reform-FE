@@ -1,8 +1,8 @@
 import shareIcon from '../../../../assets/icons/share.svg';
 import starIcon from '../../../../assets/icons/star.svg';
+import profileIcon from '../../../../assets/icons/profile.svg';
 import Button from '../../button/Button1';
 import LikeButton from '../../likebutton/LikeButton';
-import profile from '../../../domain/market/images/profile.png';
 
 interface ReformerInfo {
   id: string;
@@ -47,12 +47,16 @@ const ProductInfoCard = ({
       {/* 리폼러 정보 */}
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-[var(--color-gray-60)]">
-            <img 
-              src={reformer.profileImg && reformer.profileImg.trim() !== '' ? reformer.profileImg : profile} 
-              alt={reformer.name} 
-              className="w-full h-full object-cover" 
-            />
+          <div className="w-12 h-12 rounded-full overflow-hidden bg-[var(--color-gray-30)] flex items-center justify-center">
+            {reformer.profileImg && reformer.profileImg.trim() !== '' ? (
+              <img 
+                src={reformer.profileImg} 
+                alt={reformer.name} 
+                className="w-full h-full object-cover" 
+              />
+            ) : (
+              <img src={profileIcon} alt={reformer.name} className="w-full h-full object-cover scale-150" />
+            )}
           </div>
           <div>
             <p className="body-b1-rg text-[var(--color-gray-60)]">{reformer.name}</p>

@@ -2,12 +2,41 @@ import { verifyPayment } from '@/api/chat/orderApi';
 import type { PaymentPayload } from '@/types/api/chat/chatMessages';
 import React from 'react';
 
+declare global {
+  interface Window {
+    IMP?: IMP;
+  }
+}
+
+interface IMP {
+  init: (storeId: string) => void;
+  agency?: string;
+  request_pay: (data: IMPRequest, callback: (rsp: IMPResponse) => void) => void;
+}
+
+interface IMPRequest {
+  pg: string;
+  pay_method: string;
+  merchant_uid: string;
+  name: string;
+  amount: number;
+  buyer_name: string;
+}
+
+interface IMPResponse {
+  success: boolean;
+  imp_uid?: string;
+  paid_amount?: number;
+  error_msg?: string;
+}
+
 export interface PaymentCardProps {
   nickname: string;
   type: 'sent' | 'received';
   payload: PaymentPayload;
   role: 'USER' | 'REFORMER';
   onFinish?: (payload: PaymentPayload) => void;
+  chatRoomId: string;
 }
 
 const PaymentCard: React.FC<PaymentCardProps> = ({
@@ -21,15 +50,20 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
   const isReformer = role === 'REFORMER';
   const displayNickname = nickname || '심심한 리본';
 
-  const { price, delivery, expectedWorking: days, receiptNumber } = payload;
+  const {
+    price,
+    delivery,
+    expectedWorking: days,
+    receiptNumber,
+    orderId,
+    chatRoomId,
+  } = payload;
   const totalPrice = (Number(price) || 0) + (Number(delivery) || 0);
 
-  // ✅ 포트원 V1 SDK 로드
   const loadPortOne = (): Promise<void> => {
     return new Promise((resolve, reject) => {
-      if ((window as any).IMP) {
-        // 이미 초기화되었는지 확인
-        const IMP = (window as any).IMP;
+      if (window.IMP) {
+        const IMP = window.IMP;
         if (!IMP.agency) {
           IMP.init(import.meta.env.VITE_PORTONE_STORE_ID);
         }
@@ -40,7 +74,7 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
       script.src = 'https://cdn.iamport.kr/v1/iamport.js';
       script.async = true;
       script.onload = () => {
-        const IMP = (window as any).IMP;
+        const IMP = window.IMP;
         if (!IMP) return reject(new Error('포트원 SDK 로드 실패'));
         IMP.init(import.meta.env.VITE_PORTONE_STORE_ID);
         resolve();
@@ -51,15 +85,13 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
   };
 
   const handlePaymentClick = async () => {
-    if (role === 'REFORMER') {
+    if (isReformer) {
       return alert('리폼러는 결제를 진행할 수 없습니다.');
     }
 
     try {
       await loadPortOne();
-      const IMP = (window as any).IMP;
-      if (!IMP) throw new Error('포트원 SDK 로드 실패');
-
+      const IMP = window.IMP!;
       IMP.request_pay(
         {
           pg: 'html5_inicis',
@@ -69,33 +101,36 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
           amount: totalPrice,
           buyer_name: displayNickname,
         },
-        (rsp: any) => {
+        (rsp: IMPResponse) => {
           if (rsp.success) {
+            console.log('payment completed event fired', chatRoomId);
             alert(
-              `결제가 완료되었습니다.\n결제 금액: ${rsp.paid_amount.toLocaleString()}원`
+              `결제가 완료되었습니다.\n결제 금액: ${rsp.paid_amount?.toLocaleString() ?? 0}원`
             );
 
-            // ✅ 결제 완료 시 콜백
-            if (onFinish) {
-              onFinish({
-                ...payload,
-                expectedWorking: payload.expectedWorking, // PaymentPayload 타입 맞춤
+            onFinish?.({
+              ...payload,
+              expectedWorking: days,
+            });
+
+            if (orderId && rsp.imp_uid) {
+              verifyPayment({
+                order_id: orderId,
+                imp_uid: rsp.imp_uid,
+              }).then(() => {
+                window.dispatchEvent(
+                  new CustomEvent('payment-completed', {
+                    detail: { chatRoomId: chatRoomId },
+                  })
+                );
               });
             }
-
-            // 서버 검증
-            if (payload.orderId) {
-              verifyPayment({
-                order_id: payload.orderId,
-                imp_uid: rsp.imp_uid,
-              }).then(() => {});
-            }
           } else {
-            alert(`결제 실패: ${rsp.error_msg}`);
+            alert(`결제 실패: ${rsp.error_msg ?? '알 수 없는 오류'}`);
           }
         }
       );
-    } catch (err) {
+    } catch (err: unknown) {
       alert((err as Error).message);
     }
   };
@@ -105,7 +140,11 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
       className={`flex w-full gap-2 ${isSent ? 'justify-end' : 'justify-start'}`}
     >
       <div
-        className={`${isSent ? 'bg-[var(--color-mint-5)] rounded-2xl rounded-tr-none' : 'bg-[var(--color-gray-20)] rounded-2xl rounded-tl-none'} p-5 min-w-[23rem] shadow-sm`}
+        className={`${
+          isSent
+            ? 'bg-[var(--color-mint-5)] rounded-2xl rounded-tr-none'
+            : 'bg-[var(--color-gray-20)] rounded-2xl rounded-tl-none'
+        } p-5 min-w-[23rem] shadow-sm`}
       >
         <h2 className="heading-h5-sb mb-3 text-black">내폼리폼 안전 결제</h2>
         <p className="body-b4-sb mb-5 text-[var(--color-gray-70)]">
@@ -142,11 +181,9 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center mt-2 mb-2 body-b4-sb"></div>
-
         <button
           onClick={handlePaymentClick}
-          className="w-full bg-black text-white py-3 rounded-xl body-b4-sb transition-colors cursor-pointer"
+          className="w-full bg-black text-white py-3 rounded-xl body-b4-sb transition-colors cursor-pointer mt-2"
         >
           {isReformer ? '리폼러는 결제할 수 없습니다' : '결제창으로 이동하기'}
         </button>

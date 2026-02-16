@@ -22,3 +22,33 @@ export const deleteCartItems = async (
   const response = await api.delete<DeleteCartResponse>('/cart/items', { data });
   return response.data;
 };
+
+// 수량 증가/감소 응답 타입
+export interface UpdateCartQuantityResponse {
+  resultType: 'SUCCESS' | 'FAIL';
+  error: null | {
+    errorCode: string;
+    reason: string;
+    data?: unknown;
+  };
+  success: {
+    cartId: string;
+    updatedAt: string;
+  } | null;
+}
+
+// 수량 증가
+export const increaseCartQuantity = async (
+  cartId: string
+): Promise<UpdateCartQuantityResponse> => {
+  const response = await api.patch<UpdateCartQuantityResponse>(`/cart/${cartId}/inc`);
+  return response.data;
+};
+
+// 수량 감소
+export const decreaseCartQuantity = async (
+  cartId: string
+): Promise<UpdateCartQuantityResponse> => {
+  const response = await api.patch<UpdateCartQuantityResponse>(`/cart/${cartId}/dec`);
+  return response.data;
+};
