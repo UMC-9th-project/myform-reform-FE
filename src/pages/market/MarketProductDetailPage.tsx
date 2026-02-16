@@ -760,7 +760,7 @@ const MarketProductDetailPage = () => {
 
             <div className="flex flex-col">
               {reviewList.length > 0 ? (
-                reviewList.slice(0, 4).map((review) => (
+                reviewList.slice(0, 5).map((review) => (
                   <div
                     key={review.review_id}
                     className="py-[2.5rem]"
