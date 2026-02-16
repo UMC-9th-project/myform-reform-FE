@@ -754,11 +754,12 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
           e.detail
         );
 
-        // 무한 스크롤 쿼리 전체 새로고침
-        queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
-          // 필요하다면 초기화하거나 새로 가져오기
-          return oldData; // 그냥 새로고침만 하려면 refetchQueries 사용
-        });
+        queryClient.setQueryData<InfiniteData<ChatMessagesPage>>(
+          ['chatMessages', chatId],
+          (oldData) => {
+            return oldData;
+          }
+        );
 
         queryClient.refetchQueries({
           predicate: (query) =>
@@ -792,7 +793,20 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
 
       {/* 상단 상품 정보 */}
       {roomInfo && (roomType === 'REQUEST' || roomType === 'PROPOSAL') && (
-        <div className="flex items-center p-4 border-b border-[var(--color-line-gray-40)] bg-white">
+        <div
+          className="flex items-center p-4 border-b border-[var(--color-line-gray-40)] bg-white cursor-pointer"
+          onClick={() => {
+            const targetId = roomInfo.targetPayload?.id;
+            if (!targetId) return;
+
+            // 요청서 / 제안서 상세 페이지 이동
+            if (roomType === 'REQUEST') {
+              navigate(`/reformer/order/requests/${targetId}`);
+            } else if (roomType === 'PROPOSAL') {
+              navigate(`/reformer/order/proposals/${targetId}`);
+            }
+          }}
+        >
           <img
             src={roomInfo.targetPayload?.image ?? ''}
             alt="상품"
@@ -810,23 +824,9 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
               </p>
             ) : (
               <p className="text-[14px] font-bold text-black">
-                {(() => {
-                  // 제안서 상세에서 금액 가져오기
-                  if (proposalDetail?.price) {
-                    return proposalDetail.price.toLocaleString('ko-KR') + '원';
-                  }
-                  // 제안서 상세가 없으면 메시지에서 찾기
-                  const proposals = messages.filter(
-                    (msg) => msg.messageType === 'proposal'
-                  );
-                  const lastProposal = proposals[proposals.length - 1];
-                  if (lastProposal?.payload?.price) {
-                    return (
-                      lastProposal.payload.price.toLocaleString('ko-KR') + '원'
-                    );
-                  }
-                  return '0원';
-                })()}
+                {proposalDetail?.price
+                  ? proposalDetail.price.toLocaleString('ko-KR') + '원'
+                  : '0원'}
               </p>
             )}
           </div>
