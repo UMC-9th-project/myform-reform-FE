@@ -19,12 +19,12 @@ export const useLogout = (): UseLogoutReturn => {
     onSuccess: () => {
       queryClient.removeQueries({ queryKey: ['wishlist'] });
       clearAuth();
-      navigate('/');
+      navigate('/home');
     },
     onError: () => {
       queryClient.removeQueries({ queryKey: ['wishlist'] });
       clearAuth();
-      navigate('/');
+      navigate('/home');
     },
   });
 

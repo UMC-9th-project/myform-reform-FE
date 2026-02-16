@@ -43,7 +43,7 @@ export interface ReformRequestDetail {
   content: string;
   minBudget: number;
   maxBudget: number;
-  name: string;
+  nickname: string;
   profile: string;
   images: ReformRequestImage[];
   /** 수정 시 폼 pre-fill용 (상세 API에서 내려주는 경우) */

@@ -14,7 +14,7 @@ const SignupIndex = () => {
 
   return (
     <div className=" w-[543px] mx-auto flex flex-col justify-center items-center h-screen">
-      <div className="mb-[1.5625rem] py-[2.16688rem]">
+      <div className="mb-[1.5625rem] py-[2.16688rem] cursor-pointer" onClick={() => navigate('/home')}>
         <img src={logo2} alt="logo" />
       </div>
 

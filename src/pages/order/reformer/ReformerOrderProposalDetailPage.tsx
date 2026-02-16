@@ -8,12 +8,15 @@ import ReformerProfileDetailCard from '../../../components/common/product/detail
 import ProductReviewSection from '../../../components/common/product/detail/ProductReviewSection';
 import Button from '../../../components/common/button/Button1';
 import { useReformerOrderProposalDetail } from '../../../hooks/domain/order/useReformerOrderProposalDetail';
+import { createChatRoom } from '../../../api/chat/chatApi';
+import useAuthStore from '../../../stores/useAuthStore';
 
 const ITEMS_PER_PAGE = 5;
 
 const ReformerOrderProposalDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const accessToken = useAuthStore((state) => state.accessToken);
   const {
     proposalDetail,
     profile,
@@ -78,7 +81,66 @@ const ReformerOrderProposalDetailPage = () => {
 
   const isMyProposal = proposalDetail.isOwner;
 
-  const handleRequest = () => {};
+  const handleRequest = async () => {
+    if (!accessToken) {
+      navigate('/login/type');
+      return;
+    }
+
+    if (!proposalDetail || !id) return;
+    
+    const proposalId = proposalDetail.reformProposalId || id;
+    const targetId = proposalId;
+    
+    if (!targetId) {
+      alert('제안글 정보를 불러올 수 없습니다.');
+      return;
+    }
+
+    try {
+      const requestPayload = {
+        dto: {
+          id: targetId,
+          type: 'PROPOSAL' as const,
+        },
+      };
+      
+      const roomRes = await createChatRoom(requestPayload);
+
+      if (roomRes.resultType !== 'SUCCESS' || !roomRes.success) {
+        const errorMessage = roomRes.error?.reason || '채팅방 생성 실패';
+        
+        const tokenErrorKeywords = ['토큰', 'Access Token', '유효하지 않은', '존재하지 않거나', '인증'];
+        const isTokenError = tokenErrorKeywords.some(keyword => errorMessage.includes(keyword));
+        
+        if (isTokenError) {
+          navigate('/login/type');
+          return;
+        }
+        
+        alert(`채팅방 생성에 실패했습니다: ${errorMessage}`);
+        return;
+      }
+
+      const chatRoomId = roomRes.success.id;
+      
+      navigate(`/chat/normal/${chatRoomId}`);
+    } catch (error) {
+      const errorMessage = (error as { response?: { data?: { error?: { reason?: string } } }; message?: string })?.response?.data?.error?.reason || 
+                           (error as { message?: string })?.message || 
+                           '알 수 없는 오류가 발생했습니다.';
+      
+      const tokenErrorKeywords = ['토큰', 'Access Token', '유효하지 않은', '존재하지 않거나', '인증'];
+      const isTokenError = tokenErrorKeywords.some(keyword => errorMessage.includes(keyword));
+      
+      if (isTokenError) {
+        navigate('/login/type');
+        return;
+      }
+      
+      alert(`채팅방 생성에 실패했습니다: ${errorMessage}`);
+    }
+  };
 
   const handleLike = (liked: boolean) => {
     setIsLiked(liked);
@@ -127,7 +189,7 @@ const ReformerOrderProposalDetailPage = () => {
               onLikeClick={handleLike}
               onShareClick={handleShare}
               onRequestClick={handleRequest}
-              showButtons={false}
+              showButtons={!isMyProposal}
             />
             {isMyProposal && (
               <div className="mt-7">

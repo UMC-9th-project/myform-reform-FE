@@ -15,7 +15,6 @@ const ITEMS_PER_PAGE = 5;
 const OrderProposalDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const user = useAuthStore((state) => state.user);
   const accessToken = useAuthStore((state) => state.accessToken);
   const {
     proposalDetail,
@@ -80,8 +79,7 @@ const OrderProposalDetailPage = () => {
   }
 
   const handleRequest = async () => {
-    // 비로그인 상태면 로그인 타입 선택 페이지로 이동
-    if (!user || !user.id || !accessToken) {
+    if (!accessToken) {
       navigate('/login/type');
       return;
     }
@@ -129,7 +127,6 @@ const OrderProposalDetailPage = () => {
       // 채팅 페이지로 이동
       navigate(`/chat/normal/${chatRoomId}`);
     } catch (error) {
-      console.error('채팅방 생성 에러:', error);
       const errorMessage = (error as { response?: { data?: { error?: { reason?: string } } }; message?: string })?.response?.data?.error?.reason || 
                            (error as { message?: string })?.message || 
                            '알 수 없는 오류가 발생했습니다.';

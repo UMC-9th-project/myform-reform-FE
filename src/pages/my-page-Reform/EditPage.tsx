@@ -29,7 +29,6 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
   const [images, setImages] = useState<ImageType[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { id } = useParams<{ id: string }>();
-  console.log('현재 id:', id);
   // Step 2,4,5, 6 상태 추가
   const [title, setTitle] = useState<string>('');
   const [price, setPrice] = useState<string>(''); // string으로 받음
@@ -515,7 +514,6 @@ const EditPage: React.FC<CreatePageProps> = ({ type }) => {
                       onClick={() => {
                       setCategory(cat);
                       setSubCategory(''); // 소분류 초기화
-                      console.log('대분류 클릭:', cat); // 확인용
                     }}
                 >
                   {cat}

@@ -14,16 +14,11 @@ const SignupTypeSelection = () => {
   const isKakaoLogin = searchParams.get('kakao') === 'true';
 
   const handleTypeSelect = (userType: 'user' | 'reformer') => {
-    console.log('타입 선택:', userType);
-    console.log('isLoginMode:', isLoginMode);
-    console.log('isKakaoLogin:', isKakaoLogin);
-    
     if (isLoginMode) {
       navigate(userType === 'user' ?  '/login' : '/login/reformer');
     } else if (isKakaoLogin) {
       // 카카오 로그인인 경우 선택한 타입으로 카카오 로그인 시작
       // 회원가입이 필요한 경우 /kakao/signup으로 리다이렉트
-      console.log('카카오 로그인 시작:', userType);
       startKakaoLogin(userType, '/kakao/signup');
     } else {
       // 일반 이메일 회원가입인 경우
@@ -33,7 +28,7 @@ const SignupTypeSelection = () => {
 
   return (
     <div className=" w-[543px] mx-auto flex flex-col justify-center items-center h-screen">
-      <div className="mb-[1.5625rem] py-[2.16688rem]">
+      <div className="mb-[1.5625rem] py-[2.16688rem] cursor-pointer" onClick={() => navigate('/home')}>
         <img src={logo2} alt="logo" />
       </div>
 

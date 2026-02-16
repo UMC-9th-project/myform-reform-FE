@@ -94,9 +94,6 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
 
     const handleSubmit = async () => {
   try {
-    const token = localStorage.getItem('accessToken');
-    console.log('현재 localStorage accessToken:', token);
-
     // 이미지 업로드
     const files = images.map(img => img.file);
     let imageUrls: string[] = [];
@@ -108,8 +105,6 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
       const res = await uploadImages(files);
       imageUrls = res.success.url;
     }
-
-    let result;
 
     if (type === 'sale') {
       // --- 판매글 payload ---
@@ -139,7 +134,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
         imageUrls,
       };
 
-      result = await createSale(payload);
+      await createSale(payload);
 
     } else {
       // --- 주문제작 payload ---
@@ -156,12 +151,11 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
         imageUrls,
       };
 
-      result = await createOrder(payload);
+      await createOrder(payload);
     }
 
     // 공통 성공 처리
     alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 등록 완료!`);
-    console.log('등록 결과:', result);
     navigate('/reformer-mypage'); 
 
   } catch (error) {
@@ -444,7 +438,6 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                       onClick={() => {
                       setCategory(cat);
                       setSubCategory(''); // 소분류 초기화
-                      console.log('대분류 클릭:', cat); // 확인용
                     }}
                 >
                   {cat}
