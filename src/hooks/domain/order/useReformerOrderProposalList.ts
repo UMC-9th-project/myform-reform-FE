@@ -55,7 +55,6 @@ export const useReformerOrderProposalList = () => {
         category,
         subcategory,
       };
-      console.log('[제안 목록 API] 요청 params:', params);
       const data = await getReformProposalList(params);
 
       if (data.resultType !== 'SUCCESS' || !data.success) {

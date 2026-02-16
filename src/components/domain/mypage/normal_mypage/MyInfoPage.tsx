@@ -112,7 +112,6 @@ const MyInfoPage = () => {
 
 
   const handleComplete = (data: AddressData) => {
-    console.log('DaumPostcode data:', data);
     setNewAddress((prev) => ({
       ...prev,
       postalCode: data.zonecode,
@@ -517,7 +516,6 @@ const MyInfoPage = () => {
           <div className="bg-white p-6 rounded-lg w-[720px] max-w-[90vw] h-[520px] flex flex-col">
             <DaumPostcode
               onComplete={(data) => {
-                console.log('DaumPostcode 선택됨:', data); // 여기 찍히는지 확인
                 handleComplete(data);
               }}
               autoClose

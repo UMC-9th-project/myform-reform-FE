@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import Input from '../../components/domain/purchase/Input';
 import Button2 from '../../components/common/button/Button2';
 import useAuthStore from '../../stores/useAuthStore';
@@ -9,13 +10,15 @@ import { usePayment } from '../../hooks/domain/payment/usePayment';
 import { useOrderSheet } from '../../hooks/domain/payment/useOrderSheet';
 import type { DeliveryAddress } from '../../types/payment/payment';
 import { createOrderFromCart } from '../../api/order/cartOrder';
-import { createAddress } from '../../api/mypage/address';
+import { createAddress, getAddresses } from '../../api/mypage/address';
 import { loadPortOneSDK, requestPortonePayment } from '../../services/payment/paymentService';
 import { verifyPayment } from '../../api/chat/orderApi';
 import type { PaymentResponse } from '../../types/payment/payment';
 import type { CreateAddressRequest, AddressItem } from '../../types/domain/mypage/address';
 import type { GetOrderSheetFromCartResponse } from '../../api/order/cartOrder';
 import { sanitizePhoneNumber } from '../../utils/common/phone';
+import { getMarketProductDetail } from '../../api/market/market';
+import type { CartProduct } from '../../types/api/cart/cart';
 
 
 const MarketPurchasePage = () => {
@@ -44,6 +47,106 @@ const MarketPurchasePage = () => {
   });
   const [isProcessingCartPayment, setIsProcessingCartPayment] = useState(false);
   const [cartPaymentError, setCartPaymentError] = useState<string | null>(null);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+
+  // 주소 목록 조회 (기존 배송지 탭이 활성화되어 있을 때만)
+  const { data: addressesData, isLoading: isAddressesLoading } = useQuery({
+    queryKey: ['addresses', 1, 15, 'asc'],
+    queryFn: () => getAddresses(1, 15, 'asc'),
+    enabled: activeTab === 'existing',
+  });
+
+  // 장바구니에서 온 경우 이미지가 없는 아이템들을 찾아서 상품 상세 API로 이미지 가져오기
+  const itemsWithoutImages = useMemo(() => {
+    if (!fromCart || !orderSheet || !selectedProducts) {
+      return [];
+    }
+    
+    const itemsToFetch: Array<{ itemId: string; groupIndex: number; itemIndex: number }> = [];
+    
+    orderSheet.seller_groups.forEach((sellerGroup, groupIndex) => {
+      sellerGroup.items.forEach((item, itemIndex) => {
+        // thumbnail이 없거나 유효하지 않은 경우
+        if (!item.thumbnail || item.thumbnail.trim() === '') {
+          // selectedProducts에서 같은 title을 가진 아이템 찾기
+          const matchedProduct = selectedProducts.find(
+            (product: CartProduct) => product.name === item.title && product.itemId
+          );
+          
+          if (matchedProduct?.itemId) {
+            itemsToFetch.push({
+              itemId: matchedProduct.itemId,
+              groupIndex,
+              itemIndex,
+            });
+          }
+        }
+      });
+    });
+    
+    return itemsToFetch;
+  }, [fromCart, orderSheet, selectedProducts]);
+
+  // 상품 상세 정보 조회 (이미지가 없는 아이템들만)
+  const productDetailQueries = useQueries({
+    queries: itemsWithoutImages.map(({ itemId }) => {
+      const enabled = !!itemId && itemsWithoutImages.length > 0;
+      
+      return {
+        queryKey: ['market-product-detail', itemId],
+        queryFn: async () => {
+          const result = await getMarketProductDetail({ item_id: itemId });
+          return result;
+        },
+        enabled,
+      };
+    }),
+  });
+
+  // 상품 이미지 맵 생성
+  const productImageMap = useMemo(() => {
+    const map = new Map<string, string>();
+    
+    productDetailQueries.forEach((query, index) => {
+      const { itemId } = itemsWithoutImages[index];
+      
+      if (query.data?.resultType === 'SUCCESS' && query.data.success?.images) {
+        const images = query.data.success.images;
+        
+        if (Array.isArray(images) && images.length > 0) {
+          const imageUrl = images[0];
+          map.set(itemId, imageUrl);
+        }
+      }
+    });
+    
+    return map;
+  }, [productDetailQueries, itemsWithoutImages]);
+
+  // 각 아이템의 이미지 URL 가져오기 (폴백 로직)
+  const getItemImage = useCallback((item: { thumbnail: string; title: string }): string => {
+    // thumbnail이 있으면 사용
+    if (item.thumbnail && item.thumbnail.trim() !== '') {
+      return item.thumbnail;
+    }
+    
+    // selectedProducts에서 같은 title을 가진 아이템 찾기
+    if (selectedProducts) {
+      const matchedProduct = selectedProducts.find(
+        (product: CartProduct) => product.name === item.title && product.itemId
+      );
+      
+      if (matchedProduct?.itemId) {
+        const imageFromDetail = productImageMap.get(matchedProduct.itemId);
+        if (imageFromDetail) {
+          return imageFromDetail;
+        }
+      }
+    }
+    
+    // 기본 이미지 또는 빈 문자열
+    return '';
+  }, [selectedProducts, productImageMap]);
   
   // option_item_ids 계산
   const optionItemIds = useMemo(() => {
@@ -87,7 +190,7 @@ const MarketPurchasePage = () => {
       option: product?.option,
     },
     deliveryAddress,
-    deliveryAddressId: null,
+    deliveryAddressId: activeTab === 'existing' ? selectedAddressId || null : null,
     onSuccess: (orderData) => {
       if (id) {
         navigate(`/market/product/${id}/purchase/complete`, {
@@ -224,56 +327,11 @@ const MarketPurchasePage = () => {
           throw new Error(`${errorMessage}${errorDetails}`);
         }
       } else {
-        // 기존 배송지 사용 (현재는 신규 생성으로 처리)
-        // TODO: 기존 배송지 선택 기능 구현 필요
-        const addressPayload: CreateAddressRequest = {
-          postalCode: deliveryAddress.zipcode,
-          address: deliveryAddress.address,
-          addressDetail: deliveryAddress.detailAddress || '',
-          isDefault: false,
-          addressName: deliveryAddress.name || '배송지',
-          recipient: deliveryAddress.recipient,
-          phone: sanitizedPhone,
-        };
-        
-        try {
-          const addressResponse = await createAddress(addressPayload);
-
-          if (addressResponse.resultType !== 'SUCCESS' || !addressResponse.success) {
-            const errorMsg = addressResponse.error?.reason || '배송지 생성에 실패했습니다.';
-            throw new Error(errorMsg);
-          }
-
-          // 응답이 배열인 경우와 단일 객체인 경우 모두 처리
-          let createdAddress: AddressItem | null = null;
-          
-          if (Array.isArray(addressResponse.success)) {
-            if (addressResponse.success.length === 0) {
-              throw new Error('배송지 생성 응답이 비어있습니다.');
-            }
-            createdAddress = addressResponse.success[0];
-          } else {
-            // 단일 객체인 경우
-            createdAddress = addressResponse.success as unknown as AddressItem;
-          }
-
-          if (!createdAddress || !createdAddress.addressId) {
-            throw new Error('배송지 생성 응답에 주소 ID가 없습니다.');
-          }
-
-          deliveryAddressId = createdAddress.addressId;
-        } catch (error: unknown) {
-          const axiosError = error as { response?: { data?: { error?: { reason?: string; data?: unknown }; message?: string }; status?: number } };
-          const errorResponse = axiosError?.response?.data;
-          const errorMessage = 
-            errorResponse?.error?.reason || 
-            errorResponse?.message || 
-            (error instanceof Error ? error.message : '배송지 생성에 실패했습니다.');
-          const errorDetails = errorResponse?.error?.data 
-            ? `\n상세: ${JSON.stringify(errorResponse.error.data)}`
-            : '';
-          throw new Error(`${errorMessage}${errorDetails}`);
+        // 기존 배송지 사용
+        if (!selectedAddressId) {
+          throw new Error('배송지를 선택해주세요.');
         }
+        deliveryAddressId = selectedAddressId;
       }
 
       // 3. orderSheet에서 receipt_number를 merchant_uid로 사용
@@ -408,6 +466,11 @@ const MarketPurchasePage = () => {
     }
     
     // 배송지 정보 검증
+    if (activeTab === 'existing' && !selectedAddressId) {
+      alert('배송지를 선택해주세요.');
+      return;
+    }
+    
     if (!deliveryAddress.zipcode || !deliveryAddress.address || 
         !deliveryAddress.recipient || !deliveryAddress.phone) {
       alert('배송지 정보를 모두 입력해주세요.');
@@ -448,21 +511,44 @@ const MarketPurchasePage = () => {
            
             <div className="border-b border-[var(--color-line-gray-40)] pb-[4.125rem] relative">
              
+              {/* 탭 버튼들 */}
               <div className="flex border-b border-[var(--color-line-gray-40)]">
                 <button
                   type="button"
-                  onClick={() => setActiveTab('existing')}
+                  onClick={() => {
+                    setActiveTab('existing');
+                    setSelectedAddressId(null);
+                    setDeliveryAddress({
+                      zipcode: '',
+                      address: '',
+                      detailAddress: '',
+                      name: '',
+                      recipient: '',
+                      phone: '',
+                    });
+                  }}
                   className={`px-[5rem] py-3 body-b0-sb w-[16.0625rem] cursor-pointer ${
                     activeTab === 'existing'
                       ? 'bg-[var(--color-black)] text-[var(--color-white)]'
                       : 'bg-[var(--color-white)] text-[var(--color-gray-50)] border border-[var(--color-line-gray-40)] border-b-0'
                   }`}
                 >
-                  기존 배송지
+                  기본 배송지
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTab('new')}
+                  onClick={() => {
+                    setActiveTab('new');
+                    setSelectedAddressId(null);
+                    setDeliveryAddress({
+                      zipcode: '',
+                      address: '',
+                      detailAddress: '',
+                      name: '',
+                      recipient: '',
+                      phone: '',
+                    });
+                  }}
                   className={`px-[5rem] py-3 body-b0-sb w-[16.0625rem] cursor-pointer ${
                     activeTab === 'new'
                       ? 'bg-[var(--color-black)] text-[var(--color-white)]'
@@ -473,7 +559,6 @@ const MarketPurchasePage = () => {
                 </button>
               </div>
 
-             
               <div className="flex flex-col gap-[1.875rem] mt-[2.875rem]">
                 {/* 배송지 입력 필드 (기존/신규 공통) */}
                 <div className="flex flex-col gap-[1.875rem]">
@@ -593,6 +678,64 @@ const MarketPurchasePage = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* 기존 배송지 목록 */}
+                {activeTab === 'existing' && (
+                  <div className="flex flex-col gap-[0.9375rem]">
+                    {isAddressesLoading ? (
+                      <div className="body-b1-rg text-[var(--color-gray-60)] py-4">
+                        주소를 불러오는 중...
+                      </div>
+                    ) : addressesData?.success && addressesData.success.length > 0 ? (
+                      <div className="flex flex-col gap-[0.9375rem]">
+                        {addressesData.success.map((address) => (
+                          <button
+                            key={address.addressId}
+                            type="button"
+                            onClick={() => {
+                              setSelectedAddressId(address.addressId);
+                              setDeliveryAddress({
+                                zipcode: address.postalCode,
+                                address: address.address,
+                                detailAddress: address.addressDetail,
+                                name: address.addressName,
+                                recipient: address.recipient,
+                                phone: address.phone,
+                              });
+                            }}
+                            className={`border rounded-[0.625rem] p-4 text-left transition-colors ${
+                              selectedAddressId === address.addressId
+                                ? 'border-[var(--color-mint-0)] bg-[var(--color-mint-0)]/10'
+                                : 'border-[var(--color-line-gray-40)] hover:border-[var(--color-gray-50)]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="body-b1-sb text-black">
+                                {address.addressName}
+                                {address.isDefault && (
+                                  <span className="ml-2 body-b2-rg text-[var(--color-mint-0)]">
+                                    [기본]
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+                            <div className="body-b1-rg text-[var(--color-gray-60)]">
+                              <div>{address.recipient}</div>
+                              <div>{address.phone}</div>
+                              <div>
+                                ({address.postalCode}) {address.address} {address.addressDetail}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="body-b1-rg text-[var(--color-gray-60)] py-4">
+                        등록된 배송지가 없습니다.
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -661,15 +804,33 @@ const MarketPurchasePage = () => {
                       </p>
                       
                       <div className="flex flex-col gap-[1.25rem]">
-                        {sellerGroup.items.map((item, itemIndex) => (
-                          <div key={itemIndex} className="flex gap-[1.1875rem] items-start">
-                            <div className="w-[11.5625rem] h-[11.5625rem] relative shrink-0">
-                              <img
-                                src={item.thumbnail}
-                                alt={item.title}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
+                        {sellerGroup.items.map((item, itemIndex) => {
+                          const imageUrl = getItemImage(item);
+                          const isLoadingImage = itemsWithoutImages.some(
+                            (itemToFetch) => 
+                              itemToFetch.groupIndex === groupIndex && 
+                              itemToFetch.itemIndex === itemIndex
+                          ) && !imageUrl;
+                          
+                          return (
+                            <div key={itemIndex} className="flex gap-[1.1875rem] items-start">
+                              <div className="w-[11.5625rem] h-[11.5625rem] relative shrink-0 bg-[var(--color-gray-20)]">
+                                {isLoadingImage ? (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="body-b2-rg text-[var(--color-gray-60)]">로딩 중...</span>
+                                  </div>
+                                ) : imageUrl ? (
+                                  <img
+                                    src={imageUrl}
+                                    alt={item.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="body-b2-rg text-[var(--color-gray-60)]">이미지 없음</span>
+                                  </div>
+                                )}
+                              </div>
                             
                             <div className="flex flex-[1_0_0] flex-col gap-[1.1875rem] items-start">
                               <div className="flex flex-col gap-[0.625rem]">
@@ -695,7 +856,8 @@ const MarketPurchasePage = () => {
                               </p>
                             </div>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ))}
