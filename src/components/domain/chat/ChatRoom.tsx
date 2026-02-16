@@ -748,12 +748,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     const handlePaymentCompleted = (e: CustomEvent) => {
       const { chatRoomId } = e.detail;
       if (chatRoomId === chatId) {
-        console.log(
-          'payment event received in chatRoom.tsx',
-          chatRoomId,
-          e.detail
-        );
-
         // 무한 스크롤 쿼리 전체 새로고침
         queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
           // 필요하다면 초기화하거나 새로 가져오기

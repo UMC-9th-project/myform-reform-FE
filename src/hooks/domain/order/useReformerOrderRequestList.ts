@@ -30,7 +30,6 @@ export const useReformerOrderRequestList = () => {
     queryKey: ['reform-request-list', 'reformer', currentPage, category, subcategory],
     queryFn: async () => {
       const params = { sortBy: 'RECENT' as const, page: currentPage, limit: ITEMS_PER_PAGE, category, subcategory };
-      console.log('[요청 목록 API] 요청 params:', params);
       const data = await getReformRequestList(params);
 
       if (data.resultType !== 'SUCCESS' || !data.success) {

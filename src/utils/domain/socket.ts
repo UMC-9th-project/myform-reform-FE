@@ -19,8 +19,6 @@ export const connectSocket = (accessToken: string) => {
     socket.disconnect();
   }
 
-  console.log('소켓 연결 시도');
-
   socket = io('https://seoki.cloud', {
     path: '/test/socket.io',
     transports: ['websocket', 'polling'],
@@ -31,7 +29,7 @@ export const connectSocket = (accessToken: string) => {
   });
 
   socket.on('connect', () => {
-    console.log('소켓 연결 성공:', socket?.id);
+    // 소켓 연결 성공
   });
 
   socket.on('connect_error', (err) => {
@@ -39,7 +37,7 @@ export const connectSocket = (accessToken: string) => {
   });
 
   socket.on('disconnect', (reason) => {
-    console.log('소켓 연결 종료:', reason);
+    // 소켓 연결 종료
   });
 
   socket.on('token_expired', (data) => {
