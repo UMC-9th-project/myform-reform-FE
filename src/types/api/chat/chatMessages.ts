@@ -1,7 +1,7 @@
 /* =========================
  * Room / SelectedChat
  * ========================= */
-
+export type ChatRoomWithUnread = ChatRoomInfo & { unreadCount?: number };
 export type RoomType = 'FEED' | 'PROPOSAL' | 'REQUEST';
 
 export interface SelectedChat {
@@ -37,6 +37,7 @@ export interface PaymentPayload {
   delivery: number;
   receiptNumber: string;
   expectedWorking: number;
+  chatRoomId: string;
 }
 
 export interface PaymentResult {
@@ -51,11 +52,9 @@ export interface PaymentResult {
   approvedAt: string | null;
 }
 
-
 export interface AcceptPayload {
   isAccepted: boolean | null;
 }
-
 
 /* =========================
  * Message Types
@@ -119,16 +118,17 @@ export type ChatMessage =
       textContent: null;
       payload: PaymentPayload;
       createdAt: string;
-  }
+    }
   | {
-    messageId: string;
-    senderId: string;
-    senderType: 'USER' | 'OWNER';
-    messageType: 'result';
-    textContent: null;
-    payload: PaymentResult;
-    createdAt: string;
-} | {
+      messageId: string;
+      senderId: string;
+      senderType: 'USER' | 'OWNER';
+      messageType: 'result';
+      textContent: null;
+      payload: PaymentResult;
+      createdAt: string;
+    }
+  | {
       messageId: string;
       senderId: string;
       senderType: 'USER' | 'OWNER';
@@ -142,6 +142,14 @@ export type ChatMessage =
  * ChatRoom Info (상단 정보)
  * ========================= */
 
+export interface RequestTargetPayload {
+  id: string;
+  title: string;
+  minBudget: number | null;
+  maxBudget: number | null;
+  image: string;
+}
+
 export interface ChatRoomInfo {
   chatRoomId: string;
   type: RoomType;
@@ -150,13 +158,7 @@ export interface ChatRoomInfo {
   ownerLastReadId: string | null;
   requesterLastReadId: string | null;
 
-  targetPayload: {
-    id: string;
-    title: string;
-    minBudget: number;
-    maxBudget: number;
-    image: string;
-  };
+  targetPayload: RequestTargetPayload | null;
 
   owner: {
     id: string;
@@ -170,7 +172,6 @@ export interface ChatRoomInfo {
     profileImage: string | null;
   };
 }
-
 
 /* =========================
  * API Response
@@ -187,4 +188,34 @@ export interface ChatMessagesResponse {
     };
     chatRoomInfo?: ChatRoomInfo;
   };
+}
+
+export interface ChatMessagesPage {
+  messages: ChatMessage[];
+  nextCursor: string | null;
+  hasMore: boolean;
+  chatRoomInfo?: {
+    owner: { id: string; nickname: string; profileImage: string | null };
+    requester: { id: string; nickname: string; profileImage: string | null };
+    ownerLastReadId: string | null;
+    requesterLastReadId: string | null;
+    type: RoomType;
+    targetPayload?: {
+      id: string;
+      title: string;
+      image?: string;
+      minBudget?: number;
+      maxBudget?: number;
+    } | null;
+  };
+}
+
+// 메시지 페이지 캐시
+export interface ChatMessagesQuery {
+  pages: ChatMessagesPage[];
+}
+
+// 채팅방 리스트 캐시
+export interface ChatRoomsQuery {
+  data: ChatRoomWithUnread[];
 }
