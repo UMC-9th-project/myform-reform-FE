@@ -14,9 +14,10 @@ interface NotificationPanelProps {
   isOpen: boolean;
   onClose: () => void;
   notifications?: Notification[];
+  role?: 'user' | 'reformer';
 }
 
-const NotificationPanel = ({ isOpen, onClose, notifications = [] }: NotificationPanelProps) => {
+const NotificationPanel = ({ isOpen, onClose, notifications = [], role }: NotificationPanelProps) => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'market' | 'custom' | 'chat'>('all');
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -117,10 +118,15 @@ const NotificationPanel = ({ isOpen, onClose, notifications = [] }: Notification
     },
   ];
 
-  const displayNotifications = notifications.length > 0 ? filteredNotifications : defaultNotifications.filter((n) => {
-    if (activeFilter === 'all') return true;
-    return n.type === activeFilter;
-  });
+
+  const shouldShowNotifications = role === 'reformer';
+  
+  const displayNotifications = shouldShowNotifications
+    ? (notifications.length > 0 ? filteredNotifications : defaultNotifications.filter((n) => {
+        if (activeFilter === 'all') return true;
+        return n.type === activeFilter;
+      }))
+    : [];
 
   if (!isOpen) return null;
 
