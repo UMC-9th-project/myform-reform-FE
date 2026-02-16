@@ -103,6 +103,7 @@ const PaymentCard: React.FC<PaymentCardProps> = ({
         },
         (rsp: IMPResponse) => {
           if (rsp.success) {
+            console.log('payment completed event fired', chatRoomId);
             alert(
               `결제가 완료되었습니다.\n결제 금액: ${rsp.paid_amount?.toLocaleString() ?? 0}원`
             );

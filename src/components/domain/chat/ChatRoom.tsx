@@ -747,10 +747,24 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   useEffect(() => {
     const handlePaymentCompleted = (e: CustomEvent) => {
       const { chatRoomId } = e.detail;
-
-      // 현재 채팅방 ID와 일치하면 메시지 다시 가져오기
       if (chatRoomId === chatId) {
-        queryClient.invalidateQueries({ queryKey: ['chatMessages', chatId] });
+        console.log(
+          'payment event received in chatRoom.tsx',
+          chatRoomId,
+          e.detail
+        );
+
+        // 무한 스크롤 쿼리 전체 새로고침
+        queryClient.setQueryData(['chatMessages', chatId], (oldData: any) => {
+          // 필요하다면 초기화하거나 새로 가져오기
+          return oldData; // 그냥 새로고침만 하려면 refetchQueries 사용
+        });
+
+        queryClient.refetchQueries({
+          predicate: (query) =>
+            query.queryKey[0] === 'chatMessages' &&
+            query.queryKey[1] === chatId,
+        });
       }
     };
 
