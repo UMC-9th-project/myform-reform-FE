@@ -28,6 +28,7 @@ import PaymentCard from './PaymentCard';
 import PayFinishCard from './PayFinishCard';
 import ImageViewerModal from '../mypage/ImageViewModal';
 import EstimateArriveCard from './EstimateArriveCard';
+import { getLastMessageText } from '@/utils/domain/chatLastMessage';
 
 interface ChatRoomProps {
   chatId: string;
@@ -446,22 +447,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       }
 
       // 2️⃣ 모든 채팅방 목록 업데이트
-      const lastMessageText =
-        msg.messageType === 'text'
-          ? msg.textContent
-          : msg.messageType === 'image'
-            ? '(사진)'
-            : msg.messageType === 'proposal'
-              ? '(견적서)'
-              : msg.messageType === 'request'
-                ? '(요청서)'
-                : msg.messageType === 'payment'
-                  ? '(결제창)'
-                  : msg.messageType === 'result'
-                    ? '(결제 완료)'
-                    : msg.messageType === 'accept'
-                      ? '거래 진행 여부'
-                      : '(새로운 메시지)';
+      const lastMessageText = getLastMessageText(msg);
 
       [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach((filterType) => {
         queryClient.setQueryData<{ data: ChatRoomWithUnread[] }>(
