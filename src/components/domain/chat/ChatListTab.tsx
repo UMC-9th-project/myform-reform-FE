@@ -4,6 +4,7 @@ import { getChatRooms, type ChatRoomFilter } from '@/api/chat/chatApi';
 import type { SelectedChat } from '@/types/api/chat/chatMessages';
 import { useLocation } from 'react-router-dom';
 import useAuthStore from '@/stores/useAuthStore';
+import profile from '@/assets/icons/bigProfile.svg';
 
 interface ChatListTabProps {
   selectedChat: SelectedChat | null;
@@ -47,6 +48,7 @@ const ChatListTab: React.FC<ChatListTabProps> = ({
   const chats = data?.data || [];
   const hasMore = data?.meta.hasMore || false;
   const nextCursor = data?.meta.nextCursor || null;
+  const DEFAULT_IMAGE = profile;
 
   // 더보기 함수
   const handleLoadMore = async () => {
@@ -139,11 +141,24 @@ const ChatListTab: React.FC<ChatListTabProps> = ({
                         })
                       }
                     >
-                      <img
-                        src={chat.image}
-                        alt="thumb"
-                        className="w-14 h-14 rounded-[5px] object-cover bg-gray-200 flex-shrink-0"
-                      />
+                      <div
+                        className={`flex-shrink-0 border-1 border-[#00000026] ${
+                          chat.type === 'INQUIRY'
+                            ? 'w-14 h-14 rounded-full overflow-hidden'
+                            : 'w-14 h-14 rounded-[5px] overflow-hidden'
+                        }`}
+                      >
+                        <img
+                          src={
+                            chat.type === 'INQUIRY'
+                              ? chat.image || DEFAULT_IMAGE
+                              : chat.image || ''
+                          }
+                          alt="thumb"
+                          className="w-full h-full object-cover bg-transparent"
+                        />
+                      </div>
+
                       <div className="ml-4 flex-1 flex flex-col overflow-hidden">
                         <div className="flex justify-between items-start">
                           <div className="flex-1 min-w-0">

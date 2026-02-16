@@ -90,9 +90,9 @@ const ChatPage = ({ role }: ChatPageProps) => {
       {/* 왼쪽 채팅방 */}
       <div className="flex-1 m-10 flex flex-col bg-white overflow-hidden">
         {!isLoggedIn ? (
-          <NoChatYet /> // 로그인 안 됐을 때
+          <NoChatYet role={role} /> // 로그인 안 됐을 때
         ) : !hasChats ? (
-          <NoChatYet />
+          <NoChatYet role={role} />
         ) : !selectedChat ? (
           <EmptyChatRoom role={role} />
         ) : (
