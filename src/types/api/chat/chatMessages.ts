@@ -37,6 +37,7 @@ export interface PaymentPayload {
   delivery: number;
   receiptNumber: string;
   expectedWorking: number;
+  chatRoomId: string;
 }
 
 export interface PaymentResult {

@@ -19,6 +19,7 @@ import type {
   ChatRoomInfo,
   ChatRoomWithUnread,
   PaymentPayload,
+  PaymentResult,
   RoomType,
 } from '@/types/api/chat/chatMessages';
 import { connectSocket, getSocket } from '@/utils/domain/socket';
@@ -660,74 +661,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     setIsPaymentModalOpen(false);
   };
 
-  const handlePaymentFinishOptimistic = (payload: PaymentPayload) => {
-    const tempResultMessage: ChatMessage & { isRead: boolean } = {
-      messageId: `temp-result-${Date.now()}`,
-      senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
-      senderId: myUserId!,
-      messageType: 'result',
-      textContent: null,
-      payload: {
-        currency: 'KRW',
-        totalAmount: payload.price,
-        receiptNumber: '-', // 서버에서 채워줄 예정
-        approvedAt: new Date().toISOString(),
-        paymentMethod: {
-          type: 'CARD_EASY_PAY',
-          provider: '',
-          cardNumber: '',
-        },
-      },
-      createdAt: new Date().toISOString(),
-      isRead: false,
-    };
-
-    // 1️⃣ 메시지 낙관적 UI
-    queryClient.setQueryData<InfiniteData<ChatMessagesPage>>(
-      ['chatMessages', chatId],
-      (oldData) => {
-        if (!oldData) return oldData;
-
-        const lastPageIndex = oldData.pages.length - 1;
-        const updatedPages = [...oldData.pages];
-        updatedPages[lastPageIndex] = {
-          ...updatedPages[lastPageIndex],
-          messages: [
-            ...updatedPages[lastPageIndex].messages,
-            tempResultMessage,
-          ],
-        };
-
-        return { ...oldData, pages: updatedPages };
-      }
-    );
-
-    // 2️⃣ 채팅방 UI 낙관적 업데이트
-    queryClient.setQueryData<{ data: ChatRoomWithUnread[] }>(
-      ['chatRooms', undefined],
-      (oldData) => {
-        if (!oldData?.data) return oldData;
-
-        const updatedData = oldData.data.map((room) =>
-          room.chatRoomId === chatId
-            ? {
-                ...room,
-                lastMessage: '결제 완료',
-                lastMessageAt: tempResultMessage.createdAt,
-              }
-            : room
-        );
-
-        const sortedData = [
-          updatedData.find((room) => room.chatRoomId === chatId)!,
-          ...updatedData.filter((room) => room.chatRoomId !== chatId),
-        ];
-
-        return { ...oldData, data: sortedData };
-      }
-    );
-  };
-
   const handleSendAction = () => {
     if (myRole === 'USER') {
       // USER는 요청서 작성 페이지로 이동
@@ -810,6 +743,29 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
       content: { messageId, isAccepted },
     });
   };
+
+  useEffect(() => {
+    const handlePaymentCompleted = (e: CustomEvent) => {
+      const { chatRoomId } = e.detail;
+
+      // 현재 채팅방 ID와 일치하면 메시지 다시 가져오기
+      if (chatRoomId === chatId) {
+        queryClient.invalidateQueries({ queryKey: ['chatMessages', chatId] });
+      }
+    };
+
+    window.addEventListener(
+      'payment-completed',
+      handlePaymentCompleted as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        'payment-completed',
+        handlePaymentCompleted as EventListener
+      );
+    };
+  }, [chatId, queryClient]);
 
   return (
     <div className="flex flex-col w-full h-[800px] border border-[var(--color-line-gray-40)] bg-white overflow-hidden">
@@ -960,38 +916,18 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                             ? (roomInfo?.requester.nickname ?? '사용자')
                             : (roomInfo?.owner.nickname ?? '리포머')
                         }
-                        payload={msg.payload}
-                        onFinish={handlePaymentFinishOptimistic}
+                        chatRoomId={chatId} // ✅ 추가
+                        payload={{
+                          ...msg.payload,
+                          chatRoomId: chatId, // payload 안에도 있어도 됨
+                        }}
                       />
                     )}
 
                     {msg.messageType === 'result' && msg.payload && (
                       <PayFinishCard
                         type={isMine ? 'sent' : 'received'}
-                        price={msg.payload.totalAmount ?? 0}
-                        orderNumber={msg.payload.receiptNumber ?? '-'}
-                        paymentMethod={
-                          msg.payload.paymentMethod?.type === 'CARD_EASY_PAY'
-                            ? '카드 간편결제'
-                            : msg.payload.paymentMethod?.type ||
-                              '결제 수단 없음'
-                        }
-                        paymentDetail={`${msg.payload.paymentMethod?.provider ?? ''} / ${msg.payload.paymentMethod?.cardNumber ?? ''}`}
-                        date={
-                          msg.payload.approvedAt
-                            ? new Date(msg.payload.approvedAt).toLocaleString(
-                                'ko-KR',
-                                {
-                                  year: 'numeric',
-                                  month: '2-digit',
-                                  day: '2-digit',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                  hour12: false,
-                                }
-                              )
-                            : '-'
-                        }
+                        payload={msg.payload as PaymentResult}
                       />
                     )}
 
