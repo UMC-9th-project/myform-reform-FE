@@ -8,18 +8,20 @@ export interface Notification {
   time: string;
   imageUrl?: string;
   type: 'market' | 'custom' | 'chat' | 'all';
+  role? : string;
 }
 
 interface NotificationPanelProps {
   isOpen: boolean;
   onClose: () => void;
   notifications?: Notification[];
+  role?: 'user' | 'reformer';
 }
 
-const NotificationPanel = ({ isOpen, onClose, notifications = [] }: NotificationPanelProps) => {
+const NotificationPanel = ({ isOpen, onClose, notifications = [], role }: NotificationPanelProps) => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'market' | 'custom' | 'chat'>('all');
   const panelRef = useRef<HTMLDivElement>(null);
-
+ 
   const filterOptions = [
     { value: 'all' as const, label: '전체' },
     { value: 'market' as const, label: '마켓' },
@@ -117,10 +119,15 @@ const NotificationPanel = ({ isOpen, onClose, notifications = [] }: Notification
     },
   ];
 
-  const displayNotifications = notifications.length > 0 ? filteredNotifications : defaultNotifications.filter((n) => {
-    if (activeFilter === 'all') return true;
-    return n.type === activeFilter;
-  });
+  // user면 빈 값, reformer면 알림 표시
+  const shouldShowNotifications = role === 'reformer';
+  
+  const displayNotifications = shouldShowNotifications
+    ? (notifications.length > 0 ? filteredNotifications : defaultNotifications.filter((n) => {
+        if (activeFilter === 'all') return true;
+        return n.type === activeFilter;
+      }))
+    : [];
 
   if (!isOpen) return null;
 
