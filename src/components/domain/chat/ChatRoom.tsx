@@ -30,6 +30,7 @@ import PayFinishCard from './PayFinishCard';
 import ImageViewerModal from '../mypage/ImageViewModal';
 import EstimateArriveCard from './EstimateArriveCard';
 import { getLastMessageText } from '@/utils/domain/chatLastMessage';
+import profile from '@/assets/icons/bigProfile.svg';
 
 interface ChatRoomProps {
   chatId: string;
@@ -51,6 +52,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [imageViewerImages, setImageViewerImages] = useState<string[]>([]);
   const [imageViewerIndex, setImageViewerIndex] = useState(0);
+  const DEFAULT_PROFILE_IMAGE = profile;
 
   /* =========================
    * 1. React Query 무한 스크롤 설정
@@ -894,11 +896,15 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                     <img
                       src={
                         roomInfo?.owner.id === msg.senderId
-                          ? roomInfo.owner.profileImage || ''
-                          : roomInfo?.requester.profileImage || ''
+                          ? roomInfo.owner.profileImage || DEFAULT_PROFILE_IMAGE
+                          : roomInfo?.requester.profileImage ||
+                            DEFAULT_PROFILE_IMAGE
                       }
                       alt="profile"
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = profile;
+                      }}
                     />
                   </div>
                 )}
