@@ -459,8 +459,6 @@ const MarketProductDetailPage = () => {
                         optionItemIds: optionItemIds,
                       };
 
-                      console.log('장바구니 추가 요청 데이터:', requestData);
-
                       await addToCart({
                         itemId: id,
                         data: requestData,

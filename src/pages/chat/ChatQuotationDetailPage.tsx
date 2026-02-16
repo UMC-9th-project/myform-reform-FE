@@ -34,7 +34,6 @@ const ChatQuotationDetailPage = () => {
     try {
       setLoading(true);
       const data = await getChatRequestDetail(requestId);
-      console.log('requestDetail', data); 
       if (data) setRequestDetail(data);
     } catch (err) {
       console.error('요청서 상세 조회 실패', err);
