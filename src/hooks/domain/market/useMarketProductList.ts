@@ -5,6 +5,7 @@ import type { MarketProductItem } from '../../../types/api/market/market';
 import { getMarketProductDetail } from '../../../api/market/market'; 
 import { getMarketProductPhotoReview } from '../../../api/market/market';
 import { getMarketProductReviewList } from '../../../api/market/market';
+import { getMarketProductReviewDetail } from '../../../api/market/market';
 
 export type MarketCategorySelection = {
   categoryTitle: string;
@@ -136,5 +137,32 @@ export const useMarketProductReviewList = (
   
   return {
     reviewListResponse
+  };
+};
+
+export const useMarketProductReviewDetail = (
+  targetId: string | undefined,
+  reviewId: string | undefined,
+  photoIndex: number | undefined
+) => {
+  const { data: reviewDetailResponse } = useQuery({
+    queryKey: ['market-product-review-detail', targetId, reviewId, photoIndex],
+    queryFn: async () => {
+      if (!targetId || !reviewId || photoIndex === undefined) {
+        return null;
+      }
+      const data = await getMarketProductReviewDetail({
+        target_id: targetId,
+        review_id: reviewId,
+        photoIndex,
+      });
+      return data;
+    },
+    enabled: !!targetId && !!reviewId && photoIndex !== undefined,
+    staleTime: 1000 * 30,
+  });
+  
+  return {
+    reviewDetailResponse
   };
 };

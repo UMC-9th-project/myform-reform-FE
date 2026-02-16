@@ -243,10 +243,13 @@ export default function Header() {
             >
               <img src={bell} alt="bell" />
             </button>
-            <NotificationPanel
-              isOpen={isNotificationOpen}
-              onClose={() => setIsNotificationOpen(false)}
-            />
+            {accessToken && (
+              <NotificationPanel
+                isOpen={isNotificationOpen}
+                onClose={() => setIsNotificationOpen(false)}
+                role={role || undefined}
+              />
+            )}
           </div>
           <Link to="/wishlist" className="cursor-pointer">
             <img src={heart} alt="heart" />
