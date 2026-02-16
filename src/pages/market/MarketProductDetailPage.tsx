@@ -23,12 +23,14 @@ import Button from '../../components/common/button/Button1';
 import LikeButton from '../../components/common/likebutton/LikeButton';
 import ReformerPurchaseBlockModal from '../../components/common/Modal/ReformerPurchaseBlockModal'; 
 import OptionDropdown from '../../components/common/product/option/option-dropdown/OptionDropdown';
+import MarketPhotoReviewModal from '../../components/domain/market/MarketPhotoReviewModal';
 
 import type { OptionItem as OptionItemType } from '../../components/common/product/option/option-dropdown/OptionItem';
 
 import { useMarketProductDetail } from '../../hooks/domain/market/useMarketProductList';
 import { useMarketProductPhotoReview } from '../../hooks/domain/market/useMarketProductList';
 import { useMarketProductReviewList } from '../../hooks/domain/market/useMarketProductList';
+import { useMarketProductReviewDetail } from '../../hooks/domain/market/useMarketProductList';
 import { useAddToCart } from '../../hooks/domain/cart/useAddToCart';
 import { useWish } from '../../hooks/domain/wishlist/useWish';
 
@@ -59,6 +61,9 @@ const MarketProductDetailPage = () => {
   const [showReformerModal, setShowReformerModal] = useState(false);
   const [modalMessageType, setModalMessageType] = useState<'wish' | 'cart' | 'purchase' | 'chat'>('purchase');
   const [showPhotoReviewModal, setShowPhotoReviewModal] = useState(false);
+  const [showPhotoDetailModal, setShowPhotoDetailModal] = useState(false);
+  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | undefined>(undefined);
 
   // 모달 열림 시 body 스크롤 막기
   useEffect(() => {
@@ -85,6 +90,13 @@ const MarketProductDetailPage = () => {
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
+
+  // 리뷰 상세 정보 조회
+  const { reviewDetailResponse } = useMarketProductReviewDetail(
+    id,
+    selectedReviewId || undefined,
+    selectedPhotoIndex
+  );
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -192,6 +204,7 @@ const MarketProductDetailPage = () => {
   const reviewList = reviewListResponse?.success?.reviews || [];
   const reviewCount = reviewListResponse?.success?.total_count || 0;
   const avgStar = reviewListResponse?.success?.avg_star || 0;
+  const reviewDetail = reviewDetailResponse?.success;
   const title = product.title;
   const price = product.price;
   const delivery = product.delivery;
@@ -444,16 +457,13 @@ const MarketProductDetailPage = () => {
                     }
 
                     try {
-                      // 선택된 옵션 ID들을 배열로 변환
                       const optionItemIds = Object.values(selectedOptions).filter(Boolean);
 
-                      // quantity 검증
                       if (quantity < 1) {
                         alert('수량은 1개 이상이어야 합니다.');
                         return;
                       }
 
-                      // optionItemIds는 필수 필드이므로 항상 포함
                       const requestData = {
                         quantity: quantity,
                         optionItemIds: optionItemIds,
@@ -466,7 +476,6 @@ const MarketProductDetailPage = () => {
                         data: requestData,
                       });
 
-                      // 성공 시 장바구니 페이지로 이동
                       navigate('/cart');
                     } catch (error: unknown) {
                       console.error('장바구니 추가 에러:', error);
@@ -760,25 +769,46 @@ const MarketProductDetailPage = () => {
 
             <div className="flex flex-col">
               {reviewList.length > 0 ? (
-                reviewList.slice(0, 5).map((review) => (
-                  <div
-                    key={review.review_id}
-                    className="py-[2.5rem]"
-                  >
-                    <Review
-                      userName={review.user_nickname}
-                      rating={review.star}
-                      date={new Date(review.created_at).toLocaleDateString('ko-KR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                      reviewText={review.content}
-                      image={review.photos && review.photos.length > 0 ? review.photos[0] : undefined}
-                      profileImg={review.user_profile_image}
-                    />
-                  </div>
-                ))
+                reviewList.slice(0, 5).map((review) => {
+                  // 해당 리뷰의 첫 번째 사진 찾기
+                  const firstPhoto = photoReview.find(
+                    p => p.review_id === review.review_id
+                  );
+                  
+                  const handleReviewClick = () => {
+                    if (firstPhoto) {
+                      setSelectedReviewId(review.review_id);
+                      setSelectedPhotoIndex(firstPhoto.photo_order);
+                      setShowPhotoDetailModal(true);
+                    } else if (review.photos && review.photos.length > 0) {
+                      // photoReview에 없어도 리뷰에 사진이 있으면 모달 열기
+                      setSelectedReviewId(review.review_id);
+                      setSelectedPhotoIndex(0);
+                      setShowPhotoDetailModal(true);
+                    }
+                  };
+
+                  return (
+                    <div
+                      key={review.review_id}
+                      className="py-[2.5rem] cursor-pointer"
+                      onClick={handleReviewClick}
+                    >
+                      <Review
+                        userName={review.user_nickname}
+                        rating={review.star}
+                        date={new Date(review.created_at).toLocaleDateString('ko-KR', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                        reviewText={review.content}
+                        image={review.photos && review.photos.length > 0 ? review.photos[0] : undefined}
+                        profileImg={review.user_profile_image}
+                      />
+                    </div>
+                  );
+                })
               ) : (
                 <div className="py-[2.5rem] text-center text-[var(--color-gray-60)]">
                   등록된 후기가 없습니다.
@@ -824,10 +854,15 @@ const MarketProductDetailPage = () => {
         
             <div className="overflow-y-auto px-6 pb-6">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-[0.375rem]">
-                {photoReview.map((photo: { photo_index: number; photo_url: string; }) => (
+                {photoReview.map((photo: { photo_index: number; photo_url: string; review_id: string; photo_order: number; }) => (
                   <div
                     key={photo.photo_index}
                     className="relative aspect-square overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => {
+                      setSelectedReviewId(photo.review_id);
+                      setSelectedPhotoIndex(photo.photo_order);
+                      setShowPhotoDetailModal(true);
+                    }}
                   >
                     <img
                       src={photo.photo_url}
@@ -842,6 +877,59 @@ const MarketProductDetailPage = () => {
         </div>,
         document.body
       )}
+
+      {/* 사진 리뷰 상세 모달 */}
+      {reviewDetail && (() => {
+        // 현재 사진의 전체 인덱스 찾기
+        const currentPhoto = photoReview.find(
+          p => p.review_id === reviewDetail.review_id && 
+          p.photo_order === selectedPhotoIndex
+        );
+        const currentPhotoIndex = currentPhoto?.photo_index ?? reviewDetail.current_photo_index;
+        
+        return (
+          <MarketPhotoReviewModal
+            isOpen={showPhotoDetailModal}
+            onClose={() => {
+              setShowPhotoDetailModal(false);
+              setSelectedReviewId(null);
+              setSelectedPhotoIndex(undefined);
+            }}
+            currentIndex={currentPhotoIndex}
+            totalCount={photoReviewResponse?.success?.total_count || 0}
+            imageUrl={reviewDetail.photo_urls[reviewDetail.current_photo_index] || ''}
+            photoUrls={reviewDetail.photo_urls}
+            currentPhotoIndex={reviewDetail.current_photo_index}
+            review={{
+              userProfileImage: reviewDetail.user_profile_image,
+              userNickname: reviewDetail.user_nickname,
+              star: reviewDetail.star,
+              createdAt: reviewDetail.created_at,
+              content: reviewDetail.content,
+            }}
+            onPrevious={() => {
+              if (reviewDetail.has_prev && id) {
+                const prevPhoto = photoReview.find(p => p.photo_index === reviewDetail.prev_photo_index);
+                if (prevPhoto) {
+                  setSelectedReviewId(prevPhoto.review_id);
+                  setSelectedPhotoIndex(prevPhoto.photo_order);
+                }
+              }
+            }}
+            onNext={() => {
+              if (reviewDetail.has_next && id) {
+                const nextPhoto = photoReview.find(p => p.photo_index === reviewDetail.next_photo_index);
+                if (nextPhoto) {
+                  setSelectedReviewId(nextPhoto.review_id);
+                  setSelectedPhotoIndex(nextPhoto.photo_order);
+                }
+              }
+            }}
+            hasPrevious={reviewDetail.has_prev}
+            hasNext={reviewDetail.has_next}
+          />
+        );
+      })()}
     </div>
   );
   
