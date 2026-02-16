@@ -162,7 +162,7 @@ const ChatListTab: React.FC<ChatListTabProps> = ({
                                       : chat.messageType === 'proposal'
                                         ? '(견적서)'
                                         : chat.messageType === 'accept'
-                                          ? '(거래 여부)'
+                                          ? '(거래 진행 여부)'
                                           : chat.messageType === 'result'
                                             ? '(결제 완료)'
                                             : '(대화가 없습니다)'}

@@ -787,7 +787,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
           room.chatRoomId === chatId
             ? {
                 ...room,
-                lastMessage: isAccepted ? '문의 진행 중' : '제안 거절됨',
+                lastMessage: '(거래 진행 여부)',
                 lastMessageAt: tempMessage.createdAt,
               }
             : room
