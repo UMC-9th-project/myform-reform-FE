@@ -43,6 +43,10 @@ export default function Header() {
     ? (reformerInfo?.success?.nickname || '')
     : (userInfo?.success?.nickname || '');
 
+  const profileImageUrl = role === 'reformer'
+    ? (reformerInfo?.success?.profileImageUrl || null)
+    : (userInfo?.success?.profileImageUrl || null);
+
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -255,10 +259,18 @@ export default function Header() {
           {accessToken && (
             <div className="relative" ref={profileRef}>
               <button
-                className="cursor-pointer"
+                className="cursor-pointer w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-[var(--color-gray-30)]"
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
               >
-                <img src={profile} alt="profile" />
+                {profileImageUrl ? (
+                  <img 
+                    src={profileImageUrl} 
+                    alt="profile" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <img src={profile} alt="profile" className="w-6 h-6" />
+                )}
               </button>
 
               {/* 리폼러 유저 드롭다운 */}
