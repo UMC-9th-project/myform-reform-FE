@@ -8,7 +8,9 @@ import type {
     MarketProductPhotoReviewRequest,
     MarketProductPhotoReviewResponse,
     MarketProductReviewListRequest,
-    MarketProductReviewListResponse
+    MarketProductReviewListResponse,
+    MarketProductReviewDetailRequest,
+    MarketProductReviewDetailResponse
 } from '../../types/api/market/market';
 
 
@@ -32,6 +34,7 @@ export const getMarketProductList = async (
     });
     return response.data;
 };
+
 // 마켓 상품 상세 조회
 export const getMarketProductDetail = async (
     params: GetMarketProductDetailParams
@@ -63,6 +66,18 @@ export const getMarketProductPhotoReview = async (
         params: {
             offset: params.offset,
             limit: params.limit,
+        },
+    });
+    return response.data;
+};
+
+// 마켓 상품 리뷰 상세 조회
+export const getMarketProductReviewDetail = async (
+    params: MarketProductReviewDetailRequest
+): Promise<MarketProductReviewDetailResponse> => {
+    const response = await api.get<MarketProductReviewDetailResponse>(`/reviews/target/ITEM/${params.target_id}/reviews/${params.review_id}`, {
+        params: {
+            photoIndex: params.photoIndex,
         },
     });
     return response.data;
