@@ -13,13 +13,14 @@ interface InputProps {
   type: InputType;
   value?: string;
   error?: string | null;
-  showErrorText?: boolean; 
+  success?: string;
+  showErrorText?: boolean;
   showPasswordToggle?: boolean;
   timerSeconds?: number | null;
   showButton?: boolean;
   buttonText?: string;
   onButtonClick?: () => void;
-  buttonDisabled?: boolean; 
+  buttonDisabled?: boolean;
   onChange?: (value: string) => void;
   onBlur?: () => void;
   onFocus?: () => void;
@@ -36,7 +37,8 @@ export default function Input({
   type,
   value: controlledValue,
   error,
-  showErrorText = true, 
+  success,
+  showErrorText = true,
   showPasswordToggle = false,
   timerSeconds = null,
   showButton = false,
@@ -94,18 +96,18 @@ export default function Input({
     if (error) return 'border-[var(--color-red-1)]';
     if (isFocused) {
       return variant === 'login'
-        ?  'border-[var(--color-line-gray-40)]'
+        ? 'border-[var(--color-line-gray-40)]'
         : 'border-[var(--color-black)]';
     }
     return variant === 'login'
-    ?  'border-[var(--color-line-gray-40)]'
-    : 'border-[var(--color-black)]';
+      ? 'border-[var(--color-line-gray-40)]'
+      : 'border-[var(--color-black)]';
   };
 
-
   const getInputStyles = () => {
-    const baseStyles = 'w-full rounded-[0.9375rem] px-[1.375rem] py-[1.4375rem] body-b1-rg border focus:outline-none transition-colors duration-200';
-    
+    const baseStyles =
+      'w-full rounded-[0.9375rem] px-[1.375rem] py-[1.4375rem] body-b1-rg border focus:outline-none transition-colors duration-200';
+
     if (variant === 'login') {
       if (error) {
         return `
@@ -125,7 +127,7 @@ export default function Input({
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
       `;
     }
-    
+
     if (error) {
       return `
         ${baseStyles}
@@ -135,7 +137,7 @@ export default function Input({
         ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
       `;
     }
-    
+
     return `
       ${baseStyles}
       border-[var(--color-line-gray-40)]
@@ -157,7 +159,9 @@ export default function Input({
     rightElement;
 
   return (
-    <div className={`flex flex-col ${variant === 'login' ? 'gap-[0.5625rem]' : 'gap-[0.5rem]'}`}>
+    <div
+      className={`flex flex-col ${variant === 'login' ? 'gap-[0.5625rem]' : 'gap-[0.5rem]'}`}
+    >
       {label && (
         <label className="body-b1-sb text-[var(--color-black)]">
           {label}
@@ -219,6 +223,10 @@ export default function Input({
       </div>
       {error && showErrorText && (
         <p className="body-b2-rg text-[var(--color-red-1)] mt-1">{error}</p>
+      )}
+
+      {!error && success && (
+        <p className="body-b2-rg text-[var(--color-mint-1)] mt-1">{success}</p>
       )}
     </div>
   );

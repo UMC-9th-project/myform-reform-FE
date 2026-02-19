@@ -21,7 +21,11 @@ interface SignupFormProps {
   onSubmit?: (data: SignupRequest) => void;
 }
 
-export default function SignupForm({ initialEmail, isKakao = false, onSubmit }: SignupFormProps = {}) {
+export default function SignupForm({
+  initialEmail,
+  isKakao = false,
+  onSubmit,
+}: SignupFormProps = {}) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState(initialEmail || '');
   const [password, setPassword] = useState('');
@@ -39,7 +43,9 @@ export default function SignupForm({ initialEmail, isKakao = false, onSubmit }: 
   >(null);
   const [nicknameError, setNicknameError] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
-  const [verificationCodeError, setVerificationCodeError] = useState<string | null>(null);
+  const [verificationCodeError, setVerificationCodeError] = useState<
+    string | null
+  >(null);
 
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeAge, setAgreeAge] = useState(false);
@@ -155,6 +161,8 @@ export default function SignupForm({ initialEmail, isKakao = false, onSubmit }: 
   };
 
   const handleNicknameChange = (value: string) => {
+    console.log('isNicknameVerified:', isNicknameVerified);
+    console.log('nicknameDuplicateError:', nicknameDuplicateError);
     setNickname(value);
     validateField(value, nicknameSchema, setNicknameError, false);
     resetNicknameVerification();
@@ -285,8 +293,6 @@ export default function SignupForm({ initialEmail, isKakao = false, onSubmit }: 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-[3.5rem] w-full">
       <div className="flex flex-col gap-[2.5rem]">
-       
-
         <Input
           type="email"
           variant="signup"
@@ -346,9 +352,16 @@ export default function SignupForm({ initialEmail, isKakao = false, onSubmit }: 
               ? '사용할 수 없는 닉네임입니다.'
               : nicknameError
           }
+          success={
+            isNicknameVerified && !nicknameDuplicateError
+              ? '사용할 수 있는 닉네임입니다.'
+              : undefined
+          }
           showButton
           buttonText="중복확인"
-          buttonDisabled={!nickname || nickname.trim().length === 0 || isNicknameLoading}
+          buttonDisabled={
+            !nickname || nickname.trim().length === 0 || isNicknameLoading
+          }
           onButtonClick={handleNicknameDuplicateCheck}
           onChange={handleNicknameChange}
         />
@@ -380,7 +393,11 @@ export default function SignupForm({ initialEmail, isKakao = false, onSubmit }: 
             timerSeconds={phoneTimerActive ? phoneTimeLeft : null}
             showButton
             buttonText="확인"
-            buttonDisabled={!verificationCode.trim() || !!verificationCodeError || isPhoneVerifying}
+            buttonDisabled={
+              !verificationCode.trim() ||
+              !!verificationCodeError ||
+              isPhoneVerifying
+            }
             onButtonClick={handleVerificationCodeConfirm}
             onChange={handleVerificationCodeChange}
           />
@@ -398,9 +415,7 @@ export default function SignupForm({ initialEmail, isKakao = false, onSubmit }: 
         onAgreePrivacy={handleAgreePrivacy}
       />
 
-      {signupError && (
-        <div className="text-red-500 text-sm">{signupError}</div>
-      )}
+      {signupError && <div className="text-red-500 text-sm">{signupError}</div>}
       <Button
         type="submit"
         variant={isFormValid && !isSignupLoading ? 'primary' : 'disabled'}
