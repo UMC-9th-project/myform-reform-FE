@@ -932,8 +932,8 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                         type={isMine ? 'sent' : 'received'}
                         nickname={
                           myRole === 'USER'
-                            ? (roomInfo?.requester.nickname ?? '사용자')
-                            : (roomInfo?.owner.nickname ?? '리포머')
+                            ? (roomInfo?.owner.nickname ?? '사용자')
+                            : (roomInfo?.requester.nickname ?? '리포머')
                         }
                         chatRoomId={chatId} // ✅ 추가
                         payload={{
