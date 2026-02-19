@@ -103,7 +103,7 @@ const ReviewDetailModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
       onClick={onClose}
     >
       <div
@@ -112,7 +112,7 @@ const ReviewDetailModal = ({
       >
         {/* 헤더 */}
         <div className="sticky top-0 bg-white border-b border-[var(--color-gray-30)] px-8 py-6 flex items-center justify-center relative rounded-t-[20px]">
-          <h2 className="heading-h4-bd text-[var(--color-gray-60)]">
+          <h2 className="heading-h5-md text-[var(--color-gray-60)]">
             사진 후기 ({totalPhotos > 0 ? `${currentPhotoNumber}/${totalPhotos}` : '0/0'})
           </h2>
           <button
@@ -144,7 +144,7 @@ const ReviewDetailModal = ({
                         reviewDetail.photo_urls[0]
                       }
                       alt={`후기 사진 ${currentPhotoNumber}`}
-                      className="w-full h-full object-contain"
+                      className="w-full h-full object-cover"
                     />
                     
                     {/* 이전/다음 버튼 */}
