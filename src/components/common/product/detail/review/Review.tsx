@@ -8,6 +8,7 @@ interface ReviewProps {
   reviewText?: string;
   image?: string;
   profileImg?: string;
+  onClick?: () => void;
 }
 
 const Review = ({
@@ -17,9 +18,10 @@ const Review = ({
   reviewText,
   image,
   profileImg,
+  onClick,
 }: ReviewProps) => {
   return (
-    <div className="w-full">
+    <div className="w-full cursor-pointer" onClick={onClick}>
       {/* 상단: 프로필 정보 */}
       <div className="w-[341px] flex items-start gap-4 mb-4">
         {/* 프로필 사진 */}

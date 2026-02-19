@@ -1,7 +1,6 @@
-import { useQuery, useQueries } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { getReformRequestList } from '../../../api/order/reformRequest';
 import { getReformProposalList } from '../../../api/order/reformProposal';
-import { getProfile } from '../../../api/profile/user';
 import type { ReformRequestListItem } from '../../../types/api/order/reformRequest';
 import type { ReformProposalListItem } from '../../../types/api/order/reformProposal';
 
@@ -53,33 +52,13 @@ export const useReformerOrderPage = () => {
     staleTime: 1000 * 30,
   });
 
+  // API 응답에서 직접 avgStar와 reviewCount 사용
   const proposals: ReformProposalListItem[] =
     reformProposalListResponse?.success ?? [];
 
-  // 제안별로 닉네임(ownerName)으로 GET /profile/{id} 호출해 별점·리뷰 수 조회
-  const profileResults = useQueries({
-    queries: proposals.map((p) => ({
-      queryKey: ['profile', 'by-nickname', p.ownerName],
-      queryFn: () => getProfile(p.ownerName),
-      enabled: !!p.ownerName,
-      staleTime: 1000 * 60,
-    })),
-  });
-
-  const proposalsWithProfile: ReformProposalListItem[] = proposals.map((p, i) => {
-    const profileRes = profileResults[i]?.data;
-    const fromProfile =
-      profileRes?.resultType === 'SUCCESS' && profileRes?.success;
-    return {
-      ...p,
-      avgStar: fromProfile ? profileRes.success!.avgStar : p.avgStar,
-      reviewCount: fromProfile ? profileRes.success!.reviewCount : p.reviewCount,
-    };
-  });
-
   return {
     newRequests,
-    proposals: proposalsWithProfile,
+    proposals,
     isNewRequestsLoading,
     isNewRequestsError,
     isProposalsLoading,
