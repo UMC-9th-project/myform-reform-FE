@@ -4,6 +4,7 @@ import { useQuery, useQueries, useMutation, useQueryClient } from '@tanstack/rea
 import { getWishList, deleteWish } from '../../../api/wishlist';
 import { getReformRequestDetail } from '../../../api/order/reformRequest';
 import { getReformProposalDetail } from '../../../api/order/reformProposal';
+import { getTargetReviews } from '../../../api/order/reviews';
 import useAuthStore from '../../../stores/useAuthStore';
 import type { WishlistItem } from '@/types/api/wishlist/wishlist';
 import type { WishType, GetWishListResponse, WishItem } from '@/types/api/wishlist/wish';
@@ -117,6 +118,16 @@ export const useWishlistPage = () => {
     })),
   });
 
+  // 제안서별 리뷰 정보 조회 (제안서 자체의 별점과 후기수)
+  const proposalReviewsQueries = useQueries({
+    queries: proposalItemIds.map((itemId) => ({
+      queryKey: ['target-reviews', 'PROPOSAL', itemId] as const,
+      queryFn: () => getTargetReviews('PROPOSAL', itemId, { page: 1, limit: 1 }),
+      enabled: !!itemId && !!accessToken,
+      staleTime: 5 * 60 * 1000,
+    })),
+  });
+
   const requestDetailsMap = useMemo(() => {
     const map = new Map<string, { minBudget: number; maxBudget: number; firstImage?: string }>();
     requestDetailsQueries.forEach((query, index) => {
@@ -141,20 +152,27 @@ export const useWishlistPage = () => {
     proposalDetailsQueries.forEach((query, index) => {
       const itemId = proposalItemIds[index];
       if (itemId && query.data?.success) {
-        const profile = query.data.success.profile;
-        const images = query.data.success.images || [];
+        const proposalDetail = query.data.success;
+        const images = proposalDetail.images || [];
         const sortedImages = [...images].sort((a, b) => a.photo_order - b.photo_order);
         const firstImage = sortedImages.length > 0 ? sortedImages[0].photo : undefined;
         
+        // 제안서 자체의 별점 사용 (리폼러 프로필의 별점이 아님)
+        const avgStar = proposalDetail.avgStar ?? 0;
+        
+        // 제안서 자체의 후기수는 리뷰 API에서 가져옴
+        const reviewQuery = proposalReviewsQueries[index];
+        const reviewCount = reviewQuery?.data?.success?.total_count ?? 0;
+        
         map.set(itemId, {
-          avgStar: profile?.avgStar ?? 0,
-          reviewCount: profile?.reviewCount ?? 0,
+          avgStar,
+          reviewCount,
           firstImage,
         });
       }
     });
     return map;
-  }, [proposalDetailsQueries, proposalItemIds]);
+  }, [proposalDetailsQueries, proposalReviewsQueries, proposalItemIds]);
 
   const queryClient = useQueryClient();
 
