@@ -65,6 +65,9 @@ const Wishlist = () => {
                     } else if (item.wishType === 'PROPOSAL') {
                     const detail = proposalDetailsMap.get(item.itemId);
                     const imgSrc = detail?.firstImage || item.content || '';
+                    // OrderProposalListPage와 동일하게 제안서 상세 API에서 가져온 값 우선 사용
+                    const avgStar = detail?.avgStar ?? item.avgStar ?? 0;
+                    const reviewCount = detail?.reviewCount ?? item.reviewCount ?? 0;
                     
                     return (
                       <ProposalCard
@@ -73,9 +76,9 @@ const Wishlist = () => {
                         imgSrc={imgSrc}
                         title={item.title}
                         price={`${item.price.toLocaleString('ko-KR')}원`}
-                        rating={detail?.avgStar ?? item.avgStar ?? 0}
+                        rating={avgStar}
                         ratingDecimals={1}
-                        reviewCountText={`(${detail?.reviewCount ?? item.reviewCount ?? 0})`}
+                        reviewCountText={`(${reviewCount})`}
                         nickname={item.name}
                         variant="order"
                         isWished={true}
