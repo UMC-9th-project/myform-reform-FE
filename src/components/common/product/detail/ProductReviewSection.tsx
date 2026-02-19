@@ -1,8 +1,11 @@
+import { useState } from 'react';
 import Review from './review/Review';
 import ReviewFilter from './review/ReviewFilter';
 import Pagination from '../../pagination/Pagination';
 import PhotoReviewGallery from './review/PhotoReviewGallery';
+import ReviewDetailModal from './review/ReviewDetailModal';
 import starIcon from '../../../../assets/icons/star.svg';
+import type { TargetType } from '../../../../types/api/reviews';
 
 interface ReviewData {
   id: string;
@@ -20,11 +23,14 @@ interface ProductReviewSectionProps {
   reviews: ReviewData[];
   currentPage: number;
   itemsPerPage?: number;
+  totalPages?: number;
   sortBy?: 'latest' | 'high' | 'low';
   onSortChange?: (sortBy: 'latest' | 'high' | 'low') => void;
   onPageChange?: (page: number) => void;
   onMorePhotoReviewsClick?: () => void;
   photoReviewImages?: string[];
+  targetType?: TargetType;
+  targetId?: string;
 }
 
 const ProductReviewSection = ({
@@ -33,12 +39,18 @@ const ProductReviewSection = ({
   reviews,
   currentPage,
   itemsPerPage = 5,
+  totalPages: propTotalPages,
   sortBy = 'latest',
   onSortChange,
   onPageChange,
   onMorePhotoReviewsClick,
   photoReviewImages,
+  targetType = 'PROPOSAL',
+  targetId,
 }: ProductReviewSectionProps) => {
+  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | undefined>(undefined);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   // 별점 표시 함수
   const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
@@ -60,10 +72,16 @@ const ProductReviewSection = ({
     );
   };
 
-  const totalPages = Math.ceil(reviews.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const displayedReviews = reviews.slice(startIndex, endIndex);
+  // 서버에서 totalPages를 제공하면 사용하고, 없으면 클라이언트에서 계산
+  const totalPages = propTotalPages ?? Math.ceil(reviews.length / itemsPerPage);
+  
+  // 서버에서 페이지네이션된 데이터를 받는 경우 슬라이싱 불필요
+  // propTotalPages가 있으면 이미 페이지네이션된 데이터로 간주
+  const displayedReviews = propTotalPages ? reviews : (() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return reviews.slice(startIndex, endIndex);
+  })();
 
   const filterOptions = [
     { value: 'latest', label: '최신순' },
@@ -111,6 +129,13 @@ const ProductReviewSection = ({
             reviewText={review.reviewText}
             image={review.image}
             profileImg={review.profileImg}
+            onClick={() => {
+              if (targetId) {
+                setSelectedReviewId(review.id);
+                setSelectedPhotoIndex(review.image ? 0 : undefined);
+                setIsModalOpen(true);
+              }
+            }}
           />
         ))}
       </div>
@@ -118,6 +143,22 @@ const ProductReviewSection = ({
       {/* 페이지네이션 */}
       {totalPages > 1 && (
         <Pagination totalPages={totalPages} onPageChange={onPageChange || (() => {})} />
+      )}
+
+      {/* 리뷰 상세 모달 */}
+      {targetId && selectedReviewId && (
+        <ReviewDetailModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedReviewId(null);
+            setSelectedPhotoIndex(undefined);
+          }}
+          targetType={targetType}
+          targetId={targetId}
+          reviewId={selectedReviewId}
+          initialPhotoIndex={selectedPhotoIndex}
+        />
       )}
     </div>
   );
