@@ -115,7 +115,7 @@ const ReformerRegistration = () => {
       
       <div className="flex flex-col items-center mb-[2.19rem]">
         <div className="mb-[2.1875rem]">
-          <img src={logo2} alt="내폼리폼 로고" className="h-[5.46875rem]" />
+          <img src={logo2} alt="내폼리폼 로고" className="h-[5.46875rem] cursor-pointer" onClick={() => navigate('/home')}/>
         </div>
         <h1 className="heading-h4-bd text-center text-[var(--color-black)]">
           <p className="mb-0">간단한 리폼러 신청으로</p>
