@@ -133,6 +133,7 @@ export interface MarketProductReviewListResponse {
         has_prev_page: boolean;
     };
 }
+
    
 
 
@@ -160,7 +161,30 @@ export interface MarketProductPhotoReviewResponse {
     };
 }
 
+// 리뷰 상세 조회
+export interface MarketProductReviewDetailRequest {
+    target_id: string;
+   review_id: string;
+   photoIndex: number;
+}
 
-
+export interface MarketProductReviewDetailResponse {
+  success: {
+    review_id: string;
+    user_profile_image: string;
+    user_nickname: string;
+    star: number;
+    created_at: string;
+    content: string;
+    photo_urls: string[];
+    product_thumbnail: string;
+    current_photo_index: number;
+    total_photo_count: number;
+    has_prev: boolean;
+    has_next: boolean;
+    prev_photo_index: number;
+    next_photo_index: number;
+  };
+};
 
 

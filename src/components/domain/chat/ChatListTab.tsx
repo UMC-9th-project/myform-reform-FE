@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getChatRooms,  type ChatRoomFilter } from '@/api/chat/chatApi';
+import { getChatRooms, type ChatRoomFilter } from '@/api/chat/chatApi';
 import type { SelectedChat } from '@/types/api/chat/chatMessages';
 import { useLocation } from 'react-router-dom';
 import useAuthStore from '@/stores/useAuthStore';
+import profile from '@/assets/icons/bigProfile.svg';
 
 interface ChatListTabProps {
   selectedChat: SelectedChat | null;
@@ -20,13 +21,17 @@ const filters: { label: string; type?: ChatRoomFilter }[] = [
   { label: '안 읽은 채팅방', type: 'UNREAD' },
 ];
 
-
-const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat, onChatsLoaded, initialFilterType }) => {
+const ChatListTab: React.FC<ChatListTabProps> = ({
+  selectedChat,
+  setSelectedChat,
+  onChatsLoaded,
+  initialFilterType,
+}) => {
   const { accessToken } = useAuthStore();
   const isLoggedIn = !!accessToken;
 
   const initialFilter = initialFilterType
-    ? filters.find((f) => f.type === initialFilterType) ?? filters[0]
+    ? (filters.find((f) => f.type === initialFilterType) ?? filters[0])
     : filters[0];
   const [filter, setFilter] = useState(initialFilter);
   const queryClient = useQueryClient();
@@ -43,14 +48,15 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
   const chats = data?.data || [];
   const hasMore = data?.meta.hasMore || false;
   const nextCursor = data?.meta.nextCursor || null;
-
-
-
+  const DEFAULT_IMAGE = profile;
 
   // 더보기 함수
   const handleLoadMore = async () => {
     if (!nextCursor) return;
-    const moreData = await getChatRooms({ type: filter.type, cursor: nextCursor });
+    const moreData = await getChatRooms({
+      type: filter.type,
+      cursor: nextCursor,
+    });
     queryClient.setQueryData(['chatRooms', filter.type], (oldData: any) => ({
       ...oldData,
       data: [...(oldData?.data || []), ...moreData.data],
@@ -68,7 +74,7 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
   // URL에서 chatRoomId 처리
   React.useEffect(() => {
     if (chatRoomIdFromUrl && chats.length > 0) {
-      const matched = chats.find(c => c.chatRoomId === chatRoomIdFromUrl);
+      const matched = chats.find((c) => c.chatRoomId === chatRoomIdFromUrl);
       if (matched) {
         setSelectedChat({
           chatRoomId: matched.chatRoomId,
@@ -87,7 +93,7 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
 
       {/* Filter Tabs: 항상 보임 */}
       <div className="flex gap-2 px-4 pb-4 overflow-x-auto no-scrollbar body-b3-rg flex-none">
-        {filters.map(f => (
+        {filters.map((f) => (
           <button
             key={f.label}
             onClick={() => setFilter(f)}
@@ -115,46 +121,87 @@ const ChatListTab: React.FC<ChatListTabProps> = ({ selectedChat, setSelectedChat
             </div>
           ) : (
             <>
-              {chats.map(chat => chat?.chatRoomId && (
-                <div
-                  key={chat.chatRoomId}
-                  className={`flex items-center p-4 cursor-pointer transition-colors ${
-                    selectedChat?.chatRoomId === chat.chatRoomId ? 'bg-[var(--color-gray-20)]' : ''
-                  }`}
-                  onClick={() =>
-                    setSelectedChat({
-                      chatRoomId: chat.chatRoomId,
-                      roomType: chat.roomType as 'FEED' | 'PROPOSAL' | 'REQUEST',
-                    })
-                  }
-                >
-                  <img
-                    src={chat.image}
-                    alt="thumb"
-                    className="w-14 h-14 rounded-[5px] object-cover bg-gray-200 flex-shrink-0"
-                  />
-                  <div className="ml-4 flex-1 flex flex-col overflow-hidden">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="body-b3-sb text-black truncate">{chat.title}</h3>
-                        <p className="body-b3-rg text-[var(--color-gray-60)] truncate">
-                          {chat.lastMessage || '새로운 메시지'}
-                        </p>
+              {chats.map(
+                (chat) =>
+                  chat?.chatRoomId && (
+                    <div
+                      key={chat.chatRoomId}
+                      className={`flex items-center p-4 cursor-pointer transition-colors ${
+                        selectedChat?.chatRoomId === chat.chatRoomId
+                          ? 'bg-[var(--color-gray-20)]'
+                          : ''
+                      }`}
+                      onClick={() =>
+                        setSelectedChat({
+                          chatRoomId: chat.chatRoomId,
+                          roomType: chat.roomType as
+                            | 'FEED'
+                            | 'PROPOSAL'
+                            | 'REQUEST',
+                        })
+                      }
+                    >
+                      <div
+                        className={`flex-shrink-0 border-1 border-[#00000026] ${
+                          chat.type === 'INQUIRY'
+                            ? 'w-14 h-14 rounded-full overflow-hidden'
+                            : 'w-14 h-14 rounded-[5px] overflow-hidden'
+                        }`}
+                      >
+                        <img
+                          src={
+                            chat.type === 'INQUIRY'
+                              ? chat.image || DEFAULT_IMAGE
+                              : chat.image || ''
+                          }
+                          alt="thumb"
+                          className="w-full h-full object-cover bg-transparent"
+                        />
                       </div>
-                      <div className="flex flex-col items-end ml-4 flex-shrink-0">
-                        <span className="body-b5-rg text-[var(--color-gray-50)] mb-2 whitespace-nowrap">
-                          {new Date(chat.lastMessageAt).toLocaleDateString()}
-                        </span>
-                        {chat.unreadCount > 0 && (
-                          <span className="bg-[var(--color-red-1)] text-white body-b5-sb px-2 py-0.5 rounded-full">
-                            {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
-                          </span>
-                        )}
+
+                      <div className="ml-4 flex-1 flex flex-col overflow-hidden">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="body-b3-sb text-black truncate">
+                              {chat.title}
+                            </h3>
+                            <p className="body-b3-rg text-[var(--color-gray-60)] truncate">
+                              {chat.lastMessage
+                                ? chat.lastMessage
+                                : chat.messageType === 'image'
+                                  ? '(사진)'
+                                  : chat.messageType === 'request'
+                                    ? '(요청서)'
+                                    : chat.messageType === 'payment'
+                                      ? '(결제 요청)'
+                                      : chat.messageType === 'proposal'
+                                        ? '(견적서)'
+                                        : chat.messageType === 'accept'
+                                          ? '(거래 진행 여부)'
+                                          : chat.messageType === 'result'
+                                            ? '(결제 완료)'
+                                            : '(대화가 없습니다)'}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-end ml-4 flex-shrink-0">
+                            <span className="body-b5-rg text-[var(--color-gray-50)] mb-2 whitespace-nowrap">
+                              {new Date(
+                                chat.lastMessageAt
+                              ).toLocaleDateString()}
+                            </span>
+                            {chat.unreadCount > 0 && (
+                              <span className="bg-[var(--color-red-1)] text-white body-b5-sb px-2 py-0.5 rounded-full">
+                                {chat.unreadCount > 99
+                                  ? '99+'
+                                  : chat.unreadCount}
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  )
+              )}
               {hasMore && (
                 <div className="flex justify-center py-4">
                   <button

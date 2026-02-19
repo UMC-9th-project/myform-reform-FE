@@ -1,22 +1,28 @@
 import gallery from '@/assets/chat/gallery.svg';
-import NoChatYet from '@/assets/chat/noChatYet.svg'
+import NoChatYetImg from '@/assets/chat/noChatYet.svg';
 
-const EmptyChatRoom = () => {
+interface EmptyChatRoomProps {
+  role: 'REFORMER' | 'USER'; // role에 따라 버튼 활성화 결정
+}
+
+const NoChatYet: React.FC<EmptyChatRoomProps> = ({ role }) => {
+  const buttonText = role === 'USER' ? '요청서 보내기' : '견적서 보내기';
   return (
     <div className="flex flex-col w-full h-full border border-[var(--color-line-gray-40)] bg-white">
-
       {/* 중앙 안내 문구 */}
       <div className="flex-1 flex items-center justify-center text-[var(--color-gray-60)] text-lg flex-col gap-3">
-        <img src={NoChatYet} alt="아직 채팅없음" />
-        <span className='body-b1-md text-[var(--color-gray-60)]'>진행중인 대화가 없어요.</span>
+        <img src={NoChatYetImg} alt="아직 채팅없음" />
+        <span className="body-b1-md text-[var(--color-gray-60)]">
+          진행중인 대화가 없어요.
+        </span>
       </div>
 
       {/* 입력창 (비활성화) */}
       <div className="p-4 border-t border-[var(--color-line-gray-40)]">
         <textarea
           disabled
-          placeholder="메시지를 입력해주세요."
-          className="w-full h-10 resize-none outline-none cursor-not-allowed body-b1-rg"
+          placeholder="메시지를 입력하세요."
+          className="w-full h-10 resize-none outline-none cursor-not-allowed body-b1-rg bg-transparent"
         />
 
         <div className="flex justify-between items-center mt-2">
@@ -26,10 +32,20 @@ const EmptyChatRoom = () => {
             </button>
             <button
               disabled
-              className="px-3 py-1.5 border rounded-full body-b5-rg"
+              className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg"
             >
-              결제창 보내기
+              {buttonText}
             </button>
+            {role === 'REFORMER' && (
+              <>
+                <button
+                  disabled
+                  className="px-3 py-1.5 border border-[var(--color-gray-50)] rounded-full body-b5-rg"
+                >
+                  결제창 보내기
+                </button>
+              </>
+            )}
           </div>
 
           <button
@@ -44,4 +60,4 @@ const EmptyChatRoom = () => {
   );
 };
 
-export default EmptyChatRoom;
+export default NoChatYet;

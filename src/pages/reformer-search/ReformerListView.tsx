@@ -38,17 +38,17 @@ const ReformerListView = () => {
         </div>
 
         {/* 헤더 */}
-        <div className="mb-8 mb-12 px-[110px] ">
-          <h1 className="heading-h4-bd text-[var(--color-black)] mb-2">
+        <div className="mb-4 px-[110px] ">
+          <h1 className="heading-h4-bd text-[var(--color-black)] mb-3">
             리폼러 탐색하기
           </h1>
-          <p className="heading-h5-rg text-[var(--color-gray-50)] mb-6">
+          <p className="heading-h5-rg text-[var(--color-gray-60)] mb-10">
             모든 리폼러를 한 눈에 확인하세요.
           </p>
 
           {/* 총 리폼러 수 및 정렬 */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <p className="body-b1-rg text-[var(--color-black)]">
+            <p className="body-b1-rg text-[var(--color-gray-60)]" style={{ fontFamily: 'Noto Sans KR, sans-serif' }}>
               총 {totalCount}명의 리폼러
             </p>
 

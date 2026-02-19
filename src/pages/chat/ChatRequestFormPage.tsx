@@ -2,9 +2,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { uploadImages } from '@/api/upload';
-import { createChatRequest, getChatRequestDetail, updateChatRequest } from '@/api/chat/chatRequestApi';
-
-
+import {
+  createChatRequest,
+  getChatRequestDetail,
+  updateChatRequest,
+} from '@/api/chat/chatRequestApi';
+import { formatCurrencyInput } from '@/utils/common/currency';
+import upload from '@/assets/icons/upload.svg';
 
 interface RequestImage {
   file: File | null;
@@ -22,11 +26,17 @@ interface ChatRequestFormData {
 const ChatRequestFormPage: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
-  const { chatRoomId, requestId } = useParams<{ chatRoomId?: string; requestId?: string }>();
+  const { chatRoomId, requestId } = useParams<{
+    chatRoomId?: string;
+    requestId?: string;
+  }>();
 
   const isEditMode = !!requestId;
+  const [budgetError, setBudgetError] = useState<string>('');
   const location = useLocation();
-  const requestData = location.state?.requestData as ChatRequestFormData | undefined;
+  const requestData = location.state?.requestData as
+    | ChatRequestFormData
+    | undefined;
   const [mode] = useState<'create' | 'edit'>(isEditMode ? 'edit' : 'create');
 
   const [formData, setFormData] = useState<ChatRequestFormData>({
@@ -37,34 +47,43 @@ const ChatRequestFormPage: React.FC = () => {
     content: requestData?.content || '',
   });
 
+  const parseBudget = (value: string): number => {
+    const sanitized = value.replace(/,/g, '').trim(); // 콤마 제거 + 공백 제거
+    const num = Number(sanitized);
+    return isNaN(num) ? 0 : num; // NaN이면 0으로
+  };
 
   const MAX_IMAGES = 10;
 
   useEffect(() => {
-  if (!isEditMode || !requestId) return;
+    if (!isEditMode || !requestId) return;
 
-  if (requestData) {
-    setFormData(requestData);
-    return;
-  }
-
-  const fetchRequest = async () => {
-    try {
-      const data = await getChatRequestDetail(requestId); 
-      if (!data) {
-        alert('요청서 정보를 불러오지 못했습니다.');
-        return;
-      }
-
-      const body = data.body;
-
+    if (requestData) {
       setFormData({
-        images: body.images.map(url => ({ file: null, preview: url })),
-        title: body.title,
-        minBudget: body.minBudget.toString(),
-        maxBudget: body.maxBudget.toString(),
-        content: body.content,
+        ...requestData,
+        minBudget: formatCurrencyInput(requestData.minBudget),
+        maxBudget: formatCurrencyInput(requestData.maxBudget),
       });
+      return;
+    }
+
+    const fetchRequest = async () => {
+      try {
+        const data = await getChatRequestDetail(requestId);
+        if (!data) {
+          alert('요청서 정보를 불러오지 못했습니다.');
+          return;
+        }
+
+        const body = data.body;
+
+        setFormData({
+          images: body.images.map((url) => ({ file: null, preview: url })),
+          title: body.title,
+          minBudget: formatCurrencyInput(body.minBudget.toString()), // 여기에 콤마 적용
+          maxBudget: formatCurrencyInput(body.maxBudget.toString()), // 여기에 콤마 적용
+          content: body.content,
+        });
       } catch (err) {
         console.error(err);
         alert('요청서 정보를 불러오지 못했습니다.');
@@ -73,9 +92,6 @@ const ChatRequestFormPage: React.FC = () => {
 
     fetchRequest();
   }, [isEditMode, requestId, requestData]);
-
-
-
 
   // --- 이미지 업로드 ---
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +119,26 @@ const ChatRequestFormPage: React.FC = () => {
   };
 
   const handleChange = (field: keyof ChatRequestFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (field === 'minBudget' || field === 'maxBudget') {
+      const numericWithComma = formatCurrencyInput(value);
+
+      setFormData((prev) => {
+        const newForm = { ...prev, [field]: numericWithComma };
+
+        // 실시간 검증
+        const min = parseBudget(newForm.minBudget);
+        const max = parseBudget(newForm.maxBudget);
+        if (min > max) {
+          setBudgetError(`최소 예산은 최대 예산보다 <br /> 클 수 없습니다.`);
+        } else {
+          setBudgetError('');
+        }
+
+        return newForm;
+      });
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }));
+    }
   };
 
   const isFormComplete =
@@ -111,21 +146,20 @@ const ChatRequestFormPage: React.FC = () => {
     formData.title.trim() !== '' &&
     formData.maxBudget.trim() !== '' &&
     formData.minBudget.trim() !== '' &&
-    formData.content.trim() !== '';
+    formData.content.trim() !== '' &&
+    budgetError === '';
 
   const handleSubmit = async () => {
-
     if (!isFormComplete) return;
 
     try {
-    
       const existingImageUrls = formData.images
-        .filter(img => img.file === null)
-        .map(img => img.preview);
+        .filter((img) => img.file === null)
+        .map((img) => img.preview);
 
       const newFiles = formData.images
-        .filter(img => img.file)
-        .map(img => img.file!) as File[];
+        .filter((img) => img.file)
+        .map((img) => img.file!) as File[];
 
       const uploadRes =
         newFiles.length > 0
@@ -139,26 +173,23 @@ const ChatRequestFormPage: React.FC = () => {
         throw new Error('이미지 업로드 실패');
       }
 
-      const imageUrls = [
-        ...existingImageUrls,
-        ...uploadRes.success.url,
-      ];
-
+      const imageUrls = [...existingImageUrls, ...uploadRes.success.url];
 
       if (isEditMode && requestId) {
         const payload = {
+          chatRoomId,
           image: imageUrls,
           title: formData.title,
           content: formData.content,
-          minBudget: Number(formData.minBudget),
-          maxBudget: Number(formData.maxBudget),
+          minBudget: parseBudget(formData.minBudget),
+          maxBudget: parseBudget(formData.maxBudget),
         };
 
         const res = await updateChatRequest(requestId, payload);
 
         if (res.data.resultType === 'SUCCESS') {
           alert('요청서가 수정되었습니다.');
-          navigate(-1); 
+          navigate(-1);
         }
 
         return;
@@ -170,8 +201,8 @@ const ChatRequestFormPage: React.FC = () => {
           image: imageUrls,
           title: formData.title,
           content: formData.content,
-          minBudget: Number(formData.minBudget),
-          maxBudget: Number(formData.maxBudget),
+          minBudget: parseBudget(formData.minBudget),
+          maxBudget: parseBudget(formData.maxBudget),
         };
 
         const res = await createChatRequest(payload);
@@ -200,7 +231,8 @@ const ChatRequestFormPage: React.FC = () => {
             <div className="w-48">
               <h2 className="body-b0-md">Step 1.</h2>
               <p className="body-b0-rg mt-1">
-                이미지 등록 ({formData.images.length}/{MAX_IMAGES}) <span className="text-red-500">*</span>
+                이미지 등록 ({formData.images.length}/{MAX_IMAGES}){' '}
+                <span className="text-red-500">*</span>
               </p>
             </div>
             <div className="w-3/4">
@@ -216,8 +248,15 @@ const ChatRequestFormPage: React.FC = () => {
                 />
 
                 {formData.images.map((img, index) => (
-                  <div key={index} className="relative w-36 h-36 rounded-[0.75rem] overflow-hidden border border-gray-300 group">
-                    <img src={img.preview} alt="preview" className="w-full h-full object-cover" />
+                  <div
+                    key={index}
+                    className="relative w-36 h-36 rounded-[0.75rem] overflow-hidden border border-gray-300 group"
+                  >
+                    <img
+                      src={img.preview}
+                      alt="preview"
+                      className="w-full h-full object-cover"
+                    />
                     {index === 0 && (
                       <span className="absolute top-2 left-2 bg-teal-500 text-white px-2 py-0.5 rounded-full text-xs">
                         대표
@@ -238,7 +277,10 @@ const ChatRequestFormPage: React.FC = () => {
                     onClick={() => fileInputRef.current?.click()}
                     className="w-36 h-36 rounded-lg border border-gray-300 bg-gray-100 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 transition"
                   >
-                    <span className="text-gray-500 mt-2 text-center text-sm">이미지 업로드</span>
+                    <img src={upload} alt="이미지 업로드 아이콘" />
+                    <span className="text-gray-500 mt-2 text-center text-sm">
+                      이미지 업로드
+                    </span>
                   </div>
                 )}
               </div>
@@ -253,16 +295,26 @@ const ChatRequestFormPage: React.FC = () => {
         <section className="flex flex-col md:flex-row pt-10 gap-8 border-t border-[var(--color-line-gray-40)]">
           <div className="w-48 pt-2">
             <h2 className="body-b0-md">Step 2.</h2>
-            <p className="body-b0-rg text-black">요청글 제목 <span className="text-red-500">*</span></p>
+            <p className="body-b0-rg text-black">
+              요청글 제목 <span className="text-red-500">*</span>
+            </p>
           </div>
-          <div className="flex-1">
+          <div className="flex-1 relative">
             <input
               type="text"
               value={formData.title}
-              onChange={(e) => handleChange('title', e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.length <= 40) {
+                  handleChange('title', value);
+                }
+              }}
               placeholder="요청글 제목을 입력해주세요."
               className="w-[55rem] p-4 body-b1-rg border border-[var(--color-gray-60)]"
             />
+            <span className="absolute right-6 bottom-1 body-b1-rg text-[var(--color-gray-60)]">
+              {formData.title.length}/40자
+            </span>
           </div>
         </section>
 
@@ -270,7 +322,9 @@ const ChatRequestFormPage: React.FC = () => {
         <section className="flex flex-col md:flex-row gap-8 pt-10 border-t border-[var(--color-line-gray-40)]">
           <div className="w-48 pt-2">
             <h2 className="body-b0-md">Step 3.</h2>
-            <p className="body-b0-rg text-black">상세 내용 작성<span className="text-red-500"> *</span></p>
+            <p className="body-b0-rg text-black">
+              상세 내용 작성<span className="text-red-500"> *</span>
+            </p>
           </div>
           <div className="flex-1 relative">
             <textarea
@@ -281,7 +335,7 @@ const ChatRequestFormPage: React.FC = () => {
               placeholder="본인이 원하는 리폼 스타일, 방식, 희망 예산 등을 구체적으로 설명해주세요."
               className="w-[55rem] body-b1-rg p-5 border border-black placeholder:text-[var(--color-gray-50)]"
             />
-            <span className="absolute bottom-2 right-6 body-b1-rg text-[var(--color-gray-60)]">
+            <span className="absolute bottom-1 right-2 body-b1-rg text-[var(--color-gray-60)]">
               {formData.content.length}/1000자
             </span>
           </div>
@@ -291,7 +345,14 @@ const ChatRequestFormPage: React.FC = () => {
         <section className="flex flex-col gap-8 md:flex-row pt-10 border-t border-[var(--color-line-gray-40)]">
           <div className="w-48 pt-2">
             <h2 className="body-b0-md">Step 4.</h2>
-            <p className="body-b0-rg text-black">희망 예산<span className="text-red-500"> *</span></p>
+            <p className="body-b0-rg text-black">
+              희망 예산<span className="text-red-500"> *</span>
+            </p>
+            {budgetError && (
+              <p className="text-red-500 mt-2 text-sm">
+                최소 예산은 최대 예산보다 <br /> 클 수 없습니다.
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-4">
             <div className="relative w-[20rem]">
@@ -302,10 +363,11 @@ const ChatRequestFormPage: React.FC = () => {
                 placeholder="최소 예산을 기입해주세요."
                 className="w-full p-4 body-b1-rg border border-[var(--color-gray-60)] placeholder:text-[var(--color-gray-50)]"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 body-b1-rg">원</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 body-b1-rg">
+                원
+              </span>
             </div>
-
-            <span className="body-b1-rg text-gray-500">~</span>
+            <div className="text-[1.5rem]">~</div>
 
             <div className="relative w-[20rem]">
               <input
@@ -315,7 +377,9 @@ const ChatRequestFormPage: React.FC = () => {
                 placeholder="최대 예산을 기입해주세요."
                 className="w-full p-4 body-b1-rg border border-[var(--color-gray-60)] placeholder:text-[var(--color-gray-50)]"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 body-b1-rg">원</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 body-b1-rg">
+                원
+              </span>
             </div>
           </div>
         </section>
@@ -328,9 +392,10 @@ const ChatRequestFormPage: React.FC = () => {
           disabled={!isFormComplete}
           className={`
             px-10 py-5 rounded-lg body-b0-bd
-            ${isFormComplete
-              ? 'bg-[var(--color-mint-1)] text-white cursor-pointer'
-              : 'bg-[var(--color-line-gray-30)] text-[var(--color-gray-50)] cursor-not-allowed'
+            ${
+              isFormComplete
+                ? 'bg-[var(--color-mint-1)] text-white cursor-pointer'
+                : 'bg-[var(--color-line-gray-30)] text-[var(--color-gray-50)] cursor-not-allowed'
             }
             transition-colors
           `}

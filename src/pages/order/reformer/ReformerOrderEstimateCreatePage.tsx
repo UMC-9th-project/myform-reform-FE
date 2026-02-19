@@ -37,7 +37,7 @@ const ReformerOrderEstimateCreatePage = () => {
   });
 
   const requestDetail = requestDetailResponse?.success ?? null;
-  const recipientName = requestDetail?.name ?? '';
+  const recipientName = requestDetail?.nickname ?? '';
 
   const { mutate: submitQuote, isPending: isSubmitting } = useMutation({
     mutationFn: async () => {

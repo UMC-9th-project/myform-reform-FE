@@ -158,11 +158,11 @@ const OrderRequestDetailPage = () => {
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-[var(--color-gray-60)]">
                   <img
                     src={requestDetail.profile}
-                    alt={requestDetail.name}
+                    alt={requestDetail.nickname}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="body-b1-rg text-[var(--color-gray-60)]">{requestDetail.name}</span>
+                <span className="body-b1-rg text-[var(--color-gray-60)]">{requestDetail.nickname}</span>
               </div>
               <button
                 onClick={handleShare}

@@ -17,7 +17,7 @@ const EmptyChatRoom = ({ role }: EmptyChatRoomProps) => {
       <div className="p-4 border-t border-[var(--color-line-gray-40)]">
         <textarea
           disabled
-          placeholder="메시지를 입력해주세요."
+          placeholder="메시지를 입력하세요."
           className="w-full h-10 resize-none outline-none cursor-not-allowed body-b1-rg"
         />
 

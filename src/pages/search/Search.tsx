@@ -31,7 +31,7 @@ export default function Search() {
 
   return (
     <div className="w-full mx-auto py-10">
-      <h2 className="heading-h2-bd text-[var(--color-black)] px-40 mb-22">
+      <h2 className="heading-h2-bd text-[var(--color-black)] px-40 mb-[25px]">
         {hasQuery ? (
           <>
             <span className="text-[var(--color-mint-1)]">&lsquo;{searchValue.trim()}&rsquo;</span> 검색 결과
@@ -42,7 +42,7 @@ export default function Search() {
       </h2>
       {hasQuery ? (
         <>
-          <div className="flex justify-between border-b border-[var(--color-line-gray-40)] mb-6 px-44">
+          <div className="flex justify-between border-b border-[var(--color-line-gray-40)] mb-[38px] px-44">
             <button
               type="button"
               onClick={() => handleTabChange('market')}
@@ -103,7 +103,7 @@ export default function Search() {
               )}
               {activeTab === 'request' && requestItems.length > 0 && (
                 <div
-                  className="px-40 grid gap-x-10 gap-y-34 w-full mt-10"
+                  className="px-40 grid gap-x-10 gap-y-34 w-full"
                   style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}
                 >
                   {requestItems.map((item) => {
@@ -165,7 +165,7 @@ export default function Search() {
         </>
       ) : (
         <>
-          <div className="flex justify-between border-b border-[var(--color-line-gray-40)] mb-6 px-44">
+          <div className="flex justify-between border-b border-[var(--color-line-gray-40)] mb-[38px] px-44">
             <button
               type="button"
               onClick={() => handleTabChange('market')}

@@ -8,7 +8,9 @@ import type {
     MarketProductPhotoReviewRequest,
     MarketProductPhotoReviewResponse,
     MarketProductReviewListRequest,
-    MarketProductReviewListResponse
+    MarketProductReviewListResponse,
+    MarketProductReviewDetailRequest,
+    MarketProductReviewDetailResponse
 } from '../../types/api/market/market';
 
 
@@ -32,6 +34,7 @@ export const getMarketProductList = async (
     });
     return response.data;
 };
+
 // 마켓 상품 상세 조회
 export const getMarketProductDetail = async (
     params: GetMarketProductDetailParams
@@ -44,7 +47,7 @@ export const getMarketProductDetail = async (
 export const getMarketProductReviewList = async (
     params: MarketProductReviewListRequest
 ): Promise<MarketProductReviewListResponse> => {
-    const response = await api.get<MarketProductReviewListResponse>(`/market/${params.itemId}/reviews`, {
+    const response = await api.get<MarketProductReviewListResponse>(`/reviews/target/ITEM/${params.itemId}/reviews`, {
         params: {
             page: params.page,
             limit: params.limit,
@@ -59,10 +62,22 @@ export const getMarketProductReviewList = async (
 export const getMarketProductPhotoReview = async (
     params: MarketProductPhotoReviewRequest
 ): Promise<MarketProductPhotoReviewResponse> => {
-    const response = await api.get<MarketProductPhotoReviewResponse>(`/market/${params.itemId}/reviews/photos`, {
+    const response = await api.get<MarketProductPhotoReviewResponse>(`/reviews/target/ITEM/${params.itemId}/reviews/photos`, {
         params: {
             offset: params.offset,
             limit: params.limit,
+        },
+    });
+    return response.data;
+};
+
+// 마켓 상품 리뷰 상세 조회
+export const getMarketProductReviewDetail = async (
+    params: MarketProductReviewDetailRequest
+): Promise<MarketProductReviewDetailResponse> => {
+    const response = await api.get<MarketProductReviewDetailResponse>(`/reviews/target/ITEM/${params.target_id}/reviews/${params.review_id}`, {
+        params: {
+            photoIndex: params.photoIndex,
         },
     });
     return response.data;

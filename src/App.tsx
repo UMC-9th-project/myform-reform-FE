@@ -53,6 +53,7 @@ import ChatRequestFormPage from './pages/chat/ChatRequestFormPage';
 import ChatProposalDetailPage from './pages/chat/ChatRequestDetail';
 
 import LandingPage from './pages/LandingPage';
+import ReformerApprovalPage from './pages/admin/ReformerApprovalPage';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -78,6 +79,9 @@ function App() {
         }
       >
         <Route path="/kakao/signup" element={<KakaoSignup />} />
+
+          {/* 관리자 페이지 */}
+        <Route path="/admin" element={<ReformerApprovalPage />} />
       </Route>
 
       <Route
@@ -147,6 +151,7 @@ function App() {
         <Route path="/market" element={<Market />} />
         <Route path="/market/product/:id" element={<MarketProductDetailPage />} />
         <Route path="/market/product/:id/purchase" element={<MarketPurchasePage />} />
+        <Route path="/market/purchase" element={<MarketPurchasePage />} />
         <Route path="/market/product/:id/purchase/complete" element={<MarketPurchaseCompletePage />} />
         
 
@@ -170,6 +175,8 @@ function App() {
         <Route path="/mypage/review/write" element={<ReviewWritePage />} />
         <Route path="/chat/request/detail/:requestId" element={<ChatQuotationDetailPage />} />
         <Route path="/chat/quotation/detail/:proposalId" element={<ChatProposalDetailPage />} />
+
+      
       </Route>
 
       <Route

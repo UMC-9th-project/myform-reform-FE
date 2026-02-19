@@ -12,11 +12,15 @@ export const getProfileReviews = async ({
   limit = 15,
   cursor,
 }: GetProfileReviewsParams): Promise<GetProfileReviewsResponse> => {
-  const query = new URLSearchParams({ limit: limit.toString() });
-  if (cursor) query.append('cursor', cursor);
-
   const { data } = await api.get<GetProfileReviewsResponse>(
-    `/profile/${ownerId}/review`, { params: { limit } }
+    `/profile/${ownerId}/review`,
+    {
+      params: {
+        limit,
+        ...(cursor && { cursor }),
+      },
+    }
   );
+
   return data;
 };

@@ -14,17 +14,6 @@ const KakaoSignup = () => {
   const role = searchParams.get('role') as 'user' | 'reformer' | null;
   const redirectUrl = searchParams.get('redirectUrl') || '/';
 
-  // 디버깅: 쿼리 파라미터 확인
-  useEffect(() => {
-    console.log('KakaoSignup 쿼리 파라미터:', {
-      kakaoId,
-      email,
-      role,
-      redirectUrl,
-      allParams: Object.fromEntries(searchParams.entries()),
-    });
-  }, [kakaoId, email, role, redirectUrl, searchParams]);
-
   const { signup } = useSignup();
   // 리폼러 회원가입은 별도 페이지에서 처리되므로 여기서는 사용하지 않음
   // const { signup: reformerSignup } = useReformerSignup();

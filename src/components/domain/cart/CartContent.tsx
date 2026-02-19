@@ -17,6 +17,7 @@ interface CartContentProps {
   checkedCount: number;
   isAllChecked: boolean;
   payment: PaymentSummaryType;
+  productImageLoadingMap?: Map<string, boolean>;
   onAllCheck: (checked: boolean) => void;
   onSellerCheck: (sellerId: number, checked: boolean) => void;
   onItemCheck: (productIndex: number, checked: boolean) => void;
@@ -36,6 +37,7 @@ const CartContent = ({
   checkedCount,
   isAllChecked,
   payment,
+  productImageLoadingMap,
   onAllCheck,
   onSellerCheck,
   onItemCheck,
@@ -71,6 +73,7 @@ const CartContent = ({
                 quantities={quantities}
                 itemChecked={itemChecked}
                 sellerChecked={sellerChecked[sellerIndex] || false}
+                productImageLoadingMap={productImageLoadingMap}
                 onSellerCheck={(checked) => onSellerCheck(seller.id, checked)}
                 onItemCheck={onItemCheck}
                 onQuantityChange={onQuantityChange}

@@ -24,6 +24,9 @@ const DEFAULT_PROFILE_IMAGE = Profile;
 const EditProfile = ({ mode, data }: EditProfileProps) => {
   const navigate = useNavigate();
   const { role } = useAuthStore();
+  const accessToken =
+    useAuthStore((state) => state.accessToken) ||
+    localStorage.getItem('accessToken');
   const { ownerId } = useParams<{ ownerId: string }>();
   if (!data) return <div>프로필 정보를 불러오지 못했습니다.</div>;
   const handleShareClick = () => {
@@ -42,6 +45,12 @@ const EditProfile = ({ mode, data }: EditProfileProps) => {
   };
 
   const handleStartChat = async () => {
+    // 비로그인 상태면 로그인 타입 선택 페이지로 이동
+    if (!accessToken) {
+      alert('로그인이 필요합니다.');
+      return;
+    }
+
     if (!ownerId) {
       alert('채팅을 시작할 수 없습니다. ID가 없습니다.');
       return;
@@ -55,10 +64,56 @@ const EditProfile = ({ mode, data }: EditProfileProps) => {
       const chatRoomId = response.data.success?.id;
       if (chatRoomId) {
         navigate(`/chat/normal/${chatRoomId}?tab=inquiry`);
-      } else alert('채팅방 생성 실패');
+      } else {
+        const errorData = response.data;
+        const errorMessage = errorData?.error?.reason || '채팅방 생성 실패';
+
+        const tokenErrorKeywords = [
+          '토큰',
+          'Access Token',
+          '유효하지 않은',
+          '존재하지 않거나',
+          '인증',
+        ];
+        const isTokenError = tokenErrorKeywords.some((keyword) =>
+          errorMessage.includes(keyword)
+        );
+
+        if (isTokenError) {
+          alert('로그인이 만료되었습니다. 다시 로그인해주세요.');
+          return;
+        }
+
+        alert(`채팅방 생성에 실패했습니다: ${errorMessage}`);
+      }
     } catch (err) {
       console.error(err);
-      alert('채팅방 생성 중 오류가 발생했습니다.');
+      const error = err as {
+        response?: { data?: { error?: { reason?: string } } };
+        message?: string;
+      };
+      const errorMessage =
+        error?.response?.data?.error?.reason ||
+        error?.message ||
+        '채팅방 생성 중 오류가 발생했습니다.';
+
+      const tokenErrorKeywords = [
+        '토큰',
+        'Access Token',
+        '유효하지 않은',
+        '존재하지 않거나',
+        '인증',
+      ];
+      const isTokenError = tokenErrorKeywords.some((keyword) =>
+        errorMessage.includes(keyword)
+      );
+
+      if (isTokenError) {
+        navigate('/login/type');
+        return;
+      }
+
+      alert(`채팅방 생성에 실패했습니다: ${errorMessage}`);
     }
   };
 
