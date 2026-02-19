@@ -11,6 +11,11 @@ const Pagination: React.FC<PaginationProps> = ({ totalPages = 13, currentPage: e
   const currentPage = externalCurrentPage ?? internalCurrentPage;
   const PAGE_GROUP_SIZE = 10; // 한 번에 보여줄 페이지 수
 
+  // totalPages가 0이면 아무것도 렌더링하지 않음
+  if (totalPages <= 0) {
+    return null;
+  }
+
   // 1. 현재 페이지가 속한 그룹 계산 (0부터 시작)
   const currentGroupIndex = Math.floor((currentPage - 1) / PAGE_GROUP_SIZE);
 
