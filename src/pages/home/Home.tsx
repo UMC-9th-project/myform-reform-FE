@@ -74,7 +74,7 @@ const Home = () => {
       </div>
 
       <div className='mt-[7.8rem] mx-[9.375rem]'>
-      <div className='heading-h1-bd  flex flex-col'>
+      <div className='heading-h2-bd  flex flex-col'>
         <p>내 폼을 나답게!</p>
         <p>나에게 딱 맞는 <span className='text-[var(--color-mint-1)]'>리폼 스타일</span>을 찾아보세요</p>
       </div>
