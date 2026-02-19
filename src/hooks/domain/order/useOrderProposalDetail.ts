@@ -8,7 +8,7 @@ import { getWishList } from '../../../api/wishlist';
 import { useWish } from '../wishlist/useWish';
 import useAuthStore from '../../../stores/useAuthStore';
 import type { ReformProposalDetail } from '../../../types/api/order/reformProposal';
-import type { TargetReviewsSort } from '../../../types/api/reviews';
+import type { TargetReviewsSort, ReviewPhoto } from '../../../types/api/reviews';
 
 function formatWon(value: number) {
   return `${value.toLocaleString('ko-KR')}원`;
@@ -180,18 +180,28 @@ export const useOrderProposalDetail = () => {
       ? reviewPhotosResponse.success
       : null;
     
-    const reviewPhotos: string[] = photosData
-      ? photosData.photos.map((p) => p.photo_url)
+    const reviewPhotos: ReviewPhoto[] = photosData
+      ? photosData.photos
       : (() => {
           // API에서 사진을 받지 못한 경우 리뷰에서 추출
-          const photos: string[] = [];
+          const photos: ReviewPhoto[] = [];
           raw.reviews.forEach((r) => {
             if (r.photos && r.photos.length > 0) {
-              photos.push(...r.photos);
+              r.photos.forEach((photoUrl, photoIndex) => {
+                photos.push({
+                  photo_order: photoIndex,
+                  photo_url: photoUrl,
+                  review_id: r.review_id,
+                  photo_index: photos.length,
+                });
+              });
             }
           });
           return photos;
         })();
+    
+    // ProductReviewSection에서 사용할 URL 배열
+    const reviewPhotoUrls: string[] = reviewPhotos.map((p) => p.photo_url);
 
     const reviews = raw.reviews.map((r) => {
       const createdAt = (() => {
@@ -216,6 +226,7 @@ export const useOrderProposalDetail = () => {
       reviews,
       photoReviewCount,
       reviewPhotos,
+      reviewPhotoUrls,
       avgStar: raw.avg_star,
       totalPages: raw.total_pages,
     };
@@ -261,6 +272,7 @@ export const useOrderProposalDetail = () => {
     reviews: reviewsData.reviews,
     photoReviewCount: reviewsData.photoReviewCount,
     reviewPhotos: reviewsData.reviewPhotos,
+    reviewPhotoUrls: reviewsData.reviewPhotoUrls,
     reviewsAvgStar: reviewsData.avgStar,
     totalPages: reviewsData.totalPages,
     isLoading,
