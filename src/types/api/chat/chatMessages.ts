@@ -75,6 +75,7 @@ export type MessageType =
 
 export type ChatMessage =
   | {
+      chatRoomId: string;
       messageId: string;
       senderId: string;
       senderType: 'USER' | 'OWNER';
@@ -84,6 +85,7 @@ export type ChatMessage =
       createdAt: string;
     }
   | {
+      chatRoomId: string;
       messageId: string;
       senderId: string;
       senderType: 'USER' | 'OWNER';
@@ -93,6 +95,7 @@ export type ChatMessage =
       createdAt: string;
     }
   | {
+      chatRoomId: string;
       messageId: string;
       senderId: string;
       senderType: 'USER' | 'OWNER';
@@ -102,6 +105,7 @@ export type ChatMessage =
       createdAt: string;
     }
   | {
+      chatRoomId: string;
       messageId: string;
       senderId: string;
       senderType: 'USER' | 'OWNER';
@@ -111,6 +115,7 @@ export type ChatMessage =
       createdAt: string;
     }
   | {
+      chatRoomId: string;
       messageId: string;
       senderId: string;
       senderType: 'USER' | 'OWNER';
@@ -120,6 +125,7 @@ export type ChatMessage =
       createdAt: string;
     }
   | {
+      chatRoomId: string;
       messageId: string;
       senderId: string;
       senderType: 'USER' | 'OWNER';
@@ -129,6 +135,7 @@ export type ChatMessage =
       createdAt: string;
     }
   | {
+      chatRoomId: string;
       messageId: string;
       senderId: string;
       senderType: 'USER' | 'OWNER';

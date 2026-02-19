@@ -228,6 +228,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     }
 
     const tempMessage: ChatMessage = {
+      chatRoomId: chatId,
       messageId: `temp-${Date.now()}`,
       senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
       senderId: myUserId!,
@@ -404,9 +405,9 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     };
 
     const handleNewMessage = (msg: ChatMessage) => {
-      const isCurrentRoom = true;
+      const isCurrentRoom = msg.chatRoomId === chatId;
 
-      // 1️⃣ 현재 채팅방 메시지 추가
+      // 현재 방 메시지 업데이트
       if (isCurrentRoom) {
         queryClient.setQueryData<InfiniteData<ChatMessagesPage>>(
           ['chatMessages', chatId],
@@ -421,27 +422,6 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
               messages: [...updatedPages[lastPageIndex].messages, msg],
             };
 
-            const isReaderOwner =
-              oldData.pages[0].chatRoomInfo?.owner.id === myUserId;
-
-            updatedPages[0] = {
-              ...updatedPages[0],
-              chatRoomInfo: {
-                ...updatedPages[0].chatRoomInfo!,
-                ownerLastReadId: isReaderOwner
-                  ? msg.messageId
-                  : updatedPages[0].chatRoomInfo!.ownerLastReadId,
-                requesterLastReadId: !isReaderOwner
-                  ? msg.messageId
-                  : updatedPages[0].chatRoomInfo!.requesterLastReadId,
-                // owner / requester / type / targetPayload는 그대로 유지
-                owner: updatedPages[0].chatRoomInfo!.owner,
-                requester: updatedPages[0].chatRoomInfo!.requester,
-                type: updatedPages[0].chatRoomInfo!.type,
-                targetPayload:
-                  updatedPages[0].chatRoomInfo!.targetPayload ?? null,
-              },
-            };
             return { ...oldData, pages: updatedPages };
           }
         );
@@ -449,7 +429,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
         socket?.emit('readChatRoom', { roomId: chatId });
       }
 
-      // 2️⃣ 모든 채팅방 목록 업데이트
+      // 채팅방 목록 업데이트 (항상 실행)
       const lastMessageText = getLastMessageText(msg);
 
       [undefined, 'INQUIRY', 'ORDER', 'UNREAD'].forEach((filterType) => {
@@ -459,7 +439,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
             if (!oldData?.data) return oldData;
 
             const updatedData = oldData.data.map((room) => {
-              if (room.chatRoomId !== chatId) return room;
+              if (room.chatRoomId !== msg.chatRoomId) return room;
 
               const newUnreadCount = isCurrentRoom
                 ? 0
@@ -474,16 +454,18 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
             });
 
             const targetRoom = updatedData.find(
-              (room) => room.chatRoomId === chatId
+              (room) => room.chatRoomId === msg.chatRoomId
             );
+
             if (!targetRoom) return { ...oldData, data: updatedData };
 
-            const sortedData = [
-              targetRoom,
-              ...updatedData.filter((r) => r.chatRoomId !== chatId),
-            ];
-
-            return { ...oldData, data: sortedData };
+            return {
+              ...oldData,
+              data: [
+                targetRoom,
+                ...updatedData.filter((r) => r.chatRoomId !== msg.chatRoomId),
+              ],
+            };
           }
         );
       });
@@ -515,6 +497,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     }
 
     const tempMessage: ChatMessage & { isRead: boolean } = {
+      chatRoomId: chatId,
       messageId: `temp-${Date.now()}`, // 임시 ID
       senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
       senderId: myUserId, // 임시
@@ -593,6 +576,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     if (!socket || !socket.connected) return;
 
     const tempMessage: ChatMessage & { isRead: boolean } = {
+      chatRoomId: chatId,
       messageId: `temp-${Date.now()}`,
       senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
       senderId: myUserId,
@@ -686,6 +670,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
     if (!socket || !socket.connected || !myUserId) return;
 
     const tempMessage: ChatMessage & { isRead: boolean } = {
+      chatRoomId: chatId,
       messageId: `temp-${isAccepted ? 'accept' : 'reject'}-${Date.now()}`,
       senderType: myRole === 'REFORMER' ? 'OWNER' : 'USER',
       senderId: myUserId!,
