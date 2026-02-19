@@ -14,14 +14,14 @@ import starIcon from '../../assets/icons/star.svg';
 
 // 컴포넌트
 import { ImageCarousel } from '../../components/common/product/Image';
-import OptionQuantity from '../../components/common/product/option/option-quantity-button/OptionQuantity';  
+import OptionQuantity from '../../components/common/product/option/option-quantity-button/OptionQuantity';
 import ProductInfoToggle from '../../components/common/product/detail/ProductInfoToggle';
-import Review from '../../components/common/product/detail/review/Review';  
-import ReviewFilter from '../../components/common/product/detail/review/ReviewFilter';    
-import PageNumber from '../../components/common/product/PageNumber';  
+import Review from '../../components/common/product/detail/review/Review';
+import ReviewFilter from '../../components/common/product/detail/review/ReviewFilter';
+import PageNumber from '../../components/common/product/PageNumber';
 import Button from '../../components/common/button/Button1';
 import LikeButton from '../../components/common/likebutton/LikeButton';
-import ReformerPurchaseBlockModal from '../../components/common/Modal/ReformerPurchaseBlockModal'; 
+import ReformerPurchaseBlockModal from '../../components/common/Modal/ReformerPurchaseBlockModal';
 import OptionDropdown from '../../components/common/product/option/option-dropdown/OptionDropdown';
 import MarketPhotoReviewModal from '../../components/domain/market/MarketPhotoReviewModal';
 
@@ -36,9 +36,6 @@ import { useWish } from '../../hooks/domain/wishlist/useWish';
 
 import { getWishList } from '../../api/wishlist';
 
-
- 
-
 const formatPrice = (price: number) => {
   return price.toLocaleString('ko-KR');
 };
@@ -49,21 +46,35 @@ const MarketProductDetailPage = () => {
   const { productDetailResponse } = useMarketProductDetail(id);
   const { photoReviewResponse } = useMarketProductPhotoReview(id);
   const [reviewPage, setReviewPage] = useState(1);
-  const [reviewSort, setReviewSort] = useState<'latest' | 'star_high' | 'star_low'>('latest');
-  const { reviewListResponse } = useMarketProductReviewList(id, reviewPage, reviewSort);
+  const [reviewSort, setReviewSort] = useState<
+    'latest' | 'star_high' | 'star_low'
+  >('latest');
+  const { reviewListResponse } = useMarketProductReviewList(
+    id,
+    reviewPage,
+    reviewSort
+  );
   const accessToken = useAuthStore((state) => state.accessToken);
   const userRole = useAuthStore((state) => state.role);
   const isReformer = userRole === 'reformer';
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  const [selectedOptions, setSelectedOptions] = useState<
+    Record<string, string>
+  >({});
   const [quantity, setQuantity] = useState(1);
-  const [activeSection, setActiveSection] = useState<'info' | 'reformer' | 'review'>('info');
+  const [activeSection, setActiveSection] = useState<
+    'info' | 'reformer' | 'review'
+  >('info');
   const [localLiked, setLocalLiked] = useState<boolean | null>(null);
   const [showReformerModal, setShowReformerModal] = useState(false);
-  const [modalMessageType, setModalMessageType] = useState<'wish' | 'cart' | 'purchase' | 'chat'>('purchase');
+  const [modalMessageType, setModalMessageType] = useState<
+    'wish' | 'cart' | 'purchase' | 'chat'
+  >('purchase');
   const [showPhotoReviewModal, setShowPhotoReviewModal] = useState(false);
   const [showPhotoDetailModal, setShowPhotoDetailModal] = useState(false);
   const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
-  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | undefined>(undefined);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<
+    number | undefined
+  >(undefined);
 
   // 모달 열림 시 body 스크롤 막기
   useEffect(() => {
@@ -76,7 +87,7 @@ const MarketProductDetailPage = () => {
       document.body.style.overflow = 'unset';
     };
   }, [showPhotoReviewModal]);
-  
+
   const infoRef = useRef<HTMLDivElement>(null);
   const reformerRef = useRef<HTMLDivElement>(null);
   const reviewRef = useRef<HTMLDivElement>(null);
@@ -213,7 +224,7 @@ const MarketProductDetailPage = () => {
   const thumbnail = images[0] || '';
   const additionalImages = images.slice(1);
   const optionGroups = product.option_groups || [];
-  
+
   const star = avgStar;
   const review_count = reviewCount;
   const owner_nickname = '';
@@ -230,7 +241,7 @@ const MarketProductDetailPage = () => {
   const onSortChange = (value: string) => {
     if (value === 'latest' || value === 'star_high' || value === 'star_low') {
       setReviewSort(value);
-      setReviewPage(1); 
+      setReviewPage(1);
     }
   };
 
@@ -238,7 +249,9 @@ const MarketProductDetailPage = () => {
   const optionPrice = optionGroups.reduce((total, group) => {
     const selectedOptionId = selectedOptions[group.option_group_id];
     if (selectedOptionId) {
-      const selectedItem = group.option_items.find(item => item.option_item_id === selectedOptionId);
+      const selectedItem = group.option_items.find(
+        (item) => item.option_item_id === selectedOptionId
+      );
       if (selectedItem) {
         return total + selectedItem.extra_price;
       }
@@ -250,22 +263,26 @@ const MarketProductDetailPage = () => {
   const totalPrice = (basePrice + optionPrice) * quantity + delivery;
 
   // 옵션 그룹별로 OptionDropdown에 전달할 옵션 배열 생성
-  const getOptionsForGroup = (group: typeof optionGroups[0]): OptionItemType[] => {
+  const getOptionsForGroup = (
+    group: (typeof optionGroups)[0]
+  ): OptionItemType[] => {
     return group.option_items
-      .filter(item => !item.is_sold_out) // 품절 제외
-      .map(item => ({
-        label: item.name, 
+      .filter((item) => !item.is_sold_out) // 품절 제외
+      .map((item) => ({
+        label: item.name,
         price: item.extra_price,
       }));
   };
 
   const handleOptionSelect = (groupId: string, optionLabel: string) => {
-    const group = optionGroups.find(g => g.option_group_id === groupId);
+    const group = optionGroups.find((g) => g.option_group_id === groupId);
     if (!group) return;
 
-    const selectedItem = group.option_items.find(item => item.name === optionLabel);
+    const selectedItem = group.option_items.find(
+      (item) => item.name === optionLabel
+    );
     if (selectedItem) {
-      setSelectedOptions(prev => ({
+      setSelectedOptions((prev) => ({
         ...prev,
         [groupId]: selectedItem.option_item_id,
       }));
@@ -276,43 +293,55 @@ const MarketProductDetailPage = () => {
     <div className=" min-h-screen  mt-[2.75rem]">
       <div className="flex mx-[7.125rem] gap-[2.9375rem] mb-[2.75rem]">
         <div className="w-150 h-[630px]">
-          <div className="h-[600px]">   
-            <ImageCarousel images={images.length > 0 ? images : [thumbnail]} isClosed={false} />
-          </div>  
+          <div className="h-[600px]">
+            <ImageCarousel
+              images={images.length > 0 ? images : [thumbnail]}
+              isClosed={false}
+            />
+          </div>
         </div>
 
-       
         <div className="flex-1 flex flex-col">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-[0.75rem] cursor-pointer" onClick={() => navigate(`/profile/${product.reformer.owner_id}`)}>
+            <div
+              className="flex items-center gap-[0.75rem] cursor-pointer"
+              onClick={() => navigate(`/profile/${product.reformer.owner_id}`)}
+            >
               <div className="w-[2.95725rem] h-[2.95725rem] rounded-full bg-[var(--color-gray-20)] flex items-center justify-center">
                 <span className="body-b1-rg text-[var(--color-gray-60)]">
-                  <img src={product.reformer.profile_image} alt="profile" className="w-full h-full object-cover rounded-full" />
+                  <img
+                    src={product.reformer.profile_image}
+                    alt="profile"
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 </span>
               </div>
               <span className="body-b1-rg text-[var(--color-gray-60)]">
-                 {product.reformer.nickname}
+                {product.reformer.nickname}
               </span>
             </div>
-            <button className="w-10 h-10 flex items-center justify-center cursor-pointer" onClick={handleShare}>
+            <button
+              className="w-10 h-10 flex items-center justify-center cursor-pointer"
+              onClick={handleShare}
+            >
               <img src={shareIcon} alt="공유" />
             </button>
           </div>
 
           <div className="flex flex-col mt-[0.5625rem]">
-            <h1 className="heading-h5-md">
-              {title}
-            </h1>
+            <h1 className="heading-h5-md">{title}</h1>
             <p className="heading-h2-bd mt-[1.125rem]">
               {formatPrice(price)}원
             </p>
           </div>
 
           <div className="flex items-center gap-[0.3125rem] mt-[1.4375rem] mb-[0.8125rem] border-b border-[var(--color-line-gray-40)] pb-[0.8125rem]">
-            <img src={starIcon} alt="star" className="w-[1.75rem] h-[1.75rem]" />
-            <span className="body-b1-sb">
-              {product.reformer.star}
-            </span>
+            <img
+              src={starIcon}
+              alt="star"
+              className="w-[1.75rem] h-[1.75rem]"
+            />
+            <span className="body-b1-sb">{product.reformer.star}</span>
             <span className="body-b5-rg text-[var(--color-gray-50)]">
               (최근 3개월 {product.reformer.star_recent_3m.toFixed(2)})
             </span>
@@ -327,24 +356,27 @@ const MarketProductDetailPage = () => {
             </div>
             <div className="flex gap-[1.5rem]">
               <span className="body-b1-sb">배송 정보</span>
-              <span className="body-b1-rg">
-                {deliveryInfo || '일반배송'}
-              </span>
+              <span className="body-b1-rg">{deliveryInfo || '일반배송'}</span>
             </div>
           </div>
 
           {/* 옵션 그룹 렌더링 */}
           {optionGroups.length > 0 && (
-            <div className='mt-[1.875rem] flex flex-col gap-[0.625rem]'>
+            <div className="mt-[1.875rem] flex flex-col gap-[0.625rem]">
               {optionGroups.map((group) => (
                 <div key={group.option_group_id}>
                   <OptionDropdown
                     options={getOptionsForGroup(group)}
-                    onSelect={(optionLabel) => handleOptionSelect(group.option_group_id, optionLabel)}
+                    onSelect={(optionLabel) =>
+                      handleOptionSelect(group.option_group_id, optionLabel)
+                    }
                     selectedOptionLabel={(() => {
-                      const selectedOptionId = selectedOptions[group.option_group_id];
+                      const selectedOptionId =
+                        selectedOptions[group.option_group_id];
                       if (selectedOptionId) {
-                        const selectedItem = group.option_items.find(item => item.option_item_id === selectedOptionId);
+                        const selectedItem = group.option_items.find(
+                          (item) => item.option_item_id === selectedOptionId
+                        );
                         return selectedItem?.name || null;
                       }
                       return null;
@@ -355,15 +387,15 @@ const MarketProductDetailPage = () => {
             </div>
           )}
 
-         
           {/* 선택된 옵션이 있을 때만 표시 */}
           {Object.keys(selectedOptions).length > 0 && (
             <div className="bg-[var(--color-gray-20)] p-[0.625rem] flex flex-col gap-[1.75rem] mt-[2.25rem]">
-              <div className=' flex items-center justify-between gap-[0.5rem]'>
+              <div className=" flex items-center justify-between gap-[0.5rem]">
                 <span className="body-b1-rg px-[0.625rem] flex items-center justify-between w-full">
                   {product.option_groups
                     .map((group) => {
-                      const selectedOptionId = selectedOptions[group.option_group_id];
+                      const selectedOptionId =
+                        selectedOptions[group.option_group_id];
                       if (selectedOptionId) {
                         const selectedItem = group.option_items.find(
                           (item) => item.option_item_id === selectedOptionId
@@ -373,39 +405,41 @@ const MarketProductDetailPage = () => {
                       return '';
                     })
                     .filter(Boolean)
-                    .join(', ')}                  
-                      <img src={xIcon} alt="x" className="w-10 h-10 cursor-pointer" onClick={() => setSelectedOptions({})} 
-                      />
-                 
+                    .join(', ')}
+                  <img
+                    src={xIcon}
+                    alt="x"
+                    className="w-10 h-10 cursor-pointer"
+                    onClick={() => setSelectedOptions({})}
+                  />
                 </span>
               </div>
 
-              <div className="flex items-center justify-between">              
+              <div className="flex items-center justify-between">
                 <OptionQuantity
                   quantity={quantity}
                   onIncrease={() => setQuantity(quantity + 1)}
                   onDecrease={() => setQuantity(Math.max(1, quantity - 1))}
                 />
-               
+
                 <p className="body-b0-bd px-[0.625rem]">
                   {formatPrice((basePrice + optionPrice) * quantity)}원
-                 
                 </p>
               </div>
             </div>
           )}
 
-          
           <div className="flex flex-col gap-[1.125rem] mt-[2.25rem]">
             <div className="flex items-end justify-between h-[3.375rem]">
-              <span className="body-b1-rg text-[var(--color-gray-60)]">총 결제 금액</span>
+              <span className="body-b1-rg text-[var(--color-gray-60)]">
+                총 결제 금액
+              </span>
               <p className="heading-h2-bd text-[2.5rem] text-[var(--color-mint-1)]">
                 {formatPrice(totalPrice)}원
               </p>
             </div>
-            
+
             <div className="flex flex-col gap-[0.625rem]">
-              
               <div className="flex gap-[0.625rem]">
                 <Button
                   variant="white"
@@ -440,8 +474,8 @@ const MarketProductDetailPage = () => {
 
                     // 옵션이 있는 경우 모든 옵션 선택 확인
                     if (optionGroups.length > 0) {
-                      const allOptionsSelected = optionGroups.every(group => 
-                        selectedOptions[group.option_group_id]
+                      const allOptionsSelected = optionGroups.every(
+                        (group) => selectedOptions[group.option_group_id]
                       );
 
                       if (!allOptionsSelected) {
@@ -457,7 +491,8 @@ const MarketProductDetailPage = () => {
                     }
 
                     try {
-                      const optionItemIds = Object.values(selectedOptions).filter(Boolean);
+                      const optionItemIds =
+                        Object.values(selectedOptions).filter(Boolean);
 
                       if (quantity < 1) {
                         alert('수량은 1개 이상이어야 합니다.');
@@ -477,12 +512,16 @@ const MarketProductDetailPage = () => {
                       navigate('/cart');
                     } catch (error: unknown) {
                       console.error('장바구니 추가 에러:', error);
-                      if (error && typeof error === 'object' && 'response' in error) {
-                        const axiosError = error as { 
-                          response?: { 
+                      if (
+                        error &&
+                        typeof error === 'object' &&
+                        'response' in error
+                      ) {
+                        const axiosError = error as {
+                          response?: {
                             status?: number;
                             data?: unknown;
-                          } 
+                          };
                         };
                         if (axiosError.response?.status === 401) {
                           navigate('/login/type');
@@ -502,45 +541,40 @@ const MarketProductDetailPage = () => {
                     {isAdding ? '추가 중...' : '장바구니'}
                   </span>
                 </Button>
-                 
-               <Button
+
+                <Button
                   variant="white"
                   onClick={() => {
                     if (!accessToken) {
                       navigate('/login/type');
                       return;
-                    }
-                    else if (isReformer) {
+                    } else if (isReformer) {
                       setModalMessageType('chat');
                       setShowReformerModal(true);
                       return;
                     }
-                    navigate(`/market/product/${id}/chat`);
+                    navigate(`/profile/${product.reformer.owner_id}`);
                   }}
                   className="flex items-center justify-center gap-2 flex-1 h-[4.625rem]"
                 >
                   <img src={chatIcon} alt="채팅" className="w-10 h-10" />
                   <span className="body-b0-bd text-[1.25rem]">문의하기</span>
                 </Button>
-                  
-               
               </div>
 
-              <button 
+              <button
                 onClick={() => {
                   if (!accessToken) {
                     navigate('/login/type');
                     return;
-                  }
-
-                  else if (isReformer) {
+                  } else if (isReformer) {
                     setModalMessageType('purchase');
                     setShowReformerModal(true);
                     return;
                   }
 
-                  const allOptionsSelected = optionGroups.every(group => 
-                    selectedOptions[group.option_group_id]
+                  const allOptionsSelected = optionGroups.every(
+                    (group) => selectedOptions[group.option_group_id]
                   );
 
                   if (optionGroups.length > 0 && !allOptionsSelected) {
@@ -548,17 +582,23 @@ const MarketProductDetailPage = () => {
                     return;
                   }
 
-                  const selectedOptionsText = optionGroups
-                    .map(group => {
-                      const selectedOptionId = selectedOptions[group.option_group_id];
-                      if (selectedOptionId) {
-                        const selectedItem = group.option_items.find(item => item.option_item_id === selectedOptionId);
-                        return selectedItem ? `${group.name}: ${selectedItem.name}` : '';
-                      }
-                      return '';
-                    })
-                    .filter(Boolean)
-                    .join(', ') || '옵션 없음';
+                  const selectedOptionsText =
+                    optionGroups
+                      .map((group) => {
+                        const selectedOptionId =
+                          selectedOptions[group.option_group_id];
+                        if (selectedOptionId) {
+                          const selectedItem = group.option_items.find(
+                            (item) => item.option_item_id === selectedOptionId
+                          );
+                          return selectedItem
+                            ? `${group.name}: ${selectedItem.name}`
+                            : '';
+                        }
+                        return '';
+                      })
+                      .filter(Boolean)
+                      .join(', ') || '옵션 없음';
 
                   navigate(`/market/product/${id}/purchase`, {
                     state: {
@@ -568,7 +608,10 @@ const MarketProductDetailPage = () => {
                         seller: owner_nickname,
                         image: thumbnail,
                         option: selectedOptionsText,
-                        shipping: delivery === 0 ? '무료배송' : `${formatPrice(delivery)}원`,
+                        shipping:
+                          delivery === 0
+                            ? '무료배송'
+                            : `${formatPrice(delivery)}원`,
                         quantity: quantity,
                         price: price,
                         optionPrice: optionPrice,
@@ -580,14 +623,15 @@ const MarketProductDetailPage = () => {
                 }}
                 className="w-full h-[4.625rem] bg-[var(--color-mint-0)] rounded-[0.625rem] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity"
               >
-                <span className="body-b1-sb text-[1.5rem] text-white">구매하기</span>
+                <span className="body-b1-sb text-[1.5rem] text-white">
+                  구매하기
+                </span>
               </button>
             </div>
           </div>
         </div>
       </div>
 
-     
       <div className="top-0 z-20 bg-white border-b border-[var(--color-line-gray-40)]">
         <div className="flex px-[7.125rem] gap-[6.4375rem] body-b0-bd">
           <button
@@ -624,9 +668,7 @@ const MarketProductDetailPage = () => {
         </div>
       </div>
 
-     
       <div className=" mx-[7.125rem] pt-[6.25rem]">
-     
         <div ref={infoRef} id="product-info" className="scroll-mt-[100px]">
           <ProductInfoToggle
             firstImage={thumbnail}
@@ -634,12 +676,20 @@ const MarketProductDetailPage = () => {
           />
         </div>
 
-        <div ref={reformerRef} id="reformer-info" className="scroll-mt-[100px] mx-[7.125rem] pt-[6.25rem]">
+        <div
+          ref={reformerRef}
+          id="reformer-info"
+          className="scroll-mt-[100px] mx-[7.125rem] pt-[6.25rem]"
+        >
           <div className="flex gap-[3.3125rem] items-start">
-            <div className="w-[8.4375rem] h-[8.4375rem] rounded-full bg-[var(--color-gray-20)] flex items-center justify-center">             
-                 <img src={product.reformer.profile_image} alt="profile" className="w-full h-full object-cover rounded-full" />
+            <div className="w-[8.4375rem] h-[8.4375rem] rounded-full bg-[var(--color-gray-20)] flex items-center justify-center">
+              <img
+                src={product.reformer.profile_image}
+                alt="profile"
+                className="w-full h-full object-cover rounded-full"
+              />
             </div>
-            
+
             <div className="flex-1 flex flex-col gap-[2.625rem]">
               <div className="flex flex-col gap-[0.75rem]">
                 <h2 className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
@@ -663,30 +713,34 @@ const MarketProductDetailPage = () => {
               </div>
               <div className="flex gap-0">
                 <div className="flex-1 border-t border-b border-[var(--color-line-gray-40)] py-[1.125rem] flex flex-col items-center gap-[0.5rem]">
-                  <span className="body-b0-rg text-[var(--color-gray-50)]">주문 건수</span>
+                  <span className="body-b0-rg text-[var(--color-gray-50)]">
+                    주문 건수
+                  </span>
                   <span className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
                     {product.reformer.order_count}건
                   </span>
                 </div>
                 <div className="flex-1 border-t border-b border-[var(--color-line-gray-40)] py-[1.125rem] flex flex-col items-center gap-[0.5rem]">
-                  <span className="body-b0-rg text-[var(--color-gray-50)]">후기</span>
+                  <span className="body-b0-rg text-[var(--color-gray-50)]">
+                    후기
+                  </span>
                   <span className="heading-h4-bd text-[1.875rem] text-[var(--color-black)]">
                     {product.reformer.review_count}개
                   </span>
                 </div>
-               
               </div>
               <div className="flex-1 flex flex-col gap-[0.5rem]">
-                  <ol className="flex flex-col gap-[0.5rem]">
-                    <li className="body-b1-rg text-[var(--color-gray-60)]">
-                      {product.reformer.bio}
-                    </li>
-                  </ol>
-                  
-                  </div>
-              <button                
+                <ol className="flex flex-col gap-[0.5rem]">
+                  <li className="body-b1-rg text-[var(--color-gray-60)]">
+                    {product.reformer.bio}
+                  </li>
+                </ol>
+              </div>
+              <button
                 className="w-full h-[4.625rem] border border-[var(--color-mint-1)] rounded-[0.625rem] flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity"
-                onClick={() => navigate(`/profile/${product.reformer.owner_id}`)}
+                onClick={() =>
+                  navigate(`/profile/${product.reformer.owner_id}`)
+                }
               >
                 <span className="body-b0-bd text-[1.25rem] text-[var(--color-mint-1)]">
                   피드 보러가기
@@ -696,7 +750,11 @@ const MarketProductDetailPage = () => {
           </div>
         </div>
 
-        <div ref={reviewRef} id="review" className="scroll-mt-[100px] pt-[6.25rem] mb-[7.4375rem]">
+        <div
+          ref={reviewRef}
+          id="review"
+          className="scroll-mt-[100px] pt-[6.25rem] mb-[7.4375rem]"
+        >
           <div className="flex flex-col gap-[2.5rem]">
             <div className="flex flex-col gap-[1.4375rem]">
               <div className="flex flex-col gap-[1.4375rem]">
@@ -720,41 +778,48 @@ const MarketProductDetailPage = () => {
                 </div>
               </div>
 
-              
               <div className="border-b border-[var(--color-line-gray-40)] pb-[2.6875rem]">
                 <h3 className="body-b0-bd text-[1.25rem] text-[var(--color-black)] mb-[0.75rem]">
                   사진 후기 ({photoReviewResponse?.success?.total_count})
                 </h3>
                 <div className="flex justify-between">
-                    {photoReview.slice(0, 7).map((photo: { photo_index: number; photo_url: string; }, index: number) => {
-                      const totalCount = photoReviewResponse?.success?.total_count || 0;
-                      const remainingCount = totalCount - 7;
-                      const isLast = index === 6 && remainingCount > 0;
-                      
-                      return (
-                        <div 
-                          key={photo.photo_index} 
-                          className="relative flex-shrink-0 cursor-pointer"
-                          onClick={() => isLast && setShowPhotoReviewModal(true)}
-                        >
-                          <img
-                            src={photo.photo_url}
-                            alt={`후기 이미지 ${photo.photo_index + 1}`}
-                            className="w-[170px] h-[170px]  object-cover"
-                          />
-                          {isLast &&  (
-                            <div className="absolute inset-0 bg-black/50  text-white flex flex-col items-center justify-center">
-                              <span className=" heading-h4-bd">
-                                + {remainingCount}  
-                              </span>
-                              <span className='body-b0-bd'>
-                              더보기
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                  {photoReview
+                    .slice(0, 7)
+                    .map(
+                      (
+                        photo: { photo_index: number; photo_url: string },
+                        index: number
+                      ) => {
+                        const totalCount =
+                          photoReviewResponse?.success?.total_count || 0;
+                        const remainingCount = totalCount - 7;
+                        const isLast = index === 6 && remainingCount > 0;
+
+                        return (
+                          <div
+                            key={photo.photo_index}
+                            className="relative flex-shrink-0 cursor-pointer"
+                            onClick={() =>
+                              isLast && setShowPhotoReviewModal(true)
+                            }
+                          >
+                            <img
+                              src={photo.photo_url}
+                              alt={`후기 이미지 ${photo.photo_index + 1}`}
+                              className="w-[170px] h-[170px]  object-cover"
+                            />
+                            {isLast && (
+                              <div className="absolute inset-0 bg-black/50  text-white flex flex-col items-center justify-center">
+                                <span className=" heading-h4-bd">
+                                  + {remainingCount}
+                                </span>
+                                <span className="body-b0-bd">더보기</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      }
+                    )}
                 </div>
               </div>
             </div>
@@ -770,9 +835,9 @@ const MarketProductDetailPage = () => {
                 reviewList.slice(0, 5).map((review) => {
                   // 해당 리뷰의 첫 번째 사진 찾기
                   const firstPhoto = photoReview.find(
-                    p => p.review_id === review.review_id
+                    (p) => p.review_id === review.review_id
                   );
-                  
+
                   const handleReviewClick = () => {
                     if (firstPhoto) {
                       setSelectedReviewId(review.review_id);
@@ -795,13 +860,20 @@ const MarketProductDetailPage = () => {
                       <Review
                         userName={review.user_nickname}
                         rating={review.star}
-                        date={new Date(review.created_at).toLocaleDateString('ko-KR', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric',
-                        })}
+                        date={new Date(review.created_at).toLocaleDateString(
+                          'ko-KR',
+                          {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          }
+                        )}
                         reviewText={review.content}
-                        image={review.photos && review.photos.length > 0 ? review.photos[0] : undefined}
+                        image={
+                          review.photos && review.photos.length > 0
+                            ? review.photos[0]
+                            : undefined
+                        }
                         profileImg={review.user_profile_image}
                       />
                     </div>
@@ -827,110 +899,124 @@ const MarketProductDetailPage = () => {
         messageType={modalMessageType}
       />
 
-      {showPhotoReviewModal && createPortal(
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          onClick={() => setShowPhotoReviewModal(false)}
-        >
+      {showPhotoReviewModal &&
+        createPortal(
           <div
-            className="relative bg-white rounded-[1.875rem] max-w-[1125px] flex flex-col"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            onClick={() => setShowPhotoReviewModal(false)}
           >
-            
-            <div className="relative flex items-center justify-center p-6">
-              <h2 className="heading-h5-md">
-                사진 후기 ({photoReviewResponse?.success?.total_count || 0})
-              </h2>
-              <button
-                onClick={() => setShowPhotoReviewModal(false)}
-                className="absolute right-6  cursor-pointer"
-              >
-                <img src={xIcon} alt="닫기" className="w-10 h-10" />
-              </button>
-            </div>
+            <div
+              className="relative bg-white rounded-[1.875rem] max-w-[1125px] flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative flex items-center justify-center p-6">
+                <h2 className="heading-h5-md">
+                  사진 후기 ({photoReviewResponse?.success?.total_count || 0})
+                </h2>
+                <button
+                  onClick={() => setShowPhotoReviewModal(false)}
+                  className="absolute right-6  cursor-pointer"
+                >
+                  <img src={xIcon} alt="닫기" className="w-10 h-10" />
+                </button>
+              </div>
 
-        
-            <div className="overflow-y-auto px-6 pb-6">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-[0.375rem]">
-                {photoReview.map((photo: { photo_index: number; photo_url: string; review_id: string; photo_order: number; }) => (
-                  <div
-                    key={photo.photo_index}
-                    className="relative aspect-square overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => {
-                      setSelectedReviewId(photo.review_id);
-                      setSelectedPhotoIndex(photo.photo_order);
-                      setShowPhotoDetailModal(true);
-                    }}
-                  >
-                    <img
-                      src={photo.photo_url}
-                      alt={`후기 이미지 ${photo.photo_index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
+              <div className="overflow-y-auto px-6 pb-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-[0.375rem]">
+                  {photoReview.map(
+                    (photo: {
+                      photo_index: number;
+                      photo_url: string;
+                      review_id: string;
+                      photo_order: number;
+                    }) => (
+                      <div
+                        key={photo.photo_index}
+                        className="relative aspect-square overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => {
+                          setSelectedReviewId(photo.review_id);
+                          setSelectedPhotoIndex(photo.photo_order);
+                          setShowPhotoDetailModal(true);
+                        }}
+                      >
+                        <img
+                          src={photo.photo_url}
+                          alt={`후기 이미지 ${photo.photo_index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* 사진 리뷰 상세 모달 */}
-      {reviewDetail && (() => {
-        // 현재 사진의 전체 인덱스 찾기
-        const currentPhoto = photoReview.find(
-          p => p.review_id === reviewDetail.review_id && 
-          p.photo_order === selectedPhotoIndex
-        );
-        const currentPhotoIndex = currentPhoto?.photo_index ?? reviewDetail.current_photo_index;
-        
-        return (
-          <MarketPhotoReviewModal
-            isOpen={showPhotoDetailModal}
-            onClose={() => {
-              setShowPhotoDetailModal(false);
-              setSelectedReviewId(null);
-              setSelectedPhotoIndex(undefined);
-            }}
-            currentIndex={currentPhotoIndex}
-            totalCount={photoReviewResponse?.success?.total_count || 0}
-            imageUrl={reviewDetail.photo_urls[reviewDetail.current_photo_index] || ''}
-            photoUrls={reviewDetail.photo_urls}
-            currentPhotoIndex={reviewDetail.current_photo_index}
-            review={{
-              userProfileImage: reviewDetail.user_profile_image,
-              userNickname: reviewDetail.user_nickname,
-              star: reviewDetail.star,
-              createdAt: reviewDetail.created_at,
-              content: reviewDetail.content,
-            }}
-            onPrevious={() => {
-              if (reviewDetail.has_prev && id) {
-                const prevPhoto = photoReview.find(p => p.photo_index === reviewDetail.prev_photo_index);
-                if (prevPhoto) {
-                  setSelectedReviewId(prevPhoto.review_id);
-                  setSelectedPhotoIndex(prevPhoto.photo_order);
-                }
+      {reviewDetail &&
+        (() => {
+          // 현재 사진의 전체 인덱스 찾기
+          const currentPhoto = photoReview.find(
+            (p) =>
+              p.review_id === reviewDetail.review_id &&
+              p.photo_order === selectedPhotoIndex
+          );
+          const currentPhotoIndex =
+            currentPhoto?.photo_index ?? reviewDetail.current_photo_index;
+
+          return (
+            <MarketPhotoReviewModal
+              isOpen={showPhotoDetailModal}
+              onClose={() => {
+                setShowPhotoDetailModal(false);
+                setSelectedReviewId(null);
+                setSelectedPhotoIndex(undefined);
+              }}
+              currentIndex={currentPhotoIndex}
+              totalCount={photoReviewResponse?.success?.total_count || 0}
+              imageUrl={
+                reviewDetail.photo_urls[reviewDetail.current_photo_index] || ''
               }
-            }}
-            onNext={() => {
-              if (reviewDetail.has_next && id) {
-                const nextPhoto = photoReview.find(p => p.photo_index === reviewDetail.next_photo_index);
-                if (nextPhoto) {
-                  setSelectedReviewId(nextPhoto.review_id);
-                  setSelectedPhotoIndex(nextPhoto.photo_order);
+              photoUrls={reviewDetail.photo_urls}
+              currentPhotoIndex={reviewDetail.current_photo_index}
+              review={{
+                userProfileImage: reviewDetail.user_profile_image,
+                userNickname: reviewDetail.user_nickname,
+                star: reviewDetail.star,
+                createdAt: reviewDetail.created_at,
+                content: reviewDetail.content,
+              }}
+              onPrevious={() => {
+                if (reviewDetail.has_prev && id) {
+                  const prevPhoto = photoReview.find(
+                    (p) => p.photo_index === reviewDetail.prev_photo_index
+                  );
+                  if (prevPhoto) {
+                    setSelectedReviewId(prevPhoto.review_id);
+                    setSelectedPhotoIndex(prevPhoto.photo_order);
+                  }
                 }
-              }
-            }}
-            hasPrevious={reviewDetail.has_prev}
-            hasNext={reviewDetail.has_next}
-          />
-        );
-      })()}
+              }}
+              onNext={() => {
+                if (reviewDetail.has_next && id) {
+                  const nextPhoto = photoReview.find(
+                    (p) => p.photo_index === reviewDetail.next_photo_index
+                  );
+                  if (nextPhoto) {
+                    setSelectedReviewId(nextPhoto.review_id);
+                    setSelectedPhotoIndex(nextPhoto.photo_order);
+                  }
+                }
+              }}
+              hasPrevious={reviewDetail.has_prev}
+              hasNext={reviewDetail.has_next}
+            />
+          );
+        })()}
     </div>
   );
-  
 };
 
 export default MarketProductDetailPage;
