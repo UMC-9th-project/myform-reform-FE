@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import bell from '../../../assets/icons/bell.svg';
 import heart from '../../../assets/icons/heart.svg';
 import shoppingCart from '../../../assets/icons/shoppingCart.svg';
-import profile from '../../../assets/icons/profile.svg';
+import profile from '../../../assets/icons/bigProfile.svg';
 import search from '../header/icons/search.svg';
 import mintsearch from '../header/icons/mintsearch.svg';
 import bgsearch from '../header/icons/bg-search.svg';
@@ -302,7 +302,7 @@ export default function Header() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <img src={profile} alt="profile" className="w-6 h-6" />
+                  <img src={profile} alt="profile" className="w-full h-full" />
                 )}
               </button>
 
