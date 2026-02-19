@@ -95,13 +95,17 @@ const BuyList = () => {
       {/* 카드 리스트 */}
       {loading ? (
         <div className="text-center py-20 text-gray-400 body-b1-rg">
+          불러오는 중...
+        </div>
+      ) : orders.length === 0 ? (
+        <div className="text-center py-20 text-gray-400 body-b1-rg">
           내역이 없습니다.
         </div>
       ) : (
         <SalesCard
           data={orders.map((o) => ({
             ...o,
-            isCustomOrder: localTab === 'reform' || o.isCustomOrder, // 주문 제작이거나 리폼 탭이면 true
+            isCustomOrder: localTab === 'reform' || o.isCustomOrder,
           }))}
           tab={localTab}
           onDetailClick={handleDetailClick}

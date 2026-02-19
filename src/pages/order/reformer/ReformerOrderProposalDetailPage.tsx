@@ -1,15 +1,19 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import { ImageCarousel } from '../../../components/common/product/Image';
 import ProductInfoToggle from '../../../components/common/product/detail/ProductInfoToggle';
 import ProductInfoCard from '../../../components/common/product/detail/ProductInfoCard';
 import ProductTabMenu from '../../../components/common/product/detail/ProductTabMenu';
 import ReformerProfileDetailCard from '../../../components/common/product/detail/ReformerProfileDetailCard';
 import ProductReviewSection from '../../../components/common/product/detail/ProductReviewSection';
+import ReviewDetailModal from '../../../components/common/product/detail/review/ReviewDetailModal';
 import Button from '../../../components/common/button/Button1';
 import { useReformerOrderProposalDetail } from '../../../hooks/domain/order/useReformerOrderProposalDetail';
 import { createChatRoom } from '../../../api/chat/chatApi';
 import useAuthStore from '../../../stores/useAuthStore';
+import type { ReviewPhoto } from '../../../types/api/reviews';
+import xIcon from '../../../assets/icons/x.svg';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -23,7 +27,9 @@ const ReformerOrderProposalDetailPage = () => {
     reviews,
     photoReviewCount,
     reviewPhotos,
+    reviewPhotoUrls,
     reviewsAvgStar,
+    totalPages,
     isLoading,
     isError,
     isLiked,
@@ -43,6 +49,9 @@ const ReformerOrderProposalDetailPage = () => {
   const infoSectionRef = useRef<HTMLDivElement>(null);
   const reformerSectionRef = useRef<HTMLDivElement>(null);
   const reviewSectionRef = useRef<HTMLDivElement>(null);
+  const [showPhotoReviewModal, setShowPhotoReviewModal] = useState(false);
+  const [selectedReviewId, setSelectedReviewId] = useState<string | null>(null);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | undefined>(undefined);
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId as 'info' | 'reformer' | 'review');
@@ -147,7 +156,7 @@ const ReformerOrderProposalDetailPage = () => {
   };
 
   const handleMorePhotoReviewsClick = () => {
-    // 사진 후기 더보기 로직
+    setShowPhotoReviewModal(true);
   };
 
   const handleEdit = () => {
@@ -175,8 +184,8 @@ const ReformerOrderProposalDetailPage = () => {
             <ProductInfoCard
               title={proposalDetail.title}
               price={formattedPrice}
-              rating={profile?.avgStar ?? 0}
-              recentRating={profile?.avgStarRecent3m}
+              rating={proposalDetail.avgStar ?? profile?.avgStar ?? 0}
+              recentRating={proposalDetail.avgStar3m ?? profile?.avgStarRecent3m}
               shippingFee={formattedShippingFee}
               estimatedPeriod={formattedEstimatedPeriod}
               reformer={{
@@ -258,13 +267,85 @@ const ReformerOrderProposalDetailPage = () => {
             reviews={reviews}
             currentPage={currentPage}
             itemsPerPage={ITEMS_PER_PAGE}
+            totalPages={totalPages}
             sortBy={sortBy}
             onSortChange={setSortBy}
             onPageChange={handlePageChange}
             onMorePhotoReviewsClick={handleMorePhotoReviewsClick}
-            photoReviewImages={reviewPhotos}
+            photoReviewImages={reviewPhotoUrls}
+            targetType="PROPOSAL"
+            targetId={proposalDetail?.reformProposalId ?? id}
           />
         </div>
+
+        {/* 사진 후기 갤러리 모달 */}
+        {showPhotoReviewModal && createPortal(
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowPhotoReviewModal(false)}
+          >
+            <div
+              className="relative bg-white rounded-[1.875rem] max-w-[1125px] w-[90%] max-h-[90vh] flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="relative flex items-center justify-center p-6 border-b border-[var(--color-gray-30)]">
+                <h2 className="heading-h5-md">
+                  사진 후기 ({photoReviewCount})
+                </h2>
+                <button
+                  onClick={() => setShowPhotoReviewModal(false)}
+                  className="absolute right-6 cursor-pointer"
+                >
+                  <img src={xIcon} alt="닫기" className="w-10 h-10" />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto px-6 pb-6">
+                {reviewPhotos && reviewPhotos.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-[0.375rem] mt-6">
+                    {(reviewPhotos as ReviewPhoto[]).map((photo, index) => (
+                      <div
+                        key={index}
+                        className="relative aspect-square overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => {
+                          setSelectedReviewId(photo.review_id);
+                          setSelectedPhotoIndex(photo.photo_order);
+                          setShowPhotoReviewModal(false);
+                        }}
+                      >
+                        <img
+                          src={photo.photo_url}
+                          alt={`후기 이미지 ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 text-center">
+                    <p className="body-b1-rg text-[var(--color-gray-60)]">사진 후기가 없습니다.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+        {/* 리뷰 상세 모달 */}
+        {selectedReviewId && proposalDetail?.reformProposalId && (
+          <ReviewDetailModal
+            isOpen={!!selectedReviewId}
+            onClose={() => {
+              setSelectedReviewId(null);
+              setSelectedPhotoIndex(undefined);
+            }}
+            targetType="PROPOSAL"
+            targetId={proposalDetail.reformProposalId}
+            reviewId={selectedReviewId}
+            initialPhotoIndex={selectedPhotoIndex}
+          />
+        )}
       </div>
     </div>
   );

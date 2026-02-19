@@ -145,7 +145,7 @@ const MarketCard = ({
 
   const linkTo = to ?? (isMarketItem 
     ? `${MARKET_DETAIL_PATH}/${item.item_id}`
-    : `/proposal/${item.proposal_id}`);
+    : `/order/proposals/${item.proposal_id}`);
 
   const content = (
     <div className="bg-white rounded-[1.25rem] overflow-visible cursor-pointer">

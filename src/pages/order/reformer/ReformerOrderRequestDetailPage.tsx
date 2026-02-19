@@ -67,15 +67,11 @@ const ReformerOrderRequestDetailPage = () => {
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full overflow-hidden bg-[var(--color-gray-60)]">
-                  {profile ? (
-                    <img
-                      src={profile}
-                      alt={nickname}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-[var(--color-gray-30)]" />
-                  )}
+                  <img
+                    src={profile}
+                    alt={nickname}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <span className="body-b1-rg text-[var(--color-gray-60)]">{nickname}</span>
               </div>

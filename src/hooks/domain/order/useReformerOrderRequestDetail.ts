@@ -6,6 +6,7 @@ import { getWishList } from '../../../api/wishlist';
 import { useWish } from '../wishlist/useWish';
 import useAuthStore from '../../../stores/useAuthStore';
 import type { ReformRequestDetail } from '../../../types/api/order/reformRequest';
+import bigProfile from '../../../assets/icons/bigProfile.svg';
 
 function formatDate(dateString: string): string {
   try {
@@ -105,8 +106,13 @@ export const useReformerOrderRequestDetail = () => {
     staleTime: 1000 * 30,
   });
 
-  const requestDetail: ReformRequestDetail | null =
-    reformRequestDetailResponse?.success ?? null;
+  const rawDetail = reformRequestDetailResponse?.success;
+  const requestDetail: ReformRequestDetail | null = rawDetail
+    ? {
+        ...rawDetail,
+        profile: rawDetail.profile || bigProfile,
+      }
+    : null;
 
   const imageUrls =
     requestDetail != null
