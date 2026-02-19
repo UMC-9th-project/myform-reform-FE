@@ -6,7 +6,8 @@ export interface RequireCardProps {
   maxBudget: number;
   title: string;
   type: 'sent' | 'received';
-  nickname: string;
+  usernickname: string;
+  reformernickname: string;
   id?: number;
   chatId?: number;
   requestId?: string;
@@ -17,7 +18,8 @@ const RequireCard: React.FC<RequireCardProps> = ({
   maxBudget,
   title,
   type,
-  nickname,
+  usernickname,
+  reformernickname,
   id,
   chatId,
   requestId,
@@ -44,13 +46,13 @@ const RequireCard: React.FC<RequireCardProps> = ({
         <h2 className="heading-h5-sb mb-2 text-black">요청서 전송완료!</h2>
         {type === 'sent' ? (
           <p className="body-b4-sb mb-3">
-            {nickname}님께
+            {reformernickname}님께
             <br />
             요청서가 성공적으로 전송되었습니다.
           </p>
         ) : (
           <p className="body-b4-sb mb-3">
-            {nickname}님이
+            {usernickname}님이
             <br />
             문의 내역에 따른 요청서를 보내왔습니다.
           </p>

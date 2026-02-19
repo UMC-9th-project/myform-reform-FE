@@ -920,11 +920,10 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                         maxBudget={msg.payload.maxBudget}
                         title={msg.payload.title}
                         requestId={msg.payload.id}
-                        nickname={
-                          isMine
-                            ? (roomInfo?.requester.nickname ?? '알 수 없음')
-                            : (roomInfo?.owner.nickname ?? '알 수 없음')
+                        usernickname={
+                          roomInfo?.requester?.nickname ?? '일반 유저'
                         }
+                        reformernickname={roomInfo?.owner?.nickname ?? '리폼러'}
                       />
                     )}
                     {msg.messageType === 'payment' && (
@@ -932,7 +931,7 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ chatId, myRole, roomType }) => {
                         role={myRole}
                         type={isMine ? 'sent' : 'received'}
                         nickname={
-                          isMine
+                          myRole === 'USER'
                             ? (roomInfo?.requester.nickname ?? '사용자')
                             : (roomInfo?.owner.nickname ?? '리포머')
                         }
