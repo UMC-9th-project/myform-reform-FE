@@ -25,12 +25,14 @@ const ReformerRegistration = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 회원가입 폼에서 전달받은 회원가입 정보
-  const signupData = (location.state as { signupData?: SignupRequest; redirectUrl?: string })?.signupData;
-  const redirectUrl = (location.state as { signupData?: SignupRequest; redirectUrl?: string })?.redirectUrl;
+  const signupData = (
+    location.state as { signupData?: SignupRequest; redirectUrl?: string }
+  )?.signupData;
+  const redirectUrl = (
+    location.state as { signupData?: SignupRequest; redirectUrl?: string }
+  )?.redirectUrl;
 
-  const {
-    signup,
-  } = useReformerSignup();
+  const { signup } = useReformerSignup();
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
@@ -84,8 +86,10 @@ const ReformerRegistration = () => {
     }
 
     // 이미지 파일 배열 추출
-    const imageFiles = images.map((img) => img.file).filter((file): file is File => file instanceof File);
-    
+    const imageFiles = images
+      .map((img) => img.file)
+      .filter((file): file is File => file instanceof File);
+
     // 이미지가 없는 경우 체크
     if (imageFiles.length === 0) {
       alert('리폼 작업물 사진을 업로드해주세요.');
@@ -99,7 +103,9 @@ const ReformerRegistration = () => {
         signupData,
         portfolioPhotos: imageFiles,
         description: introduction.trim(),
-        ...(businessNumber.trim() ? { businessNumber: businessNumber.trim() } : {}),
+        ...(businessNumber.trim()
+          ? { businessNumber: businessNumber.trim() }
+          : {}),
         ...(redirectUrl ? { redirectUrl } : {}),
       });
     } catch (error) {
@@ -108,14 +114,23 @@ const ReformerRegistration = () => {
     }
   };
 
-  const isNextButtonEnabled = currentStep === 1 ? images.length > 0 : currentStep === 2 ? introduction.trim().length > 0 : true;
+  const isNextButtonEnabled =
+    currentStep === 1
+      ? images.length > 0
+      : currentStep === 2
+        ? introduction.trim().length > 0
+        : true;
 
   return (
     <div className="w-full min-h-screen flex flex-col items-center pt-[3.1875rem] pb-[7.5rem]">
-      
       <div className="flex flex-col items-center mb-[2.19rem]">
         <div className="mb-[2.1875rem]">
-          <img src={logo2} alt="내폼리폼 로고" className="h-[5.46875rem] cursor-pointer" onClick={() => navigate('/home')}/>
+          <img
+            src={logo2}
+            alt="내폼리폼 로고"
+            className="h-[5.46875rem] cursor-pointer"
+            onClick={() => navigate('/home')}
+          />
         </div>
         <h1 className="heading-h4-bd text-center text-[var(--color-black)]">
           <p className="mb-0">간단한 리폼러 신청으로</p>
@@ -123,7 +138,6 @@ const ReformerRegistration = () => {
         </h1>
       </div>
 
-    
       <ProgressIndicator
         totalSteps={3}
         currentStep={currentStep}
@@ -143,21 +157,18 @@ const ReformerRegistration = () => {
             </p>
           </div>
 
-         
           <div className="w-[54.5rem] mb-[3.75rem]  ">
             {images.length === 0 ? (
-             
               <button
                 onClick={handleUploadClick}
                 className="w-[27.6875rem] h-[18.05625rem] mx-auto bg-[var(--color-gray-30)] rounded-[1.25rem] flex flex-col items-center justify-center gap-[0.3125rem] hover:bg-[var(--color-gray-40)] transition-colors"
               >
-               <img src={share} alt="shape"  />
+                <img src={share} alt="shape" />
                 <p className="body-b2-rg text-[var(--color-gray-50)]">
                   이미지 업로드
                 </p>
               </button>
             ) : (
-              
               <div className="flex flex-wrap gap-y-[1.6875rem] gap-x-[1.5rem]">
                 {images.map((img, index) => (
                   <div
@@ -180,7 +191,7 @@ const ReformerRegistration = () => {
                     </button>
                   </div>
                 ))}
-              
+
                 {images.length < 8 && (
                   <button
                     onClick={handleUploadClick}
@@ -195,7 +206,6 @@ const ReformerRegistration = () => {
               </div>
             )}
 
-        
             <input
               type="file"
               ref={fileInputRef}
@@ -206,7 +216,6 @@ const ReformerRegistration = () => {
             />
           </div>
 
-         
           <Button
             variant={isNextButtonEnabled ? 'primary' : 'disabled'}
             size="big"
@@ -262,7 +271,9 @@ const ReformerRegistration = () => {
           </div>
 
           <div className="w-[24.25rem] flex flex-col gap-[0.6875rem] mb-[1.5625rem]">
-            <p className="body-b1-rg text-[var(--color-black)]">사업자 등록번호</p>
+            <p className="body-b1-rg text-[var(--color-black)]">
+              사업자 등록번호
+            </p>
             <input
               type="text"
               value={businessNumber}
@@ -273,7 +284,9 @@ const ReformerRegistration = () => {
           </div>
 
           <div className="w-full flex flex-col gap-[0.9375rem] mb-[3.75rem]">
-            <p className="body-b0-bd text-[var(--color-black)]">리폼러 이용약관 동의</p>
+            <p className="body-b0-bd text-[var(--color-black)]">
+              리폼러 이용약관 동의
+            </p>
             <div className="border-t border-[var(--color-gray-40)] pt-[1.25rem]">
               <div className="flex items-start gap-[1.25rem] px-[1.25rem] py-[0.9375rem]">
                 <Checkbox
@@ -283,9 +296,7 @@ const ReformerRegistration = () => {
                   size="large"
                 />
                 <div className="flex items-center gap-[2.0625rem] body-b1-rg text-[var(--color-black)]">
-                  <span>
-                    [필수] 내폼리폼 리폼러 이용약관에 동의합니다.
-                  </span>
+                  <span>[필수] 내폼리폼 리폼러 이용약관에 동의합니다.</span>
                   <span className="text-[var(--color-mint-1)] underline cursor-pointer">
                     약관보기
                   </span>
@@ -294,7 +305,6 @@ const ReformerRegistration = () => {
             </div>
           </div>
 
-         
           <Button
             variant={agreementChecked ? 'primary' : 'disabled'}
             size="big"
@@ -302,7 +312,7 @@ const ReformerRegistration = () => {
             disabled={!agreementChecked}
             className="w-[33.9375rem] h-[4.625rem]"
           >
-        
+            제출하기
           </Button>
         </div>
       )}
