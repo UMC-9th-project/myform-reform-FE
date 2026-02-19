@@ -23,6 +23,7 @@ const OrderProposalDetailPage = () => {
     photoReviewCount,
     reviewPhotos,
     reviewsAvgStar,
+    totalPages,
     isLoading,
     isError,
     isLiked,
@@ -236,11 +237,14 @@ const OrderProposalDetailPage = () => {
             reviews={reviews}
             currentPage={currentPage}
             itemsPerPage={ITEMS_PER_PAGE}
+            totalPages={totalPages}
             sortBy={sortBy}
             onSortChange={setSortBy}
             onPageChange={handlePageChange}
             onMorePhotoReviewsClick={handleMorePhotoReviewsClick}
             photoReviewImages={reviewPhotos}
+            targetType="PROPOSAL"
+            targetId={proposalDetail?.reformProposalId ?? id}
           />
         </div>
       </div>

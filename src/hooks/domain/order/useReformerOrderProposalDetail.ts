@@ -3,10 +3,10 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getReformProposalDetail } from '../../../api/order/reformProposal';
 import { getProfile } from '../../../api/profile/user';
-import { getReformerReviews } from '../../../api/order/reviews';
+import { getTargetReviews, getTargetReviewPhotos } from '../../../api/order/reviews';
 import useAuthStore from '../../../stores/useAuthStore';
 import type { ReformProposalDetail } from '../../../types/api/order/reformProposal';
-import type { ReformerReviewsSortBy } from '../../../types/api/reviews';
+import type { TargetReviewsSort } from '../../../types/api/reviews';
 import type { GetProfileResponse } from '../../../types/domain/profile/profile';
 
 function formatWon(value: number) {
@@ -31,6 +31,7 @@ export const useReformerOrderProposalDetail = () => {
   const [sortBy, setSortBy] = useState<'latest' | 'high' | 'low'>('latest');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLiked, setIsLiked] = useState(false);
+  const ITEMS_PER_PAGE = 5;
 
   const { data: reformProposalDetailResponse, isLoading, isError } = useQuery({
     queryKey: ['reform-proposal-detail', id],
@@ -93,15 +94,31 @@ export const useReformerOrderProposalDetail = () => {
     return profileFromApi;
   }, [proposalDetail?.profile, proposalDetail?.ownerId, profileFromApi]);
 
-  const reformerId = profile?.ownerId ?? proposalDetail?.ownerId ?? '';
-  const apiSortBy: ReformerReviewsSortBy =
-    sortBy === 'latest' ? 'recent' : sortBy === 'high' ? 'high_rating' : 'low_rating';
+  const proposalId = proposalDetail?.reformProposalId ?? id ?? '';
+  const apiSortBy: TargetReviewsSort =
+    sortBy === 'latest' ? 'latest' : sortBy === 'high' ? 'star_high' : 'star_low';
 
   const { data: reviewsResponse } = useQuery({
-    queryKey: ['reformer-reviews', reformerId, apiSortBy],
+    queryKey: ['target-reviews', 'PROPOSAL', proposalId, currentPage, apiSortBy],
     queryFn: () =>
-      getReformerReviews(reformerId, { limit: 50, sortBy: apiSortBy }),
-    enabled: !!reformerId,
+      getTargetReviews('PROPOSAL', proposalId, {
+        page: currentPage,
+        limit: ITEMS_PER_PAGE,
+        sort: apiSortBy,
+      }),
+    enabled: !!proposalId,
+    staleTime: 1000 * 60,
+  });
+
+  // 사진 후기 조회
+  const { data: reviewPhotosResponse } = useQuery({
+    queryKey: ['target-review-photos', 'PROPOSAL', proposalId],
+    queryFn: () =>
+      getTargetReviewPhotos('PROPOSAL', proposalId, {
+        offset: 0,
+        limit: 15,
+      }),
+    enabled: !!proposalId,
     staleTime: 1000 * 60,
   });
 
@@ -115,34 +132,58 @@ export const useReformerOrderProposalDetail = () => {
         photoReviewCount: 0,
         reviewPhotos: [] as string[],
         avgStar: profile?.avgStar ?? 0,
+        totalPages: 0,
       };
     }
+    
+    // 사진이 있는 리뷰 개수 계산
+    const photoReviewCount = raw.reviews.filter((r) => r.photos && r.photos.length > 0).length;
+    
+    // 사진 후기 API에서 받은 사진들 사용
+    const photosData = reviewPhotosResponse?.resultType === 'SUCCESS' && reviewPhotosResponse?.success
+      ? reviewPhotosResponse.success
+      : null;
+    
+    const reviewPhotos: string[] = photosData
+      ? photosData.photos.map((p) => p.photo_url)
+      : (() => {
+          // API에서 사진을 받지 못한 경우 리뷰에서 추출
+          const photos: string[] = [];
+          raw.reviews.forEach((r) => {
+            if (r.photos && r.photos.length > 0) {
+              photos.push(...r.photos);
+            }
+          });
+          return photos;
+        })();
+
     const reviews = raw.reviews.map((r) => {
       const createdAt = (() => {
         try {
-          const d = new Date(r.createdAt);
+          const d = new Date(r.created_at);
           return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
         } catch {
-          return r.createdAt;
+          return r.created_at;
         }
       })();
       return {
-        id: r.reviewId,
-        userName: r.userNickname,
+        id: r.review_id,
+        userName: r.user_nickname,
         rating: r.star,
         date: createdAt,
         reviewText: r.content,
-        image: r.reviewPhotos?.[0],
-        profileImg: r.userProfilePhoto,
+        image: r.photos?.[0],
+        profileImg: r.user_profile_image,
       };
     });
     return {
       reviews,
-      photoReviewCount: raw.photoReviewCount,
-      reviewPhotos: raw.reviewPhotos ?? [],
-      avgStar: raw.avgStar,
+      photoReviewCount,
+      reviewPhotos,
+      avgStar: raw.avg_star,
+      totalPages: raw.total_pages,
     };
-  }, [reviewsResponse, profile?.avgStar]);
+  }, [reviewsResponse, reviewPhotosResponse, profile?.avgStar]);
 
   const imageUrls =
     proposalDetail != null
@@ -182,6 +223,7 @@ export const useReformerOrderProposalDetail = () => {
     photoReviewCount: reviewsData.photoReviewCount,
     reviewPhotos: reviewsData.reviewPhotos,
     reviewsAvgStar: reviewsData.avgStar,
+    totalPages: reviewsData.totalPages,
     isLoading,
     isError,
     isLiked,
