@@ -310,7 +310,7 @@ const ReformerRegistration = () => {
             size="big"
             onClick={handleSubmit}
             disabled={!agreementChecked}
-            className="w-[33.9375rem] h-[4.625rem]"
+            className="w-[33.9375rem] h-[4.625rem] text-white"
           >
             제출하기
           </Button>
