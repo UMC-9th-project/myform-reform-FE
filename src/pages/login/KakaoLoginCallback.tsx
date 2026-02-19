@@ -10,7 +10,7 @@ const KakaoLoginCallback = () => {
   useEffect(() => {
     const accessToken = searchParams.get('accessToken');
     const redirectUrl = searchParams.get('redirectUrl') || '/';
-    const errorCode = searchParams.get('errorCode');
+    const errorCode = searchParams.get('errorCode') || searchParams.get('error');
 
     if (errorCode === 'Auth_117') {
       navigate('/login/approval-pending');

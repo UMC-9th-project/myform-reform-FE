@@ -14,6 +14,7 @@ const KakaoSignup = () => {
   const role = searchParams.get('role') as 'user' | 'reformer' | null;
   const redirectUrl = searchParams.get('redirectUrl') || '/';
   const accessToken = searchParams.get('accessToken');
+  const errorCode = searchParams.get('errorCode') || searchParams.get('error');
 
   const { signup } = useSignup();
   // 리폼러 회원가입은 별도 페이지에서 처리되므로 여기서는 사용하지 않음
@@ -25,17 +26,29 @@ const KakaoSignup = () => {
     setIsReformer(role === 'reformer');
   }, [role]);
 
+  // 리폼러 카카오 로그인 403: 승인 대기/반려 → 해당 페이지로 이동
+  useEffect(() => {
+    if (errorCode === 'Auth_117') {
+      navigate('/login/approval-pending', { replace: true });
+      return;
+    }
+    if (errorCode === 'Auth_118') {
+      navigate('/login/approval-rejected', { replace: true });
+      return;
+    }
+  }, [errorCode, navigate]);
+
   // 이미 가입된 사용자: 회원가입용 파라미터는 없고 accessToken만 있는 경우 → 로그인 전용 콜백으로 이동
   useEffect(() => {
     const hasSignupParams = kakaoId && email && role;
-    if (!hasSignupParams && accessToken) {
+    if (!hasSignupParams && accessToken && !errorCode) {
       const params = new URLSearchParams();
       params.set('accessToken', accessToken);
       if (redirectUrl && redirectUrl !== '/')
         params.set('redirectUrl', redirectUrl);
       navigate(`/login/callback?${params.toString()}`, { replace: true });
     }
-  }, [kakaoId, email, role, accessToken, redirectUrl, navigate]);
+  }, [kakaoId, email, role, accessToken, redirectUrl, errorCode, navigate]);
 
   const handleSignup = (signupData: SignupRequest) => {
     // 카카오 회원가입 정보 추가
@@ -62,6 +75,15 @@ const KakaoSignup = () => {
 
   const hasSignupParams = kakaoId && email && role;
   if (!hasSignupParams) {
+    if (errorCode === 'Auth_117' || errorCode === 'Auth_118') {
+      return (
+        <div className="w-full min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <p className="body-b1-md text-[var(--color-black)]">처리 중...</p>
+          </div>
+        </div>
+      );
+    }
     if (accessToken) {
       return (
         <div className="w-full min-h-screen flex items-center justify-center">
