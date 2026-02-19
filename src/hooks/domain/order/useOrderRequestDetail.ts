@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getReformRequestDetail } from '../../../api/order/reformRequest';
 import type { ReformRequestDetail } from '../../../types/api/order/reformRequest';
+import bigProfile from '../../../assets/icons/bigProfile.svg';
 
 function formatDate(dateString: string): string {
   try {
@@ -43,6 +44,7 @@ export const useOrderRequestDetail = () => {
         isOwner: Boolean(
           rawDetail.isOwner ?? (rawDetail as { is_owner?: boolean }).is_owner
         ),
+        profile: rawDetail.profile || bigProfile,
       }
     : null;
 

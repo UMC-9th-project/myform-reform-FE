@@ -30,7 +30,7 @@ const SignupIndex = () => {
         className="body-b0-md w-full mb-[1.25rem] rounded-[0.9375rem]"
       >
         <img src={kakao} alt="kakao" />
-        카카오 계정으로 로그인하기
+        카카오 계정으로 시작하기
       </Button1>
 
       <Button1

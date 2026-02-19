@@ -65,6 +65,10 @@ export interface ReformProposalDetail {
   ownerName: string;
   ownerProfile: string;
   images: ReformProposalImage[];
+  /** 제안서의 평균 별점 */
+  avgStar?: number;
+  /** 최근 3개월 평균 별점 */
+  avgStar3m?: number;
   /** 제안서 상세 API에 포함된 리폼러 프로필 (별점, 후기수 등) */
   profile?: ReformProposalDetailProfile;
 }
