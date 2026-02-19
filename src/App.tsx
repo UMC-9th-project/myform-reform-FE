@@ -45,6 +45,8 @@ import KakaoSignup from './pages/signup/KakaoSignup';
  {/* 로그인 페이지 */}
 import Login from './pages/login/Login';
 import KakaoLoginCallback from './pages/login/KakaoLoginCallback';
+import ReformerApprovalPending from './pages/login/ReformerApprovalPending';
+import ReformerApprovalRejected from './pages/login/ReformerApprovalRejected';
 
 import ChatPage from './pages/chat/ChatPage';
 import ChatQuotationDetailPage from './pages/chat/ChatQuotationDetailPage';
@@ -215,6 +217,8 @@ function App() {
         {/* 로그인 페이지 */}
         <Route path="/login" element={<Login />} />
         <Route path="/login/reformer" element={<Login />} />
+        <Route path="/login/approval-pending" element={<ReformerApprovalPending />} />
+        <Route path="/login/approval-rejected" element={<ReformerApprovalRejected />} />
         <Route path="/login/type" element={<SignupTypeSelection />} />
         <Route path="/login/callback" element={<KakaoLoginCallback />} />
       </Route>
