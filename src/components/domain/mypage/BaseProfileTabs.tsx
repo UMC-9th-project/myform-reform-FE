@@ -3,6 +3,33 @@ import lotpictures from '../../../assets/mypage/lotpictures.svg';
 import { useNavigate } from 'react-router-dom';
 import MyPageUpload from './ReformerFeedUpload';
 import MyReviewGrid from './MyReviewGrid';
+import star from '../../../assets/icons/star.svg';
+import { useQuery } from '@tanstack/react-query';
+import { getProfile } from '../../../api/profile/user';
+import { getProfileSales } from '../../../api/profile/sale';
+import { getProfileProposal } from '../../../api/profile/proposal';
+import type { GetProfileResponse } from '../../../types/domain/profile/profile';
+import type {
+  GetProfileSalesResponse,
+  ProfileSaleItem,
+} from '../../../types/domain/profile/sales';
+import type {
+  GetProfileProposalsResponse,
+  ProfileProposalItem,
+} from '../../../types/domain/profile/proposal';
+import heart from '../../../assets/icons/heart.svg';
+import { getProfileReviews } from '../../../api/profile/review';
+import type { GetProfileReviewsResponse } from '../../../types/domain/profile/review';
+import type { ReviewItem } from '../../../components/domain/mypage/MyReviewGrid';
+import { useFeedList } from '../../../hooks/domain/profile/useFeedList';
+import { useCreateFeed } from '../../../hooks/domain/profile/useCreateFeed';
+import { uploadImages } from '../../../api/upload';
+import ImageViewerModal from './ImageViewModal';
+import mintPlus from '../../../assets/icons/mintPlus.svg';
+import morevertical from '@/assets/icons/morevertical.svg';
+import Pencil from '@/assets/icons/pencil.svg';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { useRef, useEffect } from 'react';
 
 export type ProfileTabType = '피드' | '판매 상품' | '후기';
 export type ProfileMode = 'view' | 'edit';
@@ -10,83 +37,204 @@ export type SaleSubTabType = '마켓 판매' | '주문 제작';
 
 interface BaseProfileTabsProps {
   mode?: ProfileMode;
+  ownerId: string;
+  isEditable?: boolean;
+  showHeart?: boolean;
 }
 
-/*const FEED_ITEMS = [
-  { id: 1, type: 'normal', img: 'https://picsum.photos/seed/1/300/400' },
-  { id: 2, type: 'normal', img: 'https://picsum.photos/seed/2/300/400' },
-  { id: 3, type: 'multi', img: 'https://picsum.photos/seed/3/300/400' },
-  { id: 4, type: 'multi', img: 'https://picsum.photos/seed/4/300/400' },
-  { id: 5, type: 'normal', img: 'https://picsum.photos/seed/5/300/400' },
-  { id: 6, type: 'multi', img: 'https://picsum.photos/seed/6/300/400' },
-  { id: 7, type: 'normal', img: 'https://picsum.photos/seed/7/300/400' },
-  { id: 8, type: 'normal', img: 'https://picsum.photos/seed/8/300/400' },
-]; */
-
-const SALE_ITEMS = [
-  {
-    id: 1,
-    subType: '마켓 판매',
-    title: "이제는 유니폼도 색다르게!\n한화·롯데 등 야구단 유니폼 리폼해드립니...",
-    price: "75,000원",
-    rating: 4.9,
-    reviews: 271,
-    nickname: "침착한 대머리독수리",
-    img: "https://picsum.photos/seed/p1/400/400",
-  },
-  {
-    id: 2,
-    subType: '마켓 판매',
-    title: "이제는 유니폼도 색다르게!\n한화·롯데 등 야구단 유니폼 리폼해드립니...",
-    price: "75,000원",
-    rating: 4.9,
-    reviews: 271,
-    nickname: "침착한 대머리독수리",
-    img: "https://picsum.photos/seed/p2/400/400",
-  },
-  {
-    id: 3,
-    subType: '주문 제작',
-    title: "이제는 유니폼도 색다르게!\n한화·롯데 등 야구단 유니폼 리폼해드립니...",
-    price: "75,000원",
-    rating: 4.9,
-    reviews: 271,
-    nickname: "침착한 대머리독수리",
-    img: "https://picsum.photos/seed/p3/400/400",
-  },
-  {
-    id: 4,
-    subType:'마켓 판매',
-    title: "메시(MESSI) 아르헨티나 국대 유니폼 리폼 상품",
-    price: "75,000원",
-    rating: 4.9,
-    reviews: 271,
-    nickname: "침착한 대머리독수리",
-    img: "https://picsum.photos/seed/p4/400/400",
-  },
-];
-
-
-
-const BaseProfileTabs = ({ mode = 'view' } : BaseProfileTabsProps) => {
-  const [activeSaleSubTab, setActiveSaleSubTab] = useState<SaleSubTabType>('마켓 판매');
-  const [activeTab, setActiveTab] = useState<'피드' | '판매 상품' | '후기'>('피드');
+const BaseProfileTabs = ({
+  mode = 'view',
+  ownerId,
+  isEditable = false,
+  showHeart,
+}: BaseProfileTabsProps) => {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<ProfileTabType>('피드');
+  const [activeSaleSubTab, setActiveSaleSubTab] =
+    useState<SaleSubTabType>('마켓 판매');
   const [showModal, setShowModal] = useState(false);
-  const [feedItems, setFeedItems] = useState<{ id: number; files: File[] }[]>([]);
+  const {
+    data: feedData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useFeedList(ownerId);
+  const feeds =
+    feedData?.pages.flatMap((page) => page.success?.feeds ?? []) ?? [];
+  const { mutate: createFeedMutate } = useCreateFeed(ownerId);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
 
+  const [selectedFeedImages, setSelectedFeedImages] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  const getItemKey = (item: ProfileSaleItem | ProfileProposalItem) => {
+    return 'itemId' in item ? item.itemId : item.proposalId;
+  };
+
+  const handleFileSelected = async (files: File[]) => {
+    try {
+      const uploadRes = await uploadImages(files);
+
+      const imageUrls = uploadRes.success.url; // ← 서버 스펙 맞게 조정
+
+      createFeedMutate({
+        imageUrls,
+        isPinned: false,
+      });
+    } catch (e) {
+      alert('피드 업로드 실패' + e);
+    }
+  };
+
+  const handleClose = () => {
+    setShowModal(false);
+  };
+
+  const handleMenuToggle = (
+    id: string,
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.stopPropagation(); // 부모 클릭 이벤트 막기
+    setOpenMenuId(openMenuId === id ? null : id);
+  };
+
+  const handleEdit = (item: ProfileSaleItem | ProfileProposalItem) => {
+    if (activeSaleSubTab === '마켓 판매') {
+      // 판매 상품 수정
+      const saleItem = item as ProfileSaleItem;
+      navigate(`/sales/${saleItem.itemId}/edit`);
+    } else {
+      // 주문 제작 수정
+      const proposalItem = item as ProfileProposalItem;
+      navigate(`/custom/${proposalItem.proposalId}/edit`);
+    }
+  };
+
+  // ───────── 프로필 정보 ─────────
+  const profileQuery = useQuery<GetProfileResponse, Error>({
+    queryKey: ['profile', ownerId],
+    queryFn: () => getProfile(ownerId),
+    enabled: !!ownerId,
+  });
+
+  // ───────── 판매 상품 목록 ─────────
+  const salesQuery = useQuery<GetProfileSalesResponse, Error>({
+    queryKey: ['profileSales', ownerId],
+    queryFn: () => getProfileSales({ ownerId, limit: 15 }),
+    enabled: activeTab === '판매 상품' && !!ownerId,
+  });
+
+  const proposalQuery = useQuery<GetProfileProposalsResponse, Error>({
+    queryKey: ['profileProposals', ownerId],
+    queryFn: () => getProfileProposal({ ownerId, limit: 15 }),
+    enabled:
+      activeTab === '판매 상품' &&
+      activeSaleSubTab === '주문 제작' &&
+      !!ownerId,
+  });
+
+  const {
+    data: reviewData,
+    fetchNextPage: fetchNextReviewPage,
+    hasNextPage: hasNextReviewPage,
+    isFetchingNextPage: isFetchingNextReviewPage,
+  } = useInfiniteQuery<GetProfileReviewsResponse>({
+    queryKey: ['profileReviews', ownerId],
+    queryFn: ({ pageParam }) =>
+      getProfileReviews({
+        ownerId,
+        limit: 20,
+        cursor: pageParam as string | undefined,
+      }),
+    getNextPageParam: (lastPage) => {
+      if (!lastPage?.success) return undefined;
+
+      return lastPage.success.hasNext
+        ? (lastPage.success.nextCursor ?? undefined)
+        : undefined;
+    },
+
+    enabled: !!ownerId && activeTab === '후기',
+    initialPageParam: undefined,
+  });
+
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (activeTab !== '후기') return;
+    if (!hasNextReviewPage) return;
+    if (isFetchingNextReviewPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextReviewPage();
+        }
+      },
+      {
+        rootMargin: '300px',
+      }
+    );
+
+    const current = loadMoreRef.current;
+    if (current) observer.observe(current);
+
+    return () => {
+      if (current) observer.unobserve(current);
+    };
+  }, [
+    activeTab,
+    hasNextReviewPage,
+    isFetchingNextReviewPage,
+    fetchNextReviewPage,
+  ]);
+
+  const reviews: ReviewItem[] = Array.from(
+    new Map(
+      (
+        reviewData?.pages.flatMap((page) =>
+          page.success.reviews.map((r) => ({
+            id: r.reviewId,
+            author: r.userNickname,
+            rating: r.star,
+            date: r.createdAt,
+            content: r.content,
+            img: r.photos,
+            productImg: r.productPhoto,
+            productName: r.productTitle,
+            productPrice: r.productPrice,
+            productId: r.productId,
+            productType: r.productType,
+          }))
+        ) ?? []
+      ).map((item) => [item.id, item])
+    ).values()
+  );
+
+  // ───────── 로딩 / 에러 처리 ─────────
+  if (profileQuery.isLoading) return <div>Loading...</div>;
+  if (profileQuery.isError || !profileQuery.data?.success)
+    return <div>Error loading profile.</div>;
+
+  const profileData = profileQuery.data.success;
+  const saleCount = profileData.totalSaleCount ?? 0;
+  const reviewCount = profileData.reviewCount ?? 0;
 
   const tabs: { name: ProfileTabType; count: number | null }[] = [
     { name: '피드', count: null },
-    { name: '판매 상품', count: 4 },
-    { name: '후기', count: 271 },
+    { name: '판매 상품', count: saleCount },
+    { name: '후기', count: reviewCount },
   ];
 
-  const navigate = useNavigate();
+  const saleItems =
+    activeSaleSubTab === '마켓 판매'
+      ? (salesQuery.data?.success?.items ?? [])
+      : (proposalQuery.data?.success?.proposals ?? []);
 
   return (
     <div className="w-full min-h-screen bg-white">
-      
       {/* ───────── 상단 탭 ───────── */}
       <nav className="flex border-b border-[var(--color-line-gray-40)] body-b0-bd bg-white px-20 md:px-40">
         {tabs.map((tab) => (
@@ -109,161 +257,329 @@ const BaseProfileTabs = ({ mode = 'view' } : BaseProfileTabsProps) => {
       </nav>
 
       {/* ───────── 컨텐츠 영역 ───────── */}
-        {/* ===== 피드 ===== */}
+      {/* ===== 피드 ===== */}
       {activeTab === '피드' && (
         <>
-        <div className="w-full bg-transparent py-10 relative">
-          <div className="max-w-[68.75rem] mx-auto px-10">
-            {feedItems.length === 0 ? (
-              <div className="flex items-center justify-center h-[18.75rem] pb-24 body-b1-rg">
-                아직 등록된 게시글이 없습니다.
-              </div>
+          <div className="w-full bg-transparent py-10 relative">
+            <div className="max-w-[68.75rem] mx-auto px-10">
+              {feeds.length === 0 ? (
+                <div className="flex items-center justify-center h-[18.75rem] pb-24 body-b1-rg">
+                  아직 등록된 게시글이 없습니다.
+                </div>
               ) : (
-              <div className="grid grid-cols-4 gap-[0.125rem]">
-                {feedItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="relative aspect-[3/4] bg-white overflow-hidden"
-                  >
-                    <img
-                      src={URL.createObjectURL(item.files[0])}
-                      alt="feed"
-                      className="w-full h-full object-cover"
-                    />
+                <div className="grid grid-cols-4 gap-[0.125rem]">
+                  {feeds.map((feed) => (
+                    <div
+                      key={feed.feedId}
+                      className="relative aspect-[3/4] bg-white overflow-hidden"
+                    >
+                      <img
+                        src={feed.images[0]}
+                        alt="feed"
+                        className="w-full h-full object-cover"
+                        onClick={() => {
+                          setSelectedFeedImages(feed.images);
+                          setCurrentIndex(0);
+                          setIsViewerOpen(true);
+                        }}
+                      />
 
-                    <div>
-                      {item.files.length > 1 && (
-                        <div className='absolute top-2 right-2 dropw-shadow-md'>
-                          <img src={lotpictures} alt="multi" className='w-8 h-8' />
+                      {feed.images.length > 1 && (
+                        <div className="absolute top-2 right-2">
+                          <img
+                            src={lotpictures}
+                            alt="multi"
+                            className="w-8 h-8"
+                          />
                         </div>
                       )}
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            { mode === 'edit' && (
-              <button 
-                className="absolute top-10 right-2 md:right-4 w-14 h-14 bg-white border border-[var(--color-mint-1)] rounded-full flex items-center justify-center shadow-lg hover:bg-teal-50 transition-all z-10"
-                title="피드 글쓰기"
-                onClick={() => setShowModal(true)}
-                >
-                <svg width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 27H6.57124L27 6.57124L21.4281 1L1 21.4288V27Z" stroke="#07BEB8" stroke-width="2" stroke-linejoin="round"/>
-                    <path d="M15.8555 6.57031L21.4267 12.1416" stroke="#07BEB8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 27.5H27.5" stroke="#07BEB8" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-            </button>
-            )}
-            </div>
-        </div>
-        {showModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-            <div className="bg-white rounded-xl w-full max-w-xl p-6 relative">
-              {/* 닫기 버튼 */}
-              <button
-                onClick={() => setShowModal(false)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-black"
-              >
-                ✕
-              </button>
+                  ))}
 
-              {/* 업로드 컴포넌트 */}
-              <MyPageUpload 
-                onClose={() => setShowModal(false)}
-                onFileSelected={(files) => {
-                  const newItem = {id: Date.now(), files};
-                  setFeedItems(prev => [newItem, ...prev]);
-                }} />
-           </div>
+                  {isViewerOpen && selectedFeedImages.length > 0 && (
+                    <ImageViewerModal
+                      images={selectedFeedImages}
+                      currentIndex={currentIndex}
+                      setCurrentIndex={setCurrentIndex}
+                      onClose={() => setIsViewerOpen(false)}
+                    />
+                  )}
+                  {hasNextPage && (
+                    <div className="flex justify-center mt-10">
+                      <button
+                        onClick={() => fetchNextPage()}
+                        disabled={isFetchingNextPage}
+                        className="px-6 py-2 border rounded"
+                      >
+                        {isFetchingNextPage ? '불러오는 중...' : '더 보기'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {mode === 'edit' && (
+                <button
+                  className="absolute top-10 right-2 md:right-4 w-14 h-14 bg-white border border-[var(--color-mint-1)] rounded-full flex items-center justify-center shadow-lg hover:bg-teal-50 transition-all z-10"
+                  title="피드 글쓰기"
+                  onClick={() => setShowModal(true)}
+                >
+                  <img src={mintPlus} alt="피드 글쓰기" />
+                </button>
+              )}
+            </div>
           </div>
-        )}
+          {showModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+              <div className="bg-white rounded-xl w-full max-w-xl p-6 relative">
+                {/* 닫기 버튼 */}
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-black"
+                >
+                  ✕
+                </button>
+
+                {/* 업로드 컴포넌트 */}
+                <MyPageUpload
+                  onClose={handleClose}
+                  onFileSelected={handleFileSelected}
+                />
+              </div>
+            </div>
+          )}
         </>
       )}
-        {/* 판매 상품 */}
-        {activeTab === '판매 상품' && (
-          <div className="bg-white py-10 px-28 relative">
-            
-            {/* ───────── 서브 탭 ───────── */}
-           <div className="flex mb-3 gap-4">
-            {(['마켓 판매', '주문 제작'] as SaleSubTabType[]).map((tab, index, arr) => (
-              <React.Fragment key={tab}>
-                <span
-                  onClick={() => setActiveSaleSubTab(tab)}
-                  className={`cursor-pointer transition-colors ${
-                    activeSaleSubTab === tab ? 'body-b1-sb text-black' : 'body-b1-rg text-[var(--color-gray-60)] hover:text-black'
-                  }`}
-                >
-                  {tab}
-                </span>
-                {index < arr.length - 1 && <span className="text-gray-400">|</span>}
-              </React.Fragment>
-            ))}
+      {/* 판매 상품 */}
+      {activeTab === '판매 상품' && (
+        <div className="bg-white py-10 px-28 relative">
+          {/* ───────── 서브 탭 ───────── */}
+          <div className="flex mb-3 gap-4">
+            {(['마켓 판매', '주문 제작'] as SaleSubTabType[]).map(
+              (tab, index, arr) => (
+                <React.Fragment key={tab}>
+                  <span
+                    onClick={() => setActiveSaleSubTab(tab)}
+                    className={`cursor-pointer transition-colors ${
+                      activeSaleSubTab === tab
+                        ? 'body-b1-sb text-black'
+                        : 'body-b1-rg text-[var(--color-gray-60)] hover:text-black'
+                    }`}
+                  >
+                    {tab}
+                  </span>
+                  {index < arr.length - 1 && (
+                    <span className="text-gray-400">|</span>
+                  )}
+                </React.Fragment>
+              )
+            )}
           </div>
 
-
-            {/* ───────── 상품 리스트 ───────── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10">
-              {SALE_ITEMS.filter(item => item.subType === activeSaleSubTab).map((item) => (
-                <div key={item.id} className="flex flex-col group cursor-pointer">
-                  <div className="relative aspect-square mb-3 overflow-hidden rounded-[1.25rem] bg-white">
-                    <img
-                      src={item.img}
-                      alt={item.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <h3 className="body-b0-sb text-black line-clamp-2 min-h-[2.5rem]">{item.title}</h3>
-                    <div className="heading-h4-bd text-black">{item.price}</div>
-                    <div className="flex items-center">
-                      <span className="text-[#FFCF41] text-[1.125rem] mr-1 relative -translate-y-[0.125rem]">★</span>
-                      <span className="body-b3-rg text-black">{item.rating}</span>
-                      <span className="ml-1 text-[var(--color-gray-50)]">({item.reviews})</span>
-                    </div>
-                    <div className="pt-1">
-                      <span className="inline-block bg-[var(--color-gray-30)] text-body-b5-sb text-[var(--color-gray-50)] px-2 py-0.5 rounded">
-                        {item.nickname}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* 글쓰기 버튼 */}
-            {mode === 'edit' && (
-              <button 
-                className="absolute top-10 right-2 md:right-4 w-14 h-14 bg-white border border-[var(--color-mint-1)] rounded-full flex items-center justify-center shadow-lg hover:bg-teal-50 transition-all z-10"
-                title={
-                  activeSaleSubTab === '마켓 판매'
-                  ? '마켓 판매 글쓰기'
-                  : '주문 제작 글쓰기'
-                }
+          {/* ───────── 상품 리스트 ───────── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-10">
+            {saleItems.map((item) => (
+              <div
+                key={getItemKey(item)}
+                className="flex flex-col group cursor-pointer"
                 onClick={() => {
                   if (activeSaleSubTab === '마켓 판매') {
-                    navigate('/sales/create');
+                    const saleItem = item as ProfileSaleItem;
+                    navigate(`/market/product/${saleItem.itemId}`);
                   } else {
-                    navigate('/custom/create');
+                    const proposalItem = item as ProfileProposalItem;
+                    navigate(
+                      `/reformer/order/proposals/${proposalItem.proposalId}`
+                    );
                   }
                 }}
               >
-                <svg width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 27H6.57124L27 6.57124L21.4281 1L1 21.4288V27Z" stroke="#07BEB8" strokeWidth="2" strokeLinejoin="round"/>
-                  <path d="M15.8555 6.57031L21.4267 12.1416" stroke="#07BEB8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M12 27.5H27.5" stroke="#07BEB8" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </button>
-            )}
+                <div className="relative aspect-square mb-3 overflow-hidden rounded-[1.25rem] bg-white">
+                  <img
+                    src={item.photo ?? '/images/default.png'}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+
+                  {showHeart && (
+                    <div className="absolute bottom-2 right-2 w-10 h-10">
+                      {item.isWished ? (
+                        // SVG 하트
+                        <svg
+                          width="40"
+                          height="40"
+                          viewBox="0 0 40 40"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M34.4543 22.4866L20.0173 37.332L5.58038 22.4866C4.62813 21.5245 3.87805 20.3682 3.37739 19.0903C2.87673 17.8125 2.63632 16.4408 2.67131 15.0618C2.70629 13.6827 3.01592 12.3261 3.58068 11.0774C4.14544 9.82872 4.95311 8.71494 5.95283 7.80624C6.95254 6.89754 8.12264 6.2136 9.38945 5.79748C10.6563 5.38136 11.9923 5.24208 13.3135 5.38841C14.6347 5.53474 15.9124 5.96351 17.0662 6.64772C18.2199 7.33193 19.2248 8.25676 20.0173 9.36397C20.8134 8.2648 21.8193 7.34805 22.9723 6.6711C24.1253 5.99415 25.4004 5.57157 26.7179 5.42982C28.0354 5.28806 29.3669 5.43017 30.629 5.84726C31.8912 6.26435 33.0569 6.94744 34.0531 7.85378C35.0493 8.76011 35.8546 9.87018 36.4185 11.1145C36.9825 12.3588 37.2931 13.7106 37.3307 15.0853C37.3684 16.46 37.1324 17.8279 36.6374 19.1035C36.1425 20.3791 35.3993 21.5349 34.4543 22.4986"
+                            fill="#F66F6F"
+                          />
+                          <path
+                            d="M34.4543 22.4866L20.0173 37.332L5.58038 22.4866C4.62813 21.5245 3.87805 20.3682 3.37739 19.0903C2.87673 17.8125 2.63632 16.4408 2.67131 15.0618C2.70629 13.6827 3.01592 12.3261 3.58068 11.0774C4.14544 9.82872 4.95311 8.71494 5.95283 7.80624C6.95254 6.89754 8.12264 6.2136 9.38945 5.79748C10.6563 5.38136 11.9923 5.24208 13.3135 5.38841C14.6347 5.53474 15.9124 5.96351 17.0662 6.64772C18.2199 7.33193 19.2248 8.25676 20.0173 9.36397C20.8134 8.2648 21.8193 7.34805 22.9723 6.6711C24.1253 5.99415 25.4004 5.57157 26.7179 5.42982C28.0354 5.28806 29.3669 5.43017 30.629 5.84726C31.8912 6.26435 33.0569 6.94744 34.0531 7.85378C35.0493 8.76011 35.8546 9.87018 36.4185 11.1145C36.9825 12.3588 37.2931 13.7106 37.3307 15.0853C37.3684 16.46 37.1324 17.8279 36.6374 19.1035C36.1425 20.3791 35.3993 21.5349 34.4543 22.4986"
+                            stroke="white"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      ) : (
+                        // false면 heart 이미지
+                        <img
+                          src={heart}
+                          alt="heart"
+                          className="w-full h-full"
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="body-b0-sb text-black line-clamp-2 min-h-[2.5rem]">
+                    {item.title}
+                  </h3>
+                  <div className="heading-h4-bd text-black">
+                    {item.price
+                      .toString()
+                      .replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    원
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-[#FFCF41] text-[1.125rem] mr-1 relative -translate-y-[0.125rem]">
+                      <img src={star} alt="별" />
+                    </span>
+                    <span className="body-b3-rg text-black">
+                      {item.avgStar ?? '0'}
+                    </span>
+                    <span className="ml-1 text-[var(--color-gray-50)]">
+                      ({item.reviewCount ?? 0})
+                    </span>
+                  </div>
+                  <div className="pt-1 flex justify-between items-center">
+                    {/* 닉네임 */}
+                    <span className="inline-block bg-[var(--color-gray-30)] text-body-b5-sb text-[var(--color-gray-50)] px-2 py-0.5 rounded">
+                      {item.sellerName}
+                    </span>
+
+                    {mode === 'edit' && (
+                      <div className="relative">
+                        <button
+                          onClick={(e) => handleMenuToggle(getItemKey(item), e)}
+                          className="p-1 hover:bg-gray-20 rounded-full transition-colors"
+                        >
+                          <img
+                            src={morevertical}
+                            alt="더보기"
+                            className="w-8 h-8 opacity-40"
+                          />
+                        </button>
+
+                        {/* 드롭다운 메뉴 */}
+                        {openMenuId === getItemKey(item) && (
+                          <div className="absolute right-0 mt-2 w-[9rem] bg-white rounded-[1.25rem] shadow-[0_4px_20px_rgba(0,0,0,0.1)] z-10 overflow-hidden">
+                            <div className="flex flex-col py-2">
+                              {/* 수정하기 버튼 */}
+                              {/* 수정하기 버튼 */}
+                              <button
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-[var(--color-gray-20)] transition-colors text-left"
+                                onClick={(e) => {
+                                  e.stopPropagation(); // 부모 클릭 이벤트 막기
+                                  handleEdit(item);
+                                }}
+                              >
+                                <img
+                                  src={Pencil}
+                                  alt="수정하기"
+                                  className="w-6 h-6"
+                                />
+                                <span className="body-b1-rg text-black">
+                                  수정하기
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
 
-
-          {/* ===== 후기 ===== */}
-          {activeTab === '후기' && (
-            <MyReviewGrid />
+          {/* 글쓰기 버튼 */}
+          {mode === 'edit' && (
+            <button
+              className="absolute top-10 right-2 md:right-4 w-14 h-14 bg-white border border-[var(--color-mint-1)] rounded-full flex items-center justify-center shadow-lg hover:bg-teal-50 transition-all z-10"
+              title={
+                activeSaleSubTab === '마켓 판매'
+                  ? '마켓 판매 글쓰기'
+                  : '주문 제작 글쓰기'
+              }
+              onClick={() => {
+                if (activeSaleSubTab === '마켓 판매') {
+                  navigate('/sales/create');
+                } else {
+                  navigate('/custom/create');
+                }
+              }}
+            >
+              <svg
+                width="29"
+                height="29"
+                viewBox="0 0 29 29"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M1 27H6.57124L27 6.57124L21.4281 1L1 21.4288V27Z"
+                  stroke="#07BEB8"
+                  strokeWidth="2"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M15.8555 6.57031L21.4267 12.1416"
+                  stroke="#07BEB8"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M12 27.5H27.5"
+                  stroke="#07BEB8"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
           )}
+        </div>
+      )}
+
+      {activeTab === '후기' && (
+        <div className="pt-10">
+          {reviews.length === 0 ? (
+            <div className="flex items-center justify-center h-[18.75rem] pb-24 body-b1-rg">
+              아직 작성된 리뷰가 없습니다.
+            </div>
+          ) : (
+            <>
+              <MyReviewGrid reviews={reviews} isEditable={isEditable} />
+
+              {hasNextReviewPage && (
+                <div
+                  ref={loadMoreRef}
+                  className="h-10 flex justify-center items-center"
+                >
+                  {isFetchingNextReviewPage && <span>불러오는 중...</span>}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 };

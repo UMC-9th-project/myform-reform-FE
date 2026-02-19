@@ -1,16 +1,21 @@
 import React, { useState, useRef } from 'react';
 import { useUserTabStore } from '../../stores/tabStore';
-import Button from '../../components/common/Button/button1';
+import Button from '../../components/common/button/Button1';
+import starYellow from '../../assets/icons/star.svg';
+import starGray from '../../assets/icons/emptyStar.svg';
+import { uploadImages } from '@/api/upload';
+import { createReview } from '@/api/mypage/reviewApi';
+import { useNavigate } from 'react-router-dom';
 
 const ReviewWritePage: React.FC = () => {
-  const { selectedOrderId, setSelectedOrderId, setActiveTab } = useUserTabStore();
+  const { selectedOrderId, setSelectedOrderId } = useUserTabStore();
   const [rating, setRating] = useState(0);
   const [content, setContent] = useState('');
   
   // 사진 관련 상태
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const navigate = useNavigate();
   if (!selectedOrderId) return <div className="p-10">주문 정보가 없습니다.</div>;
 
   // 파일 선택 핸들러
@@ -28,16 +33,36 @@ const ReviewWritePage: React.FC = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (rating === 0) {
       alert("별점을 선택해주세요.");
       return;
     }
-    // API 제출 로직 (content, rating, selectedFiles)
-    
-    setSelectedOrderId(null);
-    setActiveTab('나의 후기');
+
+    try {
+      // 1. 이미지 업로드
+      let photoUrls: string[] = [];
+      if (selectedFiles.length > 0) {
+        const res = await uploadImages(selectedFiles);
+        photoUrls = res.success.url;
+      }
+
+      // 2. 리뷰 작성 API 호출
+      await createReview(selectedOrderId!, {
+        star: rating,
+        content,
+        photos: photoUrls,
+      });
+
+      alert('리뷰 작성 완료!');
+      setSelectedOrderId(null);
+      navigate('/normal-mypage', { state: { tab: '나의 후기' } });
+    } catch (err) {
+      console.error(err);
+      alert('리뷰 작성 실패');
+    }
   };
+
 
   return (
     <div className="max-w-7xl mx-auto p-10 bg-white min-h-screen">
@@ -47,14 +72,20 @@ const ReviewWritePage: React.FC = () => {
       <div className='mx-auto pr-15 max-w-[50rem]'>
       <div className="mb-10 text-center">
         <p className="mb-2 body-b1-md text-left">제품에 대해서 만족하셨나요?<span className='text-[var(--color-red-1)]'> *</span></p>
-        <div className="flex justify-start gap-1 mb-6">
-          {[1, 2, 3, 4, 5].map(star => (
+        <div className="flex justify-start gap-3 mb-6">
+          {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
+              type="button"
               onClick={() => setRating(star)}
-              className={`text-4xl transition-colors ${rating >= star ? 'text-yellow-400' : 'text-gray-200'}`}
+              className="transition-transform hover:scale-110 w-10"
+              aria-label={`${star}점 선택`}
             >
-              ★
+              <img
+                src={rating >= star ? starYellow : starGray}
+                alt="별"
+                className="w-8 h-8"
+              />
             </button>
           ))}
         </div>
@@ -71,7 +102,7 @@ const ReviewWritePage: React.FC = () => {
             maxLength={1000}
             onChange={(e) => setContent(e.target.value)}
           />
-          <div className="absolute bottom-1 -right-20 text-gray-400 body-b2-rg">
+          <div className="absolute bottom-1 -right-23 text-gray-400 body-b2-rg">
             {content.length}/1000자
           </div>
         </div>

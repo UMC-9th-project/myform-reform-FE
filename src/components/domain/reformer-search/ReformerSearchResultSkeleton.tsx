@@ -1,10 +1,5 @@
-interface ReformerSearchResultSkeletonProps {
-  count?: number;
-}
-
-const ReformerSearchResultSkeleton = ({
-  count = 8,
-}: ReformerSearchResultSkeletonProps) => {
+const ReformerSearchResultSkeleton = () => {
+  const count = 8;
   return (
     <div className="pt-16 space-y-2 flex flex-col items-center justify-center">
       {Array.from({ length: count }).map((_, index) => (

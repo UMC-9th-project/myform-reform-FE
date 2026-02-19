@@ -1,5 +1,6 @@
-import Checkbox from '../../../components/common/Checkbox/Checkbox';
-import type { CartProduct, CartSeller } from '../../../types/domain/cart/cart';
+import { useNavigate } from 'react-router-dom';
+import Checkbox from '../../common/checkbox/Checkbox';
+import type { CartProduct, CartSeller } from '@/types/api/cart/cart';
 import CartItem from './CartItem';
 import truckIcon from '../../../assets/icons/truck.svg';
 import rightIcon from '../../../assets/icons/right.svg';
@@ -11,6 +12,7 @@ interface SellerGroupProps {
   quantities: number[];
   itemChecked: boolean[];
   sellerChecked: boolean;
+  productImageLoadingMap?: Map<string, boolean>;
   onSellerCheck: (checked: boolean) => void;
   onItemCheck: (productIndex: number, checked: boolean) => void;
   onQuantityChange: (productIndex: number, newQuantity: number) => void;
@@ -24,21 +26,34 @@ const SellerGroup = ({
   quantities,
   itemChecked,
   sellerChecked,
+  productImageLoadingMap,
   onSellerCheck,
   onItemCheck,
   onQuantityChange,
   onDeleteProduct,
 }: SellerGroupProps) => {
+  const navigate = useNavigate();
+
   if (products.length === 0) return null;
+
+  const handleSellerClick = () => {
+    if (seller.ownerId) {
+      navigate(`/profile/${seller.ownerId}`);
+    }
+  };
 
   return (
     <div className="bg-[var(--color-white)] rounded-[10px] border border-[var(--color-line-gray-40)] flex flex-col">
-      {/* 판매자 헤더 */}
       <div className="px-[1.9375rem] pt-[1.4375rem] pb-[1.125rem] flex items-center justify-between border-b border-[var(--color-line-gray-40)]">
         <div className="flex items-center gap-[0.6875rem]">
           <Checkbox checked={sellerChecked} onChange={onSellerCheck} />
-          <span className="body-b0-sb">{seller.name}</span>
-          <img src={rightIcon} alt="" className="pb-1 w-10 h-10" />
+          <button
+            onClick={handleSellerClick}
+            className="flex items-center gap-[0.6875rem] body-b0-sb cursor-pointer"
+          >
+            <span>{seller.name || '판매자'}</span>
+            <img src={rightIcon} alt="" className="pb-1 w-10 h-10" />
+          </button>
         </div>
         <div className="flex items-center gap-[0.375rem]">
           <img src={truckIcon} alt="배송" className="w-10 h-10" />
@@ -52,6 +67,7 @@ const SellerGroup = ({
         const productIndexInAll = allProducts.findIndex(
           (p) => p.id === product.id
         );
+        const isImageLoading = product.itemId ? (productImageLoadingMap?.get(product.itemId) ?? false) : false;
         return (
           <CartItem
             key={product.id}
@@ -59,6 +75,7 @@ const SellerGroup = ({
             quantity={quantities[productIndexInAll] || 1}
             isChecked={itemChecked[productIndexInAll] || false}
             isFirst={productIndex === 0}
+            isImageLoading={isImageLoading}
             onCheck={(checked) => onItemCheck(productIndexInAll, checked)}
             onQuantityChange={(newQuantity) =>
               onQuantityChange(productIndexInAll, newQuantity)

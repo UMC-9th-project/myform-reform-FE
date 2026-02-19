@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import Input from './input';
-import Button2 from '../../common/Button/button2';
+import Input from './Input';
+import Button2 from '../../common/button/Button2';
 
 const DeliveryAddressForm = () => {
   const [activeTab, setActiveTab] = useState<'existing' | 'new'>('existing');
@@ -18,7 +18,7 @@ const DeliveryAddressForm = () => {
               : 'bg-[var(--color-white)] text-[var(--color-gray-60)] border border-[var(--color-line-gray-40)] border-b-0'
           }`}
         >
-          기존 배송지
+          기본 배송지
         </button>
         <button
           type="button"

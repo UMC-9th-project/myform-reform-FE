@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import starYellow from '../../../assets/icons/star.svg';
+import starGray from '../../../assets/icons/emptyStar.svg';
+import MoreVertical from '../../../assets/icons/morevertical.svg';
+import trash from '../../../assets/icons/trash.svg';
+import profile from '@/assets/icons/profile.svg';
+import { formatDateToKorean } from '@/utils/domain/formatDate';
+import ImageViewerModal from './ImageViewModal';
+import { useNavigate } from 'react-router-dom';
 
-interface ReviewItem {
-  id: number;
+
+export interface ReviewItem {
+  id: string;
   author: string;
+  profileImg?: string;
   rating: number;
   date: string;
   content: string;
@@ -10,103 +20,54 @@ interface ReviewItem {
   productImg: string;
   productName: string;
   productPrice: number;
+  productId?: string;
+  productType: string;
 }
 
-/* ===== 더미 데이터 ===== */
-const REVIEW_ITEMS: ReviewItem[]= [
-  {
-    id: 1,
-    author: "열정적인 직관러",
-    rating: 5,
-    date: "2024.03.20",
-    productName: "이제는 유니폼도 색다르게! 한화·롯데 등 야구단 유니폼 리폼해드립니다.",
-    productImg: "https://picsum.photos/seed/p1/100/100",
-    content: "정말 만족스러워요! 마감 처리도 깔끔하고 배송도 생각보다 빨랐습니다. 다음에 원정 유니폼도 맡길게요.",
-    productPrice: 75000,
-    img: [
-      "https://picsum.photos/seed/r1a/200/200",
-      "https://picsum.photos/seed/r1b/200/200",
-      "https://picsum.photos/seed/r1c/200/200",
-    ],
-  },
-  {
-    id: 2,
-    author: "KBO팬123",
-    rating: 4,
-    date: "2024.03.18",
-    productName: "롯데 자이언츠 유니폼 리폼 상품",
-    productImg: "https://picsum.photos/seed/p2/100/100",
-    productPrice: 68000,
-    content: "디자인이 예쁘게 잘 나왔어요. 사이즈 상담이 조금 늦었지만 결과물 만족!",
-    
-    img: [], // 이미지 없는 리뷰
-  },
-  {
-    id: 3,
-    author: "유니폼수집가",
-    rating: 5,
-    date: "2024.03.15",
-    productName: "메시 아르헨티나 국대 리폼",
-    productImg: "https://picsum.photos/seed/p3/100/100",
-    productPrice: 75000,
-    content: "와… 진짜 새 옷 같아요. 리폼 퀄리티 최고!",
-    img: ["https://picsum.photos/seed/r3/200/200"], // 이미지 1개
-  },
-  {
-    id: 4,
-    author: "야구광팬",
-    rating: 3,
-    date: "2024.03.12",
-    productName: "LG 트윈스 유니폼 리폼",
-    productImg: "https://picsum.photos/seed/p4/100/100",
-    productPrice: 7000,
-    content: "괜찮아요. 배송은 빠르지만 마감이 조금 아쉬워요.",
-    img: ["https://picsum.photos/seed/r4a/200/200", "https://picsum.photos/seed/r4b/200/200"], // 이미지 2개
-  },
-  {
-    id: 5,
-    author: "소심한팬",
-    rating: 4,
-    date: "2024.03.10",
-    productName: "삼성 라이온즈 유니폼 리폼",
-    productImg: "https://picsum.photos/seed/p5/100/100",
-    productPrice: 80000,
-    content: "", // 글 없는 리뷰
-    img: ["https://picsum.photos/seed/r5a/200/200"], // 사진만 있음
-  },
-  {
-    id: 6,
-    author: "열혈서포터",
-    rating: 5,
-    date: "2024.03.08",
-    productName: "두산 베어스 유니폼 리폼",
-    productImg: "https://picsum.photos/seed/p6/100/100",
-    productPrice: 72000,
-    content: "역시 최고예요! 리폼 퀄리티가 기대 이상입니다.", // 글만 있는 리뷰
-    img: [],
-  },
-  {
-    id: 7,
-    author: "야구소년",
-    rating: 2,
-    date: "2024.03.05",
-    productName: "KIA 타이거즈 유니폼 리폼",
-    productImg: "https://picsum.photos/seed/p7/100/100",
-    productPrice: 68000,
-    content: "생각보다 별로였어요. 사진 참고하고 주문했는데 색감이 달라서 아쉬워요.",
-    img: ["https://picsum.photos/seed/r7a/200/200", "https://picsum.photos/seed/r7b/200/200", "https://picsum.photos/seed/r7c/200/200"], // 이미지 3개
-  },
-];
+interface MyReviewGridProps {
+  reviews: ReviewItem[];
+  isEditable?: boolean;
+  maxWidth?: '4xl' | '6xl';
+  onDelete?: (reviewId: string) => void;
+}
 
+const MyReviewGrid: React.FC<MyReviewGridProps> = ({
+  reviews,
+  isEditable = false,
+  maxWidth = '4xl',
+  onDelete,
+}) => {
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [viewerImages, setViewerImages] = useState<string[]>([]);
+  const navigate = useNavigate();
 
-/* ===== 컴포넌트 ===== */
-const MyReviewGrid: React.FC = () => {
+  
+
+  // 클릭 외부 영역 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpenMenuId(null);
+      }
+    };
+
+    if (openMenuId !== null) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openMenuId]);
+
   return (
-    <div className="bg-transparent py-10">
-      <div className="max-w-4xl mx-auto">
-        {/* 무조건 2열 masonry */}
+    <div className="bg-transparent">
+      <div className={`mx-auto ${maxWidth === '4xl' ? 'max-w-4xl' : 'max-w-6xl'}`}>
         <div className="columns-2 gap-4 space-y-4">
-          {REVIEW_ITEMS.map((item) => (
+          {reviews.map((item) => (
             <div
               key={item.id}
               className="break-inside-avoid bg-white rounded-[0.625rem] p-5
@@ -114,67 +75,128 @@ const MyReviewGrid: React.FC = () => {
                          shadow-sm hover:shadow-md transition-all"
             >
               {/* 유저 정보 */}
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-gray-200 to-gray-300" />
-                <div className="flex-1 min-w-0">
-                  <div className="body-b1-sb text-black truncate">
-                    {item.author}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-14 h-14 rounded-full overflow-hidden">
+                    <img
+                      src={item.profileImg || profile}
+                      alt={`${item.author} 프로필`}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <div className="flex items-center gap-1.5 text-[0.68rem] text-[var(--color-gray-40)]">
-                    <span className="text-[#FFCF41]">
-                      {'★'.repeat(item.rating)}
-                      {'☆'.repeat(5 - item.rating)}
-                    </span>
-                    <span>{item.date}</span>
+                  <div className="min-w-0">
+                    <div className="body-b1-sb text-black truncate">{item.author}</div>
+                    <div className="flex items-center gap-1.5 text-[0.68rem] text-[var(--color-gray-40)]">
+                      <span className="flex gap-1">
+                        {Array.from({ length: 5 }).map((_, index) => (
+                          <img
+                            key={index}
+                            src={index < item.rating ? starYellow : starGray}
+                            alt="별"
+                            className="w-4 h-4"
+                          />
+                        ))}
+                      </span>
+                      <span className="body-b3-rg text-[var(--color-gray-50)]">{formatDateToKorean(item.date)}</span>
+                    </div>
                   </div>
                 </div>
+
+                {/* 삭제 버튼 */}
+                {isEditable && (
+                  <div className="relative">
+                    <button
+                      onClick={() =>
+                        setOpenMenuId(openMenuId === item.id ? null : item.id)
+                      }
+                      className="p-1"
+                    >
+                      <img src={MoreVertical} alt="더보기" className="w-7 h-7" />
+                    </button>
+
+                    {openMenuId === item.id && (
+                      <div
+                        ref={menuRef}
+                        className="absolute right-0 mt-2 p-1 w-40 rounded-[1.385rem]
+                                   bg-white shadow-[0px_4px_10.7px_0px_#00000038] overflow-hidden z-10
+                                   space-y-1"
+                      >
+                        <button
+                          className="w-full px-4 py-2 text-left body-b1-rg flex gap-2 items-center"
+                          onClick={() => {
+                            if (!confirm('정말 삭제하시겠습니까?')) return;
+                            onDelete?.(item.id);
+                            setOpenMenuId(null);
+                          }}
+                        >
+                          <img src={trash} alt="삭제하기" className="w-8" />
+                          <span>삭제하기</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
-              {/* 리뷰 텍스트 */}
-              <p className="body-b1-rg text-black leading-relaxed mb-4">
-                {item.content}
-              </p>
+              {/* 리뷰 내용 */}
+              <p className="body-b1-rg text-black leading-relaxed mb-4">{item.content}</p>
 
               {/* 리뷰 이미지 */}
               {item.img && item.img.length > 0 && (
-                <div
-                  className={`mb-4 grid gap-2 ${
-                    item.img.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
-                  }`}
-                >
+                <div className={`mb-4 grid gap-2 ${item.img.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
                   {item.img.map((src, index) => (
                     <div key={index} className="overflow-hidden aspect-square">
                       <img
                         src={src}
                         alt={`리뷰 이미지 ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover cursor-pointer"
+                        onClick={() => {
+                          setViewerImages(item.img!);  // 클릭한 리뷰 이미지 배열 전달
+                          setCurrentIndex(index);      // 클릭한 이미지부터 보여주기
+                          setViewerOpen(true);
+                        }}
                       />
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* 하단 상품 정보 */}
-              <div className="bg-[var(--color-gray-20)] p-3 flex items-center gap-3">
+
+              {/* 상품 정보 */}
+              <div
+                className="bg-[var(--color-gray-20)] p-3 flex items-center gap-3 cursor-pointer"
+                  onClick={() => {
+                    if (item.productType === 'ITEM') {
+                      navigate(`/market/product/${item.productId}`);
+                    }
+                    if (item.productType === 'REQUEST') {
+                      navigate(`/reformer/order/requests/${item.productId}`) 
+                    }
+                    if (item.productType === 'PROPOSAL') {
+                      navigate(`/reformer/order/proposals/${item.productId}`)
+                    } 
+                  }}
+              >
                 <div className="w-12 h-12 bg-white overflow-hidden flex-shrink-0">
-                  <img
-                    src={item.productImg}
-                    alt="상품 이미지"
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={item.productImg} alt="상품 이미지" className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
-                  <div className="text-[0.69rem] body-b3-rg line-clamp-2">
-                    {item.productName}
-                  </div>
-                  <div className="body-b1-sb text-black">
-                    {item.productPrice.toLocaleString()}원
-                  </div>
+                  <div className="text-[0.69rem] body-b3-rg line-clamp-2">{item.productName}</div>
+                  <div className="body-b1-sb text-black">{(item.productPrice ?? 0).toLocaleString()}원</div>
                 </div>
               </div>
             </div>
           ))}
         </div>
+        {viewerOpen && (
+        <ImageViewerModal
+          images={viewerImages}
+          currentIndex={currentIndex}
+          setCurrentIndex={setCurrentIndex}
+          onClose={() => setViewerOpen(false)}
+        />
+      )}
+
       </div>
     </div>
   );

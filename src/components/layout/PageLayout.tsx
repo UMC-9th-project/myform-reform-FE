@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
-import Header from './Header/Header';
-import HeaderNav from './Header/HeaderNav';
-import Footer from './Footer/Footer';
+import Header from './header/Header';
+import HeaderNav from './header/HeaderNav';
+import Footer from './footer/Footer';
 
 interface LayoutProps {
   showHeader?: boolean;

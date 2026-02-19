@@ -1,0 +1,954 @@
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useQuery, useQueries } from '@tanstack/react-query';
+import Input from '../../components/domain/purchase/Input';
+import Button2 from '../../components/common/button/Button2';
+import useAuthStore from '../../stores/useAuthStore';
+import ReformerPurchaseBlockModal from '../../components/common/Modal/ReformerPurchaseBlockModal';
+import DaumPostcode from 'react-daum-postcode';
+import { usePayment } from '../../hooks/domain/payment/usePayment';
+import { useOrderSheet } from '../../hooks/domain/payment/useOrderSheet';
+import type { DeliveryAddress } from '../../types/payment/payment';
+import { createOrderFromCart } from '../../api/order/cartOrder';
+import { createAddress, getAddresses } from '../../api/mypage/address';
+import { loadPortOneSDK, requestPortonePayment } from '../../services/payment/paymentService';
+import { verifyPayment } from '../../api/chat/orderApi';
+import type { PaymentResponse } from '../../types/payment/payment';
+import type { CreateAddressRequest, AddressItem } from '../../types/domain/mypage/address';
+import type { GetOrderSheetFromCartResponse } from '../../api/order/cartOrder';
+import { sanitizePhoneNumber } from '../../utils/common/phone';
+import { getMarketProductDetail } from '../../api/market/market';
+import type { CartProduct } from '../../types/api/cart/cart';
+
+
+const MarketPurchasePage = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  
+  const product = location.state?.product;
+  const fromCart = location.state?.fromCart;
+  const cartIds = location.state?.cartIds as string[] | undefined;
+  const selectedProducts = location.state?.selectedProducts;
+  const orderSheet = location.state?.orderSheet as GetOrderSheetFromCartResponse['success'] | undefined;
+  
+  const [activeTab, setActiveTab] = useState<'existing' | 'new'>('existing');
+  const [showReformerModal, setShowReformerModal] = useState(false);
+  const userRole = useAuthStore((state) => state.role);
+  const isReformer = userRole === 'reformer';
+  const [isPostcodeOpen, setIsPostcodeOpen] = useState(false);
+  const [deliveryAddress, setDeliveryAddress] = useState<DeliveryAddress>({
+    zipcode: '',
+    address: '',
+    detailAddress: '',
+    name: '',
+    recipient: '',
+    phone: '',
+  });
+  const [isProcessingCartPayment, setIsProcessingCartPayment] = useState(false);
+  const [cartPaymentError, setCartPaymentError] = useState<string | null>(null);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+
+  // 주소 목록 조회 (기존 배송지 탭이 활성화되어 있을 때만)
+  const { data: addressesData, isLoading: isAddressesLoading } = useQuery({
+    queryKey: ['addresses', 1, 15, 'asc'],
+    queryFn: () => getAddresses(1, 15, 'asc'),
+    enabled: activeTab === 'existing',
+  });
+
+  // 장바구니에서 온 경우 이미지가 없는 아이템들을 찾아서 상품 상세 API로 이미지 가져오기
+  const itemsWithoutImages = useMemo(() => {
+    if (!fromCart || !orderSheet || !selectedProducts) {
+      return [];
+    }
+    
+    const itemsToFetch: Array<{ itemId: string; groupIndex: number; itemIndex: number }> = [];
+    
+    orderSheet.seller_groups.forEach((sellerGroup, groupIndex) => {
+      sellerGroup.items.forEach((item, itemIndex) => {
+        // thumbnail이 없거나 유효하지 않은 경우
+        if (!item.thumbnail || item.thumbnail.trim() === '') {
+          // selectedProducts에서 같은 title을 가진 아이템 찾기
+          const matchedProduct = selectedProducts.find(
+            (product: CartProduct) => product.name === item.title && product.itemId
+          );
+          
+          if (matchedProduct?.itemId) {
+            itemsToFetch.push({
+              itemId: matchedProduct.itemId,
+              groupIndex,
+              itemIndex,
+            });
+          }
+        }
+      });
+    });
+    
+    return itemsToFetch;
+  }, [fromCart, orderSheet, selectedProducts]);
+
+  // 상품 상세 정보 조회 (이미지가 없는 아이템들만)
+  const productDetailQueries = useQueries({
+    queries: itemsWithoutImages.map(({ itemId }) => {
+      const enabled = !!itemId && itemsWithoutImages.length > 0;
+      
+      return {
+        queryKey: ['market-product-detail', itemId],
+        queryFn: async () => {
+          const result = await getMarketProductDetail({ item_id: itemId });
+          return result;
+        },
+        enabled,
+      };
+    }),
+  });
+
+  // 상품 이미지 맵 생성
+  const productImageMap = useMemo(() => {
+    const map = new Map<string, string>();
+    
+    productDetailQueries.forEach((query, index) => {
+      const { itemId } = itemsWithoutImages[index];
+      
+      if (query.data?.resultType === 'SUCCESS' && query.data.success?.images) {
+        const images = query.data.success.images;
+        
+        if (Array.isArray(images) && images.length > 0) {
+          const imageUrl = images[0];
+          map.set(itemId, imageUrl);
+        }
+      }
+    });
+    
+    return map;
+  }, [productDetailQueries, itemsWithoutImages]);
+
+  // 각 아이템의 이미지 URL 가져오기 (폴백 로직)
+  const getItemImage = useCallback((item: { thumbnail: string; title: string }): string => {
+    // thumbnail이 있으면 사용
+    if (item.thumbnail && item.thumbnail.trim() !== '') {
+      return item.thumbnail;
+    }
+    
+    // selectedProducts에서 같은 title을 가진 아이템 찾기
+    if (selectedProducts) {
+      const matchedProduct = selectedProducts.find(
+        (product: CartProduct) => product.name === item.title && product.itemId
+      );
+      
+      if (matchedProduct?.itemId) {
+        const imageFromDetail = productImageMap.get(matchedProduct.itemId);
+        if (imageFromDetail) {
+          return imageFromDetail;
+        }
+      }
+    }
+    
+    // 기본 이미지 또는 빈 문자열
+    return '';
+  }, [selectedProducts, productImageMap]);
+  
+  // option_item_ids 계산
+  const optionItemIds = useMemo(() => {
+    const ids: string[] = [];
+    if (product?.selectedOptions && typeof product.selectedOptions === 'object') {
+      Object.values(product.selectedOptions).forEach((optionItemId) => {
+        if (optionItemId && typeof optionItemId === 'string') {
+          ids.push(optionItemId);
+        }
+      });
+    }
+    return ids;
+  }, [product]);
+
+  // 주문서 조회 (배송비 및 총 금액) - 장바구니에서 온 경우 orderSheet 사용
+  const { shippingFee, totalPrice, isLoading: isOrderSheetLoading } = useOrderSheet({
+    itemId: id || '',
+    optionItemIds,
+    quantity: product?.quantity || 1,
+    enabled: !fromCart && !!id && !!product, // 장바구니에서 온 경우 비활성화
+  });
+  
+  // 장바구니에서 온 경우 orderSheet에서 정보 가져오기
+  const cartShippingFee = fromCart && orderSheet ? orderSheet.delivery_fee : 0;
+  const cartTotalPrice = fromCart && orderSheet ? orderSheet.payment.total_amount : 0;
+
+  const productPrice = product?.price || 0;
+  const optionPrice = product?.optionPrice || 0;
+
+  // 결제 처리 (early return 전에 호출)
+  const { processPayment, isProcessing, error: paymentError } = usePayment({
+    product: {
+      id: id || '',
+      title: product?.title || '',
+      price: productPrice,
+      optionPrice,
+      quantity: product?.quantity || 1,
+      selectedOptions: product?.selectedOptions,
+      image: product?.image || '',
+      seller: product?.seller || '',
+      option: product?.option,
+    },
+    deliveryAddress,
+    deliveryAddressId: activeTab === 'existing' ? selectedAddressId || null : null,
+    onSuccess: (orderData) => {
+      if (id) {
+        navigate(`/market/product/${id}/purchase/complete`, {
+          state: { order: orderData },
+        });
+      }
+    },
+    onError: (error) => {
+      alert(error.message);
+    },
+  });
+
+  // product가 없으면 상품 상세 페이지로 리다이렉트 (장바구니에서 온 경우 제외)
+  useEffect(() => {
+    if (!fromCart && (!product || !id)) {
+      if (id) {
+        navigate(`/market/product/${id}`);
+      } else {
+        navigate('/market');
+      }
+    }
+  }, [product, id, navigate, fromCart]);
+
+  const formatPrice = (price: number) => {
+    return price.toLocaleString('ko-KR');
+  };
+
+  // 우편번호 검색 완료 핸들러
+  const handlePostcodeComplete = (data: {
+    zonecode: string;
+    roadAddress: string;
+    jibunAddress?: string;
+    address: string;
+  }) => {
+    setDeliveryAddress((prev) => ({
+      ...prev,
+      zipcode: data.zonecode,
+      address: data.roadAddress || data.address,
+    }));
+    setIsPostcodeOpen(false);
+  };
+
+  // 장바구니에서 온 경우 orderSheet가 없으면 장바구니로 리다이렉트
+  useEffect(() => {
+    if (fromCart && !orderSheet) {
+      navigate('/cart');
+    }
+  }, [fromCart, orderSheet, navigate]);
+
+  // 장바구니에서 온 경우 id가 없어도 됨
+  if (!fromCart && (!product || !id)) {
+    return null;
+  }
+  
+  // 장바구니에서 온 경우 orderSheet가 필요 (리다이렉트 중이면 렌더링하지 않음)
+  if (fromCart && !orderSheet) {
+    return null;
+  }
+
+  // 장바구니 결제 처리
+  const handleCartPayment = async () => {
+    if (!cartIds || cartIds.length === 0) {
+      alert('장바구니 정보를 불러올 수 없습니다.');
+      return;
+    }
+
+    setIsProcessingCartPayment(true);
+    setCartPaymentError(null);
+
+    try {
+      // 1. 배송지 정보 검증
+      if (!deliveryAddress.zipcode || !deliveryAddress.address || 
+          !deliveryAddress.recipient || !deliveryAddress.phone) {
+        throw new Error('배송지 정보를 모두 입력해주세요.');
+      }
+
+      // 전화번호 검증 및 정리
+      const sanitizedPhone = sanitizePhoneNumber(deliveryAddress.phone);
+      if (!sanitizedPhone) {
+        throw new Error('유효한 전화번호를 입력해주세요. (예: 010-1234-5678)');
+      }
+
+      // 2. 배송지 생성 또는 기존 배송지 ID 사용
+      let deliveryAddressId: string;
+      
+      if (activeTab === 'new') {
+        // 신규 배송지 생성
+        const addressPayload: CreateAddressRequest = {
+          postalCode: deliveryAddress.zipcode,
+          address: deliveryAddress.address,
+          addressDetail: deliveryAddress.detailAddress || '',
+          isDefault: false,
+          addressName: deliveryAddress.name || '배송지',
+          recipient: deliveryAddress.recipient,
+          phone: sanitizedPhone,
+        };
+        
+        try {
+          const addressResponse = await createAddress(addressPayload);
+
+          if (addressResponse.resultType !== 'SUCCESS' || !addressResponse.success) {
+            const errorMsg = addressResponse.error?.reason || '배송지 생성에 실패했습니다.';
+            throw new Error(errorMsg);
+          }
+
+          // 응답이 배열인 경우와 단일 객체인 경우 모두 처리
+          let createdAddress: AddressItem | null = null;
+          
+          if (Array.isArray(addressResponse.success)) {
+            if (addressResponse.success.length === 0) {
+              throw new Error('배송지 생성 응답이 비어있습니다.');
+            }
+            createdAddress = addressResponse.success[0];
+          } else {
+            // 단일 객체인 경우
+            createdAddress = addressResponse.success as unknown as AddressItem;
+          }
+
+          if (!createdAddress || !createdAddress.addressId) {
+            throw new Error('배송지 생성 응답에 주소 ID가 없습니다.');
+          }
+
+          deliveryAddressId = createdAddress.addressId;
+        } catch (error: unknown) {
+          const axiosError = error as { response?: { data?: { error?: { reason?: string; data?: unknown }; message?: string }; status?: number } };
+          const errorResponse = axiosError?.response?.data;
+          const errorMessage = 
+            errorResponse?.error?.reason || 
+            errorResponse?.message || 
+            (error instanceof Error ? error.message : '배송지 생성에 실패했습니다.');
+          const errorDetails = errorResponse?.error?.data 
+            ? `\n상세: ${JSON.stringify(errorResponse.error.data)}`
+            : '';
+          throw new Error(`${errorMessage}${errorDetails}`);
+        }
+      } else {
+        // 기존 배송지 사용
+        if (!selectedAddressId) {
+          throw new Error('배송지를 선택해주세요.');
+        }
+        deliveryAddressId = selectedAddressId;
+      }
+
+      // 3. orderSheet에서 receipt_number를 merchant_uid로 사용
+      if (!orderSheet || !orderSheet.receipt_number) {
+        throw new Error('주문서 정보가 올바르지 않습니다.');
+      }
+      
+      const merchantUid = orderSheet.receipt_number;
+      
+      // 요청 데이터 검증
+      if (!deliveryAddressId || typeof deliveryAddressId !== 'string') {
+        throw new Error('배송지 정보가 올바르지 않습니다.');
+      }
+      
+      if (!cartIds || !Array.isArray(cartIds) || cartIds.length === 0) {
+        throw new Error('장바구니 정보가 올바르지 않습니다.');
+      }
+
+      // 4. Portone SDK 로드
+      await loadPortOneSDK();
+
+      // 5. Portone 결제창 호출 (결제 전에는 주문 생성하지 않음)
+      requestPortonePayment(
+        {
+          merchant_uid: merchantUid,
+          name: selectedProducts && selectedProducts.length > 0 
+            ? `${selectedProducts[0].title} 외 ${selectedProducts.length - 1}개`
+            : '장바구니 상품',
+          amount: orderSheet.payment.total_amount,
+          buyer_name: deliveryAddress.recipient,
+        },
+        async (rsp: PaymentResponse) => {
+          if (rsp.success) {
+            try {
+              // 6. 결제 완료 후 주문 생성
+              const orderRequestData = {
+                cart_ids: cartIds,
+                delivery_address_id: deliveryAddressId,
+                merchant_uid: merchantUid,
+              };
+
+              let orderResponse;
+              try {
+                orderResponse = await createOrderFromCart(orderRequestData);
+              } catch (error: unknown) {
+                const axiosError = error as { response?: { data?: { error?: { reason?: string; data?: unknown }; message?: string }; status?: number } };
+                const errorResponse = axiosError?.response?.data;
+                const errorMessage = 
+                  errorResponse?.error?.reason || 
+                  errorResponse?.message || 
+                  (error instanceof Error ? error.message : '주문 생성 중 오류가 발생했습니다.');
+                const errorDetails = errorResponse?.error?.data 
+                  ? `\n상세: ${JSON.stringify(errorResponse.error.data)}`
+                  : '';
+                throw new Error(`${errorMessage}${errorDetails}`);
+              }
+
+              if (orderResponse.resultType !== 'SUCCESS' || !orderResponse.success) {
+                const errorMsg = orderResponse.error?.reason || '주문 생성에 실패했습니다.';
+                throw new Error(errorMsg);
+              }
+
+              const { order_id, payment_info } = orderResponse.success;
+
+              // 7. 결제 검증
+              if (!rsp.imp_uid) {
+                throw new Error('결제 고유번호를 가져올 수 없습니다.');
+              }
+
+              await verifyPayment({
+                order_id,
+                imp_uid: rsp.imp_uid,
+              });
+
+              // 8. 결제 완료 후 완료 페이지로 이동
+              // 장바구니에서 온 경우 첫 번째 상품의 ID를 사용하여 완료 페이지로 이동
+              const firstProductId = selectedProducts && selectedProducts.length > 0 
+                ? selectedProducts[0].itemId 
+                : id;
+              
+              if (firstProductId) {
+                navigate(`/market/product/${firstProductId}/purchase/complete`, {
+                  state: {
+                    order: {
+                      orderNumber: payment_info.merchant_uid,
+                      orderId: order_id,
+                      deliveryInfo: {
+                        name: deliveryAddress.name,
+                        recipient: deliveryAddress.recipient,
+                        phone: deliveryAddress.phone,
+                        address: `(${deliveryAddress.zipcode}) ${deliveryAddress.address} ${deliveryAddress.detailAddress}`,
+                      },
+                      products: selectedProducts,
+                      payment: {
+                        totalAmount: payment_info.amount,
+                        method: '카드 간편결제',
+                        paidAmount: rsp.paid_amount,
+                      },
+                      fromCart: true,
+                    },
+                  },
+                });
+              } else {
+                alert('결제가 완료되었습니다.');
+                navigate('/cart');
+              }
+            } catch (error) {
+              const errorMessage = error instanceof Error 
+                ? error.message 
+                : '결제 검증에 실패했습니다. 고객센터로 문의해주세요.';
+              setCartPaymentError(errorMessage);
+              setIsProcessingCartPayment(false);
+            }
+          } else {
+            setCartPaymentError(rsp.error_msg || '결제에 실패했습니다.');
+            setIsProcessingCartPayment(false);
+          }
+        }
+      );
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '결제 처리에 실패했습니다.';
+      setCartPaymentError(errorMessage);
+      setIsProcessingCartPayment(false);
+      alert(errorMessage);
+    }
+  };
+
+  const handlePayment = () => {
+    if (isReformer) {
+      setShowReformerModal(true);
+      return;
+    }
+    
+    // 배송지 정보 검증
+    if (activeTab === 'existing' && !selectedAddressId) {
+      alert('배송지를 선택해주세요.');
+      return;
+    }
+    
+    if (!deliveryAddress.zipcode || !deliveryAddress.address || 
+        !deliveryAddress.recipient || !deliveryAddress.phone) {
+      alert('배송지 정보를 모두 입력해주세요.');
+      return;
+    }
+
+    // 전화번호 검증
+    const sanitizedPhone = sanitizePhoneNumber(deliveryAddress.phone);
+    if (!sanitizedPhone) {
+      alert('유효한 전화번호를 입력해주세요. (예: 010-1234-5678)');
+      return;
+    }
+
+    // 장바구니에서 온 경우 장바구니 결제 처리
+    if (fromCart && cartIds) {
+      handleCartPayment();
+      return;
+    }
+
+    // 일반 상품 결제 처리
+    processPayment();
+  };
+
+  return (
+    <div className="bg-white min-h-screen pb-[7.4375rem]">
+      <div className="flex flex-col items-center gap-[2.1875rem] w-full">
+       
+        <div className="w-[76.25rem] border-b border-black pb-[1.375rem] pt-[0.625rem]">
+          <h1 className="heading-h2-bd text-[2.5rem] text-black">구매하기</h1>
+        </div>
+
+       
+        <div className="flex gap-[2.5625rem] items-start w-[76.25rem]">
+          
+          <div className="flex flex-col gap-[1.75rem] w-[47.25rem]">
+            <h2 className="heading-h4-bd text-[1.875rem] text-black">배송 정보</h2>
+            
+           
+            <div className="border-b border-[var(--color-line-gray-40)] pb-[4.125rem] relative">
+             
+              {/* 탭 버튼들 */}
+              <div className="flex border-b border-[var(--color-line-gray-40)]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('existing');
+                    setSelectedAddressId(null);
+                    setDeliveryAddress({
+                      zipcode: '',
+                      address: '',
+                      detailAddress: '',
+                      name: '',
+                      recipient: '',
+                      phone: '',
+                    });
+                  }}
+                  className={`px-[5rem] py-3 body-b0-sb w-[16.0625rem] cursor-pointer ${
+                    activeTab === 'existing'
+                      ? 'bg-[var(--color-black)] text-[var(--color-white)]'
+                      : 'bg-[var(--color-white)] text-[var(--color-gray-50)] border border-[var(--color-line-gray-40)] border-b-0'
+                  }`}
+                >
+                  기본 배송지
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('new');
+                    setSelectedAddressId(null);
+                    setDeliveryAddress({
+                      zipcode: '',
+                      address: '',
+                      detailAddress: '',
+                      name: '',
+                      recipient: '',
+                      phone: '',
+                    });
+                  }}
+                  className={`px-[5rem] py-3 body-b0-sb w-[16.0625rem] cursor-pointer ${
+                    activeTab === 'new'
+                      ? 'bg-[var(--color-black)] text-[var(--color-white)]'
+                      : 'bg-[var(--color-white)] text-[var(--color-gray-50)] border border-[var(--color-line-gray-40)] border-b-0'
+                  }`}
+                >
+                  신규 배송지
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-[1.875rem] mt-[2.875rem]">
+                {/* 배송지 입력 필드 (기존/신규 공통) */}
+                <div className="flex flex-col gap-[1.875rem]">
+                  <div className="flex gap-[2rem] items-center">
+                    <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem]">
+                      배송지명
+                    </label>
+                    <div className="w-[29.625rem]">
+                      <Input 
+                        value={deliveryAddress.name} 
+                        onChange={(e) => setDeliveryAddress((prev) => ({ ...prev, name: e.target.value }))}
+                        placeholder="배송지명을 입력해주세요"
+                      />
+                    </div>
+                  </div>
+
+               
+                  <div className="flex gap-[2rem] items-center">
+                    <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem]">
+                      <span>수령인</span>
+                      <span className="text-[var(--color-red-1)]"> *</span>
+                    </label>
+                    <div className="w-[29.625rem]">
+                      <Input 
+                        value={deliveryAddress.recipient} 
+                        onChange={(e) => setDeliveryAddress((prev) => ({ ...prev, recipient: e.target.value }))}
+                        placeholder="수령인을 입력해주세요"
+                      />
+                    </div>
+                  </div>
+
+              
+                  <div className="flex gap-[2rem] items-start">
+                    <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem] pt-[0.8125rem]">
+                      <span>배송지</span>
+                      <span className="text-[var(--color-red-1)]"> *</span>
+                    </label>
+                    <div className="flex flex-col gap-[0.9375rem] w-[41.0625rem]">
+                     
+                      <div className="flex gap-[0.9375rem] items-start">
+                        <div className="w-[29.625rem]">
+                          <Input value={deliveryAddress.zipcode} placeholder="우편번호" readOnly />
+                        </div>
+                        <Button2 
+                          className="w-[10.5rem] h-[3.375rem]"
+                          onClick={() => setIsPostcodeOpen(true)}
+                        >
+                          우편번호 검색
+                        </Button2>
+                      </div>
+                     
+                      <div className="w-[29.625rem]">
+                      <Input value={deliveryAddress.address} placeholder="주소" readOnly />
+                      </div>
+                     
+                      <div className="w-[29.625rem]">
+                      <Input 
+                        value={deliveryAddress.detailAddress} 
+                        onChange={(e) => setDeliveryAddress((prev) => ({ ...prev, detailAddress: e.target.value }))}
+                        placeholder="상세주소"
+                      />
+                      </div>
+                    </div>
+                  </div>
+
+                  
+                  <div className="flex gap-[2rem] items-center">
+                    <label className="body-b1-sb text-[var(--color-gray-60)] w-[4.1875rem]">
+                      <span>연락처</span>
+                      <span className="text-[var(--color-red-1)]"> *</span>
+                    </label>
+                    <div className="flex items-center gap-[1.3125rem]">
+                      <div className="w-[7.8125rem]">
+                        <Input 
+                          value={deliveryAddress.phone.split('-')[0] || ''} 
+                          onChange={(e) => {
+                            const parts = deliveryAddress.phone.split('-');
+                            setDeliveryAddress((prev) => ({ 
+                              ...prev, 
+                              phone: `${e.target.value}-${parts[1] || ''}-${parts[2] || ''}`.replace(/-$/, '')
+                            }));
+                          }}
+                          placeholder="010"
+                          maxLength={3}
+                        />
+                      </div>
+                      <span className="body-b0-rg text-black">-</span>
+                      <div className="w-[7.8125rem]">
+                        <Input 
+                          value={deliveryAddress.phone.split('-')[1] || ''} 
+                          onChange={(e) => {
+                            const parts = deliveryAddress.phone.split('-');
+                            setDeliveryAddress((prev) => ({ 
+                              ...prev, 
+                              phone: `${parts[0] || ''}-${e.target.value}-${parts[2] || ''}`.replace(/-$/, '')
+                            }));
+                          }}
+                          placeholder="0000"
+                          maxLength={4}
+                        />
+                      </div>
+                      <span className="body-b0-rg text-black">-</span>
+                      <div className="w-[7.8125rem]">
+                        <Input 
+                          value={deliveryAddress.phone.split('-')[2] || ''} 
+                          onChange={(e) => {
+                            const parts = deliveryAddress.phone.split('-');
+                            setDeliveryAddress((prev) => ({ 
+                              ...prev, 
+                              phone: `${parts[0] || ''}-${parts[1] || ''}-${e.target.value}`.replace(/-$/, '')
+                            }));
+                          }}
+                          placeholder="0000"
+                          maxLength={4}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 기존 배송지 목록 */}
+                {activeTab === 'existing' && (
+                  <div className="flex flex-col gap-[0.9375rem]">
+                    {isAddressesLoading ? (
+                      <div className="body-b1-rg text-[var(--color-gray-60)] py-4">
+                        주소를 불러오는 중...
+                      </div>
+                    ) : addressesData?.success && addressesData.success.length > 0 ? (
+                      <div className="flex flex-col gap-[0.9375rem]">
+                        {addressesData.success.map((address) => (
+                          <button
+                            key={address.addressId}
+                            type="button"
+                            onClick={() => {
+                              setSelectedAddressId(address.addressId);
+                              setDeliveryAddress({
+                                zipcode: address.postalCode,
+                                address: address.address,
+                                detailAddress: address.addressDetail,
+                                name: address.addressName,
+                                recipient: address.recipient,
+                                phone: address.phone,
+                              });
+                            }}
+                            className={`border rounded-[0.625rem] p-4 text-left transition-colors ${
+                              selectedAddressId === address.addressId
+                                ? 'border-[var(--color-mint-0)] bg-[var(--color-mint-0)]/10'
+                                : 'border-[var(--color-line-gray-40)] hover:border-[var(--color-gray-50)]'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="body-b1-sb text-black">
+                                {address.addressName}
+                                {address.isDefault && (
+                                  <span className="ml-2 body-b2-rg text-[var(--color-mint-0)]">
+                                    [기본]
+                                  </span>
+                                )}
+                              </span>
+                            </div>
+                            <div className="body-b1-rg text-[var(--color-gray-60)]">
+                              <div>{address.recipient}</div>
+                              <div>{address.phone}</div>
+                              <div>
+                                ({address.postalCode}) {address.address} {address.addressDetail}
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="body-b1-rg text-[var(--color-gray-60)] py-4">
+                        등록된 배송지가 없습니다.
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+          
+            {!fromCart && product && (
+              <div className="border-b border-[var(--color-line-gray-40)] pb-[4.125rem]">
+                <h2 className="heading-h4-bd text-[1.875rem] text-black mb-[1.125rem]">
+                  주문 정보
+                </h2>
+                
+                <div className="bg-white flex flex-col gap-[0.625rem] px-[1.375rem] py-4">
+                  <p className="body-b1-rg text-[var(--color-gray-60)]">
+                    {product.seller}
+                  </p>
+                  
+                  <div className="flex flex-col items-end">
+                    <div className="flex gap-[1.1875rem] items-start w-full">
+                     
+                      <div className="w-[11.5625rem] h-[11.5625rem] relative shrink-0">
+                        <img
+                          src={product.image}
+                          alt={product.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      
+                      
+                      <div className="flex flex-[1_0_0] flex-col gap-[1.1875rem] items-start">
+                        <div className="flex flex-col gap-[0.625rem] items-center justify-center w-full">
+                          <p className="body-b0-md text-[1.25rem] text-black w-full">
+                            {product.title}
+                          </p>
+                          <p className="body-b1-rg text-[var(--color-gray-50)] w-full">
+                            {product.option}
+                          </p>
+                        </div>
+                        
+                        <div className="flex items-end justify-between w-full">
+                          <div className="flex gap-[1.25rem] items-center body-b1-rg text-[var(--color-gray-60)]">
+                            <span className="body-b1-sb">배송비</span>
+                            <span className="body-b1-rg">{product.shipping}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <p className="body-b0-bd text-[1.25rem] text-black mt-[1.1875rem]">
+                      {product.quantity}개 / {formatPrice(totalPrice)}원
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {fromCart && orderSheet && (
+              <div className="border-b border-[var(--color-line-gray-40)] pb-[4.125rem]">
+                <h2 className="heading-h4-bd text-[1.875rem] text-black mb-[1.125rem]">
+                  주문 정보
+                </h2>
+                
+                <div className="flex flex-col gap-[1.75rem]">
+                  {orderSheet.seller_groups.map((sellerGroup, groupIndex) => (
+                    <div key={groupIndex} className="bg-white flex flex-col gap-[0.625rem] px-[1.375rem] py-4">
+                      <p className="body-b1-rg text-[var(--color-gray-60)]">
+                        {sellerGroup.reformer_nickname}
+                      </p>
+                      
+                      <div className="flex flex-col gap-[1.25rem]">
+                        {sellerGroup.items.map((item, itemIndex) => {
+                          const imageUrl = getItemImage(item);
+                          const isLoadingImage = itemsWithoutImages.some(
+                            (itemToFetch) => 
+                              itemToFetch.groupIndex === groupIndex && 
+                              itemToFetch.itemIndex === itemIndex
+                          ) && !imageUrl;
+                          
+                          return (
+                            <div key={itemIndex} className="flex gap-[1.1875rem] items-start">
+                              <div className="w-[11.5625rem] h-[11.5625rem] relative shrink-0 bg-[var(--color-gray-20)]">
+                                {isLoadingImage ? (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="body-b2-rg text-[var(--color-gray-60)]">로딩 중...</span>
+                                  </div>
+                                ) : imageUrl ? (
+                                  <img
+                                    src={imageUrl}
+                                    alt={item.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <span className="body-b2-rg text-[var(--color-gray-60)]">이미지 없음</span>
+                                  </div>
+                                )}
+                              </div>
+                            
+                            <div className="flex flex-[1_0_0] flex-col gap-[1.1875rem] items-start">
+                              <div className="flex flex-col gap-[0.625rem]">
+                                <p className="body-b0-md text-[1.25rem] text-black">
+                                  {item.title}
+                                </p>
+                                {item.selected_options && item.selected_options.length > 0 && (
+                                  <p className="body-b1-rg text-[var(--color-gray-50)]">
+                                    {item.selected_options.join(', ')}
+                                  </p>
+                                )}
+                              </div>
+                              
+                              <div className="flex items-end justify-between w-full">
+                                <div className="flex gap-[1.25rem] items-center body-b1-rg text-[var(--color-gray-60)]">
+                                  <span className="body-b1-sb">배송비</span>
+                                  <span className="body-b1-rg">{formatPrice(sellerGroup.delivery_fee)}원</span>
+                                </div>
+                              </div>
+                              
+                              <p className="body-b0-bd text-[1.25rem] text-black">
+                                {item.quantity}개 / {formatPrice(item.price)}원
+                              </p>
+                            </div>
+                          </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          
+          <div className="flex flex-col gap-[1.4375rem] items-start pt-[4.375rem] sticky top-0 w-[26.4375rem]">
+            <div className="bg-white border border-[var(--color-line-gray-40)] flex flex-col gap-[1.6875rem] items-start px-[2.375rem] py-[2.3125rem] rounded-[0.625rem] w-full">
+              <h3 className="heading-h5-sb text-[1.5rem] text-black w-full">
+                결제 금액
+              </h3>
+              
+              <div className="border-b border-[var(--color-line-gray-40)] flex flex-col gap-[0.5625rem] items-start pb-[2.0625rem] body-b0-sb text-[var(--color-gray-50)] text-[1.25rem] w-full">
+                <div className="flex items-center justify-between w-full">
+                  <p className="body-b0-sb">상품 금액</p>
+                  <p className="body-b0-sb text-right">
+                    {formatPrice(fromCart && orderSheet ? orderSheet.payment.product_amount : productPrice + optionPrice)}원
+                  </p>
+                </div>
+                <div className="flex items-center justify-between w-full">
+                  <p className="body-b0-sb">배송비</p>
+                  <p className="body-b0-sb text-right">
+                    {formatPrice(fromCart ? cartShippingFee : shippingFee)}원
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between w-full">
+                <p className="body-b0-sb text-[var(--color-gray-50)] text-[1.25rem]">
+                  결제 예정 금액
+                </p>
+                <p className="heading-h4-bd text-[var(--color-mint-1)] text-[1.875rem] text-right">
+                  {formatPrice(fromCart ? cartTotalPrice : totalPrice)}원
+                </p>
+              </div>
+            </div>
+            
+            <button 
+              onClick={handlePayment}
+              disabled={isProcessing || isProcessingCartPayment || isOrderSheetLoading}
+              className="bg-[var(--color-mint-0)] flex gap-[0.625rem] h-[4.625rem] items-center justify-center px-[1.875rem] py-[0.625rem] rounded-[0.625rem] w-full cursor-pointer hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className="body-b0-sb text-[1.5rem] text-white">
+                {isProcessing || isProcessingCartPayment 
+                  ? '처리 중...' 
+                  : isOrderSheetLoading 
+                    ? '로딩 중...' 
+                    : '결제하기'}
+              </span>
+            </button>
+            {paymentError && (
+              <p className="body-b2-rg text-[var(--color-red-1)] text-center">
+                {paymentError.message}
+              </p>
+            )}
+            {cartPaymentError && (
+              <p className="body-b2-rg text-[var(--color-red-1)] text-center">
+                {cartPaymentError}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <ReformerPurchaseBlockModal
+        isOpen={showReformerModal}
+        onClose={() => setShowReformerModal(false)}
+      />
+      {/* 우편번호 검색 모달 */}
+      {isPostcodeOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white p-6 rounded-lg w-[720px] max-w-[90vw] h-[520px] flex flex-col">
+            <DaumPostcode
+              onComplete={handlePostcodeComplete}
+              autoClose
+            />
+
+            <button
+              className="mt-4 text-sm text-gray-500"
+              onClick={() => setIsPostcodeOpen(false)}
+            >
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MarketPurchasePage;

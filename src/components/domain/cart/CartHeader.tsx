@@ -1,5 +1,5 @@
-import Checkbox from '../../../components/common/Checkbox/Checkbox';
-import Button from '../../../components/common/Button/button1';
+import Checkbox from '../../common/checkbox/Checkbox';
+import Button from '../../common/button/Button1';
 
 interface CartHeaderProps {
   isAllChecked: boolean;

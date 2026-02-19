@@ -1,77 +1,191 @@
+import { verifyPayment } from '@/api/chat/orderApi';
+import type { PaymentPayload } from '@/types/api/chat/chatMessages';
 import React from 'react';
 
-interface PaymentCardProps {
-  type: 'sent' | 'received';
+declare global {
+  interface Window {
+    IMP?: IMP;
+  }
 }
 
-const PaymentCard: React.FC<PaymentCardProps> = ({ type }) => {
+interface IMP {
+  init: (storeId: string) => void;
+  agency?: string;
+  request_pay: (data: IMPRequest, callback: (rsp: IMPResponse) => void) => void;
+}
+
+interface IMPRequest {
+  pg: string;
+  pay_method: string;
+  merchant_uid: string;
+  name: string;
+  amount: number;
+  buyer_name: string;
+}
+
+interface IMPResponse {
+  success: boolean;
+  imp_uid?: string;
+  paid_amount?: number;
+  error_msg?: string;
+}
+
+export interface PaymentCardProps {
+  nickname: string;
+  type: 'sent' | 'received';
+  payload: PaymentPayload;
+  role: 'USER' | 'REFORMER';
+  onFinish?: (payload: PaymentPayload) => void;
+  chatRoomId: string;
+}
+
+const PaymentCard: React.FC<PaymentCardProps> = ({
+  type,
+  nickname,
+  payload,
+  onFinish,
+  role,
+}) => {
   const isSent = type === 'sent';
-  
-  // 디자인 및 문구 설정
-  const bgColor = isSent ? 'bg-[var(--color-mint-5)]' : 'bg-[var(--color-gray-30)]';
-  const borderRadiusClass = isSent ? 'rounded-2xl rounded-tr-none' : 'rounded-2xl rounded-tl-none';
+  const isReformer = role === 'REFORMER';
+  const displayNickname = nickname || '심심한 리본';
+
+  const {
+    price,
+    delivery,
+    expectedWorking: days,
+    receiptNumber,
+    orderId,
+    chatRoomId,
+  } = payload;
+  const totalPrice = (Number(price) || 0) + (Number(delivery) || 0);
+
+  const loadPortOne = (): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (window.IMP) {
+        const IMP = window.IMP;
+        if (!IMP.agency) {
+          IMP.init(import.meta.env.VITE_PORTONE_STORE_ID);
+        }
+        return resolve();
+      }
+
+      const script = document.createElement('script');
+      script.src = 'https://cdn.iamport.kr/v1/iamport.js';
+      script.async = true;
+      script.onload = () => {
+        const IMP = window.IMP;
+        if (!IMP) return reject(new Error('포트원 SDK 로드 실패'));
+        IMP.init(import.meta.env.VITE_PORTONE_STORE_ID);
+        resolve();
+      };
+      script.onerror = () => reject(new Error('포트원 SDK 로드 실패'));
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePaymentClick = async () => {
+    if (isReformer) {
+      return alert('리폼러는 결제를 진행할 수 없습니다.');
+    }
+
+    try {
+      await loadPortOne();
+      const IMP = window.IMP!;
+      IMP.request_pay(
+        {
+          pg: 'html5_inicis',
+          pay_method: 'card',
+          merchant_uid: receiptNumber,
+          name: '내폼리폼 결제',
+          amount: totalPrice,
+          buyer_name: displayNickname,
+        },
+        (rsp: IMPResponse) => {
+          if (rsp.success) {
+            alert(
+              `결제가 완료되었습니다.\n결제 금액: ${rsp.paid_amount?.toLocaleString() ?? 0}원`
+            );
+
+            onFinish?.({
+              ...payload,
+              expectedWorking: days,
+            });
+
+            if (orderId && rsp.imp_uid) {
+              verifyPayment({
+                order_id: orderId,
+                imp_uid: rsp.imp_uid,
+              }).then(() => {
+                window.dispatchEvent(
+                  new CustomEvent('payment-completed', {
+                    detail: { chatRoomId: chatRoomId },
+                  })
+                );
+              });
+            }
+          } else {
+            alert(`결제 실패: ${rsp.error_msg ?? '알 수 없는 오류'}`);
+          }
+        }
+      );
+    } catch (err: unknown) {
+      alert((err as Error).message);
+    }
+  };
 
   return (
-    /* 1. 전체 가로 배치: 보낸 건 우측(end), 받은 건 좌측(start) */
-    <div className={`flex w-full mb-6 gap-2 ${isSent ? 'justify-end' : 'justify-start'}`}>
-      
-      {/* 2. [받은 메시지 전용] 프로필 이미지: 왼쪽 상단 배치 */}
-      {!isSent && (
-        <div className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden self-start mt-1">
-          {/* 실제 이미지 사용 시 <img src="..." /> 사용 */}
-          <div className="w-full h-full bg-black" /> 
-        </div>
-      )}
-
-      {/* 3. 카드와 시간의 묶음: 바닥 정렬(items-end) */}
-      <div className={`flex items-end gap-2 max-w-[95%] ${isSent ? 'flex-row' : 'flex-row-reverse'}`}>
-        
-        {/* 읽음/시간 표시: 보낸 건 카드 왼쪽, 받은 건 카드 오른쪽 */}
-        <div className={`flex flex-col text-[0.625rem] etc-cr-rg text-[var(--color-gray-50)] mb-1 min-w-fit ${isSent ? 'items-end' : 'items-start'}`}>
-          <span>읽음</span>
-          <span>오후 08:30</span>
-        </div>
-
-        {/* 4. 결제 카드 본체 */}
-        <div className={`${bgColor} ${borderRadiusClass} p-5 w-full min-w-[22rem] shadow-sm`}>
-          <h2 className="heading-h5-sb mb-3 text-black">내폼리폼 안전 결제</h2>
-          <p className="body-b4-sb mb-5">
-            확정된 견적서에 따른 결제 요청을 보내왔습니다.
-          </p>
-
-          {/* 가격 정보 박스 (재사용 가능하게 분리하면 더 좋음) */}
-          <div className="bg-white rounded-xl p-4 space-y-3 shadow-sm text-sm">
-            <div className="flex justify-between body-b4-sb">
-              <span>견적 금액</span>
-              <span className="body-b4-sb">46,500원</span>
-            </div>
-            <div className="flex justify-between body-b4-sb">
-              <span>배송비</span>
-              <span className="body-b4-sb">3,500원</span>
-            </div>
-            <div className="flex justify-between body-b4-sb">
-              <span>예상 작업 소요일</span>
-              <span className="body-b4-sb">3~5일 소요</span>
-            </div>
-            <div className="border-t border-[var(--color-gray-40)] pt-3 flex justify-between items-center">
-              <span className="body-b4-sb">총 예상 금액</span>
-              <span className="body-b4-sb">50,000원</span>
-            </div>
+    <div
+      className={`flex w-full gap-2 ${isSent ? 'justify-end' : 'justify-start'}`}
+    >
+      <div
+        className={`${
+          isSent
+            ? 'bg-[var(--color-mint-5)] rounded-2xl rounded-tr-none'
+            : 'bg-[var(--color-gray-20)] rounded-2xl rounded-tl-none'
+        } p-5 min-w-[23rem] shadow-sm`}
+      >
+        <h2 className="heading-h5-sb mb-3 text-black">내폼리폼 안전 결제</h2>
+        <p className="body-b4-sb mb-5 text-[var(--color-gray-70)]">
+          {isSent ? (
+            <>
+              {displayNickname}님께 <br />
+              확정된 견적서에 따른 결제 요청을 보냈습니다.
+            </>
+          ) : (
+            <>
+              {displayNickname}님이 <br />
+              확정된 견적서에 따른 결제 요청을 보내왔습니다.
+            </>
+          )}
+        </p>
+        <div className="bg-white rounded-xl p-4 space-y-2 shadow-sm text-sm">
+          <div className="flex justify-between body-b4-sb text-[var(--color-gray-70)]">
+            <span>견적 금액</span>
+            <span className="body-b4-sb">{price.toLocaleString()}원</span>
           </div>
-
-          {/* 수수료 안내 섹션 */}
-          <div className="flex items-center gap-1.5 mt-4 mb-4 body-b4-sb">
-            <span>수수료 별도안내</span>
-            <div className="w-3.5 h-3.5 text-white bg-[var(--color-gray-50)] rounded-full etc-c2-bd flex items-center justify-center cursor-pointer">
-              ?
-            </div>
+          <div className="flex justify-between body-b4-sb text-[var(--color-gray-70)]">
+            <span>배송비</span>
+            <span className="body-b4-sb">{delivery.toLocaleString()}원</span>
           </div>
-
-          {/* 결제 버튼 */}
-          <button className="w-full bg-black text-white py-3.5 rounded-xl body-b4-sb hover:bg-gray-800 transition-colors cursor-pointer">
-            결제창으로 이동하기
-          </button>
+          <div className="flex justify-between body-b4-sb text-[var(--color-gray-70)]">
+            <span>예상 작업 이내</span>
+            <span className="body-b4-sb">{days}일 이내</span>
+          </div>
+          <div className="border-t border-[var(--color-gray-40)] pt-3 flex justify-between items-center">
+            <span className="body-b4-sb">총 예상 금액</span>
+            <span className="body-b4-sb text-[var(--color-mint-1)]">
+              {totalPrice.toLocaleString()}원
+            </span>
+          </div>
         </div>
+
+        <button
+          onClick={handlePaymentClick}
+          className="w-full bg-black text-white py-3 rounded-xl body-b4-sb transition-colors cursor-pointer mt-2"
+        >
+          {isReformer ? '리폼러는 결제할 수 없습니다' : '결제창으로 이동하기'}
+        </button>
       </div>
     </div>
   );

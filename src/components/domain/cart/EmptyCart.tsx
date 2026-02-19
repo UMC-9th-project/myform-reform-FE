@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import Button from '../../../components/common/Button/button1';
+import Button from '../../common/button/Button1';
 import rightIcon from '../../../assets/icons/right.svg';
 
 const EmptyCart = () => {
@@ -19,7 +19,7 @@ const EmptyCart = () => {
         <Button
           variant="primary"
           className="!px-[2.5rem] !py-[1.125rem] body-b0-bd flex items-center gap-[0.5rem]"
-          onClick={() => navigate('/*추후 라우팅 추가*/')}
+          onClick={() => navigate('/market')}
         >
           마켓 둘러보기
           <img

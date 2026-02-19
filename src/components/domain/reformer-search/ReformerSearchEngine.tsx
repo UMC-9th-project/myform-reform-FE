@@ -1,14 +1,6 @@
-import { useState } from 'react';
-import searchIcon from '../../layout/Header/icons/search.svg';
-
-interface ReformerSearchEngineProps {
-  placeholder?: string;
-  onSearch?: (query: string) => void;
-  onInputChange?: (query: string) => void;
-  className?: string;
-  defaultValue?: string;
-  showBlur?: boolean;
-}
+import { useState, useRef } from 'react';
+import searchIcon from '../../layout/header/icons/search.svg';
+import type { ReformerSearchEngineProps } from './types';
 
 const ReformerSearchEngine = ({
   placeholder = '원하는 리폼러를 검색해보세요.',
@@ -19,6 +11,8 @@ const ReformerSearchEngine = ({
   showBlur = true,
 }: ReformerSearchEngineProps) => {
   const [searchQuery, setSearchQuery] = useState(defaultValue);
+  const [isComposing, setIsComposing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -29,15 +23,17 @@ const ReformerSearchEngine = ({
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && onSearch) {
+    if (e.key === 'Enter' && !isComposing && onSearch) {
       e.preventDefault();
-      onSearch(searchQuery);
+      const value = inputRef.current?.value || searchQuery;
+      onSearch(value);
     }
   };
 
   const handleSearchClick = () => {
     if (onSearch) {
-      onSearch(searchQuery);
+      const value = inputRef.current?.value || searchQuery;
+      onSearch(value);
     }
   };
 
@@ -67,9 +63,19 @@ const ReformerSearchEngine = ({
           <form onSubmit={handleSearchSubmit} className={`relative z-10 w-full ${showBlur ? '' : 'px-4 md:px-0'}`}>
             <div className="relative">
               <input
+                ref={inputRef}
                 type="text"
                 value={searchQuery}
                 onChange={handleChange}
+                onCompositionStart={() => setIsComposing(true)}
+                onCompositionEnd={(e) => {
+                  setIsComposing(false);
+                  const finalValue = e.currentTarget.value;
+                  setSearchQuery(finalValue);
+                  if (onInputChange) {
+                    onInputChange(finalValue);
+                  }
+                }}
                 onKeyPress={handleKeyPress}
                 placeholder={placeholder}
                 className="body-b1-rg w-full py-[0.875rem] pl-[1.5rem] pr-[3rem] rounded-[6.25rem] border-1 border-[var(--color-mint-1)] text-[var(--color-black)] placeholder:text-[var(--color-gray-50)] focus:outline-none focus:border-[var(--color-mint-1)] transition-colors bg-white"

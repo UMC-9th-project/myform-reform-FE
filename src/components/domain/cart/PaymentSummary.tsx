@@ -1,5 +1,5 @@
-import Button from '../../../components/common/Button/button1';
-import type { PaymentSummary } from '../../../types/domain/cart/cart';
+import Button from '../../common/button/Button1';
+import type { PaymentSummary } from '@/types/api/cart/cart';
 
 interface PaymentSummaryProps {
   payment: PaymentSummary;

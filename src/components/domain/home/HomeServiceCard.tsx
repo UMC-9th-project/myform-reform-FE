@@ -28,7 +28,7 @@ const HomeServiceCard = ({
   return (
     <div className="bg-white h-[19.8125rem] w-[16.4375rem] rounded-[1.25rem] shadow-[0px_1px_20.5px_0px_rgba(0,0,0,0.05)] relative overflow-hidden">
       <div className="absolute left-5 top-6 flex flex-col gap-[0.5625rem] w-[13.9375rem]">
-        <h3 className="heading-h3-sb text-[1.5rem] text-[var(--color-black)]">
+        <h3 className="heading-h5-sb text-[var(--color-black)]">
           {title}
         </h3>
         <div className="body-b3-rg text-[var(--color-gray-50)]">

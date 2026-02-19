@@ -1,5 +1,5 @@
-import LikeButton from '../../common/LikeButton/LikeButton';
-import type { WishlistCustomItem } from '../../../types/domain/wishlist/wishlist';
+import LikeButton from '../../common/likebutton/LikeButton';
+import type { WishlistCustomItem } from '@/types/api/wishlist/wishlist';
 interface WishlistCustomItemCardProps {
   item: WishlistCustomItem;
   onRemove: (id: number) => void;

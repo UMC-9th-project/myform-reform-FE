@@ -1,9 +1,15 @@
 import React, { useState, useRef } from 'react';
-import { X, Plus } from 'lucide-react';
+import { X } from 'lucide-react';
 import Option5 from '../../components/domain/mypage/Option5';
 import { type OptionGroup } from '../../components/domain/mypage/Option5';
 import DescriptionEditor from '../../components/domain/mypage/DescriptionEditor';
-import Button from '../../components/common/Button/button1';
+import Button from '../../components/common/button/Button1';
+import { uploadImage, uploadImages } from '../../api/upload';
+import { createOrder, createSale } from '../../api/profile/sale';
+import type { SaleOption } from '../../types/domain/mypage/sale';
+import type { CreateOrderRequest } from '../../types/domain/mypage/order';
+import { useNavigate } from 'react-router-dom';
+import upload from '@/assets/icons/upload.svg';
 
 type ImageType = {
   file: File;
@@ -15,7 +21,7 @@ type CreatePageProps = {
 };
 
 const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
-  
+  const navigate = useNavigate();
   // --- 상태 관리 (Step 1 이미지용) ---
   const [images, setImages] = useState<ImageType[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,7 +41,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
   '악세서리': ['헤어 악세서리', '폰케이스', '키링'],
   '홈·리빙': ['패브릭 소품', '쿠션·방석'],
   '기타': []
-};
+  };
 
   const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
   const optionGroupsIdRef = useRef(1);
@@ -45,9 +51,6 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
   const [description, setDescription] = useState('');
 
 
-  const isStep5Filled = type === 'sale'
-  ? optionGroups.length > 0 // sale: 옵션 1개 이상
-  : duration.trim() !== '';  // order: 작업 기간 입력
 
   const isButtonEnabled = 
     images.length > 0 &&
@@ -56,7 +59,6 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
     description.trim() !== '<p></p>' &&
     price.trim() !== '' &&
     shippingFee.trim() !== '' &&
-    isStep5Filled &&   // 여기 바뀐 조건 반영
     category.trim() !== '';
 
 
@@ -90,9 +92,81 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
       setImages(prev => prev.filter((_, i) => i !== index));
     };
 
+    const handleSubmit = async () => {
+  try {
+    // 이미지 업로드
+    const files = images.map(img => img.file);
+    let imageUrls: string[] = [];
+
+    if (files.length === 1) {
+      const res = await uploadImage(files[0]);
+      imageUrls = [res.success.url];
+    } else if (files.length > 1) {
+      const res = await uploadImages(files);
+      imageUrls = res.success.url;
+    }
+
+    if (type === 'sale') {
+      // --- 판매글 payload ---
+      const saleOptions: SaleOption[] = optionGroups.map(
+        (group, groupIndex) => ({
+          title: group.name,
+          sortOrder: groupIndex,
+          content: group.subOptions.map((sub, subIndex) => ({
+            comment: sub.name,
+            price: Number(sub.price.replace(/,/g, '')),
+            quantity: Number(sub.quantity),
+            sortOrder: subIndex,
+          })),
+        })
+      );
+
+      const payload = {
+        title,
+        content: description,
+        price: Number(price.replace(/,/g, '')),
+        delivery: Number(shippingFee.replace(/,/g, '')),
+        option: saleOptions,
+        category: {
+          major: category,
+          sub: subCategory,
+        },
+        imageUrls,
+      };
+
+      await createSale(payload);
+
+    } else {
+      // --- 주문제작 payload ---
+      const payload: CreateOrderRequest = {
+        title,
+        content: description,
+        price: Number(price.replace(/,/g, '')),
+        delivery: Number(shippingFee.replace(/,/g, '')),
+        expected_working: Number(duration),
+        category: {
+          major: category,
+          sub: subCategory,
+        },
+        imageUrls,
+      };
+
+      await createOrder(payload);
+    }
+
+    // 공통 성공 처리
+    alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 등록 완료!`);
+    navigate('/reformer-mypage'); 
+
+  } catch (error) {
+    console.error(error);
+    alert(`${type === 'sale' ? '판매글' : '주문제작 글'} 등록 실패`);
+  }
+};
+
   return (
     <div className="max-w-7xl mx-auto p-8 bg-white text-gray-800">
-      <h1 className="heading-h2-bd pb-6 border-b mb-8 border-[black]"> {type === 'order' ? '주문제작 글 등록하기' : '판매글 등록'}</h1>
+      <h1 className="heading-h2-bd pb-6 border-b mb-8 border-[black]"> {type === 'order' ? '주문제작 글 등록하기' : '판매글 등록하기'}</h1>
 
       {/* Step 1: Image Upload */}
       <section className="mb-10">
@@ -145,7 +219,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                   onClick={() => fileInputRef.current?.click()}
                   className="w-36 h-36 rounded-lg border border-[var(--color-gray-40)] bg-[var(--color-gray-20)] flex flex-col items-center justify-center cursor-pointer hover:bg-gray-100 transition"
                 >
-                  <Plus size={28} className="text-gray-400" />
+                  <img src={upload} alt="이미지 업로드 아이콘" className="text-gray-400" />
                   <span className="body-b3-rg text-[var(--color-gray-50)] mt-2 text-center">이미지 업로드</span>
                 </div>
               )}
@@ -170,10 +244,14 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
               type="text" 
               placeholder="요청글 제목을 입력해주세요."
               value = {title}
-              onChange={e => setTitle(e.target.value)} 
+              onChange={e => {
+                if (e.target.value.length <= 40) {
+                  setTitle(e.target.value);
+                }
+              }} 
               className="placeholder:text-[var(--color-gray-50)] w-full border border-[var(--color-gray-60)] body-b1-rg p-5 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
-            <span className="absolute right-3 top-3 text-sm text-gray-400">0/40자</span>
+            <span className="absolute right-3 top-10 text-sm text-gray-400">{title.length}/40자</span>
           </div>
         </div>
       </section>
@@ -206,7 +284,7 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                     />
                     <button
                     onClick={() => setShowEditor(true)}
-                    className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white border border-[var(--color-line-gray-40)] px-4 py-2 rounded-[0.63rem] body-b2-rg hover:bg-gray-50 shadow-md transition"
+                    className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white border border-[var(--color-line-gray-40)] px-4 py-2 rounded-[0.63rem] body-b2-rg shadow-md transition"
                     >
                     <svg width="25" height="25" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M9 31.0755H13.7303L31.0755 13.7303L26.3446 9L9 26.3452V31.0755Z" stroke="#646F7C" stroke-width="2" stroke-linejoin="round"/>
@@ -241,11 +319,12 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                 <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-6">
                 <div className="bg-white w-full max-w-5xl h-[80vh] p-6 rounded-lg overflow-auto">
                     <DescriptionEditor
-                        type={type}
-                        onSubmit={(html) => {
-                        setDescription(html); // Step3 상태 업데이트
-                        setShowEditor(false); // 에디터 닫기
-                    }}
+                      onSubmit={(html) => {
+                        setDescription(html);
+                        setShowEditor(false);
+                      }}
+                      initialContent={description}
+                      onClose={() => setShowEditor(false)}
                     />
                 </div>
                 </div>
@@ -359,7 +438,6 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
                       onClick={() => {
                       setCategory(cat);
                       setSubCategory(''); // 소분류 초기화
-                      console.log('대분류 클릭:', cat); // 확인용
                     }}
                 >
                   {cat}
@@ -395,11 +473,10 @@ const CreatePage: React.FC<CreatePageProps> = ({ type }) => {
       <div className="flex justify-end">
         <Button
             variant={isButtonEnabled ? 'primary' : 'disabled'}
+            onClick={handleSubmit}
             >
             등록하기
         </Button>
-
-
       </div>
     </div>
   );

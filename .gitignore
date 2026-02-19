@@ -26,7 +26,7 @@ dist-ssr
 .env
 
 # Test images
-src/components/domain/product/exImage/*.jpg
+src/components/domain/product/eximage/*.jpg
 *storybook.log
 storybook-static
 src/components/domain/wishlist/*.jpg

@@ -5,6 +5,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
 
+
+if (import.meta.env.DEV) {
+  import('@locator/runtime').then((locator) => {
+    locator.default();
+  });
+}
+
 const queryClient = new QueryClient();
 
 const root = ReactDOM.createRoot(

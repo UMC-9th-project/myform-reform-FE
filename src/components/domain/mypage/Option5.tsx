@@ -3,6 +3,7 @@ import { X, Plus, GripVertical } from 'lucide-react';
 
 export type SubOption = {
   id: number;
+  apiId?: string;
   name: string;
   price: string;
   quantity: string;
@@ -10,6 +11,7 @@ export type SubOption = {
 
 export type OptionGroup = {
   id: number;
+  apiId?: string;
   name: string;
   subOptions: SubOption[];
 };
