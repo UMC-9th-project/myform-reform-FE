@@ -10,16 +10,25 @@ const KakaoLoginCallback = () => {
   useEffect(() => {
     const accessToken = searchParams.get('accessToken');
     const redirectUrl = searchParams.get('redirectUrl') || '/';
+    const errorCode = searchParams.get('errorCode');
+
+    if (errorCode === 'Auth_117') {
+      navigate('/login/approval-pending');
+      return;
+    } else if (errorCode === 'Auth_118') {
+      navigate('/login/approval-rejected');
+      return;
+    }
 
     if (accessToken) {
       // accessToken 저장
-      // role은 서버에서 받은 토큰에 포함되어 있을 수 있으므로, 
+      // role은 서버에서 받은 토큰에 포함되어 있을 수 있으므로,
       // 필요시 토큰을 디코딩하여 role을 추출하거나 별도로 받아야 함
       // 여기서는 기본적으로 'user'로 설정 (실제로는 서버 응답에 따라 결정)
       setAccessToken(accessToken, 'user');
-      
+
       // refreshToken은 쿠키로 자동 저장됨 (withCredentials: true)
-      
+
       // redirectUrl로 이동
       navigate(redirectUrl);
     } else {
@@ -32,7 +41,9 @@ const KakaoLoginCallback = () => {
   return (
     <div className="w-full min-h-screen flex items-center justify-center">
       <div className="text-center">
-        <p className="body-b1-md text-[var(--color-black)]">로그인 처리 중...</p>
+        <p className="body-b1-md text-[var(--color-black)]">
+          로그인 처리 중...
+        </p>
       </div>
     </div>
   );
