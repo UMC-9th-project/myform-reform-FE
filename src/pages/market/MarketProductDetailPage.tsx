@@ -546,17 +546,13 @@ const MarketProductDetailPage = () => {
                   variant="white"
                   onClick={() => {
                     if (!accessToken) {
-                      alert('로그인이 필요합니다.');
+                      navigate('/login/type');
                       return;
-                    }
-
-                    if (isReformer) {
+                    } else if (isReformer) {
                       setModalMessageType('chat');
                       setShowReformerModal(true);
                       return;
                     }
-
-                    // 리폼러 프로필로 이동
                     navigate(`/profile/${product.reformer.owner_id}`);
                   }}
                   className="flex items-center justify-center gap-2 flex-1 h-[4.625rem]"
