@@ -1,6 +1,49 @@
-# myform-reform-FE
+<div align="center">
 
-내폼리폼 프론트엔드 레포지토리입니다.
+# 🧵 myform-reform-FE
+
+**스포츠 유니폼 리폼 플랫폼, 내폼리폼** 프론트엔드 레포지토리
+
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+
+[![Zustand](https://img.shields.io/badge/Zustand-상태관리-764ABC)](https://zustand-demo.pmnd.rs/)
+[![React Query](https://img.shields.io/badge/React_Query-5-FF4154?logo=reactquery&logoColor=white)](https://tanstack.com/query/latest)
+[![React Router](https://img.shields.io/badge/React_Router-7-CA4245?logo=reactrouter&logoColor=white)](https://reactrouter.com/)
+
+</div>
+
+---
+
+## 📌 서비스 소개
+
+**내폼리폼**은 고객과 리폼러를 연결하는 플랫폼입니다.
+
+- 🛒 **주문 요청** · 여러 리폼러에게 견적 요청
+- 🏪 **마켓** · 리폼 완성품 구매
+- 👤 **리폼러** · 작품 판매 및 견적 제안
+- 💬 **채팅** · 주문·견적 소통
+
+> 배포: [myform-reform.vercel.app](https://myform-reform.vercel.app) (실제 배포 URL로 수정 가능)
+
+---
+
+## 🛠 기술 스택
+
+| 구분 | 기술 |
+|------|------|
+| **언어** | TypeScript |
+| **프레임워크** | React 19, Vite |
+| **스타일** | Tailwind CSS 4 |
+| **상태 관리** | Zustand |
+| **서버 상태** | TanStack Query (React Query) |
+| **라우팅** | React Router 7 |
+| **폼/검증** | Zod |
+| **에디터** | Tiptap |
+
+---
 
 ## 💻 Member
 
