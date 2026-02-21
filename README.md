@@ -1,32 +1,31 @@
-<div align="center">
-
-# 🧵 myform-reform-FE
-
-**스포츠 유니폼 리폼 플랫폼, 내폼리폼** 프론트엔드 레포지토리
-
-[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-6-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-
-[![Zustand](https://img.shields.io/badge/Zustand-상태관리-764ABC)](https://zustand-demo.pmnd.rs/)
-[![React Query](https://img.shields.io/badge/React_Query-5-FF4154?logo=reactquery&logoColor=white)](https://tanstack.com/query/latest)
-[![React Router](https://img.shields.io/badge/React_Router-7-CA4245?logo=reactrouter&logoColor=white)](https://reactrouter.com/)
-
-</div>
+![bbb](https://github.com/user-attachments/assets/221a2eb6-be43-4271-b57c-c4e2af391808)
 
 ---
 
 ## 📌 서비스 소개
 
-**내폼리폼**은 고객과 리폼러를 연결하는 플랫폼입니다.
+ **스포츠 유니폼 리폼 구매자와 리폼러를 연결해주는 통합 플랫폼**
 
-- 🛒 **주문 요청** · 여러 리폼러에게 견적 요청
-- 🏪 **마켓** · 리폼 완성품 구매
-- 👤 **리폼러** · 작품 판매 및 견적 제안
-- 💬 **채팅** · 주문·견적 소통
+**리폼 수요자**는 SNS·당근·카페에 흩어진 정보 없이, **한 번의 요청으로 여러 리폼러의 견적**을 받고 가격·후기·포트폴리오를 비교해 선택할 수 있습니다.  
+**리폼러**는 작업물을 한곳에서 관리하고, 팔로워 없이도 플랫폼을 통해 고객을 만날 수 있습니다.
 
-> 배포: [myform-reform.vercel.app](https://myform-reform.vercel.app) (실제 배포 URL로 수정 가능)
+### 핵심 기능 (MVP)
+
+| 기능 | 설명 |
+|------|------|
+|  **리폼 요청** | 사진·설명으로 요청 등록 → 여러 리폼러에게 견적 요청 |
+|  **리폼 제안** | 요청글에 맞춘 견적·디자인 제안 (리폼러) |
+|  **마켓** | 리폼러의 완성 작품 판매·구매 |
+|  **리폼러 프로필** | 포트폴리오·후기·평점 열람으로 신뢰도 확인 |
+|  **채팅** | 문의·상담 및 리폼 진행 상황(수거→작업→발송) 공유 |
+
+### 서비스 목표
+
+- **소비자**: 신뢰할 수 있는 리폼러를 합리적 가격에 쉽게 찾고 구매
+- **리폼러**: 작업물 체계적 홍보 및 안정적 고객 확보
+- **환경**: 유니폼·의류 리폼/업사이클링 촉진
+
+> 배포: [myform-reform.vercel.app](https://myform-reform.vercel.app) 
 
 ---
 
@@ -46,10 +45,13 @@
 ---
 
 ## 💻 Member
+기간: 2025.11.14 ~ 2026.02.19     
+팀원: PM(1), PD(2), FE(3), BE(5)
 
-- 짜장/홍수진
-- 간/김가인
-- 오리/김태우
+|FE |FE|                                      FE                                       
+|:-------:| :-----: |:-----------------------------------------------------------------------------:| 
+|  <img src="https://avatars.githubusercontent.com/u/163284624?v=4" width="120"/> | <img src="https://avatars.githubusercontent.com/u/70637743?v=4" width="120"/> | <img src="https://avatars.githubusercontent.com/u/195723459?v=4" width="120"/> | 
+|  [수진](https://github.com/hongsujin2eeZyo) |          [태우](https://github.com/kim3360) |            [가인](https://github.com/gain-0525)                      | [상준](https://github.com/im0x00) | [가영](https://github.com/pgy8404) |
 
 ## 📁 디렉토리 구조
 
