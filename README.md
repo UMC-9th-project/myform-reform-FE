@@ -53,6 +53,30 @@
 |  <img src="https://avatars.githubusercontent.com/u/163284624?v=4" width="120"/> | <img src="https://avatars.githubusercontent.com/u/70637743?v=4" width="120"/> | <img src="https://avatars.githubusercontent.com/u/195723459?v=4" width="120"/> | 
 |  [수진](https://github.com/hongsujin2eeZyo) |          [태우](https://github.com/kim3360) |            [가인](https://github.com/gain-0525)                      | [상준](https://github.com/im0x00) | [가영](https://github.com/pgy8404) |
 
+
+
+<!-- <table>
+  <tr>
+    <th align="center">메인 페이지</th>
+    <th align="center">리폼러 페이지 </th>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/메인페이지.png" width="400"/></td>
+    <td align="center"><img src="./assets/폴더페이지.png" width="400"/></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <th align="center"></th>
+    <th align="center"></th>
+  </tr>
+  <tr>
+    <td align="center"><img src="./assets/자동카테고리.png" width="400"/></td>
+    <td align="center"><img src="./assets/Onboarding.png" width="400"/></td>
+  </tr>
+</table>
+  -->
 ## 📁 디렉토리 구조
 
 ```
